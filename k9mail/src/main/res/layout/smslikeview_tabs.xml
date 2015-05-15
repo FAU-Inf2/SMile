@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.fsck.k9.view.SmsLikeView xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:tools="http://schemas.android.com/tools"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+tools:context=".MainActivity">
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/activity_container_left"
+    android:layout_width="240dp"
+    android:layout_height="match_parent"
+    android:layout_gravity="left"
+    android:background="@android:color/holo_green_light">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <Button
+            android:layout_width="70dp"
+            android:layout_height="70dp"/>
+        <Button
+            android:layout_width="70dp"
+            android:layout_height="70dp"/>
+        <Button
+            android:layout_width="70dp"
+            android:layout_height="70dp"/>
+        <Button
+            android:layout_width="70dp"
+            android:layout_height="70dp"/>
+        <Button
+            android:layout_width="70dp"
+            android:layout_height="70dp"/>
+        <Button
+            android:layout_width="70dp"
+            android:layout_height="70dp"/>
+        <Button
+            android:layout_width="70dp"
+            android:layout_height="70dp"/>
+        <Button
+            android:layout_width="70dp"
+            android:layout_height="70dp"/>
+        <Button
+        android:layout_width="70dp"
+        android:layout_height="70dp"/>
+        <Button
+            android:layout_width="70dp"
+            android:layout_height="70dp"/>
+        <Button
+        android:layout_width="70dp"
+        android:layout_height="70dp"/>
+        <Button
+        android:layout_width="70dp"
+        android:layout_height="70dp"/>
+        <Button
+        android:layout_width="70dp"
+        android:layout_height="70dp"/>
+        <Button
+        android:layout_width="70dp"
+        android:layout_height="70dp"/>
+        <Button
+        android:layout_width="70dp"
+        android:layout_height="70dp"/>
+    </LinearLayout>
+</ScrollView>
+
+<ScrollView
+    android:id="@+id/activity_container_right"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginLeft="70dp"
+    android:layout_marginStart="70dp"
+    android:layout_gravity="start"
+    android:background="@android:color/holo_blue_light">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="MAILMAILMAILMAILMAILMAILMAILMAILMA"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="MAILMAILMAILMAILMAILMAILMAILMAILMA"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="MAILMAILMAILMAILMAILMAILMAILMAILMA"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="MAILMAILMAILMAILMAILMAILMAILMAILMA"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="MAILMAILMAILMAILMAILMAILMAILMAILMA"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="MAILMAILMAILMAILMAILMAILMAILMAILMA"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="MAILMAILMAILMAILMAILMAILMAILMAILMA"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="MAILMAILMAILMAILMAILMAILMAILMAILMA"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="MAILMAILMAILMAILMAILMAILMAILMAILMA"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="MAILMAILMAILMAILMAILMAILMAILMAILMA"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="MAILMAILMAILMAILMAILMAILMAILMAILMA"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="MAILMAILMAILMAILMAILMAILMAILMAILMA"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="MAILMAILMAILMAILMAILMAILMAILMAILMA"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="MAILMAILMAILMAILMAILMAILMAILMAILMA"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="MAILMAILMAILMAILMAILMAILMAILMAILMA"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="MAILMAILMAILMAILMAILMAILMAILMAILMA"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="MAILMAILMAILMAILMAILMAILMAILMAILMA"/>
+
+    </LinearLayout>
+
+</ScrollView>
+
+</com.fsck.k9.view.SmsLikeView>

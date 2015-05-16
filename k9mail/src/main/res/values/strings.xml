@@ -1150,4 +1150,10 @@ Please submit bug reports, contribute new features and ask questions at
     <!-- Note: This references message_view_download_remainder -->
     <string name="crypto_download_complete_message_to_decrypt">Click \'Download complete message\' to allow decryption.</string>
 
+
+    <string name="imap_append_testdescription">Executing IMAP append (coming soon):</string>
+    <string name="execute">Execute</string>
+    <string name="imap_append_notimplemented">Not implemented yet!</string>
+    <string name="imap_append_wait">Appending, please wait.</string>
+
 </resources>

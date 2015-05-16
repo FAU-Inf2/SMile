@@ -289,6 +289,10 @@
             android:name=".activity.UpgradeDatabases"
             android:label="@string/upgrade_databases_title"/>
 
+        <activity
+            android:name=".activity.IMAPAppendText"
+            android:label="IMAPAppendText"/>
+
         <receiver
             android:name=".service.BootReceiver"
             android:enabled="true">

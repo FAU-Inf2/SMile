@@ -1,6 +1,8 @@
 package com.fsck.k9.activity;
 
+import android.app.ActionBar;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -21,6 +23,10 @@ public class SmsLikeViewTabs extends K9Activity {
     int buttonNumber = 0;
     int mailNumber = 0;
 
+    private ActionBar mActionBar;
+    private TextView mActionBarTitle;
+    private TextView mActionBarSubTitle;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,6 +37,8 @@ public class SmsLikeViewTabs extends K9Activity {
 
         rightScrollView = (ScrollView) findViewById(R.id.smsLikeView_right);
         rightLinearLayout = (LinearLayout) findViewById(R.id.smsLikeView_right_linear);
+
+        initializeActionBar();
 
         initLeftButton();
     }
@@ -53,7 +61,7 @@ public class SmsLikeViewTabs extends K9Activity {
                 button.setBackgroundColor(color);
                 button.setTag(color);
                 addTextViews(v);
-              //  button.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 0.5f));
+                //  button.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 0.5f));
                 leftLinearLayout.addView(button);
             }
         });
@@ -69,6 +77,39 @@ public class SmsLikeViewTabs extends K9Activity {
             textView.setText("Email " + String.valueOf(mailNumber++));
             rightLinearLayout.addView(textView);
         }
-
     }
+
+    private void initializeActionBar() {
+        mActionBar = getActionBar();
+
+        mActionBar.setDisplayShowCustomEnabled(true);
+        mActionBar.setCustomView(R.layout.actionbar_custom);
+
+        View customView = mActionBar.getCustomView();
+        mActionBarTitle = (TextView) customView.findViewById(R.id.actionbar_title_first);
+        mActionBarSubTitle = (TextView) customView.findViewById(R.id.actionbar_title_sub);
+
+        setActionBarTitle("SmsLikeViewActionBarTitle");
+        setActionBarSubTitle("SmsLikeViewActionBarSubTitle");
+        mActionBar.setDisplayHomeAsUpEnabled(true);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int itemId = item.getItemId();
+        switch (itemId) {
+            case android.R.id.home: {
+                goBack();
+                return true;
+            }
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    public void goBack(){}
+
+    public void setActionBarTitle(String title) { mActionBarTitle.setText(title); }
+
+    public void setActionBarSubTitle(String subTitle) { mActionBarSubTitle.setText(subTitle); }
 }

@@ -452,10 +452,6 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
         if (cl.isFirstRun()) {
             cl.getLogDialog().show();
         }
-
-        //Just a workaround to see the SmsLikeViewTabs Activity fast by navigating to the accountsActivity
-        Intent myIntent = new Intent(this, SmsLikeViewTabs.class);
-        startActivity(myIntent);
     }
 
     private void initializeActionBar() {

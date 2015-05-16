@@ -291,7 +291,9 @@
 
         <activity
             android:name=".activity.SmsLikeViewTabs"
-            android:label="SmsLikeView"/>
+            android:label="SmsLikeView"
+            android:launchMode="singleTop"
+            android:uiOptions="splitActionBarWhenNarrow"/>
 
         <receiver
             android:name=".service.BootReceiver"

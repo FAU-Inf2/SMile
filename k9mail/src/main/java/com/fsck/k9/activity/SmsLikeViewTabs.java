@@ -2,6 +2,7 @@ package com.fsck.k9.activity;
 
 import android.app.ActionBar;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -27,6 +28,8 @@ public class SmsLikeViewTabs extends K9Activity {
     private TextView mActionBarTitle;
     private TextView mActionBarSubTitle;
 
+    private Menu mMenu;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,6 +44,13 @@ public class SmsLikeViewTabs extends K9Activity {
         initializeActionBar();
 
         initLeftButton();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.message_list_option, menu);
+        mMenu = menu;
+        return true;
     }
 
     public void initLeftButton(){

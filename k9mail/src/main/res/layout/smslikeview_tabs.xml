@@ -20,22 +20,12 @@ tools:context=".MainActivity">
     </LinearLayout>
 </ScrollView>
 
-<ScrollView
-    android:id="@+id/smsLikeView_right"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:layout_marginLeft="70dp"
-    android:layout_marginStart="70dp"
-    android:layout_gravity="start"
-    android:background="@android:color/holo_blue_light">
-
-    <LinearLayout
+    <FrameLayout
+        android:id="@+id/sms_message_list_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/smsLikeView_right_linear"
-        android:orientation="vertical">
-    </LinearLayout>
-
-</ScrollView>
+        android:layout_marginLeft="70dp"
+        android:layout_marginStart="70dp"
+        android:layout_gravity="start" />
 
 </com.fsck.k9.view.SmsLikeView>

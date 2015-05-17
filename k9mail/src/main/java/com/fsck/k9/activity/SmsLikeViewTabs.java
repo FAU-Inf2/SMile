@@ -1,6 +1,8 @@
 package com.fsck.k9.activity;
 
 import android.app.ActionBar;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.view.Menu;
@@ -11,25 +13,34 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.fsck.k9.Account;
+import com.fsck.k9.K9;
 import com.fsck.k9.R;
+import com.fsck.k9.fragment.MessageListFragment;
+import com.fsck.k9.mail.Address;
+import com.fsck.k9.mailstore.LocalMessage;
+import com.fsck.k9.search.LocalSearch;
+import com.fsck.k9.search.SearchAccount;
 import com.larswerkman.colorpicker.ColorPicker;
+import com.fsck.k9.fragment.MessageListFragment.MessageListFragmentListener;
 
-import java.util.Random;
+import java.util.List;
 
-public class SmsLikeViewTabs extends K9Activity {
+
+public class SmsLikeViewTabs extends K9Activity implements MessageListFragmentListener {
 
     ScrollView leftScrollView;
     LinearLayout leftLinearLayout;
-    ScrollView rightScrollView;
-    LinearLayout rightLinearLayout;
-    int buttonNumber = 0;
-    int mailNumber = 0;
 
     private ActionBar mActionBar;
     private TextView mActionBarTitle;
     private TextView mActionBarSubTitle;
 
     private Menu mMenu;
+
+    private MessageListFragment mMessageListFragment;
+
+    private LocalSearch mSearch;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -39,12 +50,23 @@ public class SmsLikeViewTabs extends K9Activity {
         leftScrollView = (ScrollView) findViewById(R.id.smsLikeView_left);
         leftLinearLayout = (LinearLayout) findViewById(R.id.smsLikeView_left_linear);
 
-        rightScrollView = (ScrollView) findViewById(R.id.smsLikeView_right);
-        rightLinearLayout = (LinearLayout) findViewById(R.id.smsLikeView_right_linear);
-
         initializeActionBar();
 
-        initLeftButton();
+        initMessages();
+    }
+
+    private void initMessages(){
+        FragmentManager fragmentManager = getFragmentManager();
+        mMessageListFragment = (MessageListFragment) fragmentManager.findFragmentById(
+                R.id.sms_message_list_container);
+
+        mSearch = SearchAccount.createAllMessagesAccount(this).getRelatedSearch();
+
+        FragmentTransaction ft = fragmentManager.beginTransaction();
+        mMessageListFragment = MessageListFragment.newInstance(mSearch, false,
+                (K9.isThreadedViewEnabled()));
+        ft.add(R.id.sms_message_list_container, mMessageListFragment);
+        ft.commit();
     }
 
     @Override
@@ -55,39 +77,21 @@ public class SmsLikeViewTabs extends K9Activity {
     }
 
     public void initLeftButton(){
-        Button button = new Button(this);
-        button.setText(String.valueOf(buttonNumber++));
-     //   button.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 0.5f));
-        button.getBackground().setAlpha(64);
-        Integer color = ColorPicker.getRandomColor();
-        button.setBackgroundColor(color);
-        button.setTag(color);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Button button = new Button(v.getContext());
-                button.setOnClickListener(this);
-                button.setText(String.valueOf(buttonNumber++));
-                Integer color = ColorPicker.getRandomColor();
-                button.setBackgroundColor(color);
-                button.setTag(color);
-                addTextViews(v);
-                //  button.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 0.5f));
-                leftLinearLayout.addView(button);
-            }
-        });
-        leftLinearLayout.addView(button);
-    }
+        leftLinearLayout.removeAllViews();
+        List<MessageReference> list =  mMessageListFragment.getMessageReferences();
 
-    public void addTextViews(View view){
-        Random random = new Random();
-        for (int i = 0; i < random.nextInt(10); i++)
-        {
-            TextView textView = new TextView(this);
-            textView.setBackgroundColor((Integer) view.getTag());
-            textView.setText("Email " + String.valueOf(mailNumber++));
-            rightLinearLayout.addView(textView);
-        }
+         for (MessageReference ref : list){
+             LocalMessage msg = ref.restoreToLocalMessage(this);
+             Address[] addresses = msg.getFrom();
+             for (Address adr : addresses){
+                 String from = adr.getAddress();
+                 Button button = new Button(this);
+                 button.setText(from);
+                 Integer color = ColorPicker.getRandomColor();
+                 button.setBackgroundColor(color);
+                 leftLinearLayout.addView(button);
+             }
+         }
     }
 
     private void initializeActionBar() {
@@ -113,6 +117,10 @@ public class SmsLikeViewTabs extends K9Activity {
                 goBack();
                 return true;
             }
+            case R.id.goto_sms_like_view: {
+                initLeftButton();
+                return true;
+            }
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -125,4 +133,22 @@ public class SmsLikeViewTabs extends K9Activity {
     public void setActionBarTitle(String title) { mActionBarTitle.setText(title); }
 
     public void setActionBarSubTitle(String subTitle) { mActionBarSubTitle.setText(subTitle); }
+
+
+    public void enableActionBarProgress(boolean enable){}
+    public void setMessageListProgress(int level){}
+    public void showThread(Account account, String folderName, long rootId){}
+    public void showMoreFromSameSender(String senderAddress){}
+    public void onResendMessage(LocalMessage message){}
+    public void onForward(LocalMessage message){}
+    public void onReply(LocalMessage message){}
+    public void onReplyAll(LocalMessage message){}
+    public void openMessage(MessageReference messageReference){}
+    public void setMessageListTitle(String title){}
+    public void setMessageListSubTitle(String subTitle){}
+    public void setUnreadCount(int unread){}
+    public void onCompose(Account account){}
+    public boolean startSearch(Account account, String folderName){return false;}
+    public void remoteSearchStarted(){}
+    public void updateMenu(){}
 }

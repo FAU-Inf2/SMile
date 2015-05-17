@@ -293,7 +293,13 @@
             android:name=".activity.SmsLikeViewTabs"
             android:label="SmsLikeView"
             android:launchMode="singleTop"
-            android:uiOptions="splitActionBarWhenNarrow"/>
+            android:uiOptions="splitActionBarWhenNarrow"
+            android:parentActivityName=".activity.Accounts">
+        <meta-data
+            android:name="android.support.PARENT_ACTIVITY"
+            android:value=".activity.Accounts"/>
+        </activity>>
+
 
         <receiver
             android:name=".service.BootReceiver"

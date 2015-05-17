@@ -2,6 +2,7 @@ package com.fsck.k9.activity;
 
 import android.app.ActionBar;
 import android.os.Bundle;
+import android.support.v4.app.NavUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -117,7 +118,9 @@ public class SmsLikeViewTabs extends K9Activity {
         }
     }
 
-    public void goBack(){}
+    public void goBack(){
+        NavUtils.navigateUpFromSameTask(this);
+    }
 
     public void setActionBarTitle(String title) { mActionBarTitle.setText(title); }
 

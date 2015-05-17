@@ -114,22 +114,19 @@ public class PollService extends CoreService {
         }
 
         @Override
-        public void synchronizeMailboxFinished(
-            Account account,
-            String folder,
-            int totalMessagesInMailbox,
-            int numNewMessages) {
+        public void synchronizeMailboxFinished(Account account, String folder, int totalMessagesInMailbox, int numNewMessages) {
             if (account.isNotifyNewMail()) {
                 Integer existingNewMessages = accountsChecked.get(account.getUuid());
+
                 if (existingNewMessages == null) {
                     existingNewMessages = 0;
                 }
+
                 accountsChecked.put(account.getUuid(), existingNewMessages + numNewMessages);
             }
         }
 
         private void release() {
-
             MessagingController controller = MessagingController.getInstance(getApplication());
             controller.setCheckMailListener(null);
             MailService.saveLastCheckEnd(getApplication());
@@ -149,9 +146,11 @@ public class PollService extends CoreService {
                 Log.v(K9.LOG_TAG, "***** PollService *****: checkMailFinished");
             release();
         }
+
         public int getStartId() {
             return startId;
         }
+
         public void setStartId(int startId) {
             this.startId = startId;
         }

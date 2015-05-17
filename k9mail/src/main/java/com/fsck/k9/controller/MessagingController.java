@@ -187,7 +187,7 @@ public class MessagingController implements Runnable {
 
     private final ConcurrentHashMap<String, AtomicInteger> sendCount = new ConcurrentHashMap<String, AtomicInteger>();
 
-    ConcurrentHashMap<Account, Pusher> pushers = new ConcurrentHashMap<Account, Pusher>();
+    private ConcurrentHashMap<Account, Pusher> pushers = new ConcurrentHashMap<Account, Pusher>();
 
     private final ExecutorService threadPool = Executors.newCachedThreadPool();
 

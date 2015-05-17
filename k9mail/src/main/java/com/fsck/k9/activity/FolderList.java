@@ -445,9 +445,7 @@ public class FolderList extends K9ListActivity {
 
 
     private void onRefresh(final boolean forceRemote) {
-
         MessagingController.getInstance(getApplication()).listFolders(mAccount, forceRemote, mAdapter.mListener);
-
     }
 
     private void onEditPrefs() {
@@ -671,7 +669,6 @@ public class FolderList extends K9ListActivity {
             return mFilteredFolders.get(position);
         }
 
-
         public long getItemId(int position) {
             return mFilteredFolders.get(position).folder.getName().hashCode() ;
         }
@@ -729,11 +726,11 @@ public class FolderList extends K9ListActivity {
             @Override
             public void listFoldersFinished(Account account) {
                 if (account.equals(mAccount)) {
-
                     mHandler.progress(false);
                     MessagingController.getInstance(getApplication()).refreshListener(mAdapter.mListener);
                     mHandler.dataChanged();
                 }
+
                 super.listFoldersFinished(account);
 
             }

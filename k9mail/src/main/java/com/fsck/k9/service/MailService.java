@@ -77,8 +77,9 @@ public class MailService extends CoreService {
     @Override
     public void onCreate() {
         super.onCreate();
-        if (K9.DEBUG)
+        if (K9.DEBUG) {
             Log.v(K9.LOG_TAG, "***** MailService *****: onCreate");
+        }
     }
 
     @Override
@@ -337,7 +338,6 @@ public class MailService extends CoreService {
         schedulePushers();
     }
 
-
     private void setupPushers() {
         boolean pushing = false;
         for (Account account : Preferences.getPreferences(MailService.this).getAccounts()) {
@@ -413,7 +413,6 @@ public class MailService extends CoreService {
             BootReceiver.scheduleIntent(MailService.this, nextTime, i);
         }
     }
-
 
     @Override
     public IBinder onBind(Intent intent) {

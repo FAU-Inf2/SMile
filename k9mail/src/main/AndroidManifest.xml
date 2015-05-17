@@ -369,6 +369,9 @@
             android:enabled="true"/>
 
         <service
+                android:name=".service.WiedervorlageService"
+                android:enabled="true"/>
+        <service
             android:name=".service.NotificationActionService"
             android:enabled="true"/>
 

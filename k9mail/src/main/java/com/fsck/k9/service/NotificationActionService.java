@@ -133,6 +133,7 @@ public class NotificationActionService extends CoreService {
         }
         return true;
     }
+
     @Override
     public int startService(Intent intent, int startId) {
         if (K9.DEBUG)

@@ -60,6 +60,7 @@ public class WiedervorlageService extends CoreService {
     }
 
     private MyMessagingListener mListener;
+    private RetrievalListener mRetListener;
     private List<FolderInfoHolder> mFolders = new ArrayList<FolderInfoHolder>();
 
     @Override
@@ -69,6 +70,12 @@ public class WiedervorlageService extends CoreService {
         if (K9.DEBUG) {
             Log.v(K9.LOG_TAG, "***** WiedervorlageService *****: onCreate");
         }
+
+        this.mListener = new MyMessagingListener();
+        this.mRetListener = new RetrievalListener();
+
+        MessagingController.getInstance(getApplication()).addListener(this.mListener);
+        MessagingController.getInstance(getApplication()).addListener(this.mRetListener);
     }
 
     @Override
@@ -83,7 +90,7 @@ public class WiedervorlageService extends CoreService {
         for(Account acc : prefs.getAccounts()) {
             try {
                 LocalFolder folder = acc.getLocalStore().getFolder("Ruminant");
-                folder.getMessages(new RetrievalListener());
+                folder.getMessages();
             } catch (MessagingException e) {
                 e.printStackTrace();
             }

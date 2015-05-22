@@ -1,41 +1,15 @@
 package com.fsck.k9.activity;
 
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
 import com.fsck.k9.Account;
-import com.fsck.k9.K9;
 import com.fsck.k9.R;
 import com.fsck.k9.Preferences;
-import com.fsck.k9.controller.MessagingController;
-import com.fsck.k9.controller.MessagingListener;
-import com.fsck.k9.controller.UnavailableAccountException;
-import com.fsck.k9.mail.FetchProfile;
-import com.fsck.k9.mail.Flag;
-import com.fsck.k9.mail.Folder;
-import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.MessagingException;
-import com.fsck.k9.mail.Store;
-import com.fsck.k9.mail.internet.MimeMessage;
-import com.fsck.k9.mail.internet.TextBody;
-import com.fsck.k9.mailstore.LocalFolder;
-import com.fsck.k9.mailstore.LocalMessage;
-import com.fsck.k9.mailstore.LocalStore;
-import com.fsck.k9.mailstore.UnavailableStorageException;
-
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.PriorityBlockingQueue;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class IMAPAppendTextWorkaroundActivity extends K9Activity {
 /* Use IMAP-command "append" to upload a text to the server.*/

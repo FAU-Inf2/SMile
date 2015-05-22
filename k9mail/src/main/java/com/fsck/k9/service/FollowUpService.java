@@ -18,50 +18,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-public class WiedervorlageService extends CoreService {
-    class MyMessagingListener extends MessagingListener {
-
-        @Override
-        public void listFoldersFinished(Account account) {
-            // TODO: check account/map results to account?
-            MessagingController.getInstance(getApplication()).refreshListener(mListener);
-            super.listFoldersFinished(account);
-        }
-
-        @Override
-        public void listFolders(Account account, List<? extends Folder> folders) {
-            List<FolderInfoHolder> newFolders = new LinkedList<FolderInfoHolder>();
-
-            // TODO: adhere to folder class system?
-            for (Folder folder : folders) {
-                newFolders.add(new FolderInfoHolder(getApplication(), folder, account, -1));
-            }
-
-            mFolders.addAll(newFolders);
-        }
-    }
-
-    class RetrievalListener implements MessageRetrievalListener {
-
-        @Override
-        public void messageStarted(String uid, int number, int ofTotal) {
-
-        }
-
-        @Override
-        public void messageFinished(Message message, int number, int ofTotal) {
-
-        }
-
-        @Override
-        public void messagesFinished(int total) {
-
-        }
-    }
-
-    private MyMessagingListener mListener;
-    private RetrievalListener mRetListener;
-    private List<FolderInfoHolder> mFolders = new ArrayList<FolderInfoHolder>();
+public class FollowUpService extends CoreService {
 
     @Override
     public void onCreate() {
@@ -70,12 +27,6 @@ public class WiedervorlageService extends CoreService {
         if (K9.DEBUG) {
             Log.v(K9.LOG_TAG, "***** WiedervorlageService *****: onCreate");
         }
-
-        this.mListener = new MyMessagingListener();
-        this.mRetListener = new RetrievalListener();
-
-        MessagingController.getInstance(getApplication()).addListener(this.mListener);
-        MessagingController.getInstance(getApplication()).addListener(this.mRetListener);
     }
 
     @Override
@@ -84,20 +35,24 @@ public class WiedervorlageService extends CoreService {
             Log.i(K9.LOG_TAG, "WiedervorlageService.startService(" + intent + ", " + startId + ") alive and kicking");
         }
 
-        Preferences prefs = Preferences.getPreferences(WiedervorlageService.this);
-        //MessagingController controller = MessagingController.getInstance(getApplication());
+        Preferences prefs = Preferences.getPreferences(FollowUpService.this);
 
         for(Account acc : prefs.getAccounts()) {
             try {
-                LocalFolder folder = acc.getLocalStore().getFolder("Ruminant");
-                folder.getMessages();
+                LocalFolder folder = acc.getLocalStore().getFolder("FollowUp");
+
+                if(!folder.exists()) {
+                    folder.create(Folder.FolderType.HOLDS_MESSAGES);
+                }
+
+                List<? extends Message> localMessages = folder.getMessages(null);
+
+                for(Message msg : localMessages) {
+                }
+
             } catch (MessagingException e) {
                 e.printStackTrace();
             }
-            /*
-            controller.listFolders(acc, false, this.mListener);
-            // TODO: whats the difference?
-            controller.listFoldersSynchronous(acc,false, this.mListener);*/
         }
 
         return 0;

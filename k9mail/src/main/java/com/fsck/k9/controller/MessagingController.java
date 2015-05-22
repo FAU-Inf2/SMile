@@ -489,7 +489,6 @@ public class MessagingController implements Runnable {
         return mListeners;
     }
 
-
     public Set<MessagingListener> getListeners(MessagingListener listener) {
         if (listener == null) {
             return mListeners;
@@ -498,7 +497,6 @@ public class MessagingController implements Runnable {
         Set<MessagingListener> listeners = new HashSet<MessagingListener>(mListeners);
         listeners.add(listener);
         return listeners;
-
     }
 
     /**
@@ -538,7 +536,9 @@ public class MessagingController implements Runnable {
         for (MessagingListener l : getListeners(listener)) {
             l.listFoldersStarted(account);
         }
+
         List<? extends Folder> localFolders = null;
+
         if (!account.isAvailable(context)) {
             Log.i(K9.LOG_TAG, "not listing folders of unavailable account");
         } else {
@@ -5332,7 +5332,9 @@ public class MessagingController implements Runnable {
         if (this.checkMailListener != null) {
             removeListener(this.checkMailListener);
         }
+
         this.checkMailListener = checkMailListener;
+
         if (this.checkMailListener != null) {
             addListener(this.checkMailListener);
         }
@@ -5349,53 +5351,13 @@ public class MessagingController implements Runnable {
                 previousPusher.stop();
             }
 
-            Account.FolderMode aDisplayMode = account.getFolderDisplayMode();
-            Account.FolderMode aPushMode = account.getFolderPushMode();
-
             List<String> names = new ArrayList<String>();
 
             Store localStore = account.getLocalStore();
             for (final Folder folder : localStore.getPersonalNamespaces(false)) {
-                if (folder.getName().equals(account.getErrorFolderName())
-                        || folder.getName().equals(account.getOutboxFolderName())) {
-                    /*
-                    if (K9.DEBUG)
-                        Log.v(K9.LOG_TAG, "Not pushing folder " + folder.getName() +
-                              " which should never be pushed");
-                    */
-
+                if (setupPushingHandleFolder(account, folder, names)) {
                     continue;
                 }
-                folder.open(Folder.OPEN_MODE_RW);
-
-                Folder.FolderClass fDisplayClass = folder.getDisplayClass();
-                Folder.FolderClass fPushClass = folder.getPushClass();
-
-                if (modeMismatch(aDisplayMode, fDisplayClass)) {
-                    // Never push a folder that isn't displayed
-                    /*
-                    if (K9.DEBUG)
-                        Log.v(K9.LOG_TAG, "Not pushing folder " + folder.getName() +
-                              " which is in display class " + fDisplayClass + " while account is in display mode " + aDisplayMode);
-                    */
-
-                    continue;
-                }
-
-                if (modeMismatch(aPushMode, fPushClass)) {
-                    // Do not push folders in the wrong class
-                    /*
-                    if (K9.DEBUG)
-                        Log.v(K9.LOG_TAG, "Not pushing folder " + folder.getName() +
-                              " which is in push mode " + fPushClass + " while account is in push mode " + aPushMode);
-                    */
-
-                    continue;
-                }
-                if (K9.DEBUG)
-                    Log.i(K9.LOG_TAG, "Starting pusher for " + account.getDescription() + ":" + folder.getName());
-
-                names.add(folder.getName());
             }
 
             if (!names.isEmpty()) {
@@ -5418,14 +5380,16 @@ public class MessagingController implements Runnable {
 
                         return false;
                     }
+
                     Pusher pusher = store.getPusher(receiver);
+
                     if (pusher != null) {
                         Pusher oldPusher = pushers.putIfAbsent(account, pusher);
                         if (oldPusher == null) {
                             pusher.start(names);
                         }
                     }
-                } catch (Exception e) {
+                } catch (MessagingException e) {
                     Log.e(K9.LOG_TAG, "Could not get remote store", e);
                     return false;
                 }
@@ -5440,6 +5404,48 @@ public class MessagingController implements Runnable {
         } catch (Exception e) {
             Log.e(K9.LOG_TAG, "Got exception while setting up pushing", e);
         }
+        return false;
+    }
+
+    private boolean setupPushingHandleFolder(Account account, Folder folder, List<String> names) throws MessagingException {
+        Account.FolderMode aDisplayMode = account.getFolderDisplayMode();
+        Account.FolderMode aPushMode = account.getFolderPushMode();
+
+        if (folder.getName().equals(account.getErrorFolderName())
+                || folder.getName().equals(account.getOutboxFolderName())) {
+            /*
+            if (K9.DEBUG)
+                Log.v(K9.LOG_TAG, "Not pushing folder " + folder.getName() +
+                      " which should never be pushed");
+            */
+
+            return true;
+        }
+
+        folder.open(Folder.OPEN_MODE_RW);
+        Folder.FolderClass fDisplayClass = folder.getDisplayClass();
+        Folder.FolderClass fPushClass = folder.getPushClass();
+
+        // Never push a folder that isn't displayed
+        // Do not push folders in the wrong class
+        if (modeMismatch(aDisplayMode, fDisplayClass) || modeMismatch(aPushMode, fPushClass)) {
+            /*
+            if (K9.DEBUG) {
+                Log.v(K9.LOG_TAG, "Not pushing folder " + folder.getName() +
+                      " which is in display class " + fDisplayClass + " while account is in display mode " + aDisplayMode);
+                Log.v(K9.LOG_TAG, "Not pushing folder " + folder.getName() +
+                      " which is in push mode " + fPushClass + " while account is in push mode " + aPushMode);
+             }
+            */
+
+            return true;
+        }
+
+        if (K9.DEBUG) {
+            Log.i(K9.LOG_TAG, "Starting pusher for " + account.getDescription() + ":" + folder.getName());
+        }
+
+        names.add(folder.getName());
         return false;
     }
 

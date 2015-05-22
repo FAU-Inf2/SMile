@@ -369,7 +369,7 @@
             android:enabled="true"/>
 
         <service
-                android:name=".service.WiedervorlageService"
+                android:name=".service.FollowUpService"
                 android:enabled="true"/>
         <service
             android:name=".service.NotificationActionService"

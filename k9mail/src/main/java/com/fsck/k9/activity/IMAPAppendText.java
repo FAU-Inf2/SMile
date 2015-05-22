@@ -1,20 +1,15 @@
 package com.fsck.k9.activity;
 
-import android.content.Intent;
 import android.os.AsyncTask;
-import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
-import android.widget.Toast;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.K9;
 import com.fsck.k9.R;
-import com.fsck.k9.Preferences;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.controller.MessagingListener;
 import com.fsck.k9.controller.UnavailableAccountException;
+import com.fsck.k9.mail.Body;
 import com.fsck.k9.mail.FetchProfile;
 import com.fsck.k9.mail.Flag;
 import com.fsck.k9.mail.Folder;
@@ -39,16 +34,20 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class IMAPAppendText extends K9Activity {
 /* Use IMAP-command "append" to upload a text to the server.*/
-/* TODO: Add random text, add id (test_timestamp?), clean up, merge with MessagingController, MessageCompose?*/
+/* TODO:
+* 1. get_current_uid
+* [1a get newest version --> check if local uid is same as uid on server (caller has to check; not in this class)]
+* [1b download newest version (here) and update content locally (caller)]
+* 2. upload new version with new uid
+* 3. delete old one from server.
+* */
 
     private Account mAccount;
-    private MessageReference mMessageReference;
+    private MimeMessage mimeMessage;
 
     public static final long INVALID_MESSAGE_ID = -1;
     private static final long INVALID_DRAFT_ID = INVALID_MESSAGE_ID;
     private static final String PENDING_COMMAND_APPEND = "com.fsck.k9.MessagingController.append";
-    private static final String EXTRA_MESSAGE_REFERENCE = "message_reference";
-    private static final String EXTRA_ACCOUNT = "account";
 
     private Set<MessagingListener> mListeners = new CopyOnWriteArraySet<MessagingListener>();
     private BlockingQueue<Command> mCommands = new PriorityBlockingQueue<Command>();
@@ -57,60 +56,53 @@ public class IMAPAppendText extends K9Activity {
      * The database ID of this message's draft. This is used when saving drafts so the message in
      * the database is updated instead of being created anew. This property is INVALID_DRAFT_ID
      * until the first save.
-     *
-     *
      * TODO: Look at processDraftMessage(LocalMessage message)
      */
     private long mDraftId = INVALID_DRAFT_ID;
 
-    public IMAPAppendText() {
+    public IMAPAppendText(Account account) {
+        this.mAccount = account;
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.imapappendtext);
-        
-        final Intent intent = getIntent();
-        mMessageReference = intent.getParcelableExtra(EXTRA_MESSAGE_REFERENCE);
-        final String accountUuid = (mMessageReference != null) ?
-                mMessageReference.getAccountUuid() :
-                intent.getStringExtra(EXTRA_ACCOUNT);
-
-        mAccount = Preferences.getPreferences(this).getAccount(accountUuid);
-        if (mAccount == null) {
-            mAccount = Preferences.getPreferences(this).getDefaultAccount();
-        }
-        if (mAccount == null) {
-            /*
-             * There are no accounts set up. This should not have happened. Prompt the
-             * user to set up an account as an acceptable bailout.
-             */
-            startActivity(new Intent(this, Accounts.class));
-            finish();
-            return;
-        }
-
-        Button execute_button = (Button) this.findViewById(R.id.imapAppendExecuteButton);
-        execute_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast toast = Toast.makeText(getApplicationContext(), R.string.
-                        //imap_append_notimplemented, Toast.LENGTH_SHORT);
-                        imap_append_wait, Toast.LENGTH_SHORT);
-                //toast.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL, 0, 0);
-
-                toast.show();
-
-                // use imap command "append"
-                saveMessage();
-                toast = Toast.makeText(getApplicationContext(), R.string.imap_append_done,
-                        Toast.LENGTH_SHORT);
-                toast.show();
-            }
-        });
-
+    public String get_current_uid(){
+        //TODO
+        return null;
     }
+
+    public MimeMessage get_current_content() {
+        //TODO
+        return null;
+    }
+
+    public boolean append_new_content(String new_content) throws MessagingException {
+        /*same like append_new_mime_message() but with String containing content; sets new uid */
+        MimeMessage mimeMessage = new MimeMessage();
+        //TODO: create uid (maybe timestamp + magic string?)
+        long unixTime = System.currentTimeMillis() / 1000L;
+        String uid = "ouruid"; //TODO: edit
+        uid += String.valueOf(unixTime);
+
+        mimeMessage.setUid(uid);
+        mimeMessage.setBody(new TextBody(new_content + " -- uid is " + uid));
+
+        append_new_mime_message(mimeMessage);
+
+        return true;
+    }
+
+    public boolean append_new_mime_message(MimeMessage mimeMessage) {
+        /*same like append_new_content() but with full MimeMessage containing content and new uid. */
+        this.mimeMessage = mimeMessage;
+        saveMessage();
+
+        return true;
+    }
+
+    public void set_new_folder(String folder) {
+        //sets new folder in which the content has to be stored
+        //TODO
+    }
+
 
     private void saveMessage() {
         new SaveMessageTask().execute();
@@ -120,37 +112,12 @@ public class IMAPAppendText extends K9Activity {
     private class SaveMessageTask extends AsyncTask<Void, Void, Void> {
         @Override
         protected Void doInBackground(Void... params) {
-            /*
-             * Create the message from all data.
-             */
-            MimeMessage message;
-            try {
-                message = createDraftMessage();
-            } catch (MessagingException me) {
-                Log.e(K9.LOG_TAG, "Failed to create new message for send or save.", me);
-                throw new RuntimeException("Failed to create a new message for send or save.", me);
-            }
-
-            /*
-             * Save a draft
-             */
-                if (mMessageReference != null) {
-                    message.setUid(mMessageReference.getUid());
-                }
-
             final MessagingController messagingController = MessagingController.getInstance(getApplication());
-            Message draftMessage = messagingController.saveDraft(mAccount, message, mDraftId);
+            Message draftMessage = messagingController.saveDraft(mAccount, mimeMessage, mDraftId);
             mDraftId = messagingController.getId(draftMessage);
 
             return null;
         }
-    }
-
-    private MimeMessage createDraftMessage() throws MessagingException {
-        MimeMessage mimeMessage = new MimeMessage();
-        //TODO: json or other data
-        mimeMessage.setBody(new TextBody("TESTTEST"));
-        return mimeMessage;
     }
 
     /**
@@ -493,6 +460,5 @@ public class IMAPAppendText extends K9Activity {
             }
         }
     }
-
 
 }

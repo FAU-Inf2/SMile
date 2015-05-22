@@ -290,8 +290,8 @@
             android:label="@string/upgrade_databases_title"/>
 
         <activity
-            android:name=".activity.IMAPAppendText"
-            android:label="IMAPAppendText"/>
+            android:name=".activity.IMAPAppendTextWorkaroundActivity"
+            android:label="IMAPAppendTextWorkaround"/>
 
         <receiver
             android:name=".service.BootReceiver"

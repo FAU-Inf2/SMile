@@ -454,8 +454,8 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
         }
 
 
-        //Just a workaround for fast access to the IMAPAppendText-Activity
-        Intent myIntent = new Intent(this, IMAPAppendText.class);
+        //Just a workaround for fast access to the IMAPAppendTextWorkaroundActivity
+        Intent myIntent = new Intent(this, IMAPAppendTextWorkaroundActivity.class);
         startActivity(myIntent);
 
 

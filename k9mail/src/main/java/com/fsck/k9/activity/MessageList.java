@@ -1,7 +1,9 @@
 package com.fsck.k9.activity;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
+import java.util.TreeSet;
 
 import android.app.ActionBar;
 import android.app.SearchManager;
@@ -23,6 +25,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
+import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -40,6 +44,7 @@ import com.fsck.k9.activity.setup.Prefs;
 import com.fsck.k9.crypto.PgpData;
 import com.fsck.k9.fragment.MessageListFragment;
 import com.fsck.k9.fragment.MessageListFragment.MessageListFragmentListener;
+import com.fsck.k9.mail.Address;
 import com.fsck.k9.ui.messageview.MessageViewFragment;
 import com.fsck.k9.ui.messageview.MessageViewFragment.MessageViewFragmentListener;
 import com.fsck.k9.mailstore.StorageManager;
@@ -159,6 +164,8 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
     private MessageListFragment mMessageListFragment;
     private MessageViewFragment mMessageViewFragment;
     private int mFirstBackStackId = -1;
+
+    private LinearLayout leftLinearLayoutContacts;
 
     private Account mAccount;
     private String mFolderName;
@@ -777,6 +784,7 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
             // MessageList
             case R.id.check_mail: {
                 mMessageListFragment.checkMail();
+                if (mDisplayMode == DisplayMode.SMS_LIST) fillContacts(mMessageListFragment);
                 return true;
             }
             case R.id.set_sort_date: {
@@ -1512,8 +1520,50 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
 
         mMessageListFragment.setActiveMessage(null);
 
+        fillContacts(mMessageListFragment);
+
         showDefaultTitleView();
         configureMenu(mMenu);
+    }
+
+    private void fillContacts(MessageListFragment fragment){
+
+        leftLinearLayoutContacts = (LinearLayout) findViewById(R.id.smsLikeView_leftlinear_contacts);
+
+        leftLinearLayoutContacts.removeAllViews();
+
+        List<MessageReference> list = fragment.getMessageReferences();
+
+        TreeSet<Address> addressSet = new TreeSet<Address>(new Comparator<Address>() {
+            @Override
+            public int compare(Address lhs, Address rhs) {
+                    if (lhs.equals(rhs)) return 0;
+                    return lhs.getAddress().compareTo(rhs.getAddress());
+            }
+        });
+
+
+        for(MessageReference ref : list){
+            LocalMessage msg = ref.restoreToLocalMessage(this);
+            Address[] addresses = msg.getFrom();
+            for (Address address : addresses)
+                addressSet.add(address);
+        }
+
+        for (Address address: addressSet){
+            Button button = new Button(this);
+            button.setText(address.getAddress());
+           // button.setTag(CONTACTBUTTONTAG, address);
+            button.setOnClickListener(new View.OnClickListener() {
+
+                public void onClick(View v) {
+
+                }
+            });
+            leftLinearLayoutContacts.addView(button);
+        }
+
+
     }
 
     private void showMessageView() {

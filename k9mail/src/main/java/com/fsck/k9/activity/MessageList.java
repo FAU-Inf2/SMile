@@ -137,6 +137,7 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
     private enum DisplayMode {
         MESSAGE_LIST,
         MESSAGE_VIEW,
+        SMS_LIST,
         SPLIT_VIEW
     }
 
@@ -207,6 +208,8 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
             mViewSwitcher.setFirstOutAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_out_right));
             mViewSwitcher.setSecondInAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_in_right));
             mViewSwitcher.setSecondOutAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_out_left));
+            mViewSwitcher.setThirdInAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_in_left));
+            mViewSwitcher.setThirdOutAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_out_left));
             mViewSwitcher.setOnSwitchCompleteListener(this);
         }
 
@@ -896,8 +899,12 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
                 return true;
             }
             case R.id.goto_sms_like_view: {
-                Intent myIntent = new Intent(this, SmsLikeViewTabs.class);
-                startActivity(myIntent);
+                if (mDisplayMode == DisplayMode.MESSAGE_LIST)
+                    showSmsView();
+                else if (mDisplayMode == DisplayMode.SMS_LIST)
+                    showMessageList();
+          //      Intent myIntent = new Intent(this, SmsLikeViewTabs.class);
+         //       startActivity(myIntent);
                 return true;
             }
         }
@@ -1483,8 +1490,25 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
 
     private void showMessageList() {
         mMessageListWasDisplayed = true;
+
+        switchMessageListFragment(R.id.message_list_container);
+
         mDisplayMode = DisplayMode.MESSAGE_LIST;
         mViewSwitcher.showFirstView();
+
+        mMessageListFragment.setActiveMessage(null);
+
+        showDefaultTitleView();
+        configureMenu(mMenu);
+    }
+
+    private void showSmsView(){
+        mMessageListWasDisplayed = true;
+
+        switchMessageListFragment(R.id.sms_message_list_container);
+
+        mDisplayMode = DisplayMode.SMS_LIST;
+        mViewSwitcher.showThirdView();
 
         mMessageListFragment.setActiveMessage(null);
 
@@ -1502,6 +1526,25 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
 
         showMessageTitleView();
         configureMenu(mMenu);
+    }
+
+    private void switchMessageListFragment(int toViewID){
+        View vMessageList = mMessageListFragment.getView();
+
+        if (vMessageList == null) return;
+
+        ViewGroup parent = (ViewGroup) vMessageList.getParent();
+        ViewGroup parentNew = (ViewGroup) findViewById(toViewID);
+
+        if (parent == null || parentNew == null) return;
+
+        if (!parent.equals(parentNew)) {
+            parent.removeView(vMessageList);
+            parent.clearDisappearingChildren();
+
+            parentNew.addView(vMessageList, parentNew.getLayoutParams());
+            parentNew.bringChildToFront(vMessageList);
+        }
     }
 
     @Override

@@ -47,8 +47,8 @@ public class SmsLikeViewTabs extends K9Activity implements MessageListFragmentLi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.smslikeview_tabs);
 
-        leftScrollView = (ScrollView) findViewById(R.id.smsLikeView_left);
-        leftLinearLayout = (LinearLayout) findViewById(R.id.smsLikeView_left_linear);
+        leftScrollView = (ScrollView) findViewById(R.id.smsLikeView_left1);
+        leftLinearLayout = (LinearLayout) findViewById(R.id.smsLikeView_left_linear1);
 
         initializeActionBar();
 

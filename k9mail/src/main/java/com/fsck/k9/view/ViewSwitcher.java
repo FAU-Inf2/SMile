@@ -17,6 +17,8 @@ public class ViewSwitcher extends ViewAnimator implements AnimationListener {
     private Animation mFirstOutAnimation;
     private Animation mSecondInAnimation;
     private Animation mSecondOutAnimation;
+    private Animation mThirdInAnimation;
+    private Animation mThirdOutAnimation;
     private OnSwitchCompleteListener mListener;
 
 
@@ -48,6 +50,16 @@ public class ViewSwitcher extends ViewAnimator implements AnimationListener {
         handleSwitchCompleteCallback();
     }
 
+    public void showThirdView() {
+        if (getDisplayedChild() == 2) {
+            return;
+        }
+
+        setupAnimations(mThirdInAnimation, mThirdOutAnimation);
+        setDisplayedChild(2);
+        handleSwitchCompleteCallback();
+    }
+
     private void setupAnimations(Animation in, Animation out) {
         if (K9.showAnimations()) {
             setInAnimation(in);
@@ -73,7 +85,7 @@ public class ViewSwitcher extends ViewAnimator implements AnimationListener {
         this.mFirstInAnimation = inAnimation;
     }
 
-    public Animation getmFirstOutAnimation() {
+    public Animation getFirstOutAnimation() {
         return mFirstOutAnimation;
     }
 
@@ -95,6 +107,22 @@ public class ViewSwitcher extends ViewAnimator implements AnimationListener {
 
     public void setSecondOutAnimation(Animation outAnimation) {
         mSecondOutAnimation = outAnimation;
+    }
+
+    public Animation getThirdInAnimation() {
+        return mThirdInAnimation;
+    }
+
+    public void setThirdInAnimation(Animation inAnimation) {
+        this.mThirdInAnimation = inAnimation;
+    }
+
+    public Animation getThirdOutAnimation() {
+        return mThirdOutAnimation;
+    }
+
+    public void setThirdOutAnimation(Animation outAnimation) {
+        mThirdOutAnimation = outAnimation;
     }
 
     public void setOnSwitchCompleteListener(OnSwitchCompleteListener listener) {

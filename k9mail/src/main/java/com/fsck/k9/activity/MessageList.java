@@ -1571,7 +1571,7 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
                     tmpSearch.and(SearchField.SENDER, senderAddress, Attribute.CONTAINS);
                     tmpSearch.and(SearchField.FOLDER, mFolderName, Attribute.EQUALS);
 
-                    MessageListFragment fragment = MessageListFragment.newInstance(tmpSearch, false, false);
+                    MessageListFragment fragment = MessageListFragment.newInstance(tmpSearch, false, true);
 
                     displayContactMessages(fragment);
                     button.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_dark));

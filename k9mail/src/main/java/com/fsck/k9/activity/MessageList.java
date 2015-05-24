@@ -45,6 +45,7 @@ import com.fsck.k9.crypto.PgpData;
 import com.fsck.k9.fragment.MessageListFragment;
 import com.fsck.k9.fragment.MessageListFragment.MessageListFragmentListener;
 import com.fsck.k9.mail.Address;
+import com.fsck.k9.search.ConditionsTreeNode;
 import com.fsck.k9.ui.messageview.MessageViewFragment;
 import com.fsck.k9.ui.messageview.MessageViewFragment.MessageViewFragmentListener;
 import com.fsck.k9.mailstore.StorageManager;
@@ -1566,14 +1567,32 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
             button.setOnClickListener(new View.OnClickListener() {
 
                 public void onClick(View v) {
-                    LocalSearch tmpSearch = new LocalSearch();
+                    LocalSearch tmpSearch = new LocalSearch("From " + senderAddress + " in " + mFolderName);
                     tmpSearch.addAccountUuids(mSearch.getAccountUuids());
-                    tmpSearch.and(SearchField.SENDER, senderAddress, Attribute.CONTAINS);
-                    tmpSearch.and(SearchField.FOLDER, mFolderName, Attribute.EQUALS);
+
+                    ConditionsTreeNode nodeOr1 = new ConditionsTreeNode(new SearchCondition(SearchField.SENDER, Attribute.CONTAINS, senderAddress));
+                    ConditionsTreeNode nodeOr2 = new ConditionsTreeNode(new SearchCondition(SearchField.FOLDER, Attribute.EQUALS, mFolderName));
+
+                    ConditionsTreeNode nodeAnd1 = new ConditionsTreeNode(new SearchCondition(SearchField.TO, Attribute.CONTAINS, senderAddress));
+                    ConditionsTreeNode nodeAnd2 = new ConditionsTreeNode(new SearchCondition(SearchField.SENDER, Attribute.CONTAINS, mAccount.getEmail()));
+
+                    ConditionsTreeNode nodeOr = null;
+                    ConditionsTreeNode nodeAnd = null;
+
+                    try {
+                        nodeAnd = nodeAnd1.and(nodeAnd2);
+                        nodeOr = nodeOr1.and(nodeOr2);
+                        nodeOr = nodeOr.or(nodeAnd);
+                        tmpSearch.and(nodeOr);
+
+                    } catch(Exception e){
+                        e.printStackTrace();
+                    }
 
                     MessageListFragment fragment = MessageListFragment.newInstance(tmpSearch, false, true);
 
                     displayContactMessages(fragment);
+
                     button.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_dark));
                     for (Button buttonOther : buttons){
                         if (!button.equals(buttonOther))buttonOther.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_light));

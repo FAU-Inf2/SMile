@@ -1261,14 +1261,14 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
 
     @Override
     public void onSwipeRightToLeft(MotionEvent e1, MotionEvent e2) {
-        if (mMessageListFragment != null && mDisplayMode != DisplayMode.MESSAGE_VIEW) {
+        if (mMessageListFragment != null && mDisplayMode != DisplayMode.MESSAGE_VIEW && mDisplayMode != DisplayMode.SMS_LIST) {
             mMessageListFragment.onSwipeRightToLeft(e1, e2);
         }
     }
 
     @Override
     public void onSwipeLeftToRight(MotionEvent e1, MotionEvent e2) {
-        if (mMessageListFragment != null && mDisplayMode != DisplayMode.MESSAGE_VIEW) {
+        if (mMessageListFragment != null && mDisplayMode != DisplayMode.MESSAGE_VIEW && mDisplayMode != DisplayMode.SMS_LIST) {
             mMessageListFragment.onSwipeLeftToRight(e1, e2);
         }
     }

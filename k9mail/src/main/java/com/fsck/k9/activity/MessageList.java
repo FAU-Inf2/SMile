@@ -1499,7 +1499,7 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
     private void showMessageList() {
         mMessageListWasDisplayed = true;
 
-        //switchMessageListFragment(R.id.message_list_container);
+        switchMessageListFragment(R.id.message_list_container);
 
         mDisplayMode = DisplayMode.MESSAGE_LIST;
         mViewSwitcher.showFirstView();
@@ -1513,7 +1513,7 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
     private void showSmsView(){
         mMessageListWasDisplayed = true;
 
-      //  switchMessageListFragment(R.id.sms_message_list_container);
+        switchMessageListFragment(R.id.sms_message_list_container);
 
         mDisplayMode = DisplayMode.SMS_LIST;
         mViewSwitcher.showThirdView();
@@ -1606,15 +1606,15 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
         ViewGroup parent = (ViewGroup) vMessageList.getParent();
         ViewGroup parentNew = (ViewGroup) findViewById(toViewID);
 
-        if (parent == null || parentNew == null) return;
-
-        if (!parent.equals(parentNew)) {
-            parent.removeView(vMessageList);
-            parent.clearDisappearingChildren();
-            parentNew.removeAllViews();
-            parentNew.addView(vMessageList, parentNew.getLayoutParams());
-           // parentNew.bringChildToFront(vMessageList);
-        }
+            if (parentNew != null){
+                if (parent != null && !parent.equals(parentNew)) {
+                    parent.removeView(vMessageList);
+                    parent.clearDisappearingChildren();
+                }
+                parentNew.removeAllViews();
+                parentNew.addView(vMessageList, parentNew.getLayoutParams());
+                parentNew.bringChildToFront(vMessageList);
+            }
     }
 
     private void displayContactMessages(MessageListFragment fragment){

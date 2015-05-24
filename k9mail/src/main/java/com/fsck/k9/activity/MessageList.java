@@ -1566,9 +1566,10 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
             button.setOnClickListener(new View.OnClickListener() {
 
                 public void onClick(View v) {
-                    LocalSearch tmpSearch = new LocalSearch("From " + senderAddress);
+                    LocalSearch tmpSearch = new LocalSearch();
                     tmpSearch.addAccountUuids(mSearch.getAccountUuids());
                     tmpSearch.and(SearchField.SENDER, senderAddress, Attribute.CONTAINS);
+                    tmpSearch.and(SearchField.FOLDER, mFolderName, Attribute.EQUALS);
 
                     MessageListFragment fragment = MessageListFragment.newInstance(tmpSearch, false, false);
 

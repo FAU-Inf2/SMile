@@ -1156,5 +1156,6 @@ Please submit bug reports, contribute new features and ask questions at
     <string name="imap_append_notimplemented">Not implemented yet!</string>
     <string name="imap_append_wait">Appending, please wait.</string>
     <string name="imap_append_done">Append done!</string>
+    <string name="imap_append_failed">Append failed!</string>
 
 </resources>

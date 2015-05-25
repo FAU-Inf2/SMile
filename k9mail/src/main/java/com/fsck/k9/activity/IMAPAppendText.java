@@ -5,7 +5,6 @@ import android.util.Log;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.K9;
-import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.controller.MessagingListener;
 import com.fsck.k9.controller.UnavailableAccountException;
 import com.fsck.k9.mail.FetchProfile;
@@ -38,6 +37,9 @@ public class IMAPAppendText extends K9Activity {
 * [1b download newest version (here) and update content locally (caller)]
 * 2. upload new version with new uid
 * 3. delete old one from server.
+*
+* TODO: integration in MessageController?
+*
 * */
 
     private Account mAccount;
@@ -62,7 +64,7 @@ public class IMAPAppendText extends K9Activity {
         this.mAccount = account;
     }
 
-    public String get_current_uid(){
+    public String get_current_messageID(){
         //TODO
         return null;
     }
@@ -73,15 +75,16 @@ public class IMAPAppendText extends K9Activity {
     }
 
     public boolean append_new_content(String new_content) throws MessagingException {
-        /*same like append_new_mime_message() but with String containing content; sets new uid */
+        /* same like append_new_mime_message() but with a String as parameter containing content;
+        sets new messageID. */
         MimeMessage mimeMessage = new MimeMessage();
-        //TODO: create uid (maybe timestamp + magic string?)
+        //create messageID (magic string + timestamp)
         long unixTime = System.currentTimeMillis() / 1000L;
-        String uid = "ouruid"; //TODO: edit
-        uid += String.valueOf(unixTime);
+        String messageId = "SmileStorage";
+        messageId += String.valueOf(unixTime);
 
-        mimeMessage.setUid(uid);
-        mimeMessage.setBody(new TextBody(new_content + " -- uid is " + uid));
+        mimeMessage.setMessageId(messageId);
+        mimeMessage.setBody(new TextBody(new_content + " -- messageID is " + mimeMessage.getMessageId()));
 
         append_new_mime_message(mimeMessage);
 
@@ -89,7 +92,7 @@ public class IMAPAppendText extends K9Activity {
     }
 
     public boolean append_new_mime_message(MimeMessage mimeMessage) {
-        /*same like append_new_content() but with full MimeMessage containing content and new uid. */
+        /*same like append_new_content() but with full MimeMessage containing content and new messageID. */
         this.mimeMessage = mimeMessage;
         saveMessage();
 
@@ -98,7 +101,7 @@ public class IMAPAppendText extends K9Activity {
 
     public void set_new_folder(String folder) {
         //sets new folder in which the content has to be stored
-        //TODO
+        mAccount.setSmileStorageFolderName(folder);
     }
 
 
@@ -110,27 +113,26 @@ public class IMAPAppendText extends K9Activity {
     private class SaveMessageTask extends AsyncTask<Void, Void, Void> {
         @Override
         protected Void doInBackground(Void... params) {
-            final MessagingController messagingController = MessagingController.getInstance(getApplication());
-            Message draftMessage = messagingController.saveDraft(mAccount, mimeMessage, mDraftId);
-            mDraftId = messagingController.getId(draftMessage);
+
+            Message draftMessage = saveSmileStorageMessage(mAccount, mimeMessage, mDraftId);
+            mDraftId = getId(draftMessage);
 
             return null;
         }
     }
 
     /**
-     *from MessagingController
+     *from MessagingController as saveDraft
      *
-     * Save a draft message.
      * @param account Account we are saving for.
      * @param message Message to save.
      * @return Message representing the entry in the local store.
      */
-    public Message saveDraft(final Account account, final Message message, long existingDraftId) {
+    public Message saveSmileStorageMessage(final Account account, final Message message, long existingDraftId) {
         Message localMessage = null;
         try {
             LocalStore localStore = account.getLocalStore();
-            LocalFolder localFolder = localStore.getFolder(account.getDraftsFolderName());
+            LocalFolder localFolder = localStore.getFolder(account.getSmileStorageFolderName());
             localFolder.open(Folder.OPEN_MODE_RW);
 
             if (existingDraftId != INVALID_MESSAGE_ID) {
@@ -154,10 +156,22 @@ public class IMAPAppendText extends K9Activity {
             processPendingCommands(account);
 
         } catch (MessagingException e) {
-            Log.e(K9.LOG_TAG, "Unable to save message as draft.", e);
+            Log.e(K9.LOG_TAG, "Unable to save SmileStorageMessage.", e);
             //addErrorMessage(account, null, e);
         }
         return localMessage;
+    }
+
+    /*from MessagingController*/
+    public long getId(Message message) {
+        long id;
+        if (message instanceof LocalMessage) {
+            id = ((LocalMessage) message).getId();
+        } else {
+            Log.w(K9.LOG_TAG, "MessagingController.getId() called without a LocalMessage");
+            id = INVALID_MESSAGE_ID;
+        }
+        return id;
     }
 
     /* from MessagingController */

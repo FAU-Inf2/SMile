@@ -1810,6 +1810,7 @@ public class Account implements BaseAccount, StoreConfig {
     public void excludeSpecialFolders(LocalSearch search) {
         excludeSpecialFolder(search, getTrashFolderName());
         excludeSpecialFolder(search, getDraftsFolderName());
+        excludeSpecialFolder(search, getSmileStorageFolderName()); //TODO: special folder?
         excludeSpecialFolder(search, getSpamFolderName());
         excludeSpecialFolder(search, getOutboxFolderName());
         excludeSpecialFolder(search, getSentFolderName());

@@ -7,6 +7,7 @@ import com.fsck.k9.Account;
 import com.fsck.k9.K9;
 import com.fsck.k9.controller.MessagingListener;
 import com.fsck.k9.controller.UnavailableAccountException;
+import com.fsck.k9.mail.Body;
 import com.fsck.k9.mail.FetchProfile;
 import com.fsck.k9.mail.Flag;
 import com.fsck.k9.mail.Folder;
@@ -20,6 +21,8 @@ import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.mailstore.LocalStore;
 import com.fsck.k9.mailstore.UnavailableStorageException;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -46,32 +49,97 @@ public class IMAPAppendText extends K9Activity {
     private MimeMessage mimeMessage;
 
     public static final long INVALID_MESSAGE_ID = -1;
-    private static final long INVALID_DRAFT_ID = INVALID_MESSAGE_ID;
     private static final String PENDING_COMMAND_APPEND = "com.fsck.k9.MessagingController.append";
+    private static final String PENDING_COMMAND_EXPUNGE = "com.fsck.k9.MessagingController.expunge";
+    private long timestamp = 0;
+    private final static String MESSAGE_ID_MAGIC_STRING = "SmileStorage";
 
     private Set<MessagingListener> mListeners = new CopyOnWriteArraySet<MessagingListener>();
     private BlockingQueue<Command> mCommands = new PriorityBlockingQueue<Command>();
 
-    /**
-     * The database ID of this message's draft. This is used when saving drafts so the message in
-     * the database is updated instead of being created anew. This property is INVALID_DRAFT_ID
-     * until the first save.
-     * TODO: Look at processDraftMessage(LocalMessage message)
-     */
-    private long mDraftId = INVALID_DRAFT_ID;
 
     public IMAPAppendText(Account account) {
         this.mAccount = account;
     }
 
+    /**
+     * @return messageID of the newest version (messageID is MESSAGE_ID_MAGIC_STRING + timestamp)
+     */
     public String get_current_messageID(){
-        //TODO
-        return null;
+        Message newestMessage = get_newest_message();
+        if (newestMessage == null)
+            return null;
+        else {
+            try {
+                return newestMessage.getMessageId();
+            } catch (Exception e) {
+                return null;
+            }
+        }
     }
 
-    public MimeMessage get_current_content() {
-        //TODO
-        return null;
+    /**
+     * @param messageID of desired message -- null if newest should be returned
+     * @return Body of the newest version (TODO: or better return String?)
+     */
+    public Body get_current_content(String messageID) {
+        if (messageID == null) {
+            Message current_message = get_newest_message();
+            if(current_message == null)
+                return null;
+            else {
+                return current_message.getBody(); //TODO: getBody returns null!
+                //return ((TextBody) current_message.getBody()).getText(); //return String?
+            }
+        }
+
+        try {
+            LocalStore localStore = mAccount.getLocalStore();
+            LocalFolder localFolder = localStore.getFolder(mAccount.getSmileStorageFolderName());
+            localFolder.open(Folder.OPEN_MODE_RW);
+            List<? extends Message> messages = localFolder.getMessages(null, false);
+            Message newestMessage = null;
+                for (Message msg : messages) {
+                    if (msg.getMessageId().equals(messageID)) {
+                        return msg.getBody(); //TODO: getBody returns null!
+                        //return ((TextBody) msg.getBody()).getText(); //return String?
+                    }
+                }
+            return null;
+        } catch (Exception e) {
+                return null;
+        }
+    }
+
+    private Message get_newest_message() {
+        //TODO: Update localStore first?
+
+        try{
+            LocalStore localStore = mAccount.getLocalStore();
+            LocalFolder localFolder = localStore.getFolder(mAccount.getSmileStorageFolderName());
+            localFolder.open(Folder.OPEN_MODE_RW);
+            int nMessages = localFolder.getMessageCount();
+            if (nMessages == 0) {
+                // no messages stored
+                return null;
+            } else if(nMessages == 1){
+                List<? extends Message> messages = localFolder.getMessages(null, false);
+                return messages.get(0);
+            } else {
+                //more than one, find newest
+                List<? extends Message> messages = localFolder.getMessages(null, false);
+                Message newestMessage = messages.get(0);
+                for (Message msg : messages) {
+                    if (Long.parseLong(msg.getMessageId().replace(MESSAGE_ID_MAGIC_STRING, "")) >
+                            Long.parseLong(newestMessage.getMessageId().replace(MESSAGE_ID_MAGIC_STRING, ""))) {
+                        newestMessage = msg;
+                    }
+                }
+                return newestMessage;
+            }
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public boolean append_new_content(String new_content) throws MessagingException {
@@ -79,12 +147,12 @@ public class IMAPAppendText extends K9Activity {
         sets new messageID. */
         MimeMessage mimeMessage = new MimeMessage();
         //create messageID (magic string + timestamp)
-        long unixTime = System.currentTimeMillis() / 1000L;
-        String messageId = "SmileStorage";
-        messageId += String.valueOf(unixTime);
+        timestamp = System.currentTimeMillis();
+        String messageId = MESSAGE_ID_MAGIC_STRING + String.valueOf(timestamp);
 
         mimeMessage.setMessageId(messageId);
         mimeMessage.setBody(new TextBody(new_content + " -- messageID is " + mimeMessage.getMessageId()));
+        mimeMessage.setSentDate(new Date(timestamp), false);
 
         append_new_mime_message(mimeMessage);
 
@@ -104,7 +172,6 @@ public class IMAPAppendText extends K9Activity {
         mAccount.setSmileStorageFolderName(folder);
     }
 
-
     private void saveMessage() {
         new SaveMessageTask().execute();
     }
@@ -114,8 +181,7 @@ public class IMAPAppendText extends K9Activity {
         @Override
         protected Void doInBackground(Void... params) {
 
-            Message draftMessage = saveSmileStorageMessage(mAccount, mimeMessage, mDraftId);
-            mDraftId = getId(draftMessage);
+            Message smileStoreMessage = saveSmileStorageMessage(mAccount, mimeMessage);
 
             return null;
         }
@@ -128,17 +194,12 @@ public class IMAPAppendText extends K9Activity {
      * @param message Message to save.
      * @return Message representing the entry in the local store.
      */
-    public Message saveSmileStorageMessage(final Account account, final Message message, long existingDraftId) {
+    public Message saveSmileStorageMessage(final Account account, final Message message) {
         Message localMessage = null;
         try {
             LocalStore localStore = account.getLocalStore();
             LocalFolder localFolder = localStore.getFolder(account.getSmileStorageFolderName());
             localFolder.open(Folder.OPEN_MODE_RW);
-
-            if (existingDraftId != INVALID_MESSAGE_ID) {
-                String uid = localFolder.getMessageUidById(existingDraftId);
-                message.setUid(uid);
-            }
 
             // Save the message to the store.
             localFolder.appendMessages(Collections.singletonList(message));
@@ -152,6 +213,7 @@ public class IMAPAppendText extends K9Activity {
                     localFolder.getName(),
                     localMessage.getUid()
             };
+
             queuePendingCommand(account, command);
             processPendingCommands(account);
 

@@ -180,7 +180,7 @@ public class MessagingController implements Runnable {
     private static final int UNSYNC_CHUNK_SIZE = 5;
 
     private static MessagingController inst = null;
-    private BlockingQueue<Command> mCommands = new PriorityBlockingQueue<Command>();
+    private BlockingQueue<Command> mCommands = new PriorityBlockingQueue<Command>(); //Worklist
 
     private Thread mThread;
     private Set<MessagingListener> mListeners = new CopyOnWriteArraySet<MessagingListener>();
@@ -388,6 +388,9 @@ public class MessagingController implements Runnable {
         return mBusy;
     }
 
+    /*
+    Take commands from the worklist and execute them.
+     */
     @Override
     public void run() {
         Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
@@ -445,6 +448,14 @@ public class MessagingController implements Runnable {
         putCommand(mCommands, description, listener, runnable, false);
     }
 
+    /**
+     * Add a new command to queue.
+     * @param queue The queue to add the command to.
+     * @param description The description of the command.
+     * @param listener The listener to notify.
+     * @param runnable The command to execute.
+     * @param isForeground Should the task run in fore- or background.
+     */
     private void putCommand(BlockingQueue<Command> queue, String description, MessagingListener listener, Runnable runnable, boolean isForeground) {
         int retries = 10;
         Exception e = null;
@@ -575,6 +586,11 @@ public class MessagingController implements Runnable {
         }
     }
 
+    /**
+     * Add a refresh command to the queue. It synchronizes local and remote folders.
+     * @param account The account to synchronize.
+     * @param listener The listener to notify.
+     */
     private void doRefreshRemote(final Account account, final MessagingListener listener) {
         put("doRefreshRemote", listener, new Runnable() {
             @Override

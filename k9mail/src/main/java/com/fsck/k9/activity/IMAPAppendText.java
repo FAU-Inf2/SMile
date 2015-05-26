@@ -21,8 +21,6 @@ import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.mailstore.LocalStore;
 import com.fsck.k9.mailstore.UnavailableStorageException;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -35,11 +33,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class IMAPAppendText extends K9Activity {
 /* Use IMAP-command "append" to upload a text to the server.*/
 /* TODO:
-* 1. get_current_uid
-* [1a get newest version --> check if local uid is same as uid on server (caller has to check; not in this class)]
-* [1b download newest version (here) and update content locally (caller)]
-* 2. upload new version with new uid
-* 3. delete old one from server.
+* 1. get_current_uid [works]
+* *1a get newest version --> check if local uid is same as uid on server (caller has to check; not in this class)
+* *1b download newest version (here, does not work!) and update content locally (caller)
+* 2. upload new version with new uid [works]
+* 3. delete old one from server. [not implemented]
 *
 * TODO: integration in MessageController?
 *
@@ -80,16 +78,18 @@ public class IMAPAppendText extends K9Activity {
 
     /**
      * @param messageID of desired message -- null if newest should be returned
-     * @return Body of the newest version (TODO: or better return String?)
+     * @return Content of the newest version
      */
-    public Body get_current_content(String messageID) {
+    public String get_current_content(String messageID) {
         if (messageID == null) {
             Message current_message = get_newest_message();
             if(current_message == null)
                 return null;
             else {
-                return current_message.getBody(); //TODO: getBody returns null!
-                //return ((TextBody) current_message.getBody()).getText(); //return String?
+                TextBody b = (TextBody) current_message.getBody(); //TODO: getBody returns null!
+                if (b == null)
+                    return null; //TODO: why is body null??
+                return b.getText();
             }
         }
 
@@ -98,11 +98,12 @@ public class IMAPAppendText extends K9Activity {
             LocalFolder localFolder = localStore.getFolder(mAccount.getSmileStorageFolderName());
             localFolder.open(Folder.OPEN_MODE_RW);
             List<? extends Message> messages = localFolder.getMessages(null, false);
-            Message newestMessage = null;
                 for (Message msg : messages) {
                     if (msg.getMessageId().equals(messageID)) {
-                        return msg.getBody(); //TODO: getBody returns null!
-                        //return ((TextBody) msg.getBody()).getText(); //return String?
+                        TextBody b = (TextBody) msg.getBody(); //TODO: getBody returns null!
+                        if (b == null)
+                            return null; //TODO: why is body null??
+                        return b.getText();
                     }
                 }
             return null;
@@ -142,23 +143,41 @@ public class IMAPAppendText extends K9Activity {
         }
     }
 
+    /**
+     * @param new_content contains the new content to be stored
+     * @return TODO
+     */
     public boolean append_new_content(String new_content) throws MessagingException {
         /* same like append_new_mime_message() but with a String as parameter containing content;
         sets new messageID. */
-        MimeMessage mimeMessage = new MimeMessage();
+
+        MimeMessage newMimeMessage = new MimeMessage();
+
         //create messageID (magic string + timestamp)
         timestamp = System.currentTimeMillis();
         String messageId = MESSAGE_ID_MAGIC_STRING + String.valueOf(timestamp);
 
-        mimeMessage.setMessageId(messageId);
-        mimeMessage.setBody(new TextBody(new_content + " -- messageID is " + mimeMessage.getMessageId()));
-        mimeMessage.setSentDate(new Date(timestamp), false);
+        //other stuff
+        newMimeMessage.setHeader("MIME-Version", "1.0");
+        newMimeMessage.setSentDate(new Date(timestamp), false);
+        newMimeMessage.setSubject("Internal from Smile");
+        //newMimeMessage.setCharset("utf-8"); //changes nothing
+        newMimeMessage.setEncoding("quoted-printable");
 
-        append_new_mime_message(mimeMessage);
+        //set messageID and body
+        newMimeMessage.setMessageId(messageId);
+        new_content += " -- messageID is " + newMimeMessage.getMessageId(); //just for testing
 
-        return true;
+        Body b = new TextBody(new_content);
+        newMimeMessage.setBody(b);
+
+        return append_new_mime_message(newMimeMessage);
     }
 
+    /**
+     * @param mimeMessage is the full mimeMessage to be stored
+     * @return TODO
+     */
     public boolean append_new_mime_message(MimeMessage mimeMessage) {
         /*same like append_new_content() but with full MimeMessage containing content and new messageID. */
         this.mimeMessage = mimeMessage;
@@ -167,6 +186,9 @@ public class IMAPAppendText extends K9Activity {
         return true;
     }
 
+    /**
+     * @param folder is the name of the new folder in which Smile should store its files
+     */
     public void set_new_folder(String folder) {
         //sets new folder in which the content has to be stored
         mAccount.setSmileStorageFolderName(folder);
@@ -206,6 +228,7 @@ public class IMAPAppendText extends K9Activity {
             // Fetch the message back from the store.  This is the Message that's returned to the caller.
             localMessage = localFolder.getMessage(message.getUid());
             localMessage.setFlag(Flag.X_DOWNLOADED_FULL, true);
+            localMessage.setFlag(Flag.SEEN, true);
 
             LocalStore.PendingCommand command = new LocalStore.PendingCommand();
             command.command = PENDING_COMMAND_APPEND;

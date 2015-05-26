@@ -15,12 +15,16 @@ import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mail.Store;
 import com.fsck.k9.mail.internet.MimeMessage;
+import com.fsck.k9.mail.internet.MimeUtility;
 import com.fsck.k9.mail.internet.TextBody;
 import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.mailstore.LocalStore;
 import com.fsck.k9.mailstore.UnavailableStorageException;
 
+import org.apache.commons.io.IOUtils;
+
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -35,9 +39,9 @@ public class IMAPAppendText extends K9Activity {
 /* TODO:
 * 1. get_current_uid [works]
 * *1a get newest version --> check if local uid is same as uid on server (caller has to check; not in this class)
-* *1b download newest version (here, does not work!) and update content locally (caller)
+* *1b download newest version (here [works]) and update content locally (caller)
 * 2. upload new version with new uid [works]
-* 3. delete old one from server. [not implemented]
+* 3. delete old one from server. [not implemented yet]
 *
 * TODO: integration in MessageController?
 *
@@ -63,8 +67,8 @@ public class IMAPAppendText extends K9Activity {
     /**
      * @return messageID of the newest version (messageID is MESSAGE_ID_MAGIC_STRING + timestamp)
      */
-    public String get_current_messageID(){
-        Message newestMessage = get_newest_message();
+    public String getCurrentMessageID(){
+        Message newestMessage = getNewestMessage();
         if (newestMessage == null)
             return null;
         else {
@@ -80,75 +84,114 @@ public class IMAPAppendText extends K9Activity {
      * @param messageID of desired message -- null if newest should be returned
      * @return Content of the newest version
      */
-    public String get_current_content(String messageID) {
-        if (messageID == null) {
-            Message current_message = get_newest_message();
-            if(current_message == null)
-                return null;
-            else {
-                TextBody b = (TextBody) current_message.getBody(); //TODO: getBody returns null!
-                if (b == null)
-                    return null; //TODO: why is body null??
-                return b.getText();
-            }
-        }
+    public String getCurrentContent(String messageID) {
+        LocalMessage current_message;
+        if (messageID == null)
+            current_message = getNewestMessage();
+        else
+            current_message = getLocalMessageByMessageId(messageID);
 
-        try {
-            LocalStore localStore = mAccount.getLocalStore();
-            LocalFolder localFolder = localStore.getFolder(mAccount.getSmileStorageFolderName());
-            localFolder.open(Folder.OPEN_MODE_RW);
-            List<? extends Message> messages = localFolder.getMessages(null, false);
-                for (Message msg : messages) {
-                    if (msg.getMessageId().equals(messageID)) {
-                        TextBody b = (TextBody) msg.getBody(); //TODO: getBody returns null!
-                        if (b == null)
-                            return null; //TODO: why is body null??
-                        return b.getText();
-                    }
-                }
+
+        if(current_message == null)
             return null;
-        } catch (Exception e) {
+        else {
+            try {
+                return streamToString(MimeUtility.decodeBody(current_message.getBody()));
+            } catch (Exception e) {
                 return null;
+            }
         }
     }
 
-    private Message get_newest_message() {
+    private LocalMessage getLocalMessageByMessageId(String messageId) {
+        try{
+            LocalStore localStore = mAccount.getLocalStore();
+            LocalFolder localFolder = localStore.getFolder(mAccount.getSmileStorageFolderName());
+            localFolder.open(Folder.OPEN_MODE_RW);
+            LocalMessage localMessage;
+
+            int nMessages = localFolder.getMessageCount();
+            if (nMessages == 0) {
+                // no messages stored
+                return null;
+            } else if(nMessages == 1){
+                List<? extends LocalMessage> messages = localFolder.getMessages(null, false);
+                localMessage = messages.get(0);
+                if (!localMessage.getMessageId().equals(messageId))
+                    return null;
+            } else {
+                //more than one, find message id
+                List<? extends LocalMessage> messages = localFolder.getMessages(null, false);
+                localMessage = null;
+                for (LocalMessage msg : messages) {
+                    if (msg.getMessageId().equals(messageId)) {
+                        localMessage = msg;
+                        break;
+                    }
+                }
+            }
+            FetchProfile fp = new FetchProfile();
+            fp.add(FetchProfile.Item.ENVELOPE);
+            fp.add(FetchProfile.Item.BODY);
+            localFolder.fetch(Collections.singletonList(localMessage), fp, null);
+            localFolder.close();
+
+            return localMessage;
+
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private LocalMessage getNewestMessage() {
         //TODO: Update localStore first?
 
         try{
             LocalStore localStore = mAccount.getLocalStore();
             LocalFolder localFolder = localStore.getFolder(mAccount.getSmileStorageFolderName());
             localFolder.open(Folder.OPEN_MODE_RW);
+            LocalMessage localMessage;
             int nMessages = localFolder.getMessageCount();
             if (nMessages == 0) {
                 // no messages stored
                 return null;
             } else if(nMessages == 1){
-                List<? extends Message> messages = localFolder.getMessages(null, false);
-                return messages.get(0);
+                List<? extends LocalMessage> messages = localFolder.getMessages(null, false);
+                localMessage = messages.get(0);
             } else {
                 //more than one, find newest
-                List<? extends Message> messages = localFolder.getMessages(null, false);
-                Message newestMessage = messages.get(0);
-                for (Message msg : messages) {
+                List<? extends LocalMessage> messages = localFolder.getMessages(null, false);
+                localMessage = messages.get(0);
+                for (LocalMessage msg : messages) {
                     if (Long.parseLong(msg.getMessageId().replace(MESSAGE_ID_MAGIC_STRING, "")) >
-                            Long.parseLong(newestMessage.getMessageId().replace(MESSAGE_ID_MAGIC_STRING, ""))) {
-                        newestMessage = msg;
+                            Long.parseLong(localMessage.getMessageId().replace(MESSAGE_ID_MAGIC_STRING, ""))) {
+                        localMessage = msg;
                     }
                 }
-                return newestMessage;
             }
+            FetchProfile fp = new FetchProfile();
+            fp.add(FetchProfile.Item.ENVELOPE);
+            fp.add(FetchProfile.Item.BODY);
+            localFolder.fetch(Collections.singletonList(localMessage), fp, null);
+            localFolder.close();
+
+            return localMessage;
+
         } catch (Exception e) {
             return null;
         }
+    }
+
+    private static String streamToString(InputStream stream) throws Exception {
+        return IOUtils.toString(stream, "ISO-8859-1");
     }
 
     /**
      * @param new_content contains the new content to be stored
      * @return TODO
      */
-    public boolean append_new_content(String new_content) throws MessagingException {
-        /* same like append_new_mime_message() but with a String as parameter containing content;
+    public void appendNewContent(String new_content) throws MessagingException {
+        /* same like appendNewMimeMessage() but with a String as parameter containing content;
         sets new messageID. */
 
         MimeMessage newMimeMessage = new MimeMessage();
@@ -161,7 +204,6 @@ public class IMAPAppendText extends K9Activity {
         newMimeMessage.setHeader("MIME-Version", "1.0");
         newMimeMessage.setSentDate(new Date(timestamp), false);
         newMimeMessage.setSubject("Internal from Smile");
-        //newMimeMessage.setCharset("utf-8"); //changes nothing
         newMimeMessage.setEncoding("quoted-printable");
 
         //set messageID and body
@@ -171,25 +213,22 @@ public class IMAPAppendText extends K9Activity {
         Body b = new TextBody(new_content);
         newMimeMessage.setBody(b);
 
-        return append_new_mime_message(newMimeMessage);
+        appendNewMimeMessage(newMimeMessage);
     }
 
     /**
      * @param mimeMessage is the full mimeMessage to be stored
-     * @return TODO
      */
-    public boolean append_new_mime_message(MimeMessage mimeMessage) {
-        /*same like append_new_content() but with full MimeMessage containing content and new messageID. */
+    public void appendNewMimeMessage(MimeMessage mimeMessage) {
+        /*same like appendNewContent() but with full MimeMessage containing content and new messageID. */
         this.mimeMessage = mimeMessage;
         saveMessage();
-
-        return true;
     }
 
     /**
      * @param folder is the name of the new folder in which Smile should store its files
      */
-    public void set_new_folder(String folder) {
+    public void setNewFolder(String folder) {
         //sets new folder in which the content has to be stored
         mAccount.setSmileStorageFolderName(folder);
     }

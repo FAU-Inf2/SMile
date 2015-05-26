@@ -9,6 +9,7 @@ import android.widget.Toast;
 import com.fsck.k9.Account;
 import com.fsck.k9.R;
 import com.fsck.k9.Preferences;
+import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.MessagingException;
 
 public class IMAPAppendTextWorkaroundActivity extends K9Activity {
@@ -57,20 +58,31 @@ public class IMAPAppendTextWorkaroundActivity extends K9Activity {
                 //toast.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL, 0, 0);
 
                 toast.show();
-
                 // use imap command "append"
                 IMAPAppendText appendText = new IMAPAppendText(mAccount);
                 try {
-                    appendText.append_new_content("Test-content from Workaround");
+                    appendText.appendNewContent("Test-content from Workaround");
+
                 } catch (MessagingException e) {
                     toast = Toast.makeText(getApplicationContext(), R.string.imap_append_failed,
                             Toast.LENGTH_SHORT);
                     toast.show();
                     return;
                 }
+
                 toast = Toast.makeText(getApplicationContext(), R.string.imap_append_done,
                         Toast.LENGTH_SHORT);
                 toast.show();
+
+                /*String curr =  appendText.getCurrentMessageID();
+                toast = Toast.makeText(getApplicationContext(), "Newest MsgID: "+curr, Toast.LENGTH_SHORT);
+                toast.show();
+
+                toast = Toast.makeText(getApplicationContext(), "Newest Content: "+appendText.getCurrentContent(null),
+                        Toast.LENGTH_LONG);
+                toast.show();
+                */
+
             }
         });
 

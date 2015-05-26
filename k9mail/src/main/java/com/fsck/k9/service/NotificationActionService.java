@@ -25,6 +25,7 @@ import android.util.Log;
  */
 public class NotificationActionService extends CoreService {
     private final static String REPLY_ACTION = "com.fsck.k9.service.NotificationActionService.REPLY_ACTION";
+    private final static String FOLLOW_UP_ACTION = "com.fsck.k9.service.NotificationActionService.FOLLOW_UP_ACTION";
     private final static String READ_ALL_ACTION = "com.fsck.k9.service.NotificationActionService.READ_ALL_ACTION";
     private final static String DELETE_ALL_ACTION = "com.fsck.k9.service.NotificationActionService.DELETE_ALL_ACTION";
     private final static String ARCHIVE_ALL_ACTION = "com.fsck.k9.service.NotificationActionService.ARCHIVE_ALL_ACTION";
@@ -34,6 +35,14 @@ public class NotificationActionService extends CoreService {
     private final static String EXTRA_ACCOUNT = "account";
     private final static String EXTRA_MESSAGE = "message";
     private final static String EXTRA_MESSAGE_LIST = "messages";
+
+    public static PendingIntent getFollowUpIntent(Context context, final Account account) {
+        Intent i = new Intent(context, NotificationActionService.class);
+        i.putExtra(EXTRA_ACCOUNT, account.getUuid());
+        i.setAction(FOLLOW_UP_ACTION);
+
+        return PendingIntent.getService(context, account.getAccountNumber(), i, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
 
     public static PendingIntent getReplyIntent(Context context, final Account account, final MessageReference ref) {
         Intent i = new Intent(context, NotificationActionService.class);
@@ -92,7 +101,6 @@ public class NotificationActionService extends CoreService {
         i.setAction(ARCHIVE_ALL_ACTION);
 
         return PendingIntent.getService(context, account.getAccountNumber(), i, PendingIntent.FLAG_UPDATE_CURRENT);
-
     }
 
     /**
@@ -123,9 +131,11 @@ public class NotificationActionService extends CoreService {
         if (!controller.isMoveCapable(account)) {
             return false;
         }
+
         if (K9.FOLDER_NONE.equalsIgnoreCase(dstFolder)) {
             return false;
         }
+
         for(LocalMessage messageToMove : messages) {
             if (!controller.isMoveCapable(messageToMove)) {
                 return false;
@@ -138,6 +148,7 @@ public class NotificationActionService extends CoreService {
     public int startService(Intent intent, int startId) {
         if (K9.DEBUG)
             Log.i(K9.LOG_TAG, "NotificationActionService started with startId = " + startId);
+
         final Preferences preferences = Preferences.getPreferences(this);
         final MessagingController controller = MessagingController.getInstance(getApplication());
         final Account account = preferences.getAccount(intent.getStringExtra(EXTRA_ACCOUNT));

@@ -1,24 +1,68 @@
 package com.fsck.k9.service;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
-import com.fsck.k9.activity.FolderInfoHolder;
-import com.fsck.k9.controller.MessagingController;
+import com.fsck.k9.R;
+import com.fsck.k9.activity.MessageReference;
 import com.fsck.k9.Account;
-import com.fsck.k9.controller.MessagingListener;
 import com.fsck.k9.mail.Folder;
 import com.fsck.k9.mail.Message;
-import com.fsck.k9.mail.MessageRetrievalListener;
 import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mailstore.LocalFolder;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
 public class FollowUpService extends CoreService {
+
+    public class FollowUpItem {
+        private String title;
+        private Date remindTime;
+        private MessageReference reference;
+
+        public FollowUpItem(String title, Date remindTime) {
+            this(title, remindTime, null);
+        }
+
+        public FollowUpItem(String title, Date remindTime, MessageReference reference) {
+            setTitle(title);
+            setRemindTime(remindTime);
+            setReference(reference);
+        }
+
+        public Date getRemindTime() {
+            return remindTime;
+        }
+
+        public void setRemindTime(Date remindTime) {
+            this.remindTime = remindTime;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public void setTitle(String title) {
+            this.title = title;
+        }
+
+        public MessageReference getReference() {
+            return reference;
+        }
+
+        public void setReference(MessageReference reference) {
+            this.reference = reference;
+        }
+
+    }
 
     @Override
     public void onCreate() {
@@ -38,23 +82,62 @@ public class FollowUpService extends CoreService {
         Preferences prefs = Preferences.getPreferences(FollowUpService.this);
 
         for(Account acc : prefs.getAccounts()) {
-            try {
-                LocalFolder folder = acc.getLocalStore().getFolder("FollowUp");
-
-                if(!folder.exists()) {
-                    folder.create(Folder.FolderType.HOLDS_MESSAGES);
-                }
-
-                List<? extends Message> localMessages = folder.getMessages(null);
-
-                for(Message msg : localMessages) {
-                }
-
-            } catch (MessagingException e) {
-                e.printStackTrace();
-            }
+            handleAccount(acc);
         }
 
         return 0;
+    }
+
+    private void handleAccount(Account acc) {
+        try {
+            Context context = getApplication();
+
+            LocalFolder folder = acc.getLocalStore().getFolder("FollowUp");
+
+            if(!folder.exists()) {
+                folder.create(Folder.FolderType.HOLDS_MESSAGES);
+            }
+
+            List<? extends Message> localMessages = folder.getMessages(null);
+
+            for(Message msg : localMessages) {
+            }
+
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
+            NotificationManager notifyMgr =
+                    (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+            List<FollowUpItem> followUps = getFollowUpItems(acc);
+            Date now = new Date();
+
+            for(FollowUpItem item : followUps) {
+                if(item.getRemindTime().after(now))
+                    continue;
+
+                builder.setSmallIcon(R.drawable.ic_notify_new_mail);
+                builder.setContentTitle(item.getTitle());
+                builder.setContentText(item.getTitle());
+                builder.setWhen(item.getRemindTime().getTime());
+
+                builder.addAction(
+                        R.drawable.ic_action_mark_as_read_dark,
+                        context.getString(R.string.notification_action_mark_as_read),
+                        NotificationActionService.getFollowUpIntent(context, acc));
+
+                Notification notification = builder.build();
+                //TODO: stable ID for FollowUpItem ?
+                notifyMgr.notify(acc.getAccountNumber(), notification);
+            }
+
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private List<FollowUpItem> getFollowUpItems(Account acc) {
+        // TODO: real DataSource for Items
+        ArrayList<FollowUpItem> items = new ArrayList<FollowUpItem>();
+        items.add(new FollowUpItem("Test 1", new Date()));
+        return items;
     }
 }

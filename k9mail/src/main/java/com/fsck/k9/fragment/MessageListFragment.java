@@ -499,6 +499,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         public MessageListHandler(MessageListFragment fragment) {
             mFragment = new WeakReference<MessageListFragment>(fragment);
         }
+
         public void folderLoading(String folder, boolean loading) {
             android.os.Message msg = android.os.Message.obtain(this, ACTION_FOLDER_LOADING,
                     (loading) ? 1 : 0, 0, folder);

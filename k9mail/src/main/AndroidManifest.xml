@@ -204,6 +204,17 @@
         </activity>
 
         <activity
+                android:name=".activity.FollowUpList"
+                android:configChanges="locale"
+                android:launchMode="singleTop"
+                android:uiOptions="splitActionBarWhenNarrow">
+            <intent-filter>
+                <!-- This action is only to allow an entry point for launcher shortcuts -->
+                <action android:name="android.intent.action.MAIN"/>
+            </intent-filter>
+        </activity>
+
+        <activity
             android:name=".activity.MessageList"
             android:configChanges="locale"
             android:launchMode="singleTop"

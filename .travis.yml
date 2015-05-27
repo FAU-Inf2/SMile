@@ -3,4 +3,18 @@ android:
   components:
   - android-21
   - build-tools-21.1.2
-script: "./gradlew assembleDebug"
+env:
+  global:
+  - secure: g4vlG+IARmBRyIyl1eZTx07c3nQXpk/UNXdfmTWxJiuYE1vaOARQNOQ57NssI7HlsT1U0U8Vo8QNqHMg1nRKvgF45gED31ADVygVnhi97djSfrbUABEWUBEjGA3fOImoj3EGvLYpSnYAOYpLyOu8MWZvb2YTk/YI9VzJKwcj07M=
+  - secure: fEX+0n2Lb9XfMBnKR8mdy53GC3kqEJ5M10S2bTFP6k4wLEw34OBXX/JeZBKO++VtoJrLhVe8DPAgLsO+zHJZzSEj7sj5y53GuwdK2tggw3gcGmk1swi2XaQ4dX/VM5jimbN/f0lRhd5Zh9rFvhzeslu5uvx/8gIk5Hv94R7uLOE=
+before_install:
+- openssl aes-256-cbc -K $encrypted_070dcb199898_key -iv $encrypted_070dcb199898_iv
+  -in keys.tar.enc -out keys.tar -d
+- tar xvf keys.tar
+- mv madfau.keystore k9mail/
+script: "./gradlew assemble"
+after_success:
+- mv k9mail/build/outputs/apk/k9mail-release.apk smile-android-$TRAVIS_BRANCH-`git rev-parse
+  HEAD`.apk
+- curl -u $LOGIN -F "apk=@smile-android-$TRAVIS_BRANCH-`git rev-parse HEAD`.apk"
+  -F "project=smile-android" $URL

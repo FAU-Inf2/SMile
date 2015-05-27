@@ -453,12 +453,6 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
             cl.getLogDialog().show();
         }
 
-
-        //Just a workaround for fast access to the IMAPAppendTextWorkaroundActivity
-        Intent myIntent = new Intent(this, IMAPAppendTextWorkaroundActivity.class);
-        startActivity(myIntent);
-
-
     }
 
     private void initializeActionBar() {

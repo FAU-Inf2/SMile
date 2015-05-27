@@ -8,13 +8,14 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
-import com.fsck.k9.R;
 import com.fsck.k9.activity.MessageReference;
 import com.fsck.k9.Account;
 import com.fsck.k9.mail.Folder;
 import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mailstore.LocalFolder;
+
+import de.fau.cs.mad.smile.android.R;
 
 import java.util.ArrayList;
 import java.util.Date;

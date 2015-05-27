@@ -183,6 +183,7 @@ public class Account implements BaseAccount, StoreConfig {
     private boolean mNotifySelfNewMail;
     private String mInboxFolderName;
     private String mDraftsFolderName;
+    private String mSmileStorageFolderName; //TODO
     private String mSentFolderName;
     private String mTrashFolderName;
     private String mArchiveFolderName;
@@ -399,8 +400,9 @@ public class Account implements BaseAccount, StoreConfig {
         mNotifySelfNewMail = prefs.getBoolean(mUuid + ".notifySelfNewMail", true);
         mNotifySync = prefs.getBoolean(mUuid + ".notifyMailCheck", false);
         mDeletePolicy =  DeletePolicy.fromInt(prefs.getInt(mUuid + ".deletePolicy", DeletePolicy.NEVER.setting));
-        mInboxFolderName = prefs.getString(mUuid  + ".inboxFolderName", INBOX);
+        mInboxFolderName = prefs.getString(mUuid + ".inboxFolderName", INBOX);
         mDraftsFolderName = prefs.getString(mUuid  + ".draftsFolderName", "Drafts");
+        mSmileStorageFolderName = prefs.getString(mUuid  + ".smileStorageFolderName", "SmileStorage"); //TODO
         mSentFolderName = prefs.getString(mUuid  + ".sentFolderName", "Sent");
         mTrashFolderName = prefs.getString(mUuid  + ".trashFolderName", "Trash");
         mArchiveFolderName = prefs.getString(mUuid  + ".archiveFolderName", "Archive");
@@ -517,6 +519,7 @@ public class Account implements BaseAccount, StoreConfig {
         editor.remove(mUuid + ".notifySelfNewMail");
         editor.remove(mUuid + ".deletePolicy");
         editor.remove(mUuid + ".draftsFolderName");
+        editor.remove(mUuid + ".smileStorageFolderName");
         editor.remove(mUuid + ".sentFolderName");
         editor.remove(mUuid + ".trashFolderName");
         editor.remove(mUuid + ".archiveFolderName");
@@ -687,6 +690,7 @@ public class Account implements BaseAccount, StoreConfig {
         editor.putInt(mUuid + ".deletePolicy", mDeletePolicy.setting);
         editor.putString(mUuid + ".inboxFolderName", mInboxFolderName);
         editor.putString(mUuid + ".draftsFolderName", mDraftsFolderName);
+        editor.putString(mUuid + ".smileStorageFolderName", mSmileStorageFolderName);
         editor.putString(mUuid + ".sentFolderName", mSentFolderName);
         editor.putString(mUuid + ".trashFolderName", mTrashFolderName);
         editor.putString(mUuid + ".archiveFolderName", mArchiveFolderName);
@@ -1046,6 +1050,7 @@ public class Account implements BaseAccount, StoreConfig {
         return (folderName != null && (folderName.equalsIgnoreCase(getInboxFolderName()) ||
                 folderName.equals(getTrashFolderName()) ||
                 folderName.equals(getDraftsFolderName()) ||
+                folderName.equals(getSmileStorageFolderName()) ||
                 folderName.equals(getArchiveFolderName()) ||
                 folderName.equals(getSpamFolderName()) ||
                 folderName.equals(getOutboxFolderName()) ||
@@ -1057,8 +1062,16 @@ public class Account implements BaseAccount, StoreConfig {
         return mDraftsFolderName;
     }
 
+    public synchronized String getSmileStorageFolderName() {
+        return mSmileStorageFolderName;
+    }
+
     public synchronized void setDraftsFolderName(String name) {
         mDraftsFolderName = name;
+    }
+
+    public synchronized void setSmileStorageFolderName(String name) {
+        mSmileStorageFolderName = name;
     }
 
     /**
@@ -1067,6 +1080,14 @@ public class Account implements BaseAccount, StoreConfig {
      */
     public synchronized boolean hasDraftsFolder() {
         return !K9.FOLDER_NONE.equalsIgnoreCase(mDraftsFolderName);
+    }
+
+    /**
+     * Checks if this account has a smilestorage folder set.
+     * @return true if account has a smilestorage folder set.
+     */
+    public synchronized boolean hasSmileStorageFolder() {
+        return !K9.FOLDER_NONE.equalsIgnoreCase(mSmileStorageFolderName); //TODO???
     }
 
     public synchronized String getSentFolderName() {
@@ -1790,6 +1811,7 @@ public class Account implements BaseAccount, StoreConfig {
     public void excludeSpecialFolders(LocalSearch search) {
         excludeSpecialFolder(search, getTrashFolderName());
         excludeSpecialFolder(search, getDraftsFolderName());
+        excludeSpecialFolder(search, getSmileStorageFolderName()); //TODO: special folder?
         excludeSpecialFolder(search, getSpamFolderName());
         excludeSpecialFolder(search, getOutboxFolderName());
         excludeSpecialFolder(search, getSentFolderName());

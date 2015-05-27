@@ -11,7 +11,7 @@ import android.content.SharedPreferences;
 
 import com.fsck.k9.EmailAddressValidator;
 import com.fsck.k9.K9;
-import com.fsck.k9.R;
+import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.preferences.Settings.*;
 
 public class IdentitySettings {

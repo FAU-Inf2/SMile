@@ -7,7 +7,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.support.v4.content.FileProvider;
 
-import com.fsck.k9.BuildConfig;
+import de.fau.cs.mad.smile.android.BuildConfig;
 
 
 public class K9FileProvider extends FileProvider {

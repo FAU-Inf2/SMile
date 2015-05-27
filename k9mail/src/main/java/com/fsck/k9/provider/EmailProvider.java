@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.fsck.k9.Account;
-import com.fsck.k9.BuildConfig;
+import de.fau.cs.mad.smile.android.BuildConfig;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.cache.EmailProviderCacheCursor;
 import com.fsck.k9.helper.Utility;

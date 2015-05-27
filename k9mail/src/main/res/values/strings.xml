@@ -5,14 +5,14 @@
     <!-- This should make it easier for forks to change the branding -->
 
     <!-- Used in AndroidManifest.xml -->
-    <string name="app_name">K-9 Mail</string>
-    <string name="beta_app_name">K-9 Mail BETA</string>
+    <string name="app_name">SMile</string>
+    <string name="beta_app_name">SMile BETA</string>
 
     <string name="shortcuts_title">K-9 Accounts</string>
     <string name="unread_widget_label">K-9 Unread</string>
 
-    <string name="remote_control_label">K-9 Mail remote control</string>
-    <string name="remote_control_desc">Allows this application to control K-9 Mail activities and settings.</string>
+    <string name="remote_control_label">SMile remote control</string>
+    <string name="remote_control_desc">Allows this application to control SMile activities and settings.</string>
 
 
     <!-- Used in the about dialog -->
@@ -22,10 +22,10 @@
 
 
     <!-- Welcome message -->
-    <string name="welcome_message_title">Welcome to K-9 Mail</string>
+    <string name="welcome_message_title">Welcome to SMile</string>
     <string name="accounts_welcome"><![CDATA[
 <p>
-K-9 Mail is a powerful free email client for Android.
+SMile is a powerful free email client for Android.
 </p><p>
 Its improved features include:
 </p>
@@ -56,11 +56,11 @@ Please submit bug reports, contribute new features and ask questions at
 
 
     <!-- Default signature -->
-    <string name="default_signature">-- \nSent from my Android device with K-9 Mail. Please excuse my brevity.</string>
+    <string name="default_signature">-- \nSent from my Android device with SMile. Please excuse my brevity.</string>
 
 
     <!-- General strings that include the app name -->
-    <string name="account_delete_dlg_instructions_fmt">The account \"<xliff:g id="account">%s</xliff:g>\" will be removed from K-9 Mail.</string>
+    <string name="account_delete_dlg_instructions_fmt">The account \"<xliff:g id="account">%s</xliff:g>\" will be removed from SMile.</string>
     <string name="account_recreate_dlg_instructions_fmt">All local data for \"<xliff:g id="account">%s</xliff:g>\" will be removed. Account settings will be retained.</string>
     <string name="account_clear_dlg_instructions_fmt">Local copies of messages in \"<xliff:g id="account">%s</xliff:g>\" will be removed. Account settings will be retained.</string>
 

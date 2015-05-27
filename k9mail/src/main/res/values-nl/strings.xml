@@ -3,21 +3,21 @@
   <!--=== App-specific strings =============================================================-->
   <!--This should make it easier for forks to change the branding-->
   <!--Used in AndroidManifest.xml-->
-  <string name="app_name">K-9 Mail</string>
-  <string name="beta_app_name">K-9 Mail BETA</string>
+  <string name="app_name">SMile</string>
+  <string name="beta_app_name">SMile BETA</string>
   <string name="shortcuts_title">K-9 Accounts</string>
   <string name="unread_widget_label">K-9 Ongelezen</string>
-  <string name="remote_control_label">K-9 Mail bediening op afstand</string>
-  <string name="remote_control_desc">Sta deze applicatie toe om activiteiten en instellingen van K-9 Mail aan te passen.</string>
+  <string name="remote_control_label">SMile bediening op afstand</string>
+  <string name="remote_control_desc">Sta deze applicatie toe om activiteiten en instellingen van SMile aan te passen.</string>
   <!--Used in the about dialog-->
   <string name="app_authors">Google, The K-9 Dog Walkers.</string>
   <string name="app_copyright_fmt">Copyright 2008-<xliff:g>%s</xliff:g> The K-9 Dog Walkers. Portions Copyright 2006-<xliff:g>%s</xliff:g> the Android Open Source Project.</string>
   <string name="app_license">Licensed under the Apache License, Version 2.0.</string>
   <!--Welcome message-->
-  <string name="welcome_message_title">Welkom bij K-9 Mail</string>
+  <string name="welcome_message_title">Welkom bij SMile</string>
   <string name="accounts_welcome"><![CDATA[
 <p>
-K-9 Mail is een open source mail cliënt voor Android, gebaseerd op de standaard Android Mail cliënt.
+SMile is een open source mail cliënt voor Android, gebaseerd op de standaard Android Mail cliënt.
 </p><p>
 Toevoegingen en verbeteringen omvatten:
 </p>
@@ -45,11 +45,11 @@ Graag foutrapporten, bijdrage nieuwe functies en vragen stellen op
 </p>
     ]]></string>
   <!--Default signature-->
-  <string name="default_signature">-- \nVerstuurd vanaf mijn Android apparaat met K-9 Mail. Excuseer mijn beknoptheid.</string>
+  <string name="default_signature">-- \nVerstuurd vanaf mijn Android apparaat met SMile. Excuseer mijn beknoptheid.</string>
   <!--General strings that include the app name-->
-  <string name="account_delete_dlg_instructions_fmt">De account \"<xliff:g id="account">%s</xliff:g>\" wordt verwijderd van K-9 Mail.</string>
-  <string name="account_recreate_dlg_instructions_fmt">Alle data voor \"<xliff:g id="account">%s</xliff:g>\" wordt verwijderd van K-9 Mail, maar account instellingen blijven behouden.</string>
-  <string name="account_clear_dlg_instructions_fmt">Alle berichten in \"<xliff:g id="account">%s</xliff:g>\" wordt verwijderd van  K-9 Mail, maar account instellingen blijven behouden.</string>
+  <string name="account_delete_dlg_instructions_fmt">De account \"<xliff:g id="account">%s</xliff:g>\" wordt verwijderd van SMile.</string>
+  <string name="account_recreate_dlg_instructions_fmt">Alle data voor \"<xliff:g id="account">%s</xliff:g>\" wordt verwijderd van SMile, maar account instellingen blijven behouden.</string>
+  <string name="account_clear_dlg_instructions_fmt">Alle berichten in \"<xliff:g id="account">%s</xliff:g>\" wordt verwijderd van  SMile, maar account instellingen blijven behouden.</string>
   <!--=== App Store-specific strings =======================================================-->
   <string name="import_dialog_error_message">Installeer een bestandsbeheer-app om verder te gaan met deze import.</string>
   <string name="open_market">Open Play Store</string>

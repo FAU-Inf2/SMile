@@ -8,7 +8,7 @@
   <string name="shortcuts_title">Почтовые ящики K-9</string>
   <string name="unread_widget_label">Не прочитано</string>
   <string name="remote_control_label">Удалённое управление</string>
-  <string name="remote_control_desc">Разрешить удалённое управление настройками и действиями K-9 Mail</string>
+  <string name="remote_control_desc">Разрешить удалённое управление настройками и действиями SMile</string>
   <!--Used in the about dialog-->
   <string name="app_authors">Google, The K-9 Dog Walkers.</string>
   <string name="app_copyright_fmt">Copyright 2008-<xliff:g>%s</xliff:g> The K-9 Dog Walkers. Portions Copyright 2006-<xliff:g>%s</xliff:g> the Android Open Source Project.</string>
@@ -17,7 +17,7 @@
   <string name="welcome_message_title">Добро пожаловать!</string>
   <string name="accounts_welcome"><![CDATA[
 <p>
-K-9 Mail — почтовый клиент для Android.
+SMile — почтовый клиент для Android.
 </p><p>
 Возможности:
 </p>
@@ -38,14 +38,14 @@ K-9 Mail — почтовый клиент для Android.
   <li>…и многое другое!</li>
 </ul>
 <p>
-Отметим, что K-9 Mail неполностью совместим с MS Exchange и не поддерживает бесплатные ящики Hotmail
+Отметим, что SMile неполностью совместим с MS Exchange и не поддерживает бесплатные ящики Hotmail
 </p><p>
 Вопросы, сообщения об ошибках и участие в разработке на
 <a href=\"http://k9mail.googlecode.com/\">http://k9mail.googlecode.com/</a>.
 </p>
     ]]></string>
   <!--Default signature-->
-  <string name="default_signature">-- \nПростите за краткость, создано в K-9 Mail.</string>
+  <string name="default_signature">-- \nПростите за краткость, создано в SMile.</string>
   <!--General strings that include the app name-->
   <string name="account_delete_dlg_instructions_fmt">Ящик \"<xliff:g id="account">%s</xliff:g>\" будет удалён из приложения</string>
   <string name="account_recreate_dlg_instructions_fmt">Все данные ящика \"<xliff:g id="account">%s</xliff:g>\" будут удалены, настройки сохранятся</string>
@@ -64,7 +64,7 @@ K-9 Mail — почтовый клиент для Android.
   <string name="read_messages_desc">Разрешить программе чтение почты</string>
   <string name="delete_messages_label">Удаление почты</string>
   <string name="delete_messages_desc">Разрешить программе удаление почты</string>
-  <string name="about_title_fmt">K-9 Mail Team <xliff:g id="app_name">%s</xliff:g></string>
+  <string name="about_title_fmt">SMile Team <xliff:g id="app_name">%s</xliff:g></string>
   <string name="accounts_title">Ящики</string>
   <string name="folders_title">Папки</string>
   <string name="advanced">Дополнительно</string>

@@ -1,6 +1,6 @@
 package com.fsck.k9.activity;
 
-import com.fsck.k9.R;
+import de.fau.cs.mad.smile.android.R;
 import android.app.AlertDialog;
 import android.content.*;
 import android.view.LayoutInflater;

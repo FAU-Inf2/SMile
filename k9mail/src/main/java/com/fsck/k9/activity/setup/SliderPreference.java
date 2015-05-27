@@ -32,7 +32,8 @@ import android.preference.DialogPreference;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.SeekBar;
-import com.fsck.k9.*;
+
+import de.fau.cs.mad.smile.android.R;
 
 
 /**

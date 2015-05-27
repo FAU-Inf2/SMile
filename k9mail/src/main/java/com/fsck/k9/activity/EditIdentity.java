@@ -9,7 +9,7 @@ import android.widget.LinearLayout;
 import com.fsck.k9.Account;
 import com.fsck.k9.Identity;
 import com.fsck.k9.Preferences;
-import com.fsck.k9.R;
+import de.fau.cs.mad.smile.android.R;
 import java.util.List;
 
 public class EditIdentity extends K9Activity {

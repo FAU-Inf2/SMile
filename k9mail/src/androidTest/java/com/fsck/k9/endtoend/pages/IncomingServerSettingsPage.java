@@ -1,6 +1,6 @@
 package com.fsck.k9.endtoend.pages;
 
-import com.fsck.k9.R;
+import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.mail.ConnectionSecurity;
 
 import static com.fsck.k9.activity.setup.ConnectionSecurityHolderMatcher.is;

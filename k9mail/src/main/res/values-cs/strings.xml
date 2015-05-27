@@ -3,18 +3,18 @@
   <!--=== App-specific strings =============================================================-->
   <!--This should make it easier for forks to change the branding-->
   <!--Used in AndroidManifest.xml-->
-  <string name="app_name">K-9 Mail</string>
-  <string name="beta_app_name">K-9 Mail BETA</string>
+  <string name="app_name">SMile</string>
+  <string name="beta_app_name">SMile BETA</string>
   <string name="shortcuts_title">Účty K-9</string>
   <string name="unread_widget_label">K-9 Nepřečtená</string>
-  <string name="remote_control_label">Dálkové ovládání pošty K-9 Mail</string>
-  <string name="remote_control_desc">Povolit této aplikaci ovládat aktivity a nastavení pošty K-9 Mail.</string>
+  <string name="remote_control_label">Dálkové ovládání pošty SMile</string>
+  <string name="remote_control_desc">Povolit této aplikaci ovládat aktivity a nastavení pošty SMile.</string>
   <!--Used in the about dialog-->
   <string name="app_authors">Google, The K-9 Dog Walkers.</string>
   <string name="app_copyright_fmt">Copyright 2008-<xliff:g>%s</xliff:g> The K-9 Dog Walkers. Portions Copyright 2006-<xliff:g>%s</xliff:g> the Android Open Source Project.</string>
   <string name="app_license">Licencované pod Apache Licencí, Version 2.0.</string>
   <!--Welcome message-->
-  <string name="welcome_message_title">Vítejte v K-9 Mail</string>
+  <string name="welcome_message_title">Vítejte v SMile</string>
   <string name="accounts_welcome"><![CDATA[
 <p>
 K-9 je open source poštovní klient pro Android původně založený na standardním klientovi E-mail v Androidu.
@@ -45,11 +45,11 @@ Posílejte prosím chybová hlášení, přispívejte novými funkcemi a ptejte 
 </p>
     ]]></string>
   <!--Default signature-->
-  <string name="default_signature">-- \nOdesláno aplikací K-9 Mail ze systému Android. Omluvte prosím moji stručnost.</string>
+  <string name="default_signature">-- \nOdesláno aplikací SMile ze systému Android. Omluvte prosím moji stručnost.</string>
   <!--General strings that include the app name-->
-  <string name="account_delete_dlg_instructions_fmt">Účet \"<xliff:g id="account">%s</xliff:g>\" bude odstraněn z K-9 Mail.</string>
-  <string name="account_recreate_dlg_instructions_fmt">Všechna místní data účtu \"<xliff:g id="account">%s</xliff:g>\" budou z K-9 Mail odstraněna, ale nastavení účtu bude zachováno.</string>
-  <string name="account_clear_dlg_instructions_fmt">Místní zprávy v účtu \"<xliff:g id="account">%s</xliff:g>\" budou z K-9 Mail odstraněny, ale nastavení účtu bude zachováno.</string>
+  <string name="account_delete_dlg_instructions_fmt">Účet \"<xliff:g id="account">%s</xliff:g>\" bude odstraněn z SMile.</string>
+  <string name="account_recreate_dlg_instructions_fmt">Všechna místní data účtu \"<xliff:g id="account">%s</xliff:g>\" budou z SMile odstraněna, ale nastavení účtu bude zachováno.</string>
+  <string name="account_clear_dlg_instructions_fmt">Místní zprávy v účtu \"<xliff:g id="account">%s</xliff:g>\" budou z SMile odstraněny, ale nastavení účtu bude zachováno.</string>
   <!--=== App Store-specific strings =======================================================-->
   <string name="import_dialog_error_message">Prosím nainstalujte nějaký file manager pro pokračování v importu.</string>
   <string name="open_market">Otevřít obchod Google Play</string>

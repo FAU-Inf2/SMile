@@ -2,8 +2,8 @@
 <manifest
     package="de.fau.cs.mad.smile.android"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:versionCode="23060"
-    android:versionName="5.106">
+    android:versionCode="1"
+    android:versionName="0.1">
 
     <uses-feature
         android:name="android.hardware.touchscreen"

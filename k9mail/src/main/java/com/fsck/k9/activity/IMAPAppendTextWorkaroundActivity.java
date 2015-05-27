@@ -7,7 +7,7 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.fsck.k9.Account;
-import com.fsck.k9.R;
+import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.MessagingException;

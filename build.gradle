@@ -1,6 +1,7 @@
 buildscript {
     repositories {
         jcenter()
+        mavenCentral()
     }
 
     dependencies {
@@ -10,7 +11,9 @@ buildscript {
     }
 
 }
-
+plugins {
+    id 'java'
+}
 plugins {
     id "com.github.hierynomus.license" version "0.11.0"
 }

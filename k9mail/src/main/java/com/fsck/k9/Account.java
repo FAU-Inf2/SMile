@@ -19,7 +19,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Color;
-import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.util.Log;
 
@@ -47,6 +46,8 @@ import com.fsck.k9.search.SearchSpecification.SearchField;
 import com.fsck.k9.mail.ssl.LocalKeyStore;
 import com.fsck.k9.view.ColorChip;
 import com.larswerkman.colorpicker.ColorPicker;
+
+import de.fau.cs.mad.smile.android.R;
 
 import static com.fsck.k9.Preferences.getEnumStringPref;
 

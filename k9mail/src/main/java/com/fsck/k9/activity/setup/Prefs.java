@@ -26,7 +26,7 @@ import com.fsck.k9.K9.NotificationHideSubject;
 import com.fsck.k9.K9.NotificationQuickDelete;
 import com.fsck.k9.K9.SplitViewMode;
 import com.fsck.k9.Preferences;
-import com.fsck.k9.R;
+import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.activity.ColorPickerDialog;
 import com.fsck.k9.activity.K9PreferenceActivity;
 import com.fsck.k9.controller.MessagingController;

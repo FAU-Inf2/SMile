@@ -14,7 +14,7 @@ import android.widget.LinearLayout;
 import com.fsck.k9.Account;
 import com.fsck.k9.Account.ShowPictures;
 import com.fsck.k9.K9;
-import com.fsck.k9.R;
+import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.helper.Contacts;
 import com.fsck.k9.mail.Address;
 import com.fsck.k9.mail.Flag;

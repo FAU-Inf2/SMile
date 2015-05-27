@@ -3,21 +3,21 @@
   <!--=== App-specific strings =============================================================-->
   <!--This should make it easier for forks to change the branding-->
   <!--Used in AndroidManifest.xml-->
-  <string name="app_name">K-9 Mail</string>
-  <string name="beta_app_name">K-9 Mail BETA</string>
+  <string name="app_name">SMile</string>
+  <string name="beta_app_name">SMile BETA</string>
   <string name="shortcuts_title">Contas K-9</string>
   <string name="unread_widget_label">K-9 non lidas</string>
-  <string name="remote_control_label">Control remoto de K-9 Mail</string>
-  <string name="remote_control_desc">Permitir a este aplicativo controlar as actividades e os axustes de K-9 Mail.</string>
+  <string name="remote_control_label">Control remoto de SMile</string>
+  <string name="remote_control_desc">Permitir a este aplicativo controlar as actividades e os axustes de SMile.</string>
   <!--Used in the about dialog-->
   <string name="app_authors">Google, The K-9 Dog Walkers.</string>
   <string name="app_copyright_fmt">Copyright 2008-<xliff:g>%s</xliff:g> The K-9 Dog Walkers. Portions Copyright 2006-<xliff:g>%s</xliff:g> the Android Open Source Project.</string>
   <string name="app_license">Baixo licenza Apache, versión 2.0.</string>
   <!--Welcome message-->
-  <string name="welcome_message_title">Benvido/a a K-9 Mail</string>
+  <string name="welcome_message_title">Benvido/a a SMile</string>
   <string name="accounts_welcome"><![CDATA[
 <p>
-K-9 Mail é un poderoso cliente de correo electrónico para Android.
+SMile é un poderoso cliente de correo electrónico para Android.
 </p><p>
 Dispón das seguintes característias ou funcionalidades:
 </p>
@@ -45,7 +45,7 @@ Envía informes de erro, contribúe con novas funcionalidades e pregunta o que d
     ]]></string>
   <!--Default signature-->
   <!--General strings that include the app name-->
-  <string name="account_delete_dlg_instructions_fmt">A conta \"<xliff:g id="account">%s</xliff:g>\" será eliminada do K-9 Mail.</string>
+  <string name="account_delete_dlg_instructions_fmt">A conta \"<xliff:g id="account">%s</xliff:g>\" será eliminada do SMile.</string>
   <string name="account_recreate_dlg_instructions_fmt">Todos os datos locais de \"<xliff:g id="account">%s</xliff:g>\" serán eliminados. Os axustes da conta manteranse.</string>
   <string name="account_clear_dlg_instructions_fmt">As copias locais das mensaxes de \"<xliff:g id="account">%s</xliff:g>\" serán eliminadas. Manteranse os axustes da conta.</string>
   <!--=== App Store-specific strings =======================================================-->

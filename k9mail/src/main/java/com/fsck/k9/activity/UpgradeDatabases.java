@@ -3,7 +3,7 @@ package com.fsck.k9.activity;
 import com.fsck.k9.Account;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
-import com.fsck.k9.R;
+import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.mail.Store;
 import com.fsck.k9.service.DatabaseUpgradeService;
 

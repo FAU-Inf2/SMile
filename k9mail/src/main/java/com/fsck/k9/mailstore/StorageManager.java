@@ -18,7 +18,7 @@ import android.os.Environment;
 import android.util.Log;
 
 import com.fsck.k9.K9;
-import com.fsck.k9.R;
+import de.fau.cs.mad.smile.android.R;
 
 /**
  * Manager for different {@link StorageProvider} -classes that abstract access

@@ -3,18 +3,18 @@
   <!--=== App-specific strings =============================================================-->
   <!--This should make it easier for forks to change the branding-->
   <!--Used in AndroidManifest.xml-->
-  <string name="app_name">K-9 Mail</string>
-  <string name="beta_app_name">K-9 Mail BETA</string>
+  <string name="app_name">SMile</string>
+  <string name="beta_app_name">SMile BETA</string>
   <string name="shortcuts_title">Comptes K-9</string>
   <string name="unread_widget_label">K-9 no llegits</string>
-  <string name="remote_control_label">Control remot del Correu K-9 Mail</string>
-  <string name="remote_control_desc">Permet a aquesta aplicació controlar les activitats i la configuració de K-9 Mail.</string>
+  <string name="remote_control_label">Control remot del Correu SMile</string>
+  <string name="remote_control_desc">Permet a aquesta aplicació controlar les activitats i la configuració de SMile.</string>
   <!--Used in the about dialog-->
   <string name="app_authors">Google, The K-9 Dog Walkers.</string>
   <string name="app_copyright_fmt">Copyright 2008-<xliff:g>%s</xliff:g> The K-9 Dog Walkers. Porcions de Copyright 2006-<xliff:g>%s</xliff:g> Projecte de codi obert d\'Android.</string>
   <string name="app_license">Llicenciat sota Llicència Apache, Versió 2.0.</string>
   <!--Welcome message-->
-  <string name="welcome_message_title">Us donem la benvinguda a K-9 Mail</string>
+  <string name="welcome_message_title">Us donem la benvinguda a SMile</string>
   <string name="accounts_welcome"><![CDATA[
 <p>
 El K-9 és un client de codi obert per Android, originalment basat en l\'estàndard de client de Correu d\'Android.
@@ -46,9 +46,9 @@ Si us plau, envia\'ns els errors, contribueix a millorar-lo a
     ]]></string>
   <!--Default signature-->
   <!--General strings that include the app name-->
-  <string name="account_delete_dlg_instructions_fmt">El compte \"<xliff:g id="account">%s</xliff:g>\" serà esborrat de K-9 Mail.</string>
-  <string name="account_recreate_dlg_instructions_fmt">Totes les dades de \"<xliff:g id="account">%s</xliff:g>\" seran esborrades de K-9 Mail, però la configuració del compte romandrà.</string>
-  <string name="account_clear_dlg_instructions_fmt">Tots els missatges a \"<xliff:g id="account">%s</xliff:g>\" seran esborrats de K-9 Mail, però la configuració del compte romandrà.</string>
+  <string name="account_delete_dlg_instructions_fmt">El compte \"<xliff:g id="account">%s</xliff:g>\" serà esborrat de SMile.</string>
+  <string name="account_recreate_dlg_instructions_fmt">Totes les dades de \"<xliff:g id="account">%s</xliff:g>\" seran esborrades de SMile, però la configuració del compte romandrà.</string>
+  <string name="account_clear_dlg_instructions_fmt">Tots els missatges a \"<xliff:g id="account">%s</xliff:g>\" seran esborrats de SMile, però la configuració del compte romandrà.</string>
   <!--=== App Store-specific strings =======================================================-->
   <string name="import_dialog_error_message">No s\'a trobat cap aplicació per realitzar la importació. Instal·leu un gestor d\'arxius des de Google Play Store.</string>
   <string name="open_market">Obre la Play Store</string>

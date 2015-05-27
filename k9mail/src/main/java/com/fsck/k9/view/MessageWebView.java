@@ -9,7 +9,7 @@ import android.webkit.WebSettings;
 import android.widget.Toast;
 
 import com.fsck.k9.K9;
-import com.fsck.k9.R;
+import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.helper.HtmlConverter;
 import com.fsck.k9.helper.HtmlSanitizer;
 

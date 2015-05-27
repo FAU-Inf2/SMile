@@ -452,6 +452,7 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
         if (cl.isFirstRun()) {
             cl.getLogDialog().show();
         }
+
     }
 
     private void initializeActionBar() {

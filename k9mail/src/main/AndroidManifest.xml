@@ -290,7 +290,7 @@
             android:label="@string/upgrade_databases_title"/>
 
         <activity
-            android:name=".activity.IMAPAppendTextWorkaroundActivity"
+            android:name="com.fsck.k9.activity.IMAPAppendTextWorkaroundActivity"
             android:label="IMAPAppendTextWorkaround"/>
 
         <receiver

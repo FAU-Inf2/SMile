@@ -52,7 +52,6 @@ public class IMAPAppendText extends K9Activity {
 
     public static final long INVALID_MESSAGE_ID = -1;
     private static final String PENDING_COMMAND_APPEND = "com.fsck.k9.MessagingController.append";
-    private static final String PENDING_COMMAND_EXPUNGE = "com.fsck.k9.MessagingController.expunge";
     private long timestamp = 0;
     private final static String MESSAGE_ID_MAGIC_STRING = "SmileStorage";
 

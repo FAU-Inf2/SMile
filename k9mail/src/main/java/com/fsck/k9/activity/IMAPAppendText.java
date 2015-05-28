@@ -1,10 +1,13 @@
 package com.fsck.k9.activity;
 
+import android.support.annotation.NonNull;
+
 import com.fsck.k9.Account;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.controller.MessagingListener;
 import com.fsck.k9.mail.Body;
 import com.fsck.k9.mail.FetchProfile;
+import com.fsck.k9.mail.Flag;
 import com.fsck.k9.mail.Folder;
 import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.MessagingException;
@@ -18,9 +21,13 @@ import com.fsck.k9.mailstore.LocalStore;
 import org.apache.commons.io.IOUtils;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -40,10 +47,27 @@ public class IMAPAppendText extends K9Activity {
     private MessagingController messagingController;
 
     private long timestamp = 0;
+    private boolean deleteOldContent = true;
     private final static String MESSAGE_ID_MAGIC_STRING = "SmileStorage";
 
     public IMAPAppendText(Account account) {
         this.mAccount = account;
+    }
+
+    /**
+     *
+     * @param deleteOldContent if set, all old versions will be deleted from the folder
+     */
+    public void setDeleteOldContent(boolean deleteOldContent){
+        this.deleteOldContent = deleteOldContent;
+    }
+
+    /**
+     * @param folder is the name of the new folder in which Smile should store its files
+     */
+    public void setNewFolder(String folder) {
+        //sets new folder in which the content has to be stored
+        mAccount.setSmileStorageFolderName(folder);
     }
 
     /**
@@ -85,6 +109,96 @@ public class IMAPAppendText extends K9Activity {
         }
     }
 
+    private LocalMessage getLocalMessageByMessageId(String messageId) {
+        try{
+            LocalStore localStore = mAccount.getLocalStore();
+            LocalFolder localFolder = localStore.getFolder(mAccount.getSmileStorageFolderName());
+            localFolder.open(Folder.OPEN_MODE_RW);
+            LocalMessage localMessage;
+
+            int nMessages = localFolder.getMessageCount();
+            if (nMessages == 0) {
+                // no messages stored
+                return null;
+            } else if(nMessages == 1){
+                List<? extends LocalMessage> messages = localFolder.getMessages(null, false);
+                localMessage = messages.get(0);
+                if (!localMessage.getMessageId().equals(messageId))
+                    return null;
+            } else {
+                //more than one, find message id
+                List<? extends LocalMessage> messages = localFolder.getMessages(null, false);
+                localMessage = null;
+                for (LocalMessage msg : messages) {
+                    try {
+                        if (msg.getMessageId().equals(messageId)) {
+                            localMessage = msg;
+                            break;
+                        }
+                    } catch (Exception e) {
+                        //getMessageId may return Null if no MessageId is set -- ignore message
+                        continue;
+                    }
+                }
+            }
+            FetchProfile fp = new FetchProfile();
+            fp.add(FetchProfile.Item.ENVELOPE);
+            fp.add(FetchProfile.Item.BODY);
+            localFolder.fetch(Collections.singletonList(localMessage), fp, null);
+            localFolder.close();
+
+            return localMessage;
+
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private LocalMessage getNewestMessage() {
+        //first synchronize server and local storage
+        synchronizeFolder();
+
+        try{
+            LocalStore localStore = mAccount.getLocalStore();
+            LocalFolder localFolder = localStore.getFolder(mAccount.getSmileStorageFolderName());
+            localFolder.open(Folder.OPEN_MODE_RW);
+            LocalMessage localMessage;
+            int nMessages = localFolder.getMessageCount();
+            if (nMessages == 0) {
+                // no messages stored
+                return null;
+            } else if(nMessages == 1){
+                List<? extends LocalMessage> messages = localFolder.getMessages(null, false);
+                localMessage = messages.get(0);
+            } else {
+                //more than one, find newest
+                List<? extends LocalMessage> messages = localFolder.getMessages(null, false);
+                localMessage = messages.get(0);
+                for (LocalMessage msg : messages) {
+                    try {
+                        if (Long.parseLong(msg.getMessageId().replace(MESSAGE_ID_MAGIC_STRING, "")) >
+                                Long.parseLong(localMessage.getMessageId().replace(MESSAGE_ID_MAGIC_STRING, ""))) {
+                            localMessage = msg;
+                        }
+                    } catch (Exception e) {
+                        continue;
+                    }
+
+                }
+            }
+            FetchProfile fp = new FetchProfile();
+            fp.add(FetchProfile.Item.ENVELOPE);
+            fp.add(FetchProfile.Item.BODY);
+            localFolder.fetch(Collections.singletonList(localMessage), fp, null);
+            localFolder.close();
+
+            return localMessage;
+
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     private void synchronizeFolder(){
         if(messagingController == null)
             messagingController = MessagingController.getInstance(getApplication());
@@ -108,86 +222,6 @@ public class IMAPAppendText extends K9Activity {
             //wait for countdown -- suspend after 1s
             latch.await(1000, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
-        }
-    }
-
-    private LocalMessage getLocalMessageByMessageId(String messageId) {
-        try{
-            LocalStore localStore = mAccount.getLocalStore();
-            LocalFolder localFolder = localStore.getFolder(mAccount.getSmileStorageFolderName());
-            localFolder.open(Folder.OPEN_MODE_RW);
-            LocalMessage localMessage;
-
-            int nMessages = localFolder.getMessageCount();
-            if (nMessages == 0) {
-                // no messages stored
-                return null;
-            } else if(nMessages == 1){
-                List<? extends LocalMessage> messages = localFolder.getMessages(null, false);
-                localMessage = messages.get(0);
-                if (!localMessage.getMessageId().equals(messageId))
-                    return null;
-            } else {
-                //more than one, find message id
-                List<? extends LocalMessage> messages = localFolder.getMessages(null, false);
-                localMessage = null;
-                for (LocalMessage msg : messages) {
-                    if (msg.getMessageId().equals(messageId)) {
-                        localMessage = msg;
-                        break;
-                    }
-                }
-            }
-            FetchProfile fp = new FetchProfile();
-            fp.add(FetchProfile.Item.ENVELOPE);
-            fp.add(FetchProfile.Item.BODY);
-            localFolder.fetch(Collections.singletonList(localMessage), fp, null);
-            localFolder.close();
-
-            return localMessage;
-
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    private LocalMessage getNewestMessage() {
-        //TODO: Update localStore first?
-        synchronizeFolder(); //TODO: Listener
-
-        try{
-            LocalStore localStore = mAccount.getLocalStore();
-            LocalFolder localFolder = localStore.getFolder(mAccount.getSmileStorageFolderName());
-            localFolder.open(Folder.OPEN_MODE_RW);
-            LocalMessage localMessage;
-            int nMessages = localFolder.getMessageCount();
-            if (nMessages == 0) {
-                // no messages stored
-                return null;
-            } else if(nMessages == 1){
-                List<? extends LocalMessage> messages = localFolder.getMessages(null, false);
-                localMessage = messages.get(0);
-            } else {
-                //more than one, find newest
-                List<? extends LocalMessage> messages = localFolder.getMessages(null, false);
-                localMessage = messages.get(0);
-                for (LocalMessage msg : messages) {
-                    if (Long.parseLong(msg.getMessageId().replace(MESSAGE_ID_MAGIC_STRING, "")) >
-                            Long.parseLong(localMessage.getMessageId().replace(MESSAGE_ID_MAGIC_STRING, ""))) {
-                        localMessage = msg;
-                    }
-                }
-            }
-            FetchProfile fp = new FetchProfile();
-            fp.add(FetchProfile.Item.ENVELOPE);
-            fp.add(FetchProfile.Item.BODY);
-            localFolder.fetch(Collections.singletonList(localMessage), fp, null);
-            localFolder.close();
-
-            return localMessage;
-
-        } catch (Exception e) {
-            return null;
         }
     }
 
@@ -238,14 +272,74 @@ public class IMAPAppendText extends K9Activity {
         messagingController.saveSmileStorageMessage(mAccount, mimeMessage);
         //synchronize folder
         messagingController.synchronizeMailbox(mAccount, mAccount.getSmileStorageFolderName(), null, null);
+        //delete old messages
+        if(deleteOldContent)
+            deleteOldMessages();
     }
 
-    /**
-     * @param folder is the name of the new folder in which Smile should store its files
-     */
-    public void setNewFolder(String folder) {
-        //sets new folder in which the content has to be stored
-        mAccount.setSmileStorageFolderName(folder);
-    }
+    private void deleteOldMessages() {
+        try {
+            LocalStore localStore = mAccount.getLocalStore();
+            LocalFolder localFolder = localStore.getFolder(mAccount.getSmileStorageFolderName());
+            localFolder.open(Folder.OPEN_MODE_RW);
+            int nMessages = localFolder.getMessageCount();
+            if (nMessages == 0) {
+                // no messages stored, normally this should not happen
+                return;
+            } else if(nMessages == 1){
+                List<? extends LocalMessage> messages = localFolder.getMessages(null, false);
+                try {
+                if (messages.get(0).getMessageId().equals(MESSAGE_ID_MAGIC_STRING+String.valueOf(timestamp)))
+                    return;
 
+                } catch (Exception e) {
+                    //getMessageId may return Null if no MessageID is set -- ignore message
+                    return;
+                }
+
+                // one message stored, but it is not ours -- ignore message
+                return;
+            } else {
+                //more than one, delete all older messages
+                List<LocalMessage> messages = localFolder.getMessages(null, false);
+                List<LocalMessage> deleteMessagesList = new ArrayList<LocalMessage>();
+                List<String> deletedMessageIds = new ArrayList<String>();
+                for (LocalMessage msg : messages) {
+                    try {
+                        if (Long.parseLong(msg.getMessageId().replace(MESSAGE_ID_MAGIC_STRING, "")) <
+                                timestamp) {
+                            //delete all older messages
+                            deleteMessagesList.add(msg);
+                            deletedMessageIds.add(msg.getMessageId());
+                        }
+                    } catch (Exception e) {
+                        // getMessageId may return Null if no MessageId is set -- ignore message
+                        continue;
+                    }
+                }
+                //move old messages to trash
+                messagingController.deleteMessages(deleteMessagesList, null);
+                //synchronize folders
+                messagingController.synchronizeMailbox(mAccount, mAccount.getSmileStorageFolderName(), null, null);
+
+                //TODO: delete from trash folder -- does not work yet
+                try {
+                    localStore = mAccount.getLocalStore();
+                    LocalFolder localTrashFolder = localStore.getFolder(mAccount.getTrashFolderName());
+                    localTrashFolder.open(Folder.OPEN_MODE_RW);
+                    List<LocalMessage> allTrashMessages = localTrashFolder.getMessages(null, false);
+                    List<LocalMessage> removeMessagesFromTrashList = new ArrayList<LocalMessage>();
+                    for (LocalMessage msg : allTrashMessages)
+                        if (deletedMessageIds.contains(msg.getMessageId()))
+                            removeMessagesFromTrashList.add(msg);
+                    messagingController.deleteMessages(removeMessagesFromTrashList, null);
+                } catch (Exception exception) {
+                }
+
+                //synchronize trash folder
+                messagingController.synchronizeMailbox(mAccount, mAccount.getTrashFolderName(), null, null);
+            }
+        } catch (MessagingException e) {
+        }
+    }
 }

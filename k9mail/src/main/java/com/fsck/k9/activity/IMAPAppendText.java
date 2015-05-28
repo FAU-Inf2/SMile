@@ -1,9 +1,8 @@
 package com.fsck.k9.activity;
 
-import android.os.AsyncTask;
-
 import com.fsck.k9.Account;
 import com.fsck.k9.controller.MessagingController;
+import com.fsck.k9.controller.MessagingListener;
 import com.fsck.k9.mail.Body;
 import com.fsck.k9.mail.FetchProfile;
 import com.fsck.k9.mail.Folder;
@@ -22,6 +21,8 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 public class IMAPAppendText extends K9Activity {
 /* Use IMAP-command "append" to upload a text to the server.*/
@@ -84,6 +85,32 @@ public class IMAPAppendText extends K9Activity {
         }
     }
 
+    private void synchronizeFolder(){
+        if(messagingController == null)
+            messagingController = MessagingController.getInstance(getApplication());
+
+        final CountDownLatch latch = new CountDownLatch(1);
+        messagingController.synchronizeMailbox(mAccount, mAccount.getSmileStorageFolderName(), new MessagingListener() {
+            @Override
+            public void synchronizeMailboxFinished(Account account, String folder,
+                                                   int totalMessagesInMailbox, int numNewMessages) {
+                latch.countDown();
+            }
+
+            @Override
+            public void synchronizeMailboxFailed(Account account, String folder,
+                                                 String message) {
+                latch.countDown();
+            }
+        }, null);
+
+        try {
+            //wait for countdown -- suspend after 1s
+            latch.await(1000, TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+        }
+    }
+
     private LocalMessage getLocalMessageByMessageId(String messageId) {
         try{
             LocalStore localStore = mAccount.getLocalStore();
@@ -126,6 +153,7 @@ public class IMAPAppendText extends K9Activity {
 
     private LocalMessage getNewestMessage() {
         //TODO: Update localStore first?
+        synchronizeFolder(); //TODO: Listener
 
         try{
             LocalStore localStore = mAccount.getLocalStore();
@@ -206,7 +234,10 @@ public class IMAPAppendText extends K9Activity {
             messagingController = MessagingController.getInstance(getApplication());
 
         this.mimeMessage = mimeMessage;
-        saveMessage();
+        //append message
+        messagingController.saveSmileStorageMessage(mAccount, mimeMessage);
+        //synchronize folder
+        messagingController.synchronizeMailbox(mAccount, mAccount.getSmileStorageFolderName(), null, null);
     }
 
     /**
@@ -215,19 +246,6 @@ public class IMAPAppendText extends K9Activity {
     public void setNewFolder(String folder) {
         //sets new folder in which the content has to be stored
         mAccount.setSmileStorageFolderName(folder);
-    }
-
-    private void saveMessage() {
-        new SaveMessageTask().execute();
-    }
-
-    /* see MessageCompose */
-    private class SaveMessageTask extends AsyncTask<Void, Void, Void> {
-        @Override
-        protected Void doInBackground(Void... params) {
-            Message smileStoreMessage = messagingController.saveSmileStorageMessage(mAccount, mimeMessage);
-            return null;
-        }
     }
 
 }

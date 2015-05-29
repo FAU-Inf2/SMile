@@ -293,18 +293,6 @@
             android:name="com.fsck.k9.activity.IMAPAppendTextWorkaroundActivity"
             android:label="IMAPAppendTextWorkaround"/>
 
-        <activity
-            android:name="com.fsck.k9.activity.SmsLikeViewTabs"
-            android:label="SmsLikeView"
-            android:launchMode="singleTop"
-            android:uiOptions="splitActionBarWhenNarrow"
-            android:parentActivityName="com.fsck.k9.activity.Accounts">
-        <meta-data
-            android:name="android.support.PARENT_ACTIVITY"
-            android:value="com.fsck.k9.activity.Accounts"/>
-        </activity>>
-
-
         <receiver
             android:name="com.fsck.k9.service.BootReceiver"
             android:enabled="true">

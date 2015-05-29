@@ -912,8 +912,6 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
                     showSmsView();
                 else if (mDisplayMode == DisplayMode.SMS_LIST)
                     showMessageList();
-          //      Intent myIntent = new Intent(this, SmsLikeViewTabs.class);
-         //       startActivity(myIntent);
                 return true;
             }
         }

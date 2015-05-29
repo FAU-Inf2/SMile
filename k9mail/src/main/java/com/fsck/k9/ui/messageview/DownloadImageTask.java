@@ -17,7 +17,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.fsck.k9.K9;
-import com.fsck.k9.R;
+import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.helper.FileHelper;
 import com.fsck.k9.helper.UrlEncodingHelper;
 import com.fsck.k9.mail.internet.MimeUtility;

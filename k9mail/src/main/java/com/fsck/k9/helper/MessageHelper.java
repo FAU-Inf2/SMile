@@ -10,7 +10,7 @@ import android.util.Log;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.K9;
-import com.fsck.k9.R;
+import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.activity.FolderInfoHolder;
 import com.fsck.k9.activity.MessageInfoHolder;
 import com.fsck.k9.mail.Address;

@@ -51,7 +51,7 @@ import com.fsck.k9.K9.Intents;
 import com.fsck.k9.K9.NotificationQuickDelete;
 import com.fsck.k9.NotificationSetting;
 import com.fsck.k9.Preferences;
-import com.fsck.k9.R;
+import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.activity.Accounts;
 import com.fsck.k9.activity.FolderList;
 import com.fsck.k9.activity.MessageList;
@@ -5203,6 +5203,43 @@ public class MessagingController implements Runnable {
 
         } catch (MessagingException e) {
             Log.e(K9.LOG_TAG, "Unable to save message as draft.", e);
+            addErrorMessage(account, null, e);
+        }
+        return localMessage;
+    }
+
+    /**
+     *
+     * @param account Account we are saving for.
+     * @param message Message to save.
+     * @return Message representing the entry in the local store.
+     */
+    public Message saveSmileStorageMessage(final Account account, final Message message) {
+        Message localMessage = null;
+        try {
+            LocalStore localStore = account.getLocalStore();
+            LocalFolder localFolder = localStore.getFolder(account.getSmileStorageFolderName());
+            localFolder.open(Folder.OPEN_MODE_RW);
+
+            // Save the message to the store.
+            localFolder.appendMessages(Collections.singletonList(message));
+            // Fetch the message back from the store.  This is the Message that's returned to the caller.
+            localMessage = localFolder.getMessage(message.getUid());
+            localMessage.setFlag(Flag.X_DOWNLOADED_FULL, true);
+            localMessage.setFlag(Flag.SEEN, true);
+
+            LocalStore.PendingCommand command = new LocalStore.PendingCommand();
+            command.command = PENDING_COMMAND_APPEND;
+            command.arguments = new String[] {
+                    localFolder.getName(),
+                    localMessage.getUid()
+            };
+
+            queuePendingCommand(account, command);
+            processPendingCommands(account);
+
+        } catch (MessagingException e) {
+            Log.e(K9.LOG_TAG, "Unable to save SmileStorageMessage.", e);
             addErrorMessage(account, null, e);
         }
         return localMessage;

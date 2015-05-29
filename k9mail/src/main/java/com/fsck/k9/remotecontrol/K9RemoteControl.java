@@ -5,7 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 
-import com.fsck.k9.BuildConfig;
+import de.fau.cs.mad.smile.android.BuildConfig;
 
 /**
  * Utillity definitions for Android applications to control the behavior of K-9 Mail.  All such applications must declare the following permission:

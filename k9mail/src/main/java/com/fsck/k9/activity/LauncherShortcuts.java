@@ -6,7 +6,7 @@ import android.os.Parcelable;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.BaseAccount;
-import com.fsck.k9.R;
+import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.search.SearchAccount;
 
 public class LauncherShortcuts extends AccountList {

@@ -2,7 +2,6 @@ package com.fsck.k9.activity;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.List;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -15,8 +14,8 @@ import android.os.Bundle;
 import com.fsck.k9.Account;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
-import com.fsck.k9.R;
-import com.fsck.k9.helper.Utility;
+import de.fau.cs.mad.smile.android.R;
+
 import com.fsck.k9.service.NotificationActionService;
 
 public class NotificationDeleteConfirmation extends Activity {

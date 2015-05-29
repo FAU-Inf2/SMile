@@ -20,6 +20,8 @@ import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.mailstore.LocalStore;
 import com.fsck.k9.service.MailService;
 
+import de.fau.cs.mad.smile.android.R;
+
 public class FolderSettings extends K9PreferenceActivity {
 
     private static final String EXTRA_FOLDER_NAME = "com.fsck.k9.folderName";

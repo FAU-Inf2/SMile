@@ -10,7 +10,7 @@ import android.content.Context;
 import com.fsck.k9.Account.QuoteStyle;
 import com.fsck.k9.Identity;
 import com.fsck.k9.K9;
-import com.fsck.k9.R;
+import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.activity.MessageReference;
 import com.fsck.k9.activity.misc.Attachment;
 import com.fsck.k9.crypto.PgpData;

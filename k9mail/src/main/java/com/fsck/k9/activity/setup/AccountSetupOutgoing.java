@@ -31,6 +31,8 @@ import com.fsck.k9.view.ClientCertificateSpinner.OnClientCertificateChangedListe
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import de.fau.cs.mad.smile.android.R;
+
 public class AccountSetupOutgoing extends K9Activity implements OnClickListener,
     OnCheckedChangeListener {
     private static final String EXTRA_ACCOUNT = "account";

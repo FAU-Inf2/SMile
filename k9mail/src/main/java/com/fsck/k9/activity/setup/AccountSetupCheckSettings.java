@@ -38,6 +38,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
+import de.fau.cs.mad.smile.android.R;
+
 /**
  * Checks the given settings to make sure that they can be used to send and
  * receive mail.

@@ -3,21 +3,21 @@
   <!--=== App-specific strings =============================================================-->
   <!--This should make it easier for forks to change the branding-->
   <!--Used in AndroidManifest.xml-->
-  <string name="app_name">K-9 Mail</string>
-  <string name="beta_app_name">K-9 Mail BETA</string>
+  <string name="app_name">SMile</string>
+  <string name="beta_app_name">SMile BETA</string>
   <string name="shortcuts_title">K-9 Kontod</string>
   <string name="unread_widget_label">K-9 Lugemata</string>
-  <string name="remote_control_label">K-9 Mail kaughaldus</string>
-  <string name="remote_control_desc">Luba sellel appil kontrollida  K-9 Mail toiminguid ja sätteid.</string>
+  <string name="remote_control_label">SMile kaughaldus</string>
+  <string name="remote_control_desc">Luba sellel appil kontrollida  SMile toiminguid ja sätteid.</string>
   <!--Used in the about dialog-->
   <string name="app_authors">Google,  K-9 Dog Walkers.</string>
   <string name="app_copyright_fmt">Copyright 2008-<xliff:g>%s</xliff:g> The K-9 Dog Walkers. Portions Copyright 2006-<xliff:g>%s</xliff:g> the Android Open Source Project.</string>
   <string name="app_license">Licensed under the Apache License, Version 2.0.</string>
   <!--Welcome message-->
-  <string name="welcome_message_title">Tere kasutama K-9 Maili</string>
+  <string name="welcome_message_title">Tere kasutama SMilei</string>
   <string name="accounts_welcome"><![CDATA[
 <p>
-K-9 Mail on võimekas tasuta emaili klientprogramm Androidile.
+SMile on võimekas tasuta emaili klientprogramm Androidile.
 </p><p>
 Selle funktsioonid on järgnevad:
 </p>
@@ -47,7 +47,7 @@ Palun saada infot probleemidest, soovitavatest lisafunktsioonidest ja küsi küs
     ]]></string>
   <!--Default signature-->
   <!--General strings that include the app name-->
-  <string name="account_delete_dlg_instructions_fmt">Konto \"<xliff:g id="account">%s</xliff:g>\" eemaldatakse K-9 Mailist.</string>
+  <string name="account_delete_dlg_instructions_fmt">Konto \"<xliff:g id="account">%s</xliff:g>\" eemaldatakse SMileist.</string>
   <string name="account_recreate_dlg_instructions_fmt">Kõik andmed \"<xliff:g id="account">%s</xliff:g>\" kustutatakse. Konto sätted sälitatakse.</string>
   <string name="account_clear_dlg_instructions_fmt">Sõnumite lokaalsed koopiad \"<xliff:g id="account">%s</xliff:g>\" eemaldatakse. Konto sätted säilitatakse.</string>
   <!--=== App Store-specific strings =======================================================-->

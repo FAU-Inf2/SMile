@@ -35,7 +35,7 @@ import com.fsck.k9.mail.power.TracingPowerManager.TracingWakeLock;
  * thread and task queuing for all K9 services to use.
  * </p><p>
  * A service is supposed to run only as long as it has some work to do whether that work is active
- * processing or some just some monitoring, like listening on a network port for incoming connections
+ * processing or just some monitoring, like listening on a network port for incoming connections
  * or listing on an open network connection for incoming data (push mechanism).
  * </p><p>
  * To make sure the service is running only when required, is must be shutdown after tasks are

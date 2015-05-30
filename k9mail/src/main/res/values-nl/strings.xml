@@ -5,8 +5,8 @@
   <!--Used in AndroidManifest.xml-->
   <string name="app_name">SMile</string>
   <string name="beta_app_name">SMile BETA</string>
-  <string name="shortcuts_title">K-9 Accounts</string>
-  <string name="unread_widget_label">K-9 Ongelezen</string>
+  <string name="shortcuts_title">SMile Accounts</string>
+  <string name="unread_widget_label">SMile Ongelezen</string>
   <string name="remote_control_label">SMile bediening op afstand</string>
   <string name="remote_control_desc">Sta deze applicatie toe om activiteiten en instellingen van SMile aan te passen.</string>
   <!--Used in the about dialog-->
@@ -17,7 +17,7 @@
   <string name="welcome_message_title">Welkom bij SMile</string>
   <string name="accounts_welcome"><![CDATA[
 <p>
-SMile is een open source mail cliënt voor Android, gebaseerd op de standaard Android Mail cliënt.
+SMile is een open source mail cliënt voor Android, gebaseerd op de K-9 Mail cliënt.
 </p><p>
 Toevoegingen en verbeteringen omvatten:
 </p>
@@ -38,10 +38,10 @@ Toevoegingen en verbeteringen omvatten:
   <li>…en meer</li>
 </ul>
 <p>
-Houd er rekening mee dat K-9 de meeste gratis Hotmail-accounts niet ondersteund, en net als veel e-mailclients, problemen kan hebben om te verbinden met Microsoft Exchange.
+Houd er rekening mee dat SMile de meeste gratis Hotmail-accounts niet ondersteund, en net als veel e-mailclients, problemen kan hebben om te verbinden met Microsoft Exchange.
 </p><p>
 Graag foutrapporten, bijdrage nieuwe functies en vragen stellen op
-<a href=\"http://k9mail.googlecode.com/\">http://k9mail.googlecode.com/</a>.
+<a href=\"https://github.com/FAU-Inf2/SMile/\">https://github.com/FAU-Inf2/SMile/</a>.
 </p>
     ]]></string>
   <!--Default signature-->
@@ -269,7 +269,7 @@ Graag foutrapporten, bijdrage nieuwe functies en vragen stellen op
   <string name="global_settings_confirm_action_delete_starred">Gemarkeerd verwijderen (in bericht-view)</string>
   <string name="global_settings_confirm_action_spam">Spam</string>
   <string name="global_settings_confirm_action_delete_notif">Verwijder (van notificaties)</string>
-  <string name="global_settings_privacy_hide_useragent">Verwijder K-9 User-Agent van de mail headers</string>
+  <string name="global_settings_privacy_hide_useragent">Verwijder SMile User-Agent van de mail headers</string>
   <string name="global_settings_privacy_hide_timezone">Gebruik UT als tijdzone in mail headers</string>
   <string name="global_settings_notification_hide_subject_title">Verberg onderwerp in notificaties</string>
   <string name="global_settings_notification_hide_subject_never">Nooit</string>

@@ -5,7 +5,7 @@
   <!--Used in AndroidManifest.xml-->
   <string name="app_name">SMile</string>
   <string name="beta_app_name">SMile BETA</string>
-  <string name="shortcuts_title">K-9 Konti</string>
+  <string name="shortcuts_title">SMile Konti</string>
   <string name="remote_control_label">SMile fjernkontrol</string>
   <string name="remote_control_desc">Tillad dette program at kontrollere SMile aktiviteter og indstillinger.</string>
   <!--Used in the about dialog-->
@@ -15,9 +15,9 @@
   <!--Welcome message-->
   <string name="accounts_welcome"><![CDATA[
 <p>
-K-9 er en open source mail klient for Android, som oprindeligt baserede sig på standard mail klienten i Android.
+SMile er en open source mail klient for Android, som oprindeligt baserede sig på K-9.
 </p><p>
-K-9\'s forbedrede funktioner inkluderer:
+SMiles\'s forbedrede funktioner inkluderer:
 </p>
 <ul>
   <li>Push mail ved hjælp af IMAP IDLE</li>
@@ -36,10 +36,10 @@ K-9\'s forbedrede funktioner inkluderer:
   <li>…og mere</li>
 </ul>
 <p>
-Bemærk at K-9 ikke understøtter gratis hotmail konti, og at K-9 (som de fleste andre mailklienter) har visse problemer med at kommunikerer med Microsoft Exchange.
+Bemærk at SMile ikke understøtter gratis hotmail konti, og at SMile (som de fleste andre mailklienter) har visse problemer med at kommunikerer med Microsoft Exchange.
 </p><p>
 Vær venlig at sende fejlrapporter, anmodning om nye funktioner, og spørgsmål til
-<a href=\"http://k9mail.googlecode.com/\">http://k9mail.googlecode.com/</a>.
+<a href=\"https://github.com/FAU-Inf2/SMile/\">https://github.com/FAU-Inf2/SMile/</a>.
 </p>
     ]]></string>
   <!--Default signature-->

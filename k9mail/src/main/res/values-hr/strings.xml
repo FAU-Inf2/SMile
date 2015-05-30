@@ -5,10 +5,10 @@
   <!--Used in AndroidManifest.xml-->
   <string name="app_name">SMile</string>
   <string name="beta_app_name">SMile BETA</string>
-  <string name="shortcuts_title">K-9 Računi</string>
-  <string name="unread_widget_label">K-9 Nepročitano</string>
+  <string name="shortcuts_title">SMile Računi</string>
+  <string name="unread_widget_label">SMile Nepročitano</string>
   <string name="remote_control_label">SMile daljinski upravljač</string>
-  <string name="remote_control_desc">Dozvoljava  ovoj aplikaciji kontrolu K-9 aktivnosti i podešenja.</string>
+  <string name="remote_control_desc">Dozvoljava  ovoj aplikaciji kontrolu SMile aktivnosti i podešenja.</string>
   <!--Used in the about dialog-->
   <string name="app_authors">Google, The K-9 Dog Walkers.</string>
   <string name="app_copyright_fmt">Copyright 2008-<xliff:g>%s</xliff:g> The K-9 Dog Walkers. Portions Copyright 2006-<xliff:g>%s</xliff:g> the Android Open Source Project.</string>
@@ -38,10 +38,10 @@ Poboljšane značajke uključuju:
   <li>…i više</li>
 </ul>
 <p>
-Molimo vas znajte da K-9 ne podržava većinu besplatnih Hotmail računa i poput drugih klijenata e-pošte ima nekih problema prilikom komunikacije sa Microsoft Exchange.
+Molimo vas znajte da SMile ne podržava većinu besplatnih Hotmail računa i poput drugih klijenata e-pošte ima nekih problema prilikom komunikacije sa Microsoft Exchange.
 </p><p>
 Molimo vas pošaljite izvještaj o manama, učestvujte u novim značajkama i postavljajte pitanja na
-<a href=\"http://k9mail.googlecode.com/\">http://k9mail.googlecode.com/</a>.
+<a href=\"https://github.com/FAU-Inf2/SMile/\">https://github.com/FAU-Inf2/SMile/</a>.
 </p>
     ]]></string>
   <!--Default signature-->
@@ -271,7 +271,7 @@ Molimo vas pošaljite izvještaj o manama, učestvujte u novim značajkama i pos
   <string name="global_settings_confirm_action_delete_starred">Obriši Označeno Zvjezdicom (u pregledu poruke)</string>
   <string name="global_settings_confirm_action_spam">Neželjena pošta</string>
   <string name="global_settings_confirm_action_delete_notif">Obriši (iz obavijesti)</string>
-  <string name="global_settings_privacy_hide_useragent">Makni K-9 Korisničkog agenta iz zaglavlja pošte</string>
+  <string name="global_settings_privacy_hide_useragent">Makni SMile Korisničkog agenta iz zaglavlja pošte</string>
   <string name="global_settings_privacy_hide_timezone">Koristi KSV kao vremensku zonu u zaglavlju pošte</string>
   <string name="global_settings_notification_hide_subject_title">Sakrij subjekt u obavijesti</string>
   <string name="global_settings_notification_hide_subject_never">Nikad</string>

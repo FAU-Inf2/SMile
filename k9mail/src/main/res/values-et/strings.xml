@@ -5,8 +5,8 @@
   <!--Used in AndroidManifest.xml-->
   <string name="app_name">SMile</string>
   <string name="beta_app_name">SMile BETA</string>
-  <string name="shortcuts_title">K-9 Kontod</string>
-  <string name="unread_widget_label">K-9 Lugemata</string>
+  <string name="shortcuts_title">SMile Kontod</string>
+  <string name="unread_widget_label">SMile Lugemata</string>
   <string name="remote_control_label">SMile kaughaldus</string>
   <string name="remote_control_desc">Luba sellel appil kontrollida  SMile toiminguid ja sätteid.</string>
   <!--Used in the about dialog-->
@@ -38,11 +38,11 @@ Selle funktsioonid on järgnevad:
   <li>…ja palju muud</li>
 </ul>
 <p>
-Palun võtke ka teatavaks, et K-9 ei toeta enamusi tasuta Hotmaili kontosid ja nagu ka paljud teised emaili klientprogrammid 
+Palun võtke ka teatavaks, et SMile ei toeta enamusi tasuta Hotmaili kontosid ja nagu ka paljud teised emaili klientprogrammid
 omab mõningaid veidrusi Microsoft Exchangega suheldes.
 </p><p>
 Palun saada infot probleemidest, soovitavatest lisafunktsioonidest ja küsi küsimusi siit
-<a href=\"http://k9mail.googlecode.com/\">http://k9mail.googlecode.com/</a>.
+<a href=\"https://github.com/FAU-Inf2/SMile/\">https://github.com/FAU-Inf2/SMile/</a>.
 </p>
     ]]></string>
   <!--Default signature-->

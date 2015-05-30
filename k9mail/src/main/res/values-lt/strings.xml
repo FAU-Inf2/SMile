@@ -3,10 +3,10 @@
   <!--=== App-specific strings =============================================================-->
   <!--This should make it easier for forks to change the branding-->
   <!--Used in AndroidManifest.xml-->
-  <string name="app_name">K-9 paštas</string>
+  <string name="app_name">SMile paštas</string>
   <string name="beta_app_name">„SMile“ BETA</string>
-  <string name="shortcuts_title">K-9 paskyros</string>
-  <string name="unread_widget_label">K-9 neskaityta</string>
+  <string name="shortcuts_title">SMile paskyros</string>
+  <string name="unread_widget_label">SMile neskaityta</string>
   <string name="remote_control_label">„SMile“ nutolęs valdymas</string>
   <string name="remote_control_desc">Leisti šiai programai valdyti „SMile“ veiklą ir nustatymus.</string>
   <!--Used in the about dialog-->
@@ -38,10 +38,10 @@ Pagerintos galimybės:
   <li>…ir dar daug daugiau</li>
 </ul>
 <p>
-Pastaba: K-9 nepalaiko daugumos Hotmail paskyrų ir kaip dauguma el. pašto klientų turi keblumų bendraujant su Microsoft Exchange.
+Pastaba: SMile nepalaiko daugumos Hotmail paskyrų ir kaip dauguma el. pašto klientų turi keblumų bendraujant su Microsoft Exchange.
 </p><p>
 Praneškite apie klaidas, pridėkite naujų galimybių ir užduokite klausimus mūsų tinklapyje
-<a href=\"http://k9mail.googlecode.com/\">http://k9mail.googlecode.com/</a>.
+<a href=\"https://github.com/FAU-Inf2/SMile/\">https://github.com/FAU-Inf2/SMile/</a>.
 </p>
     ]]></string>
   <!--Default signature-->

@@ -5,8 +5,8 @@
   <!--Used in AndroidManifest.xml-->
   <string name="app_name">SMile</string>
   <string name="beta_app_name">SMile BETA</string>
-  <string name="shortcuts_title">K-9-tilit</string>
-  <string name="unread_widget_label">K-9-lukematon</string>
+  <string name="shortcuts_title">SMile-tilit</string>
+  <string name="unread_widget_label">SMile-lukematon</string>
   <string name="remote_control_label">SMilein etäkäyttö</string>
   <string name="remote_control_desc">Antaa sovellukselle luvan käyttää SMilein toimintoja ja asetuksia.</string>
   <!--Used in the about dialog-->
@@ -19,7 +19,7 @@
 <p>
 SMile on tehokas avoimen lähdekoodin sähköpostiohjelma Android-käyttöjärjestelmälle.
 </p><p>
-K-9:n parannettuja ominaisuuksia ovat mm.:
+SMile:n parannettuja ominaisuuksia ovat mm.:
 </p>
 <ul>
   <li>Ilmoitus uusista viesteistä IMAP IDLE -ominaisuuden avulla</li>
@@ -38,11 +38,11 @@ K-9:n parannettuja ominaisuuksia ovat mm.:
   <li>…ja paljon muuta</li>
 </ul>
 <p>
-K-9 ei valitettavasti tue suurinta osaa ilmaisista Hotmail-tileistä. Lisäksi Microsoft Exchange -toimivuudessa on
+SMile ei valitettavasti tue suurinta osaa ilmaisista Hotmail-tileistä. Lisäksi Microsoft Exchange -toimivuudessa on
 ongelmia, kuten useissa muissakin sähköpostiohjelmissa.
 </p><p>
 Virheraportit, osallistuminen projektiin ja kysymykset: Mene osoitteeseen
-<a href=\"http://k9mail.googlecode.com/\">http://k9mail.googlecode.com/</a>.
+<a href=\"https://github.com/FAU-Inf2/SMile/\">https://github.com/FAU-Inf2/SMile/</a>.
 </p>
     ]]></string>
   <!--Default signature-->
@@ -270,7 +270,7 @@ Virheraportit, osallistuminen projektiin ja kysymykset: Mene osoitteeseen
   <string name="global_settings_confirm_action_delete_starred">Poista tähdellä merkityt (viestinäkymässä)</string>
   <string name="global_settings_confirm_action_spam">Roskaposti</string>
   <string name="global_settings_confirm_action_delete_notif">Poista (ilmoituksessa)</string>
-  <string name="global_settings_privacy_hide_useragent">Poista K-9-käyttötietue sähköpostin otsikoista</string>
+  <string name="global_settings_privacy_hide_useragent">Poista SMile-käyttötietue sähköpostin otsikoista</string>
   <string name="global_settings_privacy_hide_timezone">Käytä UTC:tä aikavyöhykkeenä sähköpostin otsikoissa</string>
   <string name="global_settings_notification_hide_subject_title">Piilota aihe ilmoituksissa</string>
   <string name="global_settings_notification_hide_subject_never">Ei koskaan</string>

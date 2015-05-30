@@ -1294,7 +1294,11 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
     private void addMessageListFragment(MessageListFragment fragment, boolean addToBackStack) {
         FragmentTransaction ft = getFragmentManager().beginTransaction();
 
-        ft.replace(R.id.message_list_container, fragment);
+        if (mDisplayMode != DisplayMode.SMS_LIST)
+            ft.replace(R.id.message_list_container, fragment);
+        else
+            ft.replace(R.id.sms_message_list_container, fragment);
+
         if (addToBackStack)
             ft.addToBackStack(null);
 
@@ -1544,6 +1548,7 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
 
         for(MessageReference ref : list){
             LocalMessage msg = ref.restoreToLocalMessage(this);
+            msg.getRootId();
             Address[] addresses = msg.getFrom();
             for (Address address : addresses)
                 addressSet.add(address);

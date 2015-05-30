@@ -82,6 +82,10 @@ public class MailService extends CoreService {
         }
     }
 
+    /*
+    Start polling service.
+    Decide whether service shall run in background.
+     */
     @Override
     public int startService(Intent intent, int startId) {
         long startTime = System.currentTimeMillis();
@@ -228,6 +232,9 @@ public class MailService extends CoreService {
         }
     }
 
+    /*
+    Decides when the next poll will take place.
+     */
     private void reschedulePoll(final boolean hasConnectivity, final boolean doBackground,
             boolean considerLastCheckEnd) {
 
@@ -396,6 +403,9 @@ public class MailService extends CoreService {
         }
     }
 
+    /*
+    Decide when pusher should be refreshed.
+     */
     private void schedulePushers() {
         int minInterval = -1;
 

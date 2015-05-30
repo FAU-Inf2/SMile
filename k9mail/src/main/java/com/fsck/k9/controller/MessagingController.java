@@ -93,6 +93,7 @@ import com.fsck.k9.mailstore.LocalStore;
 import com.fsck.k9.mailstore.LocalStore.PendingCommand;
 import com.fsck.k9.mail.store.pop3.Pop3Store;
 import com.fsck.k9.mailstore.UnavailableStorageException;
+import com.fsck.k9.preferences.AccountSettings;
 import com.fsck.k9.provider.EmailProvider;
 import com.fsck.k9.provider.EmailProvider.StatsColumns;
 import com.fsck.k9.search.ConditionsTreeNode;
@@ -146,6 +147,7 @@ public class MessagingController implements Runnable {
     private static final String PENDING_COMMAND_MOVE_OR_COPY_BULK = "com.fsck.k9.MessagingController.moveOrCopyBulk";
     private static final String PENDING_COMMAND_MOVE_OR_COPY_BULK_NEW = "com.fsck.k9.MessagingController.moveOrCopyBulkNew";
     private static final String PENDING_COMMAND_EMPTY_TRASH = "com.fsck.k9.MessagingController.emptyTrash";
+    private static final String PENDING_COMMAND_DELETE_FROM_TRASH = "com.fsck.k9.MessagingController.deleteFromTrash";
     private static final String PENDING_COMMAND_SET_FLAG_BULK = "com.fsck.k9.MessagingController.setFlagBulk";
     private static final String PENDING_COMMAND_SET_FLAG = "com.fsck.k9.MessagingController.setFlag";
     private static final String PENDING_COMMAND_APPEND = "com.fsck.k9.MessagingController.append";
@@ -180,7 +182,7 @@ public class MessagingController implements Runnable {
     private static final int UNSYNC_CHUNK_SIZE = 5;
 
     private static MessagingController inst = null;
-    private BlockingQueue<Command> mCommands = new PriorityBlockingQueue<Command>();
+    private BlockingQueue<Command> mCommands = new PriorityBlockingQueue<Command>(); //Worklist
 
     private Thread mThread;
     private Set<MessagingListener> mListeners = new CopyOnWriteArraySet<MessagingListener>();
@@ -390,6 +392,9 @@ public class MessagingController implements Runnable {
         return mBusy;
     }
 
+    /*
+    Take commands from the worklist and execute them.
+     */
     @Override
     public void run() {
         Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
@@ -447,6 +452,14 @@ public class MessagingController implements Runnable {
         putCommand(mCommands, description, listener, runnable, false);
     }
 
+    /**
+     * Add a new command to queue.
+     * @param queue The queue to add the command to.
+     * @param description The description of the command.
+     * @param listener The listener to notify.
+     * @param runnable The command to execute.
+     * @param isForeground Should the task run in fore- or background.
+     */
     private void putCommand(BlockingQueue<Command> queue, String description, MessagingListener listener, Runnable runnable, boolean isForeground) {
         int retries = 10;
         Exception e = null;
@@ -575,6 +588,11 @@ public class MessagingController implements Runnable {
         }
     }
 
+    /**
+     * Add a refresh command to the queue. It synchronizes local and remote folders.
+     * @param account The account to synchronize.
+     * @param listener The listener to notify.
+     */
     private void doRefreshRemote(final Account account, final MessagingListener listener) {
         put("doRefreshRemote", listener, new Runnable() {
             @Override
@@ -2040,6 +2058,8 @@ public class MessagingController implements Runnable {
                         processPendingMoveOrCopyOld(command, account);
                     } else if (PENDING_COMMAND_EMPTY_TRASH.equals(command.command)) {
                         processPendingEmptyTrash(command, account);
+                    } else if (PENDING_COMMAND_DELETE_FROM_TRASH.equals(command.command)) {
+                        processPendingDeleteFromTrash(command, account);
                     } else if (PENDING_COMMAND_EXPUNGE.equals(command.command)) {
                         processPendingExpunge(command, account);
                     }
@@ -2554,7 +2574,8 @@ public class MessagingController implements Runnable {
 
             remoteFolder.expunge();
             if (K9.DEBUG)
-                Log.d(K9.LOG_TAG, "processPendingExpunge: complete for folder = " + folder);
+                Log.d(K9.LOG_TAG, "" +
+                        ": complete for folder = " + folder);
         } finally {
             closeFolder(remoteFolder);
         }
@@ -4171,6 +4192,84 @@ public class MessagingController implements Runnable {
         return uids;
     }
 
+    private List<String> deletedMessageIds;
+    private void processPendingDeleteFromTrash(PendingCommand command, Account account)
+            throws MessagingException {
+        Store remoteStore = account.getRemoteStore();
+        Folder remoteFolder = remoteStore.getFolder(account.getTrashFolderName());
+        try {
+            if (remoteFolder.exists()) {
+                remoteFolder.open(Folder.OPEN_MODE_RW);
+
+                List<? extends Message> trashMessages = remoteFolder.getMessages(null, true);
+                List<Message> deleteMessages = new ArrayList<Message>();
+                FetchProfile fp = new FetchProfile();
+                fp.add(FetchProfile.Item.ENVELOPE);
+                for(Message trashMessage : trashMessages) {
+                    try {
+                        remoteFolder.fetch(Collections.singletonList(trashMessage), fp, null);
+                        if (deletedMessageIds.contains(trashMessage.getMessageId()))
+                            deleteMessages.add(trashMessage);
+                    } catch (Exception e) {}
+                }
+
+                remoteFolder.setFlags(deleteMessages, Collections.singleton(Flag.DELETED), true);
+                remoteFolder.expunge();
+
+                // When we empty trash, we need to actually synchronize the folder
+                // or local deletes will never get cleaned up
+                synchronizeFolder(account, remoteFolder, true, 0, null);
+                compact(account, null);
+            }
+        } finally {
+            closeFolder(remoteFolder);
+        }
+    }
+
+    public void deleteFromTrash(final Account account, MessagingListener listener,
+                                final List<String> deletedMessageIds) {
+        this.deletedMessageIds = deletedMessageIds;
+        putBackground("deleteFromTrash", listener, new Runnable() {
+            @Override
+            public void run() {
+                LocalFolder localFolder = null;
+                try {
+                    Store localStore = account.getLocalStore();
+                    localFolder = (LocalFolder) localStore.getFolder(account.getTrashFolderName());
+                    localFolder.open(Folder.OPEN_MODE_RW);
+
+                    boolean isTrashLocalOnly = isTrashLocalOnly(account);
+
+                    List<LocalMessage> localMessages = localFolder.getMessages(null, true);
+                    List<LocalMessage> deleteMessages = new ArrayList<LocalMessage>();
+                    for (LocalMessage localMessage : localMessages)
+                        if (deletedMessageIds.contains(localMessage.getMessageId()))
+                            deleteMessages.add(localMessage);
+
+                    localFolder.setFlags(deleteMessages, Collections.singleton(Flag.DELETED), true);
+
+                    if (!isTrashLocalOnly) {
+                        List<String> args = new ArrayList<String>();
+                        PendingCommand command = new PendingCommand();
+                        command.command = PENDING_COMMAND_DELETE_FROM_TRASH;
+                        command.arguments = args.toArray(EMPTY_STRING_ARRAY);
+
+                        queuePendingCommand(account, command);
+                        processPendingCommands(account);
+                    }
+                } catch (UnavailableStorageException e) {
+                    Log.i(K9.LOG_TAG, "Failed to delete from trash because storage is not available - trying again later.");
+                    throw new UnavailableAccountException(e);
+                } catch (Exception e) {
+                    Log.e(K9.LOG_TAG, "deleteFromTrash failed", e);
+                    addErrorMessage(account, null, e);
+                } finally {
+                    closeFolder(localFolder);
+                }
+            }
+        });
+    }
+
     private void processPendingEmptyTrash(PendingCommand command, Account account) throws MessagingException {
         Store remoteStore = account.getRemoteStore();
 
@@ -4187,7 +4286,6 @@ public class MessagingController implements Runnable {
                 // or local deletes will never get cleaned up
                 synchronizeFolder(account, remoteFolder, true, 0, null);
                 compact(account, null);
-
 
             }
         } finally {
@@ -4646,16 +4744,17 @@ public class MessagingController implements Runnable {
             return false;
         }
 
-        // No notification for new messages in Trash, Drafts, Spam or Sent folder.
+        // No notification for new messages in Trash, Drafts, Spam, SmileStorage or Sent folder.
         // But do notify if it's the INBOX (see issue 1817).
         Folder folder = message.getFolder();
         if (folder != null) {
             String folderName = folder.getName();
             if (!account.getInboxFolderName().equals(folderName) &&
                     (account.getTrashFolderName().equals(folderName)
-                            || account.getDraftsFolderName().equals(folderName)
-                            || account.getSpamFolderName().equals(folderName)
-                            || account.getSentFolderName().equals(folderName))) {
+                     || account.getDraftsFolderName().equals(folderName)
+                     || account.getSpamFolderName().equals(folderName)
+                     || account.getSmileStorageFolderName().equals(folderName)
+                     || account.getSentFolderName().equals(folderName))) {
                 return false;
             }
         }
@@ -5267,6 +5366,43 @@ public class MessagingController implements Runnable {
 
         } catch (MessagingException e) {
             Log.e(K9.LOG_TAG, "Unable to save message as draft.", e);
+            addErrorMessage(account, null, e);
+        }
+        return localMessage;
+    }
+
+    /**
+     *
+     * @param account Account we are saving for.
+     * @param message Message to save.
+     * @return Message representing the entry in the local store.
+     */
+    public Message saveSmileStorageMessage(final Account account, final Message message) {
+        Message localMessage = null;
+        try {
+            LocalStore localStore = account.getLocalStore();
+            LocalFolder localFolder = localStore.getFolder(account.getSmileStorageFolderName());
+            localFolder.open(Folder.OPEN_MODE_RW);
+
+            // Save the message to the store.
+            localFolder.appendMessages(Collections.singletonList(message));
+            // Fetch the message back from the store.  This is the Message that's returned to the caller.
+            localMessage = localFolder.getMessage(message.getUid());
+            localMessage.setFlag(Flag.X_DOWNLOADED_FULL, true);
+            localMessage.setFlag(Flag.SEEN, true);
+
+            LocalStore.PendingCommand command = new LocalStore.PendingCommand();
+            command.command = PENDING_COMMAND_APPEND;
+            command.arguments = new String[] {
+                    localFolder.getName(),
+                    localMessage.getUid()
+            };
+
+            queuePendingCommand(account, command);
+            processPendingCommands(account);
+
+        } catch (MessagingException e) {
+            Log.e(K9.LOG_TAG, "Unable to save SmileStorageMessage.", e);
             addErrorMessage(account, null, e);
         }
         return localMessage;

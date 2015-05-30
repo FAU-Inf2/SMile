@@ -144,6 +144,9 @@ public class NotificationActionService extends CoreService {
         return true;
     }
 
+    /*
+    Answer, spam or delete action dispatching.
+     */
     @Override
     public int startService(Intent intent, int startId) {
         if (K9.DEBUG)

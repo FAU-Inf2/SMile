@@ -182,7 +182,7 @@ public class MessagingController implements Runnable {
     private static final int UNSYNC_CHUNK_SIZE = 5;
 
     private static MessagingController inst = null;
-    private BlockingQueue<Command> mCommands = new PriorityBlockingQueue<Command>();
+    private BlockingQueue<Command> mCommands = new PriorityBlockingQueue<Command>(); //Worklist
 
     private Thread mThread;
     private Set<MessagingListener> mListeners = new CopyOnWriteArraySet<MessagingListener>();
@@ -390,6 +390,9 @@ public class MessagingController implements Runnable {
         return mBusy;
     }
 
+    /*
+    Take commands from the worklist and execute them.
+     */
     @Override
     public void run() {
         Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
@@ -447,6 +450,14 @@ public class MessagingController implements Runnable {
         putCommand(mCommands, description, listener, runnable, false);
     }
 
+    /**
+     * Add a new command to queue.
+     * @param queue The queue to add the command to.
+     * @param description The description of the command.
+     * @param listener The listener to notify.
+     * @param runnable The command to execute.
+     * @param isForeground Should the task run in fore- or background.
+     */
     private void putCommand(BlockingQueue<Command> queue, String description, MessagingListener listener, Runnable runnable, boolean isForeground) {
         int retries = 10;
         Exception e = null;
@@ -577,15 +588,20 @@ public class MessagingController implements Runnable {
         }
     }
 
+    /**
+     * Add a refresh command to the queue. It synchronizes local and remote folders.
+     * @param account The account to synchronize.
+     * @param listener The listener to notify.
+     */
     private void doRefreshRemote(final Account account, final MessagingListener listener) {
         put("doRefreshRemote", listener, new Runnable() {
             @Override
             public void run() {
-                List <? extends Folder > localFolders = null;
+                List<? extends Folder> localFolders = null;
                 try {
                     Store store = account.getRemoteStore();
 
-                    List <? extends Folder > remoteFolders = store.getPersonalNamespaces(false);
+                    List<? extends Folder> remoteFolders = store.getPersonalNamespaces(false);
 
                     LocalStore localStore = account.getLocalStore();
                     Set<String> remoteFolderNames = new HashSet<String>();
@@ -725,7 +741,16 @@ public class MessagingController implements Runnable {
     }
 
 
-
+    /**
+     * Find messages in the given account matching the query.
+     * @param acctUuid The account to search in.
+     * @param folderName The folder to search in.
+     * @param query String to query for.
+     * @param requiredFlags Mandatory flags.
+     * @param forbiddenFlags Flags to exclude.
+     * @param listener Listener to notify
+     * @return List of messages found.
+     */
     public Future<?> searchRemoteMessages(final String acctUuid, final String folderName, final String query,
             final Set<Flag> requiredFlags, final Set<Flag> forbiddenFlags, final MessagingListener listener) {
         if (K9.DEBUG) {
@@ -810,6 +835,13 @@ public class MessagingController implements Runnable {
 
     }
 
+    /**
+     * Fetches messages from local and remote folders.
+     * @param account The account to fetch messages from.
+     * @param folderName The folder containing the messages.
+     * @param messages List of Messages to fetch.
+     * @param listener Listener to notify.
+     */
     public void loadSearchResults(final Account account, final String folderName, final List<Message> messages, final MessagingListener listener) {
         threadPool.execute(new Runnable() {
             @Override
@@ -844,6 +876,14 @@ public class MessagingController implements Runnable {
         });
     }
 
+    /**
+     * Fetches messages from local folder. If the message is not stored locally it is fetched from the remote folder.
+     * @param messages List of messages to fetch.
+     * @param localFolder The local folder which may contains the messages.
+     * @param remoteFolder The remote folder to fetch messages from, if they are not stored locally.
+     * @param listener The listener to notify.
+     * @throws MessagingException
+     */
     public void loadSearchResultsSynchronous(List<Message> messages, LocalFolder localFolder, Folder remoteFolder, MessagingListener listener) throws MessagingException {
         final FetchProfile header = new FetchProfile();
         header.add(FetchProfile.Item.FLAGS);
@@ -871,6 +911,12 @@ public class MessagingController implements Runnable {
     }
 
 
+    /**
+     * Load more messages from the given account.
+     * @param account The account containing the folder.
+     * @param folder The folder for which more messages should be loaded.
+     * @param listener The listener to notify.
+     */
     public void loadMoreMessages(Account account, String folder, MessagingListener listener) {
         try {
             LocalStore localStore = account.getLocalStore();
@@ -914,7 +960,6 @@ public class MessagingController implements Runnable {
      * @param account
      * @param folder
      *
-     * TODO Break this method up into smaller chunks.
      * @param providedRemoteFolder TODO
      */
     private void synchronizeMailboxSynchronous(final Account account, final String folder, final MessagingListener listener, Folder providedRemoteFolder) {
@@ -1038,71 +1083,10 @@ public class MessagingController implements Runnable {
             final Date earliestDate = account.getEarliestPollDate();
 
 
-            if (remoteMessageCount > 0) {
-                /* Message numbers start at 1.  */
-                int remoteStart;
-                if (visibleLimit > 0) {
-                    remoteStart = Math.max(0, remoteMessageCount - visibleLimit) + 1;
-                } else {
-                    remoteStart = 1;
-                }
-                int remoteEnd = remoteMessageCount;
-
-                if (K9.DEBUG)
-                    Log.v(K9.LOG_TAG, "SYNC: About to get messages " + remoteStart + " through " + remoteEnd + " for folder " + folder);
-
-                final AtomicInteger headerProgress = new AtomicInteger(0);
-                for (MessagingListener l : getListeners(listener)) {
-                    l.synchronizeMailboxHeadersStarted(account, folder);
-                }
+            syncGetNewMessages(account, folder, listener, remoteFolder, localUidMap, remoteMessageCount, visibleLimit, remoteMessages, remoteUidMap, earliestDate);
+            syncRemoveRemoteDeletedMessages(account, folder, listener, localFolder, localMessages, remoteUidMap);
 
 
-                List<? extends Message> remoteMessageArray = remoteFolder.getMessages(remoteStart, remoteEnd, earliestDate, null);
-
-                int messageCount = remoteMessageArray.size();
-
-                for (Message thisMess : remoteMessageArray) {
-                    headerProgress.incrementAndGet();
-                    for (MessagingListener l : getListeners(listener)) {
-                        l.synchronizeMailboxHeadersProgress(account, folder, headerProgress.get(), messageCount);
-                    }
-                    Message localMessage = localUidMap.get(thisMess.getUid());
-                    if (localMessage == null || !localMessage.olderThan(earliestDate)) {
-                        remoteMessages.add(thisMess);
-                        remoteUidMap.put(thisMess.getUid(), thisMess);
-                    }
-                }
-                if (K9.DEBUG)
-                    Log.v(K9.LOG_TAG, "SYNC: Got " + remoteUidMap.size() + " messages for folder " + folder);
-
-                for (MessagingListener l : getListeners(listener)) {
-                    l.synchronizeMailboxHeadersFinished(account, folder, headerProgress.get(), remoteUidMap.size());
-                }
-
-            } else if (remoteMessageCount < 0) {
-                throw new Exception("Message count " + remoteMessageCount + " for folder " + folder);
-            }
-
-            /*
-             * Remove any messages that are in the local store but no longer on the remote store or are too old
-             */
-            if (account.syncRemoteDeletions()) {
-                List<Message> destroyMessages = new ArrayList<Message>();
-                for (Message localMessage : localMessages) {
-                    if (remoteUidMap.get(localMessage.getUid()) == null) {
-                        destroyMessages.add(localMessage);
-                    }
-                }
-
-
-                localFolder.destroyMessages(destroyMessages);
-
-                for (Message destroyMessage : destroyMessages) {
-                    for (MessagingListener l : getListeners(listener)) {
-                        l.synchronizeMailboxRemovedMessage(account, folder, destroyMessage);
-                    }
-                }
-            }
             localMessages = null;
 
             /*
@@ -1114,33 +1098,8 @@ public class MessagingController implements Runnable {
             for (MessagingListener l : getListeners()) {
                 l.folderStatusChanged(account, folder, unreadMessageCount);
             }
+            syncNotifyListeners(account, folder, listener, tLocalFolder, commandException, localFolder, remoteMessageCount, newMessages);
 
-            /* Notify listeners that we're finally done. */
-
-            localFolder.setLastChecked(System.currentTimeMillis());
-            localFolder.setStatus(null);
-
-            if (K9.DEBUG)
-                Log.d(K9.LOG_TAG, "Done synchronizing folder " + account.getDescription() + ":" + folder +
-                      " @ " + new Date() + " with " + newMessages + " new messages");
-
-            for (MessagingListener l : getListeners(listener)) {
-                l.synchronizeMailboxFinished(account, folder, remoteMessageCount, newMessages);
-            }
-
-
-            if (commandException != null) {
-                String rootMessage = getRootCauseMessage(commandException);
-                Log.e(K9.LOG_TAG, "Root cause failure in " + account.getDescription() + ":" +
-                      tLocalFolder.getName() + " was '" + rootMessage + "'");
-                localFolder.setStatus(rootMessage);
-                for (MessagingListener l : getListeners(listener)) {
-                    l.synchronizeMailboxFailed(account, folder, rootMessage);
-                }
-            }
-
-            if (K9.DEBUG)
-                Log.i(K9.LOG_TAG, "Done synchronizing folder " + account.getDescription() + ":" + folder);
 
         } catch (Exception e) {
             Log.e(K9.LOG_TAG, "synchronizeMailbox", e);
@@ -1172,6 +1131,105 @@ public class MessagingController implements Runnable {
             closeFolder(tLocalFolder);
         }
 
+    }
+
+    private void syncNotifyListeners(Account account, String folder, MessagingListener listener, LocalFolder tLocalFolder, Exception commandException, LocalFolder localFolder, int remoteMessageCount, int newMessages) throws MessagingException {
+    /* Notify listeners that we're finally done. */
+
+        localFolder.setLastChecked(System.currentTimeMillis());
+        localFolder.setStatus(null);
+
+        if (K9.DEBUG)
+            Log.d(K9.LOG_TAG, "Done synchronizing folder " + account.getDescription() + ":" + folder +
+                    " @ " + new Date() + " with " + newMessages + " new messages");
+
+        for (MessagingListener l : getListeners(listener)) {
+            l.synchronizeMailboxFinished(account, folder, remoteMessageCount, newMessages);
+        }
+
+
+        if (commandException != null) {
+            String rootMessage = getRootCauseMessage(commandException);
+            Log.e(K9.LOG_TAG, "Root cause failure in " + account.getDescription() + ":" +
+                  tLocalFolder.getName() + " was '" + rootMessage + "'");
+            localFolder.setStatus(rootMessage);
+            for (MessagingListener l : getListeners(listener)) {
+                l.synchronizeMailboxFailed(account, folder, rootMessage);
+            }
+        }
+
+        if (K9.DEBUG)
+            Log.i(K9.LOG_TAG, "Done synchronizing folder " + account.getDescription() + ":" + folder);
+    }
+
+    private void syncRemoveRemoteDeletedMessages(Account account, String folder, MessagingListener listener, LocalFolder localFolder, List<? extends Message> localMessages, Map<String, Message> remoteUidMap) {
+    /*
+     * Remove any messages that are in the local store but no longer on the remote store or are too old
+     */
+        if (account.syncRemoteDeletions()) {
+            List<Message> destroyMessages = new ArrayList<Message>();
+            for (Message localMessage : localMessages) {
+                if (remoteUidMap.get(localMessage.getUid()) == null) {
+                    destroyMessages.add(localMessage);
+                }
+            }
+
+
+            localFolder.destroyMessages(destroyMessages);
+
+            for (Message destroyMessage : destroyMessages) {
+                for (MessagingListener l : getListeners(listener)) {
+                    l.synchronizeMailboxRemovedMessage(account, folder, destroyMessage);
+                }
+            }
+        }
+    }
+
+    private void syncGetNewMessages(Account account, String folder, MessagingListener listener, Folder remoteFolder, Map<String, Message> localUidMap, int remoteMessageCount, int visibleLimit, List<Message> remoteMessages, Map<String, Message> remoteUidMap, Date earliestDate) throws Exception {
+        if (remoteMessageCount > 0) {
+            /* Message numbers start at 1.  */
+            int remoteStart;
+            if (visibleLimit > 0) {
+                remoteStart = Math.max(0, remoteMessageCount - visibleLimit) + 1;
+            } else {
+                remoteStart = 1;
+            }
+            int remoteEnd = remoteMessageCount;
+
+            if (K9.DEBUG)
+                Log.v(K9.LOG_TAG, "SYNC: About to get messages " + remoteStart + " through " + remoteEnd + " for folder " + folder);
+
+            final AtomicInteger headerProgress = new AtomicInteger(0);
+            for (MessagingListener l : getListeners(listener)) {
+                l.synchronizeMailboxHeadersStarted(account, folder);
+            }
+
+
+            List<? extends Message> remoteMessageArray = remoteFolder.getMessages(remoteStart, remoteEnd, earliestDate, null);
+
+            int messageCount = remoteMessageArray.size();
+
+            for (Message thisMess : remoteMessageArray) {
+                headerProgress.incrementAndGet();
+                for (MessagingListener l : getListeners(listener)) {
+                    l.synchronizeMailboxHeadersProgress(account, folder, headerProgress.get(), messageCount);
+                }
+                Message localMessage = localUidMap.get(thisMess.getUid());
+                if (localMessage == null || !localMessage.olderThan(earliestDate)) {
+                    remoteMessages.add(thisMess);
+                    remoteUidMap.put(thisMess.getUid(), thisMess);
+                }
+            }
+            if (K9.DEBUG)
+                Log.v(K9.LOG_TAG, "SYNC: Got " + remoteUidMap.size() + " messages for folder " + folder);
+
+            for (MessagingListener l : getListeners(listener)) {
+                l.synchronizeMailboxHeadersFinished(account, folder, headerProgress.get(), remoteUidMap.size());
+            }
+
+        } else if (remoteMessageCount < 0) {
+            throw new Exception("Message count " + remoteMessageCount + " for folder " + folder);
+        }
     }
 
 
@@ -1866,6 +1924,7 @@ public class MessagingController implements Runnable {
         }
         return messageChanged;
     }
+
     private String getRootCauseMessage(Throwable t) {
         Throwable rootCause = t;
         Throwable nextCause = rootCause;
@@ -2141,6 +2200,7 @@ public class MessagingController implements Runnable {
             closeFolder(localFolder);
         }
     }
+
     private void queueMoveOrCopy(Account account, String srcFolder, String destFolder, boolean isCopy, String uids[]) {
         if (account.getErrorFolderName().equals(srcFolder)) {
             return;
@@ -2658,6 +2718,10 @@ public class MessagingController implements Runnable {
 
     static long uidfill = 0;
     static AtomicBoolean loopCatch = new AtomicBoolean();
+
+    /**
+     * Add an error message to the given account. It automaticaly creates a message body.
+     */
     public void addErrorMessage(Account account, String subject, Throwable t) {
         try {
             if (t == null) {
@@ -2689,6 +2753,12 @@ public class MessagingController implements Runnable {
         }
     }
 
+    /**
+     * Add an error message to the given account.
+     * @param account The account to add the error message to.
+     * @param subject The subject of the error message.
+     * @param body The body of the error message.
+     */
     public void addErrorMessage(Account account, String subject, String body) {
         if (!K9.DEBUG) {
             return;
@@ -2727,7 +2797,11 @@ public class MessagingController implements Runnable {
     }
 
 
-
+    /**
+     * Create a task to mark all messages as read.
+     * @param account The account containing the folder.
+     * @param folder The folder containing messages to mark.
+     */
     public void markAllMessagesRead(final Account account, final String folder) {
 
         if (K9.DEBUG)
@@ -2741,6 +2815,13 @@ public class MessagingController implements Runnable {
         processPendingCommands(account);
     }
 
+    /**
+     * Create a task to set a flag to a list of messages.
+     * @param account The account containing the messages.
+     * @param messageIds The ids of the messages where the flag should be set.
+     * @param flag The flag to set.
+     * @param newState The state of the flag.
+     */
     public void setFlag(final Account account, final List<Long> messageIds, final Flag flag,
             final boolean newState) {
 
@@ -2754,6 +2835,13 @@ public class MessagingController implements Runnable {
         });
     }
 
+    /**
+     * Add a task to set flags for a message thead.
+     * @param account The account containing the thread.
+     * @param threadRootIds The id of the root message.
+     * @param flag The flag to set.
+     * @param newState The state to set the flag to.
+     */
     public void setFlagForThreads(final Account account, final List<Long> threadRootIds,
             final Flag flag, final boolean newState) {
 
@@ -2947,6 +3035,13 @@ public class MessagingController implements Runnable {
         }
     }
 
+    /**
+     * Add a command to fully download a message
+     * @param account Account containing the folder.
+     * @param folder The folder containing the message.
+     * @param uid The uid of the message to download.
+     * @param listener The listener to notify.
+     */
     public void loadMessageForViewRemote(final Account account, final String folder,
                                          final String uid, final MessagingListener listener) {
         put("loadMessageForViewRemote", listener, new Runnable() {
@@ -3058,6 +3153,13 @@ public class MessagingController implements Runnable {
         }
     }
 
+    /**
+     * Get the message to display it.
+     * @param account The account containing the folder.
+     * @param folder The folder containing the message.
+     * @param uid The uid of the message to load.
+     * @param listener The listener to notify.
+     */
     public void loadMessageForView(final Account account, final String folder, final String uid,
                                    final MessagingListener listener) {
         for (MessagingListener l : getListeners(listener)) {
@@ -3120,6 +3222,14 @@ public class MessagingController implements Runnable {
         });
     }
 
+    /**
+     * Returns the local message with the given uid.
+     * @param account The account containing the folder.
+     * @param folderName The folder containing the message.
+     * @param uid The uid of the message.
+     * @return A local message with the given uid.
+     * @throws MessagingException
+     */
     public LocalMessage loadMessage(Account account, String folderName, String uid) throws MessagingException {
         LocalStore localStore = account.getLocalStore();
         LocalFolder localFolder = localStore.getFolder(folderName);
@@ -3151,6 +3261,13 @@ public class MessagingController implements Runnable {
         }
     }
 
+    /**
+     * Add a command to load an attachment.
+     * @param account The account the message belongs to.
+     * @param message The message with the attachment.
+     * @param part The part of the attachment that should be loaded.
+     * @param listener The listener to notify.
+     */
     public void loadAttachment(final Account account, final LocalMessage message, final Part part,
             final MessagingListener listener) {
 
@@ -3916,6 +4033,11 @@ public class MessagingController implements Runnable {
         });
     }
 
+    /**
+     * Delete a draft.
+     * @param account The account the draft belongs to.
+     * @param id The id of the draft.
+     */
     public void deleteDraft(final Account account, long id) {
         LocalFolder localFolder = null;
         try {
@@ -3936,6 +4058,10 @@ public class MessagingController implements Runnable {
         }
     }
 
+    /**
+     * Delete a message thread
+     * @param messages The messages which threads should be deleted.
+     */
     public void deleteThreads(final List<LocalMessage> messages) {
         actOnMessages(messages, new MessageActor() {
 
@@ -3968,6 +4094,13 @@ public class MessagingController implements Runnable {
         }
     }
 
+    /**
+     * Return a list of messages belonging to a message thread.
+     * @param account The account the messages belong to.
+     * @param messages The the messages whose thrads should be collected.
+     * @return A list of messages belonging to threads.
+     * @throws MessagingException
+     */
     public List<Message> collectMessagesInThreads(Account account, List<? extends Message> messages)
             throws MessagingException {
 
@@ -3987,6 +4120,11 @@ public class MessagingController implements Runnable {
         return messagesInThreads;
     }
 
+    /**
+     * Add a command to delete messages.
+     * @param messages The messages to delete.
+     * @param listener The listener to notify.
+     */
     public void deleteMessages(final List<LocalMessage> messages, final MessagingListener listener) {
         actOnMessages(messages, new MessageActor() {
 
@@ -4205,6 +4343,11 @@ public class MessagingController implements Runnable {
         }
     }
 
+    /**
+     * Add a command to empty the trash.
+     * @param account The account whose trash should be deleted.
+     * @param listener The listener to notify.
+     */
     public void emptyTrash(final Account account, MessagingListener listener) {
         putBackground("emptyTrash", listener, new Runnable() {
             @Override
@@ -4266,6 +4409,12 @@ public class MessagingController implements Runnable {
         return (account.getRemoteStore() instanceof Pop3Store);
     }
 
+    /**
+     * Add a command to send a message with an alternative program.
+     * @param context The context we are in.
+     * @param account The account to use.
+     * @param message The message to send.
+     */
     public void sendAlternate(final Context context, Account account, Message message) {
         if (K9.DEBUG)
             Log.d(K9.LOG_TAG, "About to load message " + account.getDescription() + ":" + message.getFolder().getName()
@@ -4547,7 +4696,11 @@ public class MessagingController implements Runnable {
     }
 
 
-
+    /**
+     * Add a command to compress message storage.
+     * @param account The account to compress space.
+     * @param ml The listener to notify.
+     */
     public void compact(final Account account, final MessagingListener ml) {
         putBackground("compact:" + account.getDescription(), ml, new Runnable() {
             @Override
@@ -4570,6 +4723,11 @@ public class MessagingController implements Runnable {
         });
     }
 
+    /**
+     * Delete localy stored mails.
+     * @param account The account whose messages should be cleared.
+     * @param ml The listener to notify.
+     */
     public void clear(final Account account, final MessagingListener ml) {
         putBackground("clear:" + account.getDescription(), ml, new Runnable() {
             @Override
@@ -4598,6 +4756,11 @@ public class MessagingController implements Runnable {
         });
     }
 
+    /**
+     * Add a command to recreate the database.
+     * @param account The account whose database should be recreated.
+     * @param ml The listener to notify
+     */
     public void recreate(final Account account, final MessagingListener ml) {
         putBackground("recreate:" + account.getDescription(), ml, new Runnable() {
             @Override
@@ -5328,6 +5491,11 @@ public class MessagingController implements Runnable {
         return localMessage;
     }
 
+    /**
+     * returns the uid of a message.
+     * @param message The message whose uid should be returned.
+     * @return The uid of the given message.
+     */
     public long getId(Message message) {
         long id;
         if (message instanceof LocalMessage) {
@@ -5397,6 +5565,9 @@ public class MessagingController implements Runnable {
         return pushers.values();
     }
 
+    /**
+     * Setup pushing service for a given account.
+     */
     public boolean setupPushing(final Account account) {
         try {
             Pusher previousPusher = pushers.remove(account);
@@ -5510,6 +5681,9 @@ public class MessagingController implements Runnable {
         }
     }
 
+    /**
+     * Add a background command to download new messages.
+     */
     public void messagesArrived(final Account account, final Folder remoteFolder, final List<Message> messages, final boolean flagSyncOnly) {
         if (K9.DEBUG)
             Log.i(K9.LOG_TAG, "Got new pushed email messages for account " + account.getDescription()

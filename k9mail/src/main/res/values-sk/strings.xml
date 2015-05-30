@@ -5,8 +5,8 @@
   <!--Used in AndroidManifest.xml-->
   <string name="app_name">SMile</string>
   <string name="beta_app_name">SMile BETA</string>
-  <string name="shortcuts_title">K-9 Účty</string>
-  <string name="unread_widget_label">K-9 Neprečítaná</string>
+  <string name="shortcuts_title">SMile Účty</string>
+  <string name="unread_widget_label">SMile Neprečítaná</string>
   <string name="remote_control_label">diaľkové ovládanie SMile</string>
   <string name="remote_control_desc">Umožňuje tejto aplikácii ovládať aktivity a nastavenia SMile.</string>
   <!--Used in the about dialog-->
@@ -41,7 +41,7 @@ Jeho vylepšené funkcie zahŕňajú:
 Vezmite, prosím, na vedomie, že SMile nepodporuje väčšinu bezplatných účtov Hotmail a ako mnoho ďalších e-mailových klientov vykazuje zvláštnosti pri komunikácii s Microsoft Exchange.
 </p><p>
 Prosím, nahlasujte prípadné chyby, prispievajte novými funkciami a pýtajte sa na
-<a href=\"http://k9mail.googlecode.com/\">http://k9mail.googlecode.com/</a>.
+<a href=\"https://github.com/FAU-Inf2/SMile/\">https://github.com/FAU-Inf2/SMile/</a>.
 </p>
     ]]></string>
   <!--Default signature-->
@@ -270,7 +270,7 @@ Prosím, nahlasujte prípadné chyby, prispievajte novými funkciami a pýtajte 
   <string name="global_settings_confirm_action_delete_starred">Vymazať správy s hviezdičkou (v zobrazení správ)</string>
   <string name="global_settings_confirm_action_spam">Nevyžiadaná pošta</string>
   <string name="global_settings_confirm_action_delete_notif">Vymazať (z oznámení)</string>
-  <string name="global_settings_privacy_hide_useragent">Odstrániť používateľského agenta K-9 z hlavičiek správ</string>
+  <string name="global_settings_privacy_hide_useragent">Odstrániť používateľského agenta SMile z hlavičiek správ</string>
   <string name="global_settings_privacy_hide_timezone">Použiť UTC ako časové pásmo v hlavičkách správ</string>
   <string name="global_settings_notification_hide_subject_title">Skryť predmet v oznámení</string>
   <string name="global_settings_notification_hide_subject_never">Nikdy</string>

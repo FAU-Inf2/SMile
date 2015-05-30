@@ -5,9 +5,9 @@
   <!--Used in AndroidManifest.xml-->
   <string name="app_name">SMile</string>
   <string name="beta_app_name">SMile BETA</string>
-  <string name="shortcuts_title">K-9 kontuak</string>
-  <string name="unread_widget_label">K-9 irakurgabeak</string>
-  <string name="remote_control_label">K-9 urruneko kontrola</string>
+  <string name="shortcuts_title">SMile kontuak</string>
+  <string name="unread_widget_label">SMile irakurgabeak</string>
+  <string name="remote_control_label">SMile urruneko kontrola</string>
   <string name="remote_control_desc">Aplikazio honi SMile aktibitate eta ezarpenak kontrolatzea ahalbidetzen du.</string>
   <!--Used in the about dialog-->
   <string name="app_authors">Google, The K-9 Dog Walkers.</string>
@@ -38,10 +38,10 @@ Ezaugarri nagusienak:
   <li>…eta gehiago</li>
 </ul>
 <p>
-Mesedez kontutan hartu K-9 ezin dituela Hotmail kontu gehienak erabili, eta eposta bezero asko bezala, arazoak dituela Microsoft Exchangerekin komunikatzean.
+Mesedez kontutan hartu SMile ezin dituela Hotmail kontu gehienak erabili, eta eposta bezero asko bezala, arazoak dituela Microsoft Exchangerekin komunikatzean.
 </p><p>
 Arazoen berri emateko, ezaugarri berriak gehitzeko eta galderak egiteko 
-<a href=\"http://k9mail.googlecode.com/\">http://k9mail.googlecode.com/</a> erabili.
+<a href=\"https://github.com/FAU-Inf2/SMile/\">https://github.com/FAU-Inf2/SMile/</a> erabili.
 </p>
     ]]></string>
   <!--Default signature-->

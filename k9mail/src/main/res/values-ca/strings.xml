@@ -6,7 +6,7 @@
   <string name="app_name">SMile</string>
   <string name="beta_app_name">SMile BETA</string>
   <string name="shortcuts_title">Comptes K-9</string>
-  <string name="unread_widget_label">K-9 no llegits</string>
+  <string name="unread_widget_label">SMile no llegits</string>
   <string name="remote_control_label">Control remot del Correu SMile</string>
   <string name="remote_control_desc">Permet a aquesta aplicació controlar les activitats i la configuració de SMile.</string>
   <!--Used in the about dialog-->
@@ -17,9 +17,9 @@
   <string name="welcome_message_title">Us donem la benvinguda a SMile</string>
   <string name="accounts_welcome"><![CDATA[
 <p>
-El K-9 és un client de codi obert per Android, originalment basat en l\'estàndard de client de Correu d\'Android.
+El SMile és un client de codi obert per Android, originalment basat en l\'estàndard de client de Correu d\'Android.
 </p><p>
-El K-9 inclou les característiques millorades de:
+El SMile inclou les característiques millorades de:
 </p>
 <ul>
   <li>Push mail utilitzant IMAP IDLE</li>
@@ -38,10 +38,10 @@ El K-9 inclou les característiques millorades de:
   <li>…i més</li>
 </ul>
 <p>
-Si us plau, tingueu en compte que el K-9 no funciona amb la majoria de comptes Hotmail gratuïts i, com molts clients de correu, fa coses estranyes quan es comunica amb Microsoft Exchange.
+Si us plau, tingueu en compte que el SMile no funciona amb la majoria de comptes Hotmail gratuïts i, com molts clients de correu, fa coses estranyes quan es comunica amb Microsoft Exchange.
 </p><p>
 Si us plau, envia\'ns els errors, contribueix a millorar-lo a
-<a href=\"http://k9mail.googlecode.com/\">http://k9mail.googlecode.com/</a>.
+<a href=\"https://github.com/FAU-Inf2/SMile\">https://github.com/FAU-Inf2/SMile/</a>.
 </p>
     ]]></string>
   <!--Default signature-->

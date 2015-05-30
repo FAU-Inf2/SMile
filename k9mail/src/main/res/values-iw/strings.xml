@@ -5,9 +5,9 @@
   <!--Used in AndroidManifest.xml-->
   <string name="app_name">SMile</string>
   <string name="beta_app_name">SMile BETA</string>
-  <string name="shortcuts_title">חשבונות K-9</string>
+  <string name="shortcuts_title">חשבונות SMile</string>
   <string name="remote_control_label">SMile שליטה מרחוק</string>
-  <string name="remote_control_desc">אפשר לK-9 לשלוט בהגדרות פעילות הדואר.</string>
+  <string name="remote_control_desc">אפשר לSMile לשלוט בהגדרות פעילות הדואר.</string>
   <!--Used in the about dialog-->
   <string name="app_authors">Google, The K-9 Dog Walkers.</string>
   <string name="app_copyright_fmt">Copyright 2008-<xliff:g>%s</xliff:g> The K-9 Dog Walkers. Portions Copyright 2006-<xliff:g>%s</xliff:g> the Android Open Source Project.</string>
@@ -15,9 +15,9 @@
   <!--Welcome message-->
   <string name="accounts_welcome"><![CDATA[
 <p>
-ברוכים הבאים ל-K-9 הגדרת דואר. K-9 הוא קוד פתוח של תוכנת מייל לאנדרואיד המבוססת במקור על תוכנת המייל הסטנדרטית של האנדרואיד
+ברוכים הבאים ל-SMile הגדרת דואר. SMile הוא קוד פתוח של תוכנת מייל לאנדרואיד המבוססת במקור על תוכנת המייל הסטנדרטית של האנדרואיד
 </p><p>
-תכונות משופרות של K-9 כוללת:
+תכונות משופרות של SMile כוללת:
 </p>
 <ul>
   <li>דחוף דואר באמצעות IMAP IDLE</li>
@@ -36,10 +36,10 @@
   <li>ועוד …</li>
 </ul>
 <p>
-לידיעתך, K-9 אינו תומך ברוב חשבונות Hotmail החינמיים, כמו תוכנות דואר רבות, יש כמה מוזרויות כאשר מדברים על Microsoft Exchange.
+לידיעתך, SMile אינו תומך ברוב חשבונות Hotmail החינמיים, כמו תוכנות דואר רבות, יש כמה מוזרויות כאשר מדברים על Microsoft Exchange.
 </p><p>
 נא לשלוח דיווחי באגים, לתרום תכונות חדשות ולשאול שאלות על
-<a href=\"http://k9mail.googlecode.com/\">http://k9mail.googlecode.com/</a>.
+<a href=\"https://github.com/FAU-Inf2/SMile/\">https://github.com/FAU-Inf2/SMile/</a>.
 </p>
     ]]></string>
   <!--Default signature-->

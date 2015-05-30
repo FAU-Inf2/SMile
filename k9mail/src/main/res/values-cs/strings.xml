@@ -5,8 +5,8 @@
   <!--Used in AndroidManifest.xml-->
   <string name="app_name">SMile</string>
   <string name="beta_app_name">SMile BETA</string>
-  <string name="shortcuts_title">Účty K-9</string>
-  <string name="unread_widget_label">K-9 Nepřečtená</string>
+  <string name="shortcuts_title">Účty SMile</string>
+  <string name="unread_widget_label">SMile Nepřečtená</string>
   <string name="remote_control_label">Dálkové ovládání pošty SMile</string>
   <string name="remote_control_desc">Povolit této aplikaci ovládat aktivity a nastavení pošty SMile.</string>
   <!--Used in the about dialog-->
@@ -17,9 +17,9 @@
   <string name="welcome_message_title">Vítejte v SMile</string>
   <string name="accounts_welcome"><![CDATA[
 <p>
-K-9 je open source poštovní klient pro Android původně založený na standardním klientovi E-mail v Androidu.
+SMile je open source poštovní klient pro Android původně založený na K-9.
 </p><p>
-Vylepšené funkce K-9 zahrnují:
+Vylepšené funkce SMile zahrnují:
 </p>
 <ul>
   <li>Podpora rozšíření Push při použití IMAP IDLE</li>
@@ -38,10 +38,10 @@ Vylepšené funkce K-9 zahrnují:
   <li>…a další</li>
 </ul>
 <p>
-Všimněte si prosím, že K-9 nepodporuje většinu bezplatných účtů Hotmail a jako mnoho poštovních klientů vykazuje zvláštnosti při komunikaci s Microsoft Exchange.
+Všimněte si prosím, že SMile nepodporuje většinu bezplatných účtů Hotmail a jako mnoho poštovních klientů vykazuje zvláštnosti při komunikaci s Microsoft Exchange.
 </p><p>
 Posílejte prosím chybová hlášení, přispívejte novými funkcemi a ptejte se na
-<a href=\"http://k9mail.googlecode.com/\">http://k9mail.googlecode.com/</a>.
+<a href=\"https://github.com/FAU-Inf2/SMile/\">https://github.com/FAU-Inf2/SMile/</a>.
 </p>
     ]]></string>
   <!--Default signature-->
@@ -271,7 +271,7 @@ Posílejte prosím chybová hlášení, přispívejte novými funkcemi a ptejte 
   <string name="global_settings_confirm_action_delete_starred">Smaž zprávy s hvězdičkou (v zobrazení zpráv)</string>
   <string name="global_settings_confirm_action_spam">Nevyžádaná</string>
   <string name="global_settings_confirm_action_delete_notif">Smazat (z oznámení)</string>
-  <string name="global_settings_privacy_hide_useragent">Odstraň K-9 Agenta z hlaviček emailů</string>
+  <string name="global_settings_privacy_hide_useragent">Odstraň SMile Agenta z hlaviček emailů</string>
   <string name="global_settings_privacy_hide_timezone">Použít UTC čas v hlavičkách emailů </string>
   <string name="global_settings_notification_hide_subject_title">Schovej předmet v upozorněních</string>
   <string name="global_settings_notification_hide_subject_never">Nikdy</string>

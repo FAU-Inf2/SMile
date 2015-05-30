@@ -8,8 +8,8 @@
     <string name="app_name">SMile</string>
     <string name="beta_app_name">SMile BETA</string>
 
-    <string name="shortcuts_title">K-9 Accounts</string>
-    <string name="unread_widget_label">K-9 Unread</string>
+    <string name="shortcuts_title">SMile Accounts</string>
+    <string name="unread_widget_label">SMile Unread</string>
 
     <string name="remote_control_label">SMile remote control</string>
     <string name="remote_control_desc">Allows this application to control SMile activities and settings.</string>
@@ -25,7 +25,7 @@
     <string name="welcome_message_title">Welcome to SMile</string>
     <string name="accounts_welcome"><![CDATA[
 <p>
-SMile is a powerful free email client for Android.
+SMile is a powerful free email client for Android based on K-9.
 </p><p>
 Its improved features include:
 </p>
@@ -46,11 +46,11 @@ Its improved features include:
   <li>…and more</li>
 </ul>
 <p>
-Please note that K-9 does not support most free Hotmail accounts and, like many mail clients, has
+Please note that SMile does not support most free Hotmail accounts and, like many mail clients, has
 some quirks when talking to Microsoft Exchange.
 </p><p>
 Please submit bug reports, contribute new features and ask questions at
-<a href="http://k9mail.googlecode.com/">http://k9mail.googlecode.com/</a>.
+<a href="https://github.com/FAU-Inf2/SMile">https://github.com/FAU-Inf2/SMile/</a>.
 </p>
     ]]></string>
 
@@ -331,7 +331,7 @@ Please submit bug reports, contribute new features and ask questions at
     <string name="global_settings_confirm_action_spam">Spam</string>
     <string name="global_settings_confirm_action_delete_notif">Delete (from notification)</string>
 
-    <string name="global_settings_privacy_hide_useragent">Remove K-9 User-Agent from mail headers</string>
+    <string name="global_settings_privacy_hide_useragent">Remove SMile User-Agent from mail headers</string>
     <string name="global_settings_privacy_hide_timezone">Use UTC as time zone in mail headers</string>
     <string name="global_settings_notification_hide_subject_title">Hide subject in notifications</string>
     <string name="global_settings_notification_hide_subject_never">Never</string>

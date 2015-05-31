@@ -11,6 +11,7 @@ import com.fsck.k9.Preferences;
 import com.fsck.k9.activity.MessageReference;
 import com.fsck.k9.Account;
 import com.fsck.k9.mail.Folder;
+import com.fsck.k9.mail.FollowUpItem;
 import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mailstore.LocalFolder;
@@ -23,47 +24,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class FollowUpService extends CoreService {
-
-    public class FollowUpItem {
-        private String title;
-        private Date remindTime;
-        private MessageReference reference;
-
-        public FollowUpItem(String title, Date remindTime) {
-            this(title, remindTime, null);
-        }
-
-        public FollowUpItem(String title, Date remindTime, MessageReference reference) {
-            setTitle(title);
-            setRemindTime(remindTime);
-            setReference(reference);
-        }
-
-        public Date getRemindTime() {
-            return remindTime;
-        }
-
-        public void setRemindTime(Date remindTime) {
-            this.remindTime = remindTime;
-        }
-
-        public String getTitle() {
-            return title;
-        }
-
-        public void setTitle(String title) {
-            this.title = title;
-        }
-
-        public MessageReference getReference() {
-            return reference;
-        }
-
-        public void setReference(MessageReference reference) {
-            this.reference = reference;
-        }
-
-    }
 
     @Override
     public void onCreate() {

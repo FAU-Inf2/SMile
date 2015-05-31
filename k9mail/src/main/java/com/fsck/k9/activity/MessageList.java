@@ -1,7 +1,9 @@
 package com.fsck.k9.activity;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
+import java.util.TreeSet;
 
 import android.app.ActionBar;
 import android.app.SearchManager;
@@ -23,6 +25,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
+import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -40,6 +44,9 @@ import com.fsck.k9.activity.setup.Prefs;
 import com.fsck.k9.crypto.PgpData;
 import com.fsck.k9.fragment.MessageListFragment;
 import com.fsck.k9.fragment.MessageListFragment.MessageListFragmentListener;
+import com.fsck.k9.fragment.SmsListFragment;
+import com.fsck.k9.mail.Address;
+import com.fsck.k9.search.ConditionsTreeNode;
 import com.fsck.k9.ui.messageview.MessageViewFragment;
 import com.fsck.k9.ui.messageview.MessageViewFragment.MessageViewFragmentListener;
 import com.fsck.k9.mailstore.StorageManager;
@@ -137,6 +144,7 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
     private enum DisplayMode {
         MESSAGE_LIST,
         MESSAGE_VIEW,
+        SMS_LIST,
         SPLIT_VIEW
     }
 
@@ -158,6 +166,8 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
     private MessageListFragment mMessageListFragment;
     private MessageViewFragment mMessageViewFragment;
     private int mFirstBackStackId = -1;
+
+    private LinearLayout leftLinearLayoutContacts;
 
     private Account mAccount;
     private String mFolderName;
@@ -207,6 +217,8 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
             mViewSwitcher.setFirstOutAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_out_right));
             mViewSwitcher.setSecondInAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_in_right));
             mViewSwitcher.setSecondOutAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_out_left));
+            mViewSwitcher.setThirdInAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_in_left));
+            mViewSwitcher.setThirdOutAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_out_left));
             mViewSwitcher.setOnSwitchCompleteListener(this);
         }
 
@@ -774,6 +786,7 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
             // MessageList
             case R.id.check_mail: {
                 mMessageListFragment.checkMail();
+                if (mDisplayMode == DisplayMode.SMS_LIST) fillContacts(mMessageListFragment);
                 return true;
             }
             case R.id.set_sort_date: {
@@ -893,6 +906,13 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
             case R.id.hide_headers: {
                 mMessageViewFragment.onToggleAllHeadersView();
                 updateMenu();
+                return true;
+            }
+            case R.id.goto_sms_like_view: {
+                if (mDisplayMode == DisplayMode.MESSAGE_LIST)
+                    showSmsView();
+                else if (mDisplayMode == DisplayMode.SMS_LIST)
+                    showMessageList();
                 return true;
             }
         }
@@ -1091,6 +1111,7 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
             menu.findItem(R.id.expunge).setVisible(false);
             menu.findItem(R.id.mark_all_as_read).setVisible(false);
             menu.findItem(R.id.show_folder_list).setVisible(false);
+            menu.findItem(R.id.goto_sms_like_view).setVisible(false);
         } else {
             menu.findItem(R.id.set_sort).setVisible(true);
             menu.findItem(R.id.select_all).setVisible(true);
@@ -1240,14 +1261,14 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
 
     @Override
     public void onSwipeRightToLeft(MotionEvent e1, MotionEvent e2) {
-        if (mMessageListFragment != null && mDisplayMode != DisplayMode.MESSAGE_VIEW) {
+        if (mMessageListFragment != null && mDisplayMode != DisplayMode.MESSAGE_VIEW && mDisplayMode != DisplayMode.SMS_LIST) {
             mMessageListFragment.onSwipeRightToLeft(e1, e2);
         }
     }
 
     @Override
     public void onSwipeLeftToRight(MotionEvent e1, MotionEvent e2) {
-        if (mMessageListFragment != null && mDisplayMode != DisplayMode.MESSAGE_VIEW) {
+        if (mMessageListFragment != null && mDisplayMode != DisplayMode.MESSAGE_VIEW && mDisplayMode != DisplayMode.SMS_LIST) {
             mMessageListFragment.onSwipeLeftToRight(e1, e2);
         }
     }
@@ -1274,7 +1295,11 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
     private void addMessageListFragment(MessageListFragment fragment, boolean addToBackStack) {
         FragmentTransaction ft = getFragmentManager().beginTransaction();
 
-        ft.replace(R.id.message_list_container, fragment);
+        if (mDisplayMode != DisplayMode.SMS_LIST)
+            ft.replace(R.id.message_list_container, fragment);
+        else
+            ft.replace(R.id.sms_message_list_container, fragment);
+
         if (addToBackStack)
             ft.addToBackStack(null);
 
@@ -1477,6 +1502,9 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
 
     private void showMessageList() {
         mMessageListWasDisplayed = true;
+
+        switchMessageListFragment(R.id.message_list_container);
+
         mDisplayMode = DisplayMode.MESSAGE_LIST;
         mViewSwitcher.showFirstView();
 
@@ -1484,6 +1512,100 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
 
         showDefaultTitleView();
         configureMenu(mMenu);
+    }
+
+    private void showSmsView(){
+        mMessageListWasDisplayed = true;
+
+        switchMessageListFragment(R.id.sms_message_list_container);
+
+        mDisplayMode = DisplayMode.SMS_LIST;
+        mViewSwitcher.showThirdView();
+
+        mMessageListFragment.setActiveMessage(null);
+
+        fillContacts(mMessageListFragment);
+
+        showDefaultTitleView();
+        configureMenu(mMenu);
+    }
+
+    private void fillContacts(MessageListFragment fragment){
+
+        leftLinearLayoutContacts = (LinearLayout) findViewById(R.id.smsLikeView_leftlinear_contacts);
+
+        leftLinearLayoutContacts.removeAllViews();
+
+        List<MessageReference> list = fragment.getMessageReferences();
+
+        TreeSet<Address> addressSet = new TreeSet<Address>(new Comparator<Address>() {
+            @Override
+            public int compare(Address lhs, Address rhs) {
+                    if (lhs.equals(rhs)) return 0;
+                    return lhs.getAddress().compareTo(rhs.getAddress());
+            }
+        });
+
+
+        for(MessageReference ref : list){
+            LocalMessage msg = ref.restoreToLocalMessage(this);
+            msg.getRootId();
+            Address[] addresses = msg.getFrom();
+            for (Address address : addresses)
+                addressSet.add(address);
+        }
+
+        final Button[] buttons = new Button[addressSet.size()];
+        int i = 0;
+        for (final Address address: addressSet){
+            final String senderAddress = address.getAddress();
+            Button button = new Button(this);
+            buttons[i++] = button;
+            button.setText(senderAddress);
+            button.setTag(address);
+            leftLinearLayoutContacts.addView(button);
+        }
+
+        for (final Button button : buttons){
+            final String senderAddress = ((Address) button.getTag()).getAddress();
+            button.setOnClickListener(new View.OnClickListener() {
+
+
+                private SmsListFragment getFragmentForSender(){
+                    LocalSearch tmpSearch = new LocalSearch();
+                    tmpSearch.addAccountUuids(mSearch.getAccountUuids());
+
+                   try {
+                       tmpSearch.or (new ConditionsTreeNode(new SearchCondition(SearchField.SENDER, Attribute.CONTAINS, senderAddress))
+                                .and(new ConditionsTreeNode(new SearchCondition(SearchField.FOLDER, Attribute.EQUALS,   mFolderName))));
+
+              //         tmpSearch.or (new ConditionsTreeNode(new SearchCondition(SearchField.FOLDER, Attribute.EQUALS,   mAccount.getSentFolderName()))
+              //                  .and(new ConditionsTreeNode(new SearchCondition(SearchField.TO,     Attribute.CONTAINS, senderAddress))));
+
+                   }catch (Exception e){};
+
+                    SmsListFragment frag = SmsListFragment.newInstance(tmpSearch, false, true);
+                    return frag;
+
+                }
+
+                public void onClick(View v) {
+
+                    SmsListFragment fragment = getFragmentForSender();
+
+                    displayContactMessages(fragment);
+
+                    button.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_dark));
+                    for (Button buttonOther : buttons){
+                        if (!button.equals(buttonOther))buttonOther.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_light));
+                    }
+                }
+            });
+        }
+
+        if (buttons.length > 0) buttons[0].callOnClick();
+
+
     }
 
     private void showMessageView() {
@@ -1496,6 +1618,47 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
 
         showMessageTitleView();
         configureMenu(mMenu);
+    }
+
+    private void switchMessageListFragment(int toViewID){
+        View vMessageList = mMessageListFragment.getView();
+
+        if (vMessageList == null) return;
+
+        ViewGroup parent = (ViewGroup) vMessageList.getParent();
+        ViewGroup parentNew = (ViewGroup) findViewById(toViewID);
+
+            if (parentNew != null){
+                if (parent != null && !parent.equals(parentNew)) {
+                    parent.removeView(vMessageList);
+                    parent.clearDisappearingChildren();
+                }
+                parentNew.removeAllViews();
+                parentNew.addView(vMessageList, parentNew.getLayoutParams());
+                parentNew.bringChildToFront(vMessageList);
+            }
+    }
+
+    private void displayContactMessages(MessageListFragment fragment){
+
+        View vMessageList = mMessageListFragment.getView();
+
+        if (vMessageList != null) {
+
+            ViewGroup parent = (ViewGroup) vMessageList.getParent();
+            if (parent != null) {
+                parent.removeView(vMessageList);
+            }
+        }
+        FragmentManager fm = getFragmentManager();
+        FragmentTransaction transaction = fm.beginTransaction();
+        transaction.replace(R.id.sms_message_list_container, fragment);
+        transaction.commit();
+    }
+
+    @Override
+    public void showSMS(Account account, String FolderName, long rootId, MessageReference messageReference){
+
     }
 
     @Override

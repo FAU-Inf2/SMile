@@ -44,6 +44,7 @@ import com.fsck.k9.activity.setup.Prefs;
 import com.fsck.k9.crypto.PgpData;
 import com.fsck.k9.fragment.MessageListFragment;
 import com.fsck.k9.fragment.MessageListFragment.MessageListFragmentListener;
+import com.fsck.k9.fragment.SmsListFragment;
 import com.fsck.k9.mail.Address;
 import com.fsck.k9.search.ConditionsTreeNode;
 import com.fsck.k9.ui.messageview.MessageViewFragment;
@@ -1570,7 +1571,7 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
             button.setOnClickListener(new View.OnClickListener() {
 
 
-                private MessageListFragment getFragmentForSender(){
+                private SmsListFragment getFragmentForSender(){
                     LocalSearch tmpSearch = new LocalSearch();
                     tmpSearch.addAccountUuids(mSearch.getAccountUuids());
 
@@ -1583,14 +1584,14 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
 
                    }catch (Exception e){};
 
-                    MessageListFragment frag = MessageListFragment.newInstance(tmpSearch, false, true);
+                    SmsListFragment frag = SmsListFragment.newInstance(tmpSearch, false, true);
                     return frag;
 
                 }
 
                 public void onClick(View v) {
 
-                    MessageListFragment fragment = getFragmentForSender();
+                    SmsListFragment fragment = getFragmentForSender();
 
                     displayContactMessages(fragment);
 

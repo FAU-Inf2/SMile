@@ -336,9 +336,25 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
     private static final int ACTIVITY_CHOOSE_FOLDER_MOVE = 1;
     private static final int ACTIVITY_CHOOSE_FOLDER_COPY = 2;
 
+    public static String getArgSearch() {
+        return ARG_SEARCH;
+    }
+
     private static final String ARG_SEARCH = "searchObject";
+
+    public static String getArgThreadedList() {
+        return ARG_THREADED_LIST;
+    }
+
     private static final String ARG_THREADED_LIST = "threadedList";
+
+    public static String getArgIsThreadDisplay() {
+        return ARG_IS_THREAD_DISPLAY;
+    }
+
     private static final String ARG_IS_THREAD_DISPLAY = "isThreadedDisplay";
+
+
 
     private static final String STATE_SELECTED_MESSAGES = "selectedMessages";
     private static final String STATE_ACTIVE_MESSAGE = "activeMessage";

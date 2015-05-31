@@ -146,12 +146,12 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
     private static final int ANSWERED_COLUMN = 10;
     private static final int FORWARDED_COLUMN = 11;
     private static final int ATTACHMENT_COUNT_COLUMN = 12;
-    private static final int FOLDER_ID_COLUMN = 13;
+    protected static final int FOLDER_ID_COLUMN = 13;
     private static final int PREVIEW_COLUMN = 14;
-    private static final int THREAD_ROOT_COLUMN = 15;
+    protected static final int THREAD_ROOT_COLUMN = 15;
     private static final int ACCOUNT_UUID_COLUMN = 16;
     private static final int FOLDER_NAME_COLUMN = 17;
-    private static final int THREAD_COUNT_COLUMN = 18;
+    protected static final int THREAD_COUNT_COLUMN = 18;
 
     private static final String[] PROJECTION = Arrays.copyOf(THREADED_PROJECTION,
             THREAD_COUNT_COLUMN);
@@ -336,23 +336,11 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
     private static final int ACTIVITY_CHOOSE_FOLDER_MOVE = 1;
     private static final int ACTIVITY_CHOOSE_FOLDER_COPY = 2;
 
-    public static String getArgSearch() {
-        return ARG_SEARCH;
-    }
+    protected static final String ARG_SEARCH = "searchObject";
 
-    private static final String ARG_SEARCH = "searchObject";
+    protected static final String ARG_THREADED_LIST = "threadedList";
 
-    public static String getArgThreadedList() {
-        return ARG_THREADED_LIST;
-    }
-
-    private static final String ARG_THREADED_LIST = "threadedList";
-
-    public static String getArgIsThreadDisplay() {
-        return ARG_IS_THREAD_DISPLAY;
-    }
-
-    private static final String ARG_IS_THREAD_DISPLAY = "isThreadedDisplay";
+    protected static final String ARG_IS_THREAD_DISPLAY = "isThreadedDisplay";
 
 
 
@@ -391,15 +379,16 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
 
 
     private MessageListAdapter mAdapter;
-    private View mFooterView;
 
-    private FolderInfoHolder mCurrentFolder;
+    protected View mFooterView;
+
+    protected FolderInfoHolder mCurrentFolder;
 
     private LayoutInflater mInflater;
 
-    private MessagingController mController;
+    protected MessagingController mController;
 
-    private Account mAccount;
+    protected Account mAccount;
     private String[] mAccountUuids;
     private int mUnreadMessageCount = 0;
 
@@ -410,14 +399,14 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
     /**
      * Stores the name of the folder that we want to open as soon as possible after load.
      */
-    private String mFolderName;
+    protected String mFolderName;
 
     private boolean mRemoteSearchPerformed = false;
     private Future<?> mRemoteSearchFuture = null;
     public List<Message> mExtraSearchResults;
 
     private String mTitle;
-    private LocalSearch mSearch = null;
+    protected LocalSearch mSearch = null;
     private boolean mSingleAccountMode;
     private boolean mSingleFolderMode;
     private boolean mAllAccounts;
@@ -431,7 +420,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
     private boolean mCheckboxes = true;
     private boolean mStars = true;
 
-    private int mSelectedCount = 0;
+    protected int mSelectedCount = 0;
     private Set<Long> mSelected = new HashSet<Long>();
 
     private FontSizes mFontSizes = K9.getFontSizes();
@@ -452,15 +441,15 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
     private ActionModeCallback mActionModeCallback = new ActionModeCallback();
 
 
-    private MessageListFragmentListener mFragmentListener;
+    protected MessageListFragmentListener mFragmentListener;
 
-    private boolean mThreadedList;
+    protected boolean mThreadedList;
 
     private boolean mIsThreadDisplay;
 
     private Context mContext;
 
-    private final ActivityListener mListener = new MessageListActivityListener();
+    protected final ActivityListener mListener = new MessageListActivityListener();
 
     private Preferences mPreferences;
 
@@ -1039,7 +1028,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         }
     }
 
-    private String getFolderNameById(Account account, long folderId) {
+    protected String getFolderNameById(Account account, long folderId) {
         try {
             Folder folder = getFolderById(account, folderId);
             if (folder != null) {
@@ -1701,7 +1690,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         }
     }
 
-    private int listViewToAdapterPosition(int position) {
+    protected int listViewToAdapterPosition(int position) {
         if (position > 0 && position <= mAdapter.getCount()) {
             return position - 1;
         }
@@ -2250,7 +2239,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         mAdapter.notifyDataSetChanged();
     }
 
-    private void toggleMessageSelect(int listViewPosition) {
+    protected void toggleMessageSelect(int listViewPosition) {
         int adapterPosition = listViewToAdapterPosition(listViewPosition);
         if (adapterPosition == AdapterView.INVALID_POSITION) {
             return;
@@ -3081,7 +3070,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         return new MessageReference(accountUuid, folderName, messageUid, null);
     }
 
-    private void openMessageAtPosition(int position) {
+    protected void openMessageAtPosition(int position) {
         // Scroll message into view if necessary
         int listViewPosition = adapterToListViewPosition(position);
         if (listViewPosition != AdapterView.INVALID_POSITION &&
@@ -3120,6 +3109,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         void enableActionBarProgress(boolean enable);
         void setMessageListProgress(int level);
         void showThread(Account account, String folderName, long rootId);
+        void showSMS(Account account, String FolderName, long rootId, MessageReference messageReference);
         void showMoreFromSameSender(String senderAddress);
         void onResendMessage(LocalMessage message);
         void onForward(LocalMessage message);
@@ -3592,7 +3582,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         mAdapter.swapCursor(null);
     }
 
-    private Account getAccountFromCursor(Cursor cursor) {
+    protected Account getAccountFromCursor(Cursor cursor) {
         String accountUuid = cursor.getString(ACCOUNT_UUID_COLUMN);
         return mPreferences.getAccount(accountUuid);
     }

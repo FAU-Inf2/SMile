@@ -1657,6 +1657,11 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
     }
 
     @Override
+    public void showSMS(Account account, String FolderName, long rootId, MessageReference messageReference){
+
+    }
+
+    @Override
     public void updateMenu() {
         invalidateOptionsMenu();
     }

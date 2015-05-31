@@ -133,24 +133,24 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         SpecialColumns.THREAD_COUNT,
     };
 
-    private static final int ID_COLUMN = 0;
-    private static final int UID_COLUMN = 1;
-    private static final int INTERNAL_DATE_COLUMN = 2;
-    private static final int SUBJECT_COLUMN = 3;
-    private static final int DATE_COLUMN = 4;
-    private static final int SENDER_LIST_COLUMN = 5;
-    private static final int TO_LIST_COLUMN = 6;
-    private static final int CC_LIST_COLUMN = 7;
-    private static final int READ_COLUMN = 8;
-    private static final int FLAGGED_COLUMN = 9;
-    private static final int ANSWERED_COLUMN = 10;
-    private static final int FORWARDED_COLUMN = 11;
-    private static final int ATTACHMENT_COUNT_COLUMN = 12;
+    protected static final int ID_COLUMN = 0;
+    protected static final int UID_COLUMN = 1;
+    protected static final int INTERNAL_DATE_COLUMN = 2;
+    protected static final int SUBJECT_COLUMN = 3;
+    protected static final int DATE_COLUMN = 4;
+    protected static final int SENDER_LIST_COLUMN = 5;
+    protected static final int TO_LIST_COLUMN = 6;
+    protected static final int CC_LIST_COLUMN = 7;
+    protected static final int READ_COLUMN = 8;
+    protected static final int FLAGGED_COLUMN = 9;
+    protected static final int ANSWERED_COLUMN = 10;
+    protected static final int FORWARDED_COLUMN = 11;
+    protected static final int ATTACHMENT_COUNT_COLUMN = 12;
     protected static final int FOLDER_ID_COLUMN = 13;
-    private static final int PREVIEW_COLUMN = 14;
+    protected static final int PREVIEW_COLUMN = 14;
     protected static final int THREAD_ROOT_COLUMN = 15;
-    private static final int ACCOUNT_UUID_COLUMN = 16;
-    private static final int FOLDER_NAME_COLUMN = 17;
+    protected static final int ACCOUNT_UUID_COLUMN = 16;
+    protected static final int FOLDER_NAME_COLUMN = 17;
     protected static final int THREAD_COUNT_COLUMN = 18;
 
     private static final String[] PROJECTION = Arrays.copyOf(THREADED_PROJECTION,

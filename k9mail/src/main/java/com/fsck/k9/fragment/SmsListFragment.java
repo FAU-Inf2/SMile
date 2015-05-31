@@ -6,9 +6,20 @@ import android.view.View;
 import android.widget.AdapterView;
 
 import com.fsck.k9.Account;
+import com.fsck.k9.activity.MessageReference;
+import com.fsck.k9.mail.Address;
+import com.fsck.k9.mail.Body;
 import com.fsck.k9.mail.Message;
+import com.fsck.k9.mail.MessagingException;
+import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.search.LocalSearch;
 
+import org.apache.commons.io.IOUtils;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.util.Date;
 import java.util.List;
 
 public class SmsListFragment extends MessageListFragment {
@@ -57,11 +68,47 @@ public class SmsListFragment extends MessageListFragment {
         if (cursor == null) {
             return;
         }
+/*
+        int x = cursor.getCount();
+
+        do{
+            String accountUuid = cursor.getString(ACCOUNT_UUID_COLUMN);
+            String folderName = cursor.getString(FOLDER_NAME_COLUMN);
+            String messageUid = cursor.getString(UID_COLUMN);
+            MessageReference ref = new MessageReference(accountUuid, folderName, messageUid, null);
+            LocalMessage msg = ref.restoreToLocalMessage(getActivity());
+
+            String subject = msg.getSubject();
+            Address[] addresses = msg.getFrom();
+            Date date = msg.getSentDate();
+            Body body = msg.getBody();
+            InputStream stream = null;
+
+            try {
+                if (body != null)
+                    stream = body.getInputStream();
+            } catch (MessagingException e) {
+                e.printStackTrace();
+            }
+            if (stream != null){
+                StringWriter writer = new StringWriter();
+                try {
+                    IOUtils.copy(stream, writer, "UTF-8");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                String theString = writer.toString();
+            }
+
+
+        }while(cursor.moveToNext());
+
+*/
 
         if (mSelectedCount > 0) {
             toggleMessageSelect(position);
         } else {
-          //  if (mThreadedList && cursor.getInt(THREAD_COUNT_COLUMN) > 1) {
+            if (mThreadedList && cursor.getInt(THREAD_COUNT_COLUMN) > 1) {
                 Account account = getAccountFromCursor(cursor);
                 long folderId = cursor.getLong(FOLDER_ID_COLUMN);
                 String folderName = getFolderNameById(account, folderId);
@@ -69,10 +116,10 @@ public class SmsListFragment extends MessageListFragment {
                 // If threading is enabled and this item represents a thread, display the thread contents.
                 long rootId = cursor.getLong(THREAD_ROOT_COLUMN);
                 mFragmentListener.showThread(account, folderName, rootId);
-           // } else {
+            } else {
                 // This item represents a message; just display the message.
-            //    openMessageAtPosition(listViewToAdapterPosition(position));
-           // }
+                openMessageAtPosition(listViewToAdapterPosition(position));
+            }
         }
     }
 }

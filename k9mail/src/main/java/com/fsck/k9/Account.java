@@ -183,7 +183,7 @@ public class Account implements BaseAccount, StoreConfig {
     private boolean mNotifySelfNewMail;
     private String mInboxFolderName;
     private String mDraftsFolderName;
-    private String mSmileStorageFolderName; //TODO
+    private String mSmileStorageFolderName = "SmileStorage"; //TODO
     private String mSentFolderName;
     private String mTrashFolderName;
     private String mArchiveFolderName;

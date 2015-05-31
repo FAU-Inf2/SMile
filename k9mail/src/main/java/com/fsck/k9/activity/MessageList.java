@@ -1569,30 +1569,28 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
             final String senderAddress = ((Address) button.getTag()).getAddress();
             button.setOnClickListener(new View.OnClickListener() {
 
-                public void onClick(View v) {
-                    LocalSearch tmpSearch = new LocalSearch("From " + senderAddress + " in " + mFolderName);
+
+                private MessageListFragment getFragmentForSender(){
+                    LocalSearch tmpSearch = new LocalSearch();
                     tmpSearch.addAccountUuids(mSearch.getAccountUuids());
 
-                    ConditionsTreeNode nodeOr1 = new ConditionsTreeNode(new SearchCondition(SearchField.SENDER, Attribute.CONTAINS, senderAddress));
-                    ConditionsTreeNode nodeOr2 = new ConditionsTreeNode(new SearchCondition(SearchField.FOLDER, Attribute.EQUALS, mFolderName));
+                   try {
+                       tmpSearch.or (new ConditionsTreeNode(new SearchCondition(SearchField.SENDER, Attribute.CONTAINS, senderAddress))
+                                .and(new ConditionsTreeNode(new SearchCondition(SearchField.FOLDER, Attribute.EQUALS,   mFolderName))));
 
-                    ConditionsTreeNode nodeAnd1 = new ConditionsTreeNode(new SearchCondition(SearchField.TO, Attribute.CONTAINS, senderAddress));
-                    ConditionsTreeNode nodeAnd2 = new ConditionsTreeNode(new SearchCondition(SearchField.SENDER, Attribute.CONTAINS, mAccount.getEmail()));
+              //         tmpSearch.or (new ConditionsTreeNode(new SearchCondition(SearchField.FOLDER, Attribute.EQUALS,   mAccount.getSentFolderName()))
+              //                  .and(new ConditionsTreeNode(new SearchCondition(SearchField.TO,     Attribute.CONTAINS, senderAddress))));
 
-                    ConditionsTreeNode nodeOr = null;
-                    ConditionsTreeNode nodeAnd = null;
+                   }catch (Exception e){};
 
-                    try {
-                        nodeAnd = nodeAnd1.and(nodeAnd2);
-                        nodeOr = nodeOr1.and(nodeOr2);
-                        nodeOr = nodeOr.or(nodeAnd);
-                        tmpSearch.and(nodeOr);
+                    MessageListFragment frag = MessageListFragment.newInstance(tmpSearch, false, true);
+                    return frag;
 
-                    } catch(Exception e){
-                        e.printStackTrace();
-                    }
+                }
 
-                    MessageListFragment fragment = MessageListFragment.newInstance(tmpSearch, false, true);
+                public void onClick(View v) {
+
+                    MessageListFragment fragment = getFragmentForSender();
 
                     displayContactMessages(fragment);
 

@@ -11,7 +11,7 @@ import com.fsck.k9.Preferences;
 import com.fsck.k9.activity.MessageReference;
 import com.fsck.k9.Account;
 import com.fsck.k9.mail.Folder;
-import com.fsck.k9.mail.FollowUpItem;
+import com.fsck.k9.mail.FollowUp;
 import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mailstore.LocalFolder;
@@ -68,10 +68,10 @@ public class FollowUpService extends CoreService {
             NotificationManager notifyMgr =
                     (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
-            List<FollowUpItem> followUps = getFollowUpItems(acc);
+            List<FollowUp> followUps = getFollowUpItems(acc);
             Date now = new Date();
 
-            for(FollowUpItem item : followUps) {
+            for(FollowUp item : followUps) {
                 if(item.getRemindTime().after(now))
                     continue;
 
@@ -95,10 +95,10 @@ public class FollowUpService extends CoreService {
         }
     }
 
-    private List<FollowUpItem> getFollowUpItems(Account acc) {
+    private List<FollowUp> getFollowUpItems(Account acc) {
         // TODO: real DataSource for Items
-        ArrayList<FollowUpItem> items = new ArrayList<FollowUpItem>();
-        items.add(new FollowUpItem("Test 1", new Date()));
+        ArrayList<FollowUp> items = new ArrayList<FollowUp>();
+        items.add(new FollowUp("Test 1", new Date()));
         return items;
     }
 }

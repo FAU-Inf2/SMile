@@ -17,7 +17,7 @@
             android:layout_marginRight="8dip"
             />
 
-    <RelativeLayout
+    <LinearLayout
             android:id="@+id/list_item_inner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -26,33 +26,22 @@
             android:focusable="false"
             android:focusableInTouchMode="false"
             android:layout_gravity="center_vertical"
+            android:orientation="vertical"
             android:paddingBottom="6dp">
 
-        <LinearLayout
-                android:id="@+id/subject_wrapper"
-                android:layout_centerInParent="true"
+
+        <TextView
+                android:id="@+id/subject"
                 android:layout_width="match_parent"
+                android:layout_weight="0.7"
                 android:layout_height="wrap_content"
-                android:layout_alignParentRight="false"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentBottom="false"
-                android:layout_alignParentLeft="false"
-                android:layout_toLeftOf="@+id/date">
-
-
-            <TextView
-                    android:id="@+id/subject"
-                    android:layout_width="0dp"
-                    android:layout_weight="0.7"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="1dip"
-                    android:layout_marginLeft="1dip"
-                    android:ellipsize="marquee"
-                    android:singleLine="true"
-                    android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="?android:attr/textColorPrimary"
-                    />
-        </LinearLayout>
+                android:layout_marginBottom="1dip"
+                android:layout_marginLeft="1dip"
+                android:ellipsize="marquee"
+                android:singleLine="true"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="?android:attr/textColorPrimary"
+            />
 
         <TextView
                 android:id="@+id/date"
@@ -66,5 +55,5 @@
                 android:singleLine="true"
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:textColor="?android:attr/textColorSecondary"/>
-    </RelativeLayout>
+    </LinearLayout>
 </LinearLayout>

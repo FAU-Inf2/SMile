@@ -1158,5 +1158,7 @@ Please submit bug reports, contribute new features and ask questions at
     <string name="imap_append_wait">Appending, please wait.</string>
     <string name="imap_append_done">Append done!</string>
     <string name="imap_append_failed">Append failed!</string>
+    <string name="followup_create_hint">Subject</string>
+    <string name="followup_create_default_time_value">10</string>
 
 </resources>

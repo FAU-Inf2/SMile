@@ -1,6 +1,11 @@
 package com.fsck.k9.activity;
 
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -8,31 +13,57 @@ import android.text.format.DateUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.fsck.k9.Account;
+import com.fsck.k9.FollowUpDialog;
+import com.fsck.k9.Preferences;
 import com.fsck.k9.mail.FollowUp;
+import com.fsck.k9.mail.Message;
+import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mailstore.LocalMessage;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 import de.fau.cs.mad.smile.android.R;
 
-public class FollowUpList extends K9ListActivity {
-    private static final String EXTRA_MESSAGE_REFERENCE = "message_reference";
+public class FollowUpList extends K9ListActivity implements FollowUpDialog.NoticeDialogListener {
+    private List<FollowUp> items = new ArrayList<FollowUp>();
+    public static final String EXTRA_MESSAGE_REFERENCE = "de.fau.cs.mad.smile.android.MESSAGE_REFERENCE";
+    public static final String CREATE_FOLLOWUP = "de.fau.cs.mad.smile.android.CREATE_FOLLOWUP";
+    private static final int CREATE_FOLLOWUP_DIALOG = 1;
 
     public static Intent createFollowUp(Context context,
                                         LocalMessage message) {
         Intent i = new Intent(context, FollowUpList.class);
         i.putExtra(EXTRA_MESSAGE_REFERENCE, message.makeMessageReference());
+        i.setAction(CREATE_FOLLOWUP);
         return i;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        items.add(new FollowUp("Test 1", new Date()));
+        items.add(new FollowUp("Test 2", new Date()));
+        items.add(new FollowUp("Test 3", new Date()));
+
+        final Intent intent = getIntent();
+
+        // TODO: this is ugly, search for better solution to expose onClick result and handling intents
+        if(CREATE_FOLLOWUP.equals(intent.getAction())) {
+            MessageReference reference = intent.getParcelableExtra(EXTRA_MESSAGE_REFERENCE);
+            FollowUpDialog dialog = new FollowUpDialog();
+            dialog.setReference(reference);
+            dialog.show(getFragmentManager(), "mTimeValue");
+        }
+
         setContentView(R.layout.followup_list);
 
         ListView listView = getListView();
@@ -55,6 +86,27 @@ public class FollowUpList extends K9ListActivity {
         new LoadFollowUp().execute();
     }
 
+    @Override
+    public void onDialogClick(DialogFragment dialog) {
+        FollowUpDialog dlg = (FollowUpDialog)dialog;
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        calendar.add(Calendar.MINUTE, dlg.getTimeValue());
+        Preferences prefs = Preferences.getPreferences(getApplicationContext());
+        Message msg = null;
+        MessageReference reference = dlg.getReference();
+        Account acc = prefs.getAccount(reference.getAccountUuid());
+
+        try {
+            msg = acc.getLocalStore().getFolder(reference.getFolderName()).getMessage(reference.getUid());
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
+
+        items.add(new FollowUp(msg.getSubject(), calendar.getTime()));
+        ((BaseAdapter)getListView().getAdapter()).notifyDataSetChanged();
+    }
+
     class FollowUpAdapter extends ArrayAdapter<FollowUp> {
         public FollowUpAdapter(List<FollowUp> followUps) {
             super(FollowUpList.this, 0, followUps);
@@ -68,8 +120,6 @@ public class FollowUpList extends K9ListActivity {
                 view = convertView;
             } else {
                 view = getLayoutInflater().inflate(R.layout.followup_list_item, parent, false);
-                view.findViewById(R.id.active_icons).setVisibility(View.GONE);
-                view.findViewById(R.id.folders).setVisibility(View.GONE);
             }
 
             TextView subject = (TextView) view.findViewById(R.id.subject);
@@ -87,10 +137,6 @@ public class FollowUpList extends K9ListActivity {
         @Override
         protected List<FollowUp> doInBackground(Void... params) {
             // TODO: query sqlite db
-            List<FollowUp> items = new ArrayList<FollowUp>();
-            items.add(new FollowUp("Test 1", new Date()));
-            items.add(new FollowUp("Test 2", new Date()));
-            items.add(new FollowUp("Test 3", new Date()));
             return items;
         }
 
@@ -100,4 +146,6 @@ public class FollowUpList extends K9ListActivity {
             populateListView(followUps);
         }
     }
+
+
 }

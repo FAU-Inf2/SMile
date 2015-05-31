@@ -1,5 +1,7 @@
 package com.fsck.k9.activity;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.format.DateUtils;
@@ -10,6 +12,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.fsck.k9.mail.FollowUp;
+import com.fsck.k9.mailstore.LocalMessage;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -18,6 +21,14 @@ import java.util.List;
 import de.fau.cs.mad.smile.android.R;
 
 public class FollowUpList extends K9ListActivity {
+    private static final String EXTRA_MESSAGE_REFERENCE = "message_reference";
+
+    public static Intent createFollowUp(Context context,
+                                        LocalMessage message) {
+        Intent i = new Intent(context, FollowUpList.class);
+        i.putExtra(EXTRA_MESSAGE_REFERENCE, message.makeMessageReference());
+        return i;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

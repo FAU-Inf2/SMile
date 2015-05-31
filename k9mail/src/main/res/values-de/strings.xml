@@ -5,8 +5,8 @@
   <!--Used in AndroidManifest.xml-->
   <string name="app_name">SMile</string>
   <string name="beta_app_name">SMile BETA</string>
-  <string name="shortcuts_title">K-9 Konten</string>
-  <string name="unread_widget_label">K-9 Ungelesen</string>
+  <string name="shortcuts_title">SMile-Konten</string>
+  <string name="unread_widget_label">SMile Ungelesen</string>
   <string name="remote_control_label">SMile Fernsteuerung</string>
   <string name="remote_control_desc">Erlaubt dieser Anwendung den Ablauf und die Einstellungen von SMile zu kontrollieren.</string>
   <!--Used in the about dialog-->
@@ -18,9 +18,9 @@ Teile \u00a9 2006-<xliff:g>%s</xliff:g> Android Open Source Project.</string>
   <string name="welcome_message_title">Willkommen bei SMile</string>
   <string name="accounts_welcome"><![CDATA[
 <p>
-SMile ist eine quelloffene E-Mail-Anwendung für Android und basiert auf Androids Standard-E-Mail-Programm.
+SMile ist eine quelloffene E-Mail-Anwendung für Android basierend auf K-9.
 </p><p>
-Verbesserte Funktionen in K-9:
+Verbesserte Funktionen:
 </p>
 <ul>
   <li>Benachrichtigung über neue Nachrichten per IMAP IDLE</li>
@@ -38,10 +38,10 @@ Verbesserte Funktionen in K-9:
   <li>…und viele mehr</li>
 </ul>
 <p>
-Bitte beachten Sie, dass K-9, wie viele andere E-Mail-Anwendungen auch, die meisten kostenlosen Hotmail-Accounts nicht unterstützt. Zudem gibt es einige Probleme mit Microsoft Exchange-Servern.
+Bitte beachten Sie, dass SMile, wie viele andere E-Mail-Anwendungen auch, die meisten kostenlosen Hotmail-Accounts nicht unterstützt. Zudem gibt es einige Probleme mit Microsoft Exchange-Servern.
 </p><p>
 Um Fehler zu melden, neue Funktionen vorzuschlagen oder Fragen zu stellen, besuchen Sie die Homepage unter
-<a href=\"http://k9mail.googlecode.com/\">http://k9mail.googlecode.com/</a>.
+<a href=\"https://github.com/FAU-Inf2/SMile\">https://github.com/FAU-Inf2/SMile</a>.
 </p>
     ]]></string>
   <!--Default signature-->
@@ -271,7 +271,7 @@ Um Fehler zu melden, neue Funktionen vorzuschlagen oder Fragen zu stellen, besuc
   <string name="global_settings_confirm_action_delete_starred">Sternmarkierte Löschen (nur in Nachrichtenansicht)</string>
   <string name="global_settings_confirm_action_spam">Spam</string>
   <string name="global_settings_confirm_action_delete_notif">Löschen (aus Benachrichtigung)</string>
-  <string name="global_settings_privacy_hide_useragent">K-9 nicht als Mailprogramm in Kopfzeilen eintragen</string>
+  <string name="global_settings_privacy_hide_useragent">SMile nicht als Mailprogramm in Kopfzeilen eintragen</string>
   <string name="global_settings_privacy_hide_timezone">UTC als Zeitzone in Kopfzeilen verwenden</string>
   <string name="global_settings_notification_hide_subject_title">Betreff in Benachrichtigungen verbergen</string>
   <string name="global_settings_notification_hide_subject_never">Niemals</string>

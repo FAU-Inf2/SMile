@@ -5,7 +5,7 @@
   <!--Used in AndroidManifest.xml-->
   <string name="app_name">Почта</string>
   <string name="beta_app_name">Почта β</string>
-  <string name="shortcuts_title">Почтовые ящики K-9</string>
+  <string name="shortcuts_title">Почтовые ящики SMile</string>
   <string name="unread_widget_label">Не прочитано</string>
   <string name="remote_control_label">Удалённое управление</string>
   <string name="remote_control_desc">Разрешить удалённое управление настройками и действиями SMile</string>
@@ -41,7 +41,7 @@ SMile — почтовый клиент для Android.
 Отметим, что SMile неполностью совместим с MS Exchange и не поддерживает бесплатные ящики Hotmail
 </p><p>
 Вопросы, сообщения об ошибках и участие в разработке на
-<a href=\"http://k9mail.googlecode.com/\">http://k9mail.googlecode.com/</a>.
+<a href=\"https://github.com/FAU-Inf2/SMile/\">https://github.com/FAU-Inf2/SMile/</a>.
 </p>
     ]]></string>
   <!--Default signature-->
@@ -270,7 +270,7 @@ SMile — почтовый клиент для Android.
   <string name="global_settings_confirm_action_delete_starred">Удаление важного (в просмотре)</string>
   <string name="global_settings_confirm_action_spam">Перемещение в спам</string>
   <string name="global_settings_confirm_action_delete_notif">Удаление (в уведомлении)</string>
-  <string name="global_settings_privacy_hide_useragent">Убрать заголовок K-9 User-Agent</string>
+  <string name="global_settings_privacy_hide_useragent">Убрать заголовок SMile User-Agent</string>
   <string name="global_settings_privacy_hide_timezone">Время в UTC в заголовках</string>
   <string name="global_settings_notification_hide_subject_title">Скрыть тему в уведомлении</string>
   <string name="global_settings_notification_hide_subject_never">Никогда</string>
@@ -784,12 +784,12 @@ SMile — почтовый клиент для Android.
   <string name="settings_export_dialog_title">Экспорт</string>
   <string name="settings_import">Импорт</string>
   <string name="settings_import_selection">Импорт</string>
-  <string name="settings_import_global_settings">Настройки K-9</string>
+  <string name="settings_import_global_settings">Настройки SMile</string>
   <string name="settings_exporting">Экспорт настроек…</string>
   <string name="settings_importing">Импорт настроек…</string>
   <string name="settings_import_scanning_file">Проверка файла…</string>
   <string name="settings_export_success">Настройки сохранены в <xliff:g id="filename">%s</xliff:g></string>
-  <string name="settings_import_global_settings_success">Настройки K-9 импортированы из <xliff:g id="filename">%s</xliff:g></string>
+  <string name="settings_import_global_settings_success">Настройки SMile импортированы из <xliff:g id="filename">%s</xliff:g></string>
   <string name="settings_import_success">Импортировано: <xliff:g id="accounts">%s</xliff:g> из <xliff:g id="filename">%s</xliff:g></string>
   <plurals name="settings_import_accounts">
     <item quantity="one">1 ящик</item>

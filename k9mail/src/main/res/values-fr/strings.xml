@@ -5,8 +5,8 @@
   <!--Used in AndroidManifest.xml-->
   <string name="app_name">SMile</string>
   <string name="beta_app_name">SMile BÊTA</string>
-  <string name="shortcuts_title">Comptes K-9</string>
-  <string name="unread_widget_label">K-9 non lus</string>
+  <string name="shortcuts_title">Comptes SMile</string>
+  <string name="unread_widget_label">SMile non lus</string>
   <string name="remote_control_label">Contrôle à distance de SMile</string>
   <string name="remote_control_desc">Permet à cette application de contrôler les activités et les paramètres de SMile</string>
   <!--Used in the about dialog-->
@@ -39,7 +39,7 @@ Ces fonctions améliorées incluent :
 <p>
 Veuillez noter que SMile ne prend pas en charge la plupart des comptes gratuits Hotmail et a, comme beaucoup de courrielleurs, quelques ennuis à communiquer avec Microsoft Exchange.
 </p><p>
-Veuillez envoyer les rapports de bogues, suggérer de nouvelles fonctions et poser des questions (en anglais) sur <a href=\"http://k9mail.googlecode.com/\">http://k9mail.googlecode.com/</a>.
+Veuillez envoyer les rapports de bogues, suggérer de nouvelles fonctions et poser des questions (en anglais) sur <a href=\"https://github.com/FAU-Inf2/SMile/\">https://github.com/FAU-Inf2/SMile/</a>.
 </p>
     ]]></string>
   <!--Default signature-->
@@ -268,7 +268,7 @@ jusqu\'à <xliff:g id="messages_to_load">%d</xliff:g> de plus</string>
   <string name="global_settings_confirm_action_delete_starred">Supprimer étoilé (en mode lecture)</string>
   <string name="global_settings_confirm_action_spam">Pourriel</string>
   <string name="global_settings_confirm_action_delete_notif">Supprimer (depuis notification)</string>
-  <string name="global_settings_privacy_hide_useragent">Enlever l\'agent utilisateur K-9 des en-têtes de courriels</string>
+  <string name="global_settings_privacy_hide_useragent">Enlever l\'agent utilisateur SMile des en-têtes de courriels</string>
   <string name="global_settings_privacy_hide_timezone">Utiliser UTC comme fuseau horaire dans les en-têtes de courriels</string>
   <string name="global_settings_notification_hide_subject_title">Masquer le sujet du message dans les notifications</string>
   <string name="global_settings_notification_hide_subject_never">Jamais</string>

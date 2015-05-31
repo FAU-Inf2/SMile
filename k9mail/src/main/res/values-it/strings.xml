@@ -5,8 +5,8 @@
   <!--Used in AndroidManifest.xml-->
   <string name="app_name">SMile</string>
   <string name="beta_app_name">SMile BETA</string>
-  <string name="shortcuts_title">Account di K-9</string>
-  <string name="unread_widget_label">Nuovi messaggi di K-9</string>
+  <string name="shortcuts_title">Account di SMile</string>
+  <string name="unread_widget_label">Nuovi messaggi di SMile</string>
   <string name="remote_control_label">Controllo remoto di SMile</string>
   <string name="remote_control_desc">Consenti a questa applicazione di controllare le attività e le impostazioni di SMile.</string>
   <!--Used in the about dialog-->
@@ -19,7 +19,7 @@
 <p>
 SMile è un potente client di posta gratuito per Android.
 </p><p>
-Le funzionalità migliorate di K-9 includono:
+Le funzionalità migliorate di SMile includono:
 </p>
 <ul>
   <li>Push mail utilizzando IMAP IDLE</li>
@@ -38,10 +38,10 @@ Le funzionalità migliorate di K-9 includono:
   <li>…e altro</li>
 </ul>
 <p>
-Nota che K-9 non supporta gli account gratuiti di Hotmail e, come molti client di posta, ha qualche incertezza quando comunica con Microsoft Exchange.
+Nota che SMile non supporta gli account gratuiti di Hotmail e, come molti client di posta, ha qualche incertezza quando comunica con Microsoft Exchange.
 </p><p>
 Invia le tue segnalazioni, suggerisci nuove funzionalità e chiedi informazioni su
-<a href=\"http://k9mail.googlecode.com/\">http://k9mail.googlecode.com/</a>.
+<a href=\"https://github.com/FAU-Inf2/SMile/\">https://github.com/FAU-Inf2/SMile/</a>.
 </p>
 ]]></string>
   <!--Default signature-->
@@ -269,7 +269,7 @@ Invia le tue segnalazioni, suggerisci nuove funzionalità e chiedi informazioni 
   <string name="global_settings_confirm_action_delete_starred">Elimina messaggi con la stella (solo messaggi visualizzati)</string>
   <string name="global_settings_confirm_action_spam">Spam</string>
   <string name="global_settings_confirm_action_delete_notif">Elimina (da notifica)</string>
-  <string name="global_settings_privacy_hide_useragent">Rimuovi lo User-Agent di K-9 dalle intestazioni dei messaggi</string>
+  <string name="global_settings_privacy_hide_useragent">Rimuovi lo User-Agent di SMile dalle intestazioni dei messaggi</string>
   <string name="global_settings_privacy_hide_timezone">Usa UTC come fuso orario nelle intestazioni dei messaggi</string>
   <string name="global_settings_notification_hide_subject_title">Nascondi l\'oggetto nelle notifiche</string>
   <string name="global_settings_notification_hide_subject_never">Mai</string>

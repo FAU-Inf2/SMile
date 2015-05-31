@@ -3,11 +3,11 @@
   <!--=== App-specific strings =============================================================-->
   <!--This should make it easier for forks to change the branding-->
   <!--Used in AndroidManifest.xml-->
-  <string name="app_name">K-9 Posta</string>
-  <string name="beta_app_name">K-9 Posta BETA</string>
-  <string name="shortcuts_title">K-9 Hesaplar</string>
-  <string name="unread_widget_label">K-9 Okunmamış</string>
-  <string name="remote_control_label">K-9 Posta\'ya uzaktan erişim</string>
+  <string name="app_name">SMile Posta</string>
+  <string name="beta_app_name">SMile Posta BETA</string>
+  <string name="shortcuts_title">SMile Hesaplar</string>
+  <string name="unread_widget_label">SMile Okunmamış</string>
+  <string name="remote_control_label">SMile Posta\'ya uzaktan erişim</string>
   <string name="remote_control_desc">Bu programın SMile aktiviteleri ve ayarlarını kontrol edebilmesine izin ver.</string>
   <!--Used in the about dialog-->
   <string name="app_authors">Google, The K-9 Dog Walkers.</string>
@@ -19,7 +19,7 @@
 <p>
 SMile standart Android E-posta istemcisi üzerinde yazılmış açık kaynak kodlu bir e-posta istemcisidir.
 </p><p>
-K-9\'un iyileştirilmiş özellikleri:
+SMile\'un iyileştirilmiş özellikleri:
 </p>
 <ul>
   <li>IMAP IDLE kullanarak PUSH mail</li>
@@ -38,14 +38,14 @@ K-9\'un iyileştirilmiş özellikleri:
   <li>…ve daha fazlası</li>
 </ul>
 <p>
-Lütfen K-9\'un diğer çoğu e-posta istemcisi gibi Microsoft Exchange haberleşme problemi nedeniyle ücretsiz Hotmail hesaplarını desteklemediğini bilin.
+Lütfen SMile\'un diğer çoğu e-posta istemcisi gibi Microsoft Exchange haberleşme problemi nedeniyle ücretsiz Hotmail hesaplarını desteklemediğini bilin.
 </p><p>
 Lütfen hata raporlarınızı, istediğiniz yeni özellikleri ve sorularınızı
-<a href=\"http://k9mail.googlecode.com/\">http://k9mail.googlecode.com/</a> adresine gönderin.
+<a href=\"https://github.com/FAU-Inf2/SMile/\">https://github.com/FAU-Inf2/SMile/</a> adresine gönderin.
 </p>
     ]]></string>
   <!--Default signature-->
-  <string name="default_signature">-- \nAndroid için K-9 Posta\'dan gönderildi. Lütfen bu kısa notumu mazur görün.</string>
+  <string name="default_signature">-- \nAndroid için SMile Posta\'dan gönderildi. Lütfen bu kısa notumu mazur görün.</string>
   <!--General strings that include the app name-->
   <string name="account_delete_dlg_instructions_fmt">Hesap \"<xliff:g id="account">%s</xliff:g>\" SMile\'den kaldırılacak.</string>
   <string name="account_recreate_dlg_instructions_fmt">Bütün bilgi \"<xliff:g id="account">%s</xliff:g>\" için SMile\'den kaldırılacak, fakat hesap ayarları korunacak.</string>
@@ -56,7 +56,7 @@ Lütfen hata raporlarınızı, istediğiniz yeni özellikleri ve sorularınızı
   <!--=== General strings ==================================================================-->
   <string name="app_authors_fmt">Yazarlar: <xliff:g id="app_authors">%s</xliff:g></string>
   <string name="app_revision_fmt">Revizyon Bilgileri: <xliff:g id="app_revision_url">%s</xliff:g></string>
-  <string name="app_libraries">K-9 posta kaynak kodları içerir: <xliff:g id="app_libraries_list">%s</xliff:g></string>
+  <string name="app_libraries">SMile posta kaynak kodları içerir: <xliff:g id="app_libraries_list">%s</xliff:g></string>
   <string name="app_emoji_icons">İfadeler: <xliff:g id="app_emoji_icons_link">%s</xliff:g></string>
   <string name="read_attachment_label">E-posta eklerini oku</string>
   <string name="read_attachment_desc">Bu uygulamaya E-posta eklerinizi okumasına izin ver.</string>
@@ -269,7 +269,7 @@ Lütfen hata raporlarınızı, istediğiniz yeni özellikleri ve sorularınızı
   <string name="global_settings_confirm_action_delete_starred">Yıldızlıları Sil (sadece mesaj görünümü)</string>
   <string name="global_settings_confirm_action_spam">Spam</string>
   <string name="global_settings_confirm_action_delete_notif">Sil (bildirimden)</string>
-  <string name="global_settings_privacy_hide_useragent">Posta başlığından K-9 User-Agent kaldır</string>
+  <string name="global_settings_privacy_hide_useragent">Posta başlığından SMile User-Agent kaldır</string>
   <string name="global_settings_privacy_hide_timezone">Posta başlıklarında zaman dilimi olarak UTC kullan</string>
   <string name="global_settings_notification_hide_subject_title">Bildirimlerde konuyu gizle</string>
   <string name="global_settings_notification_hide_subject_never">Hiçbir zaman</string>

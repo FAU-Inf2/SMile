@@ -384,52 +384,11 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
     private boolean decodeExtras(Intent intent) {
         String action = intent.getAction();
         if (Intent.ACTION_VIEW.equals(action) && intent.getData() != null) {
-            Uri uri = intent.getData();
-            List<String> segmentList = uri.getPathSegments();
-
-            String accountId = segmentList.get(0);
-            Collection<Account> accounts = Preferences.getPreferences(this).getAvailableAccounts();
-            for (Account account : accounts) {
-                if (String.valueOf(account.getAccountNumber()).equals(accountId)) {
-                    String folderName = segmentList.get(1);
-                    String messageUid = segmentList.get(2);
-                    mMessageReference = new MessageReference(account.getUuid(), folderName, messageUid, null);
-                    break;
-                }
-            }
+            decodeExtraActionView(intent);
         } else if (ACTION_SHORTCUT.equals(action)) {
-            // Handle shortcut intents
-            String specialFolder = intent.getStringExtra(EXTRA_SPECIAL_FOLDER);
-            if (SearchAccount.UNIFIED_INBOX.equals(specialFolder)) {
-                mSearch = SearchAccount.createUnifiedInboxAccount(this).getRelatedSearch();
-            } else if (SearchAccount.ALL_MESSAGES.equals(specialFolder)) {
-                mSearch = SearchAccount.createAllMessagesAccount(this).getRelatedSearch();
-            }
+            decodeExtraActionShortcut(intent);
         } else if (intent.getStringExtra(SearchManager.QUERY) != null) {
-            // check if this intent comes from the system search ( remote )
-            if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-                //Query was received from Search Dialog
-                String query = intent.getStringExtra(SearchManager.QUERY).trim();
-
-                mSearch = new LocalSearch(getString(R.string.search_results));
-                mSearch.setManualSearch(true);
-                mNoThreading = true;
-
-                mSearch.or(new SearchCondition(SearchField.SENDER, Attribute.CONTAINS, query));
-                mSearch.or(new SearchCondition(SearchField.SUBJECT, Attribute.CONTAINS, query));
-                mSearch.or(new SearchCondition(SearchField.MESSAGE_CONTENTS, Attribute.CONTAINS, query));
-
-                Bundle appData = intent.getBundleExtra(SearchManager.APP_DATA);
-                if (appData != null) {
-                    mSearch.addAccountUuid(appData.getString(EXTRA_SEARCH_ACCOUNT));
-                    // searches started from a folder list activity will provide an account, but no folder
-                    if (appData.getString(EXTRA_SEARCH_FOLDER) != null) {
-                        mSearch.addAllowedFolder(appData.getString(EXTRA_SEARCH_FOLDER));
-                    }
-                } else {
-                    mSearch.addAccountUuid(LocalSearch.ALL_ACCOUNTS);
-                }
-            }
+            decodeExtraActionSearch(intent);
         } else {
             // regular LocalSearch object was passed
             mSearch = intent.getParcelableExtra(EXTRA_SEARCH);
@@ -489,6 +448,60 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
         mActionBarSubTitle.setVisibility((!mSingleFolderMode) ? View.GONE : View.VISIBLE);
 
         return true;
+    }
+
+    private void decodeExtraActionSearch(Intent intent) {
+        // check if this intent comes from the system search ( remote )
+        if (!Intent.ACTION_SEARCH.equals(intent.getAction())) {
+            return;
+        }
+            //Query was received from Search Dialog
+        String query = intent.getStringExtra(SearchManager.QUERY).trim();
+
+        mSearch = new LocalSearch(getString(R.string.search_results));
+        mSearch.setManualSearch(true);
+        mNoThreading = true;
+
+        mSearch.or(new SearchCondition(SearchField.SENDER, Attribute.CONTAINS, query));
+        mSearch.or(new SearchCondition(SearchField.SUBJECT, Attribute.CONTAINS, query));
+        mSearch.or(new SearchCondition(SearchField.MESSAGE_CONTENTS, Attribute.CONTAINS, query));
+
+        Bundle appData = intent.getBundleExtra(SearchManager.APP_DATA);
+        if (appData != null) {
+            mSearch.addAccountUuid(appData.getString(EXTRA_SEARCH_ACCOUNT));
+            // searches started from a folder list activity will provide an account, but no folder
+            if (appData.getString(EXTRA_SEARCH_FOLDER) != null) {
+                mSearch.addAllowedFolder(appData.getString(EXTRA_SEARCH_FOLDER));
+            }
+        } else {
+            mSearch.addAccountUuid(LocalSearch.ALL_ACCOUNTS);
+        }
+    }
+
+    private void decodeExtraActionShortcut(Intent intent) {
+        // Handle shortcut intents
+        String specialFolder = intent.getStringExtra(EXTRA_SPECIAL_FOLDER);
+        if (SearchAccount.UNIFIED_INBOX.equals(specialFolder)) {
+            mSearch = SearchAccount.createUnifiedInboxAccount(this).getRelatedSearch();
+        } else if (SearchAccount.ALL_MESSAGES.equals(specialFolder)) {
+            mSearch = SearchAccount.createAllMessagesAccount(this).getRelatedSearch();
+        }
+    }
+
+    private void decodeExtraActionView(Intent intent) {
+        Uri uri = intent.getData();
+        List<String> segmentList = uri.getPathSegments();
+
+        String accountId = segmentList.get(0);
+        Collection<Account> accounts = Preferences.getPreferences(this).getAvailableAccounts();
+        for (Account account : accounts) {
+            if (String.valueOf(account.getAccountNumber()).equals(accountId)) {
+                String folderName = segmentList.get(1);
+                String messageUid = segmentList.get(2);
+                mMessageReference = new MessageReference(account.getUuid(), folderName, messageUid, null);
+                break;
+            }
+        }
     }
 
     @Override
@@ -1623,20 +1636,21 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
     private void switchMessageListFragment(int toViewID){
         View vMessageList = mMessageListFragment.getView();
 
-        if (vMessageList == null) return;
+        if (vMessageList == null)
+            return;
 
         ViewGroup parent = (ViewGroup) vMessageList.getParent();
         ViewGroup parentNew = (ViewGroup) findViewById(toViewID);
 
-            if (parentNew != null){
-                if (parent != null && !parent.equals(parentNew)) {
-                    parent.removeView(vMessageList);
-                    parent.clearDisappearingChildren();
-                }
-                parentNew.removeAllViews();
-                parentNew.addView(vMessageList, parentNew.getLayoutParams());
-                parentNew.bringChildToFront(vMessageList);
+        if (parentNew != null){
+            if (parent != null && !parent.equals(parentNew)) {
+                parent.removeView(vMessageList);
+                parent.clearDisappearingChildren();
             }
+            parentNew.removeAllViews();
+            parentNew.addView(vMessageList, parentNew.getLayoutParams());
+            parentNew.bringChildToFront(vMessageList);
+        }
     }
 
     private void displayContactMessages(MessageListFragment fragment){

@@ -115,6 +115,8 @@ class StoreSchemaDefinition implements LockableDatabase.SchemaDefinition {
                         "server_extra TEXT" +
                         ")");
 
+                db.execSQL("CREATE TABLE FollowUp (id INTEGER PRIMARY KEY, MessageId INTEGER NOT NULL, RemindTime TIMESTAMP NOT NULL);");
+
                 db.execSQL("CREATE TRIGGER set_message_part_root " +
                         "AFTER INSERT ON message_parts " +
                         "BEGIN " +
@@ -137,8 +139,6 @@ class StoreSchemaDefinition implements LockableDatabase.SchemaDefinition {
 
                 db.execSQL("DROP INDEX IF EXISTS msg_composite");
                 db.execSQL("CREATE INDEX IF NOT EXISTS msg_composite ON messages (deleted, empty,folder_id,flagged,read)");
-
-
 
                 db.execSQL("DROP TABLE IF EXISTS threads");
                 db.execSQL("CREATE TABLE threads (" +
@@ -542,6 +542,7 @@ class StoreSchemaDefinition implements LockableDatabase.SchemaDefinition {
                     db.execSQL("CREATE INDEX IF NOT EXISTS msg_composite ON messages (deleted, empty,folder_id,flagged,read)");
 
                 }
+
                 if (db.getVersion() < 50) {
                     try {
                         db.execSQL("ALTER TABLE folders ADD notify_class TEXT default '" +
@@ -556,9 +557,14 @@ class StoreSchemaDefinition implements LockableDatabase.SchemaDefinition {
                     cv.put("notify_class", Folder.FolderClass.FIRST_CLASS.name());
 
                     db.update("folders", cv, "name = ?",
-                            new String[] { this.localStore.getAccount().getInboxFolderName() });
+                            new String[]{this.localStore.getAccount().getInboxFolderName()});
                 }
+
                 if (db.getVersion() < 51) {
+                    db.execSQL("CREATE TABLE FollowUp (id INTEGER PRIMARY KEY, MessageId INTEGER NOT NULL, RemindTime TIMESTAMP NOT NULL);");
+                }
+
+                if (db.getVersion() < 52) {
                     throw new IllegalStateException("Database upgrade not supported yet!");
                 }
             }

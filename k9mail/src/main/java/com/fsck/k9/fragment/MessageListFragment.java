@@ -74,6 +74,7 @@ import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.activity.ActivityListener;
 import com.fsck.k9.activity.ChooseFolder;
 import com.fsck.k9.activity.FolderInfoHolder;
+import com.fsck.k9.activity.FollowUpList;
 import com.fsck.k9.activity.MessageReference;
 import com.fsck.k9.activity.misc.ContactPictureLoader;
 import com.fsck.k9.cache.EmailProviderCache;
@@ -504,6 +505,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         public MessageListHandler(MessageListFragment fragment) {
             mFragment = new WeakReference<MessageListFragment>(fragment);
         }
+
         public void folderLoading(String folder, boolean loading) {
             android.os.Message msg = android.os.Message.obtain(this, ACTION_FOLDER_LOADING,
                     (loading) ? 1 : 0, 0, folder);
@@ -1574,6 +1576,10 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
                 onMove(getMessageAtPosition(adapterPosition));
                 break;
             }
+            case R.id.followup: {
+                onFollowUp(getMessageAtPosition(adapterPosition));
+                break;
+            }
             case R.id.copy: {
                 onCopy(getMessageAtPosition(adapterPosition));
                 break;
@@ -2252,7 +2258,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         Cursor cursor = (Cursor) mAdapter.getItem(adapterPosition);
         boolean flagged = (cursor.getInt(FLAGGED_COLUMN) == 1);
 
-        setFlag(adapterPosition,Flag.FLAGGED, !flagged);
+        setFlag(adapterPosition, Flag.FLAGGED, !flagged);
     }
 
     private void toggleMessageSelectWithAdapterPosition(int adapterPosition) {
@@ -2438,6 +2444,11 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         displayFolderChoice(ACTIVITY_CHOOSE_FOLDER_MOVE, folder,
                 messages.get(0).getFolder().getAccountUuid(), null,
                 messages);
+    }
+
+    private void onFollowUp(LocalMessage message) {
+        // TODO: build Intent?
+        startActivity(FollowUpList.createFollowUp(this.getActivity(), message));
     }
 
     private void onCopy(LocalMessage message) {

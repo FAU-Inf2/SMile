@@ -204,6 +204,17 @@
         </activity>
 
         <activity
+            android:name="com.fsck.k9.activity.FollowUpList"
+            android:configChanges="locale"
+            android:launchMode="singleTop"
+            android:uiOptions="splitActionBarWhenNarrow">
+            <intent-filter>
+                <!-- This action is only to allow an entry point for launcher shortcuts -->
+                <action android:name="android.intent.action.MAIN"/>
+            </intent-filter>
+        </activity>
+        
+        <activity
             android:name="com.fsck.k9.activity.MessageList"
             android:configChanges="locale"
             android:launchMode="singleTop"
@@ -372,6 +383,9 @@
             android:name="com.fsck.k9.service.MailService"
             android:enabled="true"/>
 
+        <service
+                android:name="com.fsck.k9.service.FollowUpService"
+                android:enabled="true"/>
         <service
             android:name="com.fsck.k9.service.NotificationActionService"
             android:enabled="true"/>

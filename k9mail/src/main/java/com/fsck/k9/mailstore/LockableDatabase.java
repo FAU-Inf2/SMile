@@ -109,10 +109,12 @@ public class LockableDatabase {
     private String mStorageProviderId;
 
     private SQLiteDatabase mDb;
+
     /**
      * Reentrant read lock
      */
     private final Lock mReadLock;
+
     /**
      * Reentrant write lock (if you lock it 2x from the same thread, you have to
      * unlock it 2x to release it)

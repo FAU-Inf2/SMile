@@ -31,6 +31,12 @@
         android:icon="?attr/iconActionMove"
     />
     <item
+        android:id="@+id/followup"
+        android:title="@string/followup_action"
+        android:showAsAction="ifRoom"
+        android:icon="?attr/iconActionMove"
+        />
+    <item
         android:id="@+id/copy"
         android:title="@string/copy_action"
         android:icon="?attr/iconActionCopy"

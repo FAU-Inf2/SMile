@@ -127,6 +127,7 @@ Please submit bug reports, contribute new features and ask questions at
     <string name="spam_action">Spam</string>
     <string name="forward_action">Forward</string>
     <string name="move_action">Move</string>
+    <string name="followup_action">FollowUp</string>
     <string name="single_message_options_action">Send…</string>
     <string name="refile_action">Refile…</string>
     <string name="done_action">Done</string>
@@ -1157,5 +1158,7 @@ Please submit bug reports, contribute new features and ask questions at
     <string name="imap_append_wait">Appending, please wait.</string>
     <string name="imap_append_done">Append done!</string>
     <string name="imap_append_failed">Append failed!</string>
+    <string name="followup_create_hint">Subject</string>
+    <string name="followup_create_default_time_value">10</string>
 
 </resources>

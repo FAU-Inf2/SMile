@@ -11,6 +11,7 @@ import android.widget.Button;
 import com.fsck.k9.Account;
 import de.fau.cs.mad.smile.android.R;
 
+import com.fsck.k9.FeatureStorage;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.controller.MessagingController;
@@ -24,6 +25,8 @@ public class IMAPAppendTextWorkaroundActivity extends K9Activity {
     private MessageReference mMessageReference;
     private Account mAccount;
     private Context mContext;
+    private String filesDirectory;
+
     public IMAPAppendTextWorkaroundActivity() {
     }
 
@@ -56,6 +59,8 @@ public class IMAPAppendTextWorkaroundActivity extends K9Activity {
         //get current Context
         mContext = this.getBaseContext();
 
+        filesDirectory = this.getFilesDir().getAbsolutePath();
+
         //Button for testing
         Button execute_button = (Button) this.findViewById(R.id.imapAppendExecuteButton);
         execute_button.setOnClickListener(new View.OnClickListener() {
@@ -66,6 +71,7 @@ public class IMAPAppendTextWorkaroundActivity extends K9Activity {
         });
         }
     private String testContent;
+    private static int counter = 0;
     private void handleAppend() {
         testContent = "Test-content from Workaround!";
         new AppendAndReceiveSmileStorageMessages().execute();
@@ -73,6 +79,22 @@ public class IMAPAppendTextWorkaroundActivity extends K9Activity {
     private class AppendAndReceiveSmileStorageMessages extends AsyncTask<Void, Void, Void> {
         @Override
         protected Void doInBackground(Void... params) {
+            //testImapAppendDirectly();
+            testFeatureStorage();
+            return null;
+        }
+
+        private void testFeatureStorage() {
+            MessagingController messagingController = MessagingController.getInstance(getApplication());
+            Log.d(K9.LOG_TAG, "Start testing FeatureStorage.");
+            FeatureStorage featureStorage = new FeatureStorage(mAccount, mContext,
+                    messagingController, filesDirectory);
+            featureStorage.saveNewFollowUpMailInformation("uid-uid-uid-uid-" + counter,
+                    "message-id-" + counter, System.currentTimeMillis() + 100000);
+            counter++;
+        }
+
+        private void testImapAppendDirectly(){
             MessagingController messagingController = MessagingController.getInstance(getApplication());
             IMAPAppendText appendText = new IMAPAppendText(mAccount, mContext, messagingController);
             Log.i(K9.LOG_TAG, "Newest MsgID: " + appendText.getCurrentMessageId());
@@ -83,12 +105,11 @@ public class IMAPAppendTextWorkaroundActivity extends K9Activity {
 
             } catch (MessagingException e) {
                 Log.e(K9.LOG_TAG, getResources().getString(R.string.imap_append_failed));
-                return null;
+                return;
             }
             Log.i(K9.LOG_TAG, getResources().getString(R.string.imap_append_done));
             Log.i(K9.LOG_TAG, "Newest MsgID: " + appendText.getCurrentMessageId());
             Log.i(K9.LOG_TAG, "Newest Content: " + appendText.getCurrentContent(null));
-            return null;
         }
     }
 }

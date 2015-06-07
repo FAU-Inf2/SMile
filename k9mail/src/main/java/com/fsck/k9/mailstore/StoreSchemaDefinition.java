@@ -115,7 +115,7 @@ class StoreSchemaDefinition implements LockableDatabase.SchemaDefinition {
                         "server_extra TEXT" +
                         ")");
 
-                db.execSQL("CREATE TABLE FollowUp (id INTEGER PRIMARY KEY, MessageId INTEGER NOT NULL, RemindTime TIMESTAMP NOT NULL);");
+                db.execSQL("CREATE TABLE FollowUp (id INTEGER PRIMARY KEY, FolderId INTEGER NOT NULL, MessageId INTEGER NOT NULL, RemindTime INTEGER NOT NULL);");
 
                 db.execSQL("CREATE TRIGGER set_message_part_root " +
                         "AFTER INSERT ON message_parts " +
@@ -561,7 +561,7 @@ class StoreSchemaDefinition implements LockableDatabase.SchemaDefinition {
                 }
 
                 if (db.getVersion() < 51) {
-                    db.execSQL("CREATE TABLE FollowUp (id INTEGER PRIMARY KEY, MessageId INTEGER NOT NULL, RemindTime TIMESTAMP NOT NULL);");
+                    db.execSQL("CREATE TABLE FollowUp (id INTEGER PRIMARY KEY, FolderId INTEGER NOT NULL, MessageId INTEGER NOT NULL, RemindTime INTEGER NOT NULL);");
                 }
 
                 if (db.getVersion() < 52) {

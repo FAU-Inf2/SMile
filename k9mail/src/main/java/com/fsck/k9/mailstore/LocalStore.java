@@ -161,7 +161,7 @@ public class LocalStore extends Store implements Serializable {
 
     /**
      * local://localhost/path/to/database/uuid.db
-     * This constructor is only used by {@link Store#getLocalInstance(Account, Context)}
+     * This constructor is only used by {@link LocalStore#getInstance(Account, Context)}
      * @param account
      * @param context
      * @throws UnavailableStorageException if not {@link StorageProvider#isReady(Context)}

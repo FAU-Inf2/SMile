@@ -8,6 +8,10 @@ public class FollowUp {
     private Date remindTime;
     private Message message;
 
+    public FollowUp() {
+
+    }
+
     public FollowUp(String title, Date remindTime) {
         this(title, remindTime, null);
     }

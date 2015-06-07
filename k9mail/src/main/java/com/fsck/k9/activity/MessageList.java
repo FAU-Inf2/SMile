@@ -906,6 +906,10 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
                 mMessageViewFragment.onMove();
                 return true;
             }
+            case R.id.followup: {
+                mMessageViewFragment.onFollowUp();
+                return true;
+            }
             case R.id.copy:
             case R.id.refile_copy: {
                 mMessageViewFragment.onCopy();

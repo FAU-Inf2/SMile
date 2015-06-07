@@ -101,7 +101,6 @@ public class MessagingListener {
      */
     public void messageViewFinished() {}
 
-
     public void checkMailStarted(Context context, Account account) {}
 
     public void checkMailFinished(Context context, Account account) {}
@@ -136,7 +135,6 @@ public class MessagingListener {
     public void loadAttachmentFinished(Account account, Message message, Part part) {}
 
     public void loadAttachmentFailed(Account account, Message message, Part part, String reason) {}
-
 
 
     public void pendingCommandStarted(Account account, String commandTitle) {}

@@ -156,7 +156,8 @@ public class MessageHelper {
         return sb;
     }
 
-    /* package, for testing */ static CharSequence toFriendly(Address address, Contacts contacts,
+    /* package, for testing */
+    static CharSequence toFriendly(Address address, Contacts contacts,
                                                  boolean showCorrespondentNames,
                                                  boolean changeContactNameColor,
                                                  int contactNameColor) {

@@ -865,11 +865,13 @@ public class LocalFolder extends Folder<LocalMessage> implements Serializable {
 
     @Override
     public List<LocalMessage> getMessages(String[] uids, MessageRetrievalListener<LocalMessage> listener)
-    throws MessagingException {
+            throws MessagingException {
         open(OPEN_MODE_RW);
+
         if (uids == null) {
             return getMessages(listener);
         }
+
         List<LocalMessage> messages = new ArrayList<LocalMessage>();
         for (String uid : uids) {
             LocalMessage message = getMessage(uid);
@@ -885,6 +887,7 @@ public class LocalFolder extends Folder<LocalMessage> implements Serializable {
         if (!(folder instanceof LocalFolder)) {
             throw new MessagingException("copyMessages called with incorrect Folder");
         }
+
         return ((LocalFolder) folder).appendMessages(msgs, true);
     }
 

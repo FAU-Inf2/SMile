@@ -17,10 +17,7 @@ import com.fsck.k9.mail.Address;
 import com.fsck.k9.mail.Flag;
 import com.fsck.k9.mail.Folder;
 import com.fsck.k9.mail.MessagingException;
-import com.fsck.k9.mail.Part;
-import com.fsck.k9.mail.internet.MessageExtractor;
 import com.fsck.k9.mail.internet.MimeMessage;
-import com.fsck.k9.mail.internet.MimeUtility;
 import com.fsck.k9.mailstore.LockableDatabase.DbCallback;
 import com.fsck.k9.mailstore.LockableDatabase.WrappedException;
 
@@ -54,14 +51,16 @@ public class LocalMessage extends MimeMessage {
     void populateFromGetMessageCursor(Cursor cursor) throws MessagingException {
         final String subject = cursor.getString(0);
         this.setSubject(subject == null ? "" : subject);
-
         Address[] from = Address.unpack(cursor.getString(1));
+
         if (from.length > 0) {
             this.setFrom(from[0]);
         }
+
         this.setInternalSentDate(new Date(cursor.getLong(2)));
         this.setUid(cursor.getString(3));
         String flagList = cursor.getString(4);
+
         if (flagList != null && flagList.length() > 0) {
             String[] flags = flagList.split(",");
 
@@ -77,6 +76,7 @@ public class LocalMessage extends MimeMessage {
                 }
             }
         }
+
         this.mId = cursor.getLong(5);
         this.setRecipients(RecipientType.TO, Address.unpack(cursor.getString(6)));
         this.setRecipients(RecipientType.CC, Address.unpack(cursor.getString(7)));
@@ -147,12 +147,10 @@ public class LocalMessage extends MimeMessage {
         return mSubject;
     }
 
-
     @Override
     public void setSubject(String subject) throws MessagingException {
         mSubject = subject;
     }
-
 
     @Override
     public void setMessageId(String messageId) {
@@ -178,7 +176,6 @@ public class LocalMessage extends MimeMessage {
     public void setFrom(Address from) throws MessagingException {
         this.mFrom = new Address[] { from };
     }
-
 
     @Override
     public void setReplyTo(Address[] replyTo) throws MessagingException {

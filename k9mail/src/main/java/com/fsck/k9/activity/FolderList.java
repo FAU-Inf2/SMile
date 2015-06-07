@@ -352,11 +352,13 @@ public class FolderList extends K9ListActivity {
     }
 
 
-    @Override public Object onRetainNonConfigurationInstance() {
+    @Override
+    public Object onRetainNonConfigurationInstance() {
         return (mAdapter == null) ? null : mAdapter.mFolders;
     }
 
-    @Override public void onPause() {
+    @Override
+    public void onPause() {
         super.onPause();
         MessagingController.getInstance(getApplication()).removeListener(mAdapter.mListener);
         mAdapter.mListener.onPause(this);
@@ -367,7 +369,8 @@ public class FolderList extends K9ListActivity {
     * messages for any folder that is currently open. This guarantees that things
     * like unread message count and read status are updated.
      */
-    @Override public void onResume() {
+    @Override
+    public void onResume() {
         super.onResume();
 
         if (!mAccount.isAvailable(this)) {
@@ -445,14 +448,13 @@ public class FolderList extends K9ListActivity {
 
 
     private void onRefresh(final boolean forceRemote) {
-
         MessagingController.getInstance(getApplication()).listFolders(mAccount, forceRemote, mAdapter.mListener);
-
     }
 
     private void onEditPrefs() {
         Prefs.actionPrefs(this);
     }
+
     private void onEditAccount() {
         AccountSettings.actionSettings(this, mAccount);
     }
@@ -490,15 +492,12 @@ public class FolderList extends K9ListActivity {
         onRefresh(!REFRESH_REMOTE);
     }
 
-
-
-
-
     private void sendMail(Account account) {
         MessagingController.getInstance(getApplication()).sendPendingMessages(account, mAdapter.mListener);
     }
 
-    @Override public boolean onOptionsItemSelected(MenuItem item) {
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
         case android.R.id.home:
             onAccounts();
@@ -591,7 +590,8 @@ public class FolderList extends K9ListActivity {
         MessagingController.getInstance(getApplication()).compact(account, null);
     }
 
-    @Override public boolean onCreateOptionsMenu(Menu menu) {
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.folder_list_option, menu);
         mRefreshMenuItem = menu.findItem(R.id.check_mail);
@@ -629,7 +629,8 @@ public class FolderList extends K9ListActivity {
         });
     }
 
-    @Override public boolean onContextItemSelected(android.view.MenuItem item) {
+    @Override
+    public boolean onContextItemSelected(android.view.MenuItem item) {
         AdapterContextMenuInfo info = (AdapterContextMenuInfo) item .getMenuInfo();
         FolderInfoHolder folder = (FolderInfoHolder) mAdapter.getItem(info.position);
 
@@ -671,7 +672,6 @@ public class FolderList extends K9ListActivity {
             return mFilteredFolders.get(position);
         }
 
-
         public long getItemId(int position) {
             return mFilteredFolders.get(position).folder.getName().hashCode() ;
         }
@@ -690,12 +690,296 @@ public class FolderList extends K9ListActivity {
             return true;
         }
 
-        private ActivityListener mListener = new ActivityListener() {
+        private ActivityListener mListener = new MyActivityListener();
+
+        public int getFolderIndex(String folder) {
+            FolderInfoHolder searchHolder = new FolderInfoHolder();
+            searchHolder.name = folder;
+            return   mFilteredFolders.indexOf(searchHolder);
+        }
+
+        public FolderInfoHolder getFolder(String folder) {
+            FolderInfoHolder holder = null;
+
+            int index = getFolderIndex(folder);
+            if (index >= 0) {
+                holder = (FolderInfoHolder) getItem(index);
+                if (holder != null) {
+                    return holder;
+                }
+            }
+            return null;
+        }
+
+        public View getView(int position, View convertView, ViewGroup parent) {
+            if (position <= getCount()) {
+                return  getItemView(position, convertView, parent);
+            } else {
+                Log.e(K9.LOG_TAG, "getView with illegal positon=" + position
+                      + " called! count is only " + getCount());
+                return null;
+            }
+        }
+
+        public View getItemView(int itemPosition, View convertView, ViewGroup parent) {
+            FolderInfoHolder folder = (FolderInfoHolder) getItem(itemPosition);
+            View view;
+            if (convertView != null) {
+                view = convertView;
+            } else {
+                view = mInflater.inflate(R.layout.folder_list_item, parent, false);
+            }
+
+            FolderViewHolder holder = (FolderViewHolder) view.getTag();
+
+            if (holder == null) {
+                holder = new FolderViewHolder();
+                holder.folderName = (TextView) view.findViewById(R.id.folder_name);
+                holder.newMessageCount = (TextView) view.findViewById(R.id.new_message_count);
+                holder.flaggedMessageCount = (TextView) view.findViewById(R.id.flagged_message_count);
+                holder.newMessageCountWrapper = (View) view.findViewById(R.id.new_message_count_wrapper);
+                holder.flaggedMessageCountWrapper = (View) view.findViewById(R.id.flagged_message_count_wrapper);
+                holder.newMessageCountIcon = (View) view.findViewById(R.id.new_message_count_icon);
+                holder.flaggedMessageCountIcon = (View) view.findViewById(R.id.flagged_message_count_icon);
+
+                holder.folderStatus = (TextView) view.findViewById(R.id.folder_status);
+                holder.activeIcons = (RelativeLayout) view.findViewById(R.id.active_icons);
+                holder.chip = view.findViewById(R.id.chip);
+                holder.folderListItemLayout = (LinearLayout)view.findViewById(R.id.folder_list_item_layout);
+                holder.rawFolderName = folder.name;
+
+                view.setTag(holder);
+            }
+
+            if (folder == null) {
+                return view;
+            }
+
+            final String folderStatus;
+
+            if (folder.loading) {
+                folderStatus = getString(R.string.status_loading);
+            } else if (folder.status != null) {
+                folderStatus = folder.status;
+            } else if (folder.lastChecked != 0) {
+                long now = System.currentTimeMillis();
+                int flags = DateUtils.FORMAT_SHOW_TIME | DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_SHOW_YEAR;
+                CharSequence formattedDate;
+
+                if (Math.abs(now - folder.lastChecked) > DateUtils.WEEK_IN_MILLIS) {
+                    formattedDate = getString(R.string.preposition_for_date,
+                            DateUtils.formatDateTime(context, folder.lastChecked, flags));
+                } else {
+                    formattedDate = DateUtils.getRelativeTimeSpanString(folder.lastChecked,
+                            now, DateUtils.MINUTE_IN_MILLIS, flags);
+                }
+
+                folderStatus = getString(folder.pushActive
+                        ? R.string.last_refresh_time_format_with_push
+                        : R.string.last_refresh_time_format,
+                        formattedDate);
+            } else {
+                folderStatus = null;
+            }
+
+            holder.folderName.setText(folder.displayName);
+            if (folderStatus != null) {
+                holder.folderStatus.setText(folderStatus);
+                holder.folderStatus.setVisibility(View.VISIBLE);
+            } else {
+                holder.folderStatus.setVisibility(View.GONE);
+            }
+
+            if(folder.unreadMessageCount == -1) {
+               folder.unreadMessageCount = 0;
+                try {
+                    folder.unreadMessageCount  = folder.folder.getUnreadMessageCount();
+                } catch (Exception e) {
+                    Log.e(K9.LOG_TAG, "Unable to get unreadMessageCount for " + mAccount.getDescription() + ":"
+                          + folder.name);
+                }
+            }
+            if (folder.unreadMessageCount > 0) {
+                holder.newMessageCount.setText(Integer.toString(folder.unreadMessageCount));
+                holder.newMessageCountWrapper.setOnClickListener(
+                        createUnreadSearch(mAccount, folder));
+                holder.newMessageCountWrapper.setVisibility(View.VISIBLE);
+                holder.newMessageCountIcon.setBackgroundDrawable(
+                        mAccount.generateColorChip(false, false, false, false, false).drawable());
+            } else {
+                holder.newMessageCountWrapper.setVisibility(View.GONE);
+            }
+
+            if (folder.flaggedMessageCount == -1) {
+                folder.flaggedMessageCount = 0;
+                try {
+                    folder.flaggedMessageCount = folder.folder.getFlaggedMessageCount();
+                } catch (Exception e) {
+                    Log.e(K9.LOG_TAG, "Unable to get flaggedMessageCount for " + mAccount.getDescription() + ":"
+                          + folder.name);
+                }
+
+                    }
+
+            if (K9.messageListStars() && folder.flaggedMessageCount > 0) {
+                holder.flaggedMessageCount.setText(Integer.toString(folder.flaggedMessageCount));
+                holder.flaggedMessageCountWrapper.setOnClickListener(
+                        createFlaggedSearch(mAccount, folder));
+                holder.flaggedMessageCountWrapper.setVisibility(View.VISIBLE);
+                holder.flaggedMessageCountIcon.setBackgroundDrawable(
+                        mAccount.generateColorChip(false, false, false, false,true).drawable());
+            } else {
+                holder.flaggedMessageCountWrapper.setVisibility(View.GONE);
+            }
+
+            holder.activeIcons.setOnClickListener(new OnClickListener() {
+                public void onClick(View v) {
+                    Toast toast = Toast.makeText(getApplication(), getString(R.string.tap_hint), Toast.LENGTH_SHORT);
+                    toast.show();
+                }
+            });
+
+            holder.chip.setBackgroundColor(mAccount.getChipColor());
+            mFontSizes.setViewTextSize(holder.folderName, mFontSizes.getFolderName());
+
+            if (K9.wrapFolderNames()) {
+                holder.folderName.setEllipsize(null);
+                holder.folderName.setSingleLine(false);
+            }
+            else {
+                holder.folderName.setEllipsize(TruncateAt.START);
+                holder.folderName.setSingleLine(true);
+            }
+            mFontSizes.setViewTextSize(holder.folderStatus, mFontSizes.getFolderStatus());
+
+            return view;
+        }
+
+        private OnClickListener createFlaggedSearch(Account account, FolderInfoHolder folder) {
+            String searchTitle = getString(R.string.search_title,
+                    getString(R.string.message_list_title, account.getDescription(),
+                            folder.displayName),
+                    getString(R.string.flagged_modifier));
+
+            LocalSearch search = new LocalSearch(searchTitle);
+            search.and(SearchField.FLAGGED, "1", Attribute.EQUALS);
+
+            search.addAllowedFolder(folder.name);
+            search.addAccountUuid(account.getUuid());
+
+            return new FolderClickListener(search);
+        }
+
+        private OnClickListener createUnreadSearch(Account account, FolderInfoHolder folder) {
+            String searchTitle = getString(R.string.search_title,
+                    getString(R.string.message_list_title, account.getDescription(),
+                            folder.displayName),
+                    getString(R.string.unread_modifier));
+
+            LocalSearch search = new LocalSearch(searchTitle);
+            search.and(SearchField.READ, "1", Attribute.NOT_EQUALS);
+
+            search.addAllowedFolder(folder.name);
+            search.addAccountUuid(account.getUuid());
+
+            return new FolderClickListener(search);
+        }
+
+        @Override
+        public boolean hasStableIds() {
+            return true;
+        }
+
+        public boolean isItemSelectable(int position) {
+            return true;
+        }
+
+        public void setFilter(final Filter filter) {
+            this.mFilter = filter;
+        }
+
+        public Filter getFilter() {
+            return mFilter;
+        }
+
+        /**
+         * Filter to search for occurences of the search-expression in any place of the
+         * folder-name instead of doing jsut a prefix-search.
+         *
+         * @author Marcus@Wolschon.biz
+         */
+        public class FolderListFilter extends Filter {
+            private CharSequence mSearchTerm;
+
+            public CharSequence getSearchTerm() {
+                return mSearchTerm;
+            }
+
+            /**
+             * Do the actual search.
+             * {@inheritDoc}
+             *
+             * @see #publishResults(CharSequence, FilterResults)
+             */
+            @Override
+            protected FilterResults performFiltering(CharSequence searchTerm) {
+                mSearchTerm = searchTerm;
+                FilterResults results = new FilterResults();
+
+                Locale locale = Locale.getDefault();
+                if ((searchTerm == null) || (searchTerm.length() == 0)) {
+                    List<FolderInfoHolder> list = new ArrayList<FolderInfoHolder>(mFolders);
+                    results.values = list;
+                    results.count = list.size();
+                } else {
+                    final String searchTermString = searchTerm.toString().toLowerCase(locale);
+                    final String[] words = searchTermString.split(" ");
+                    final int wordCount = words.length;
+
+                    final List<FolderInfoHolder> newValues = new ArrayList<FolderInfoHolder>();
+
+                    for (final FolderInfoHolder value : mFolders) {
+                        if (value.displayName == null) {
+                            continue;
+                        }
+                        final String valueText = value.displayName.toLowerCase(locale);
+
+                        for (int k = 0; k < wordCount; k++) {
+                            if (valueText.contains(words[k])) {
+                                newValues.add(value);
+                                break;
+                            }
+                        }
+                    }
+
+                    results.values = newValues;
+                    results.count = newValues.size();
+                }
+
+                return results;
+            }
+
+            /**
+             * Publish the results to the user-interface.
+             * {@inheritDoc}
+             */
+            @SuppressWarnings("unchecked")
+            @Override
+            protected void publishResults(CharSequence constraint, FilterResults results) {
+                //noinspection unchecked
+                mFilteredFolders = Collections.unmodifiableList((ArrayList<FolderInfoHolder>) results.values);
+                // Send notification that the data set changed now
+                notifyDataSetChanged();
+            }
+        }
+
+        private class MyActivityListener extends ActivityListener {
             @Override
             public void informUserOfStatus() {
                 mHandler.refreshTitle();
                 mHandler.dataChanged();
             }
+
             @Override
             public void accountStatusChanged(BaseAccount account, AccountStats stats) {
                 if (!account.equals(mAccount)) {
@@ -729,11 +1013,11 @@ public class FolderList extends K9ListActivity {
             @Override
             public void listFoldersFinished(Account account) {
                 if (account.equals(mAccount)) {
-
                     mHandler.progress(false);
                     MessagingController.getInstance(getApplication()).refreshListener(mAdapter.mListener);
                     mHandler.dataChanged();
                 }
+
                 super.listFoldersFinished(account);
 
             }
@@ -745,7 +1029,7 @@ public class FolderList extends K9ListActivity {
                     List<FolderInfoHolder> newFolders = new LinkedList<FolderInfoHolder>();
                     List<FolderInfoHolder> topFolders = new LinkedList<FolderInfoHolder>();
 
-                    Account.FolderMode aMode = account.getFolderDisplayMode();
+                    FolderMode aMode = account.getFolderDisplayMode();
                     for (Folder folder : folders) {
                         Folder.FolderClass fMode = folder.getDisplayClass();
 
@@ -926,290 +1210,6 @@ public class FolderList extends K9ListActivity {
                 if (account.equals(mAccount)) {
                     mHandler.accountSizeChanged(oldSize, newSize);
                 }
-            }
-        };
-
-
-        public int getFolderIndex(String folder) {
-            FolderInfoHolder searchHolder = new FolderInfoHolder();
-            searchHolder.name = folder;
-            return   mFilteredFolders.indexOf(searchHolder);
-        }
-
-        public FolderInfoHolder getFolder(String folder) {
-            FolderInfoHolder holder = null;
-
-            int index = getFolderIndex(folder);
-            if (index >= 0) {
-                holder = (FolderInfoHolder) getItem(index);
-                if (holder != null) {
-                    return holder;
-                }
-            }
-            return null;
-        }
-
-        public View getView(int position, View convertView, ViewGroup parent) {
-            if (position <= getCount()) {
-                return  getItemView(position, convertView, parent);
-            } else {
-                Log.e(K9.LOG_TAG, "getView with illegal positon=" + position
-                      + " called! count is only " + getCount());
-                return null;
-            }
-        }
-
-        public View getItemView(int itemPosition, View convertView, ViewGroup parent) {
-            FolderInfoHolder folder = (FolderInfoHolder) getItem(itemPosition);
-            View view;
-            if (convertView != null) {
-                view = convertView;
-            } else {
-                view = mInflater.inflate(R.layout.folder_list_item, parent, false);
-            }
-
-            FolderViewHolder holder = (FolderViewHolder) view.getTag();
-
-            if (holder == null) {
-                holder = new FolderViewHolder();
-                holder.folderName = (TextView) view.findViewById(R.id.folder_name);
-                holder.newMessageCount = (TextView) view.findViewById(R.id.new_message_count);
-                holder.flaggedMessageCount = (TextView) view.findViewById(R.id.flagged_message_count);
-                holder.newMessageCountWrapper = (View) view.findViewById(R.id.new_message_count_wrapper);
-                holder.flaggedMessageCountWrapper = (View) view.findViewById(R.id.flagged_message_count_wrapper);
-                holder.newMessageCountIcon = (View) view.findViewById(R.id.new_message_count_icon);
-                holder.flaggedMessageCountIcon = (View) view.findViewById(R.id.flagged_message_count_icon);
-
-                holder.folderStatus = (TextView) view.findViewById(R.id.folder_status);
-                holder.activeIcons = (RelativeLayout) view.findViewById(R.id.active_icons);
-                holder.chip = view.findViewById(R.id.chip);
-                holder.folderListItemLayout = (LinearLayout)view.findViewById(R.id.folder_list_item_layout);
-                holder.rawFolderName = folder.name;
-
-                view.setTag(holder);
-            }
-
-            if (folder == null) {
-                return view;
-            }
-
-            final String folderStatus;
-
-            if (folder.loading) {
-                folderStatus = getString(R.string.status_loading);
-            } else if (folder.status != null) {
-                folderStatus = folder.status;
-            } else if (folder.lastChecked != 0) {
-                long now = System.currentTimeMillis();
-                int flags = DateUtils.FORMAT_SHOW_TIME | DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_SHOW_YEAR;
-                CharSequence formattedDate;
-
-                if (Math.abs(now - folder.lastChecked) > DateUtils.WEEK_IN_MILLIS) {
-                    formattedDate = getString(R.string.preposition_for_date,
-                            DateUtils.formatDateTime(context, folder.lastChecked, flags));
-                } else {
-                    formattedDate = DateUtils.getRelativeTimeSpanString(folder.lastChecked,
-                            now, DateUtils.MINUTE_IN_MILLIS, flags);
-                }
-
-                folderStatus = getString(folder.pushActive
-                        ? R.string.last_refresh_time_format_with_push
-                        : R.string.last_refresh_time_format,
-                        formattedDate);
-            } else {
-                folderStatus = null;
-            }
-
-            holder.folderName.setText(folder.displayName);
-            if (folderStatus != null) {
-                holder.folderStatus.setText(folderStatus);
-                holder.folderStatus.setVisibility(View.VISIBLE);
-            } else {
-                holder.folderStatus.setVisibility(View.GONE);
-            }
-
-            if(folder.unreadMessageCount == -1) {
-               folder.unreadMessageCount = 0;
-                try {
-                    folder.unreadMessageCount  = folder.folder.getUnreadMessageCount();
-                } catch (Exception e) {
-                    Log.e(K9.LOG_TAG, "Unable to get unreadMessageCount for " + mAccount.getDescription() + ":"
-                          + folder.name);
-                }
-            }
-            if (folder.unreadMessageCount > 0) {
-                holder.newMessageCount.setText(Integer.toString(folder.unreadMessageCount));
-                holder.newMessageCountWrapper.setOnClickListener(
-                        createUnreadSearch(mAccount, folder));
-                holder.newMessageCountWrapper.setVisibility(View.VISIBLE);
-                holder.newMessageCountIcon.setBackgroundDrawable(
-                        mAccount.generateColorChip(false, false, false, false, false).drawable());
-            } else {
-                holder.newMessageCountWrapper.setVisibility(View.GONE);
-            }
-
-            if (folder.flaggedMessageCount == -1) {
-                folder.flaggedMessageCount = 0;
-                try {
-                    folder.flaggedMessageCount = folder.folder.getFlaggedMessageCount();
-                } catch (Exception e) {
-                    Log.e(K9.LOG_TAG, "Unable to get flaggedMessageCount for " + mAccount.getDescription() + ":"
-                          + folder.name);
-                }
-
-                    }
-
-            if (K9.messageListStars() && folder.flaggedMessageCount > 0) {
-                holder.flaggedMessageCount.setText(Integer.toString(folder.flaggedMessageCount));
-                holder.flaggedMessageCountWrapper.setOnClickListener(
-                        createFlaggedSearch(mAccount, folder));
-                holder.flaggedMessageCountWrapper.setVisibility(View.VISIBLE);
-                holder.flaggedMessageCountIcon.setBackgroundDrawable(
-                        mAccount.generateColorChip(false, false, false, false,true).drawable());
-            } else {
-                holder.flaggedMessageCountWrapper.setVisibility(View.GONE);
-            }
-
-            holder.activeIcons.setOnClickListener(new OnClickListener() {
-                public void onClick(View v) {
-                    Toast toast = Toast.makeText(getApplication(), getString(R.string.tap_hint), Toast.LENGTH_SHORT);
-                    toast.show();
-                }
-            });
-
-            holder.chip.setBackgroundColor(mAccount.getChipColor());
-
-
-            mFontSizes.setViewTextSize(holder.folderName, mFontSizes.getFolderName());
-
-            if (K9.wrapFolderNames()) {
-                holder.folderName.setEllipsize(null);
-                holder.folderName.setSingleLine(false);
-            }
-            else {
-                holder.folderName.setEllipsize(TruncateAt.START);
-                holder.folderName.setSingleLine(true);
-            }
-            mFontSizes.setViewTextSize(holder.folderStatus, mFontSizes.getFolderStatus());
-
-            return view;
-        }
-
-        private OnClickListener createFlaggedSearch(Account account, FolderInfoHolder folder) {
-            String searchTitle = getString(R.string.search_title,
-                    getString(R.string.message_list_title, account.getDescription(),
-                            folder.displayName),
-                    getString(R.string.flagged_modifier));
-
-            LocalSearch search = new LocalSearch(searchTitle);
-            search.and(SearchField.FLAGGED, "1", Attribute.EQUALS);
-
-            search.addAllowedFolder(folder.name);
-            search.addAccountUuid(account.getUuid());
-
-            return new FolderClickListener(search);
-        }
-
-        private OnClickListener createUnreadSearch(Account account, FolderInfoHolder folder) {
-            String searchTitle = getString(R.string.search_title,
-                    getString(R.string.message_list_title, account.getDescription(),
-                            folder.displayName),
-                    getString(R.string.unread_modifier));
-
-            LocalSearch search = new LocalSearch(searchTitle);
-            search.and(SearchField.READ, "1", Attribute.NOT_EQUALS);
-
-            search.addAllowedFolder(folder.name);
-            search.addAccountUuid(account.getUuid());
-
-            return new FolderClickListener(search);
-        }
-
-        @Override
-        public boolean hasStableIds() {
-            return true;
-        }
-
-        public boolean isItemSelectable(int position) {
-            return true;
-        }
-
-        public void setFilter(final Filter filter) {
-            this.mFilter = filter;
-        }
-
-        public Filter getFilter() {
-            return mFilter;
-        }
-
-        /**
-         * Filter to search for occurences of the search-expression in any place of the
-         * folder-name instead of doing jsut a prefix-search.
-         *
-         * @author Marcus@Wolschon.biz
-         */
-        public class FolderListFilter extends Filter {
-            private CharSequence mSearchTerm;
-
-            public CharSequence getSearchTerm() {
-                return mSearchTerm;
-            }
-
-            /**
-             * Do the actual search.
-             * {@inheritDoc}
-             *
-             * @see #publishResults(CharSequence, FilterResults)
-             */
-            @Override
-            protected FilterResults performFiltering(CharSequence searchTerm) {
-                mSearchTerm = searchTerm;
-                FilterResults results = new FilterResults();
-
-                Locale locale = Locale.getDefault();
-                if ((searchTerm == null) || (searchTerm.length() == 0)) {
-                    List<FolderInfoHolder> list = new ArrayList<FolderInfoHolder>(mFolders);
-                    results.values = list;
-                    results.count = list.size();
-                } else {
-                    final String searchTermString = searchTerm.toString().toLowerCase(locale);
-                    final String[] words = searchTermString.split(" ");
-                    final int wordCount = words.length;
-
-                    final List<FolderInfoHolder> newValues = new ArrayList<FolderInfoHolder>();
-
-                    for (final FolderInfoHolder value : mFolders) {
-                        if (value.displayName == null) {
-                            continue;
-                        }
-                        final String valueText = value.displayName.toLowerCase(locale);
-
-                        for (int k = 0; k < wordCount; k++) {
-                            if (valueText.contains(words[k])) {
-                                newValues.add(value);
-                                break;
-                            }
-                        }
-                    }
-
-                    results.values = newValues;
-                    results.count = newValues.size();
-                }
-
-                return results;
-            }
-
-            /**
-             * Publish the results to the user-interface.
-             * {@inheritDoc}
-             */
-            @SuppressWarnings("unchecked")
-            @Override
-            protected void publishResults(CharSequence constraint, FilterResults results) {
-                //noinspection unchecked
-                mFilteredFolders = Collections.unmodifiableList((ArrayList<FolderInfoHolder>) results.values);
-                // Send notification that the data set changed now
-                notifyDataSetChanged();
             }
         }
     }

@@ -77,8 +77,9 @@ public class MailService extends CoreService {
     @Override
     public void onCreate() {
         super.onCreate();
-        if (K9.DEBUG)
+        if (K9.DEBUG) {
             Log.v(K9.LOG_TAG, "***** MailService *****: onCreate");
+        }
     }
 
     /*
@@ -344,7 +345,6 @@ public class MailService extends CoreService {
         schedulePushers();
     }
 
-
     private void setupPushers() {
         boolean pushing = false;
         for (Account account : Preferences.getPreferences(MailService.this).getAccounts()) {
@@ -356,22 +356,27 @@ public class MailService extends CoreService {
                 //TODO: setupPushing of unavailable accounts when they become available (sd-card inserted)
             }
         }
+
         if (pushing) {
             PushService.startService(MailService.this);
         }
+
         pushingRequested = pushing;
     }
 
     private void refreshPushers() {
         try {
             long nowTime = System.currentTimeMillis();
+
             if (K9.DEBUG)
                 Log.i(K9.LOG_TAG, "Refreshing pushers");
+
             Collection<Pusher> pushers = MessagingController.getInstance(getApplication()).getPushers();
             for (Pusher pusher : pushers) {
                 long lastRefresh = pusher.getLastRefresh();
                 int refreshInterval = pusher.getRefreshInterval();
                 long sinceLast = nowTime - lastRefresh;
+
                 if (sinceLast + 10000 > refreshInterval) { // Add 10 seconds to keep pushers in sync, avoid drift
                     if (K9.DEBUG) {
                         Log.d(K9.LOG_TAG, "PUSHREFRESH: refreshing lastRefresh = " + lastRefresh + ", interval = " + refreshInterval
@@ -411,9 +416,11 @@ public class MailService extends CoreService {
                 minInterval = interval;
             }
         }
+
         if (K9.DEBUG) {
             Log.v(K9.LOG_TAG, "Pusher refresh interval = " + minInterval);
         }
+
         if (minInterval > 0) {
             long nextTime = System.currentTimeMillis() + minInterval;
             if (K9.DEBUG)
@@ -423,7 +430,6 @@ public class MailService extends CoreService {
             BootReceiver.scheduleIntent(MailService.this, nextTime, i);
         }
     }
-
 
     @Override
     public IBinder onBind(Intent intent) {

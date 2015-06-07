@@ -34,7 +34,7 @@ public class LocalFollowUp {
     private FollowUp populateFromCursor(Cursor cursor) throws MessagingException {
         FollowUp followUp = new FollowUp();
         followUp.setId(cursor.getInt(cursor.getColumnIndex(COLUMN_FOLLOWUP_ID)));
-        followUp.setRemindTime(new Date(cursor.getInt(cursor.getColumnIndex(COLUMN_FOLLOWUP_REMINDTIME))));
+        followUp.setRemindTime(new Date(cursor.getLong(cursor.getColumnIndex(COLUMN_FOLLOWUP_REMINDTIME))));
         int folderId= cursor.getInt(cursor.getColumnIndex(COLUMN_FOLLOWUP_FOLDERID));
         String messageUid = this.localStore.getFolderById(folderId).getMessageUidById(cursor.getLong(cursor.getColumnIndex(COLUMN_FOLLOWUP_MESSAGEID)));
         Message m = this.localStore.getFolderById(folderId).getMessage(messageUid);
@@ -52,13 +52,14 @@ public class LocalFollowUp {
                 while (cursor.moveToNext()) {
                     followUps.add(populateFromCursor(cursor));
                 }
+                cursor.close();
 
                 return followUps;
             }
         });
     }
 
-    public void add(FollowUp followUp) throws MessagingException {
+    public void add(final FollowUp followUp) throws MessagingException {
         this.localStore.getDatabase().execute(true, new LockableDatabase.DbCallback<Void>() {
             @Override
             public Void doDbWork(SQLiteDatabase db) throws LockableDatabase.WrappedException, MessagingException {
@@ -72,7 +73,7 @@ public class LocalFollowUp {
         });
     }
 
-    public void delete(FollowUp followUp) throws MessagingException {
+    public void delete(final FollowUp followUp) throws MessagingException {
         this.localStore.getDatabase().execute(true, new LockableDatabase.DbCallback<Void>() {
             @Override
             public Void doDbWork(SQLiteDatabase db) throws LockableDatabase.WrappedException, MessagingException {
@@ -82,7 +83,7 @@ public class LocalFollowUp {
         });
     }
 
-    public void update(FollowUp followUp) throws MessagingException {
+    public void update(final FollowUp followUp) throws MessagingException {
 
         this.localStore.getDatabase().execute(true, new LockableDatabase.DbCallback<Void>() {
             @Override

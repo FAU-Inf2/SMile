@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.format.DateUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -19,24 +20,28 @@ import android.widget.TextView;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.FollowUpDialog;
+import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.mail.FollowUp;
 import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.MessagingException;
+import com.fsck.k9.mailstore.LocalFollowUp;
 import com.fsck.k9.mailstore.LocalMessage;
+import com.fsck.k9.mailstore.LocalStore;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
 import de.fau.cs.mad.smile.android.R;
 
 public class FollowUpList extends K9ListActivity implements FollowUpDialog.NoticeDialogListener {
-    private List<FollowUp> items = new ArrayList<FollowUp>();
+    //private List<FollowUp> items = new ArrayList<FollowUp>();
+    private LocalFollowUp mLocalFollowUp;
     public static final String EXTRA_MESSAGE_REFERENCE = "de.fau.cs.mad.smile.android.MESSAGE_REFERENCE";
     public static final String CREATE_FOLLOWUP = "de.fau.cs.mad.smile.android.CREATE_FOLLOWUP";
-    private static final int CREATE_FOLLOWUP_DIALOG = 1;
 
     public static Intent createFollowUp(Context context,
                                         LocalMessage message) {
@@ -49,10 +54,6 @@ public class FollowUpList extends K9ListActivity implements FollowUpDialog.Notic
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        items.add(new FollowUp("Test 1", new Date()));
-        items.add(new FollowUp("Test 2", new Date()));
-        items.add(new FollowUp("Test 3", new Date()));
 
         final Intent intent = getIntent();
 
@@ -68,6 +69,14 @@ public class FollowUpList extends K9ListActivity implements FollowUpDialog.Notic
 
         ListView listView = getListView();
         listView.setItemsCanFocus(false);
+
+        List<Account> accounts = Preferences.getPreferences(getApplicationContext()).getAccounts();
+        try {
+            LocalStore store = LocalStore.getInstance(accounts.get(0), getApplicationContext());
+            mLocalFollowUp = new LocalFollowUp(store);
+        } catch (MessagingException e) {
+            Log.e(K9.LOG_TAG, "Unable to retrieve message", e);
+        }
     }
 
     public void populateListView(List<FollowUp> items) {
@@ -78,7 +87,7 @@ public class FollowUpList extends K9ListActivity implements FollowUpDialog.Notic
     }
 
     /**
-     * Reload list of accounts when this activity is resumed.
+     * Reload list of FollowUp when this activity is resumed.
      */
     @Override
     public void onResume() {
@@ -103,7 +112,9 @@ public class FollowUpList extends K9ListActivity implements FollowUpDialog.Notic
             e.printStackTrace();
         }
 
-        items.add(new FollowUp(msg.getSubject(), calendar.getTime()));
+        FollowUp followUp = new FollowUp(msg.getSubject(), calendar.getTime(), msg);
+        new InsertFollowUp().execute(followUp);
+        new LoadFollowUp().execute();
         ((BaseAdapter)getListView().getAdapter()).notifyDataSetChanged();
     }
 
@@ -136,8 +147,12 @@ public class FollowUpList extends K9ListActivity implements FollowUpDialog.Notic
 
         @Override
         protected List<FollowUp> doInBackground(Void... params) {
-            // TODO: query sqlite db
-            return items;
+            try {
+                return mLocalFollowUp.getAllFollowUps();
+            } catch (MessagingException e) {
+                Log.e(K9.LOG_TAG, "Unable to retrieve FollowUps", e);
+            }
+            return null;
         }
 
         @Override
@@ -147,5 +162,18 @@ public class FollowUpList extends K9ListActivity implements FollowUpDialog.Notic
         }
     }
 
+    class InsertFollowUp extends AsyncTask<FollowUp, Void, Void> {
 
+        @Override
+        protected Void doInBackground(FollowUp... params) {
+            for(FollowUp followUp : params) {
+                try {
+                    mLocalFollowUp.add(followUp);
+                } catch (MessagingException e) {
+                    Log.e(K9.LOG_TAG, "Unable to insert followup", e);
+                }
+            }
+            return null;
+        }
+    }
 }

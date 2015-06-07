@@ -166,7 +166,7 @@ public class LocalStore extends Store implements Serializable {
      * @param context
      * @throws UnavailableStorageException if not {@link StorageProvider#isReady(Context)}
      */
-    public LocalStore(final Account account, final Context context) throws MessagingException {
+    private LocalStore(final Account account, final Context context) throws MessagingException {
         mAccount = account;
         database = new LockableDatabase(context, account.getUuid(), new StoreSchemaDefinition(this));
 

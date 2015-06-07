@@ -42,17 +42,18 @@ public class LocalFollowUp {
         return followUp;
     }
 
-    public void getAllFollowUps() throws MessagingException {
-        this.localStore.database.execute(false, new LockableDatabase.DbCallback<Void>() {
+    public List<FollowUp> getAllFollowUps() throws MessagingException {
+        return this.localStore.database.execute(false, new LockableDatabase.DbCallback<List<FollowUp>>() {
             @Override
-            public Void doDbWork(SQLiteDatabase db) throws LockableDatabase.WrappedException, MessagingException {
+            public List<FollowUp> doDbWork(SQLiteDatabase db) throws LockableDatabase.WrappedException, MessagingException {
+                ArrayList<FollowUp> followUps = new ArrayList<FollowUp>();
                 Cursor cursor = db.query(TABLE_FOLLOWUP, allColumns, null, null, null, null, null);
 
                 while (cursor.moveToNext()) {
-                    populateFromCursor(cursor);
+                    followUps.add(populateFromCursor(cursor));
                 }
 
-                return null;
+                return followUps;
             }
         });
     }

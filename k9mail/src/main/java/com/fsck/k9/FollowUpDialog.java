@@ -65,9 +65,11 @@ public class FollowUpDialog extends DialogFragment {
                 switch(which) {
                     case 1: {
                         setTimeValue(10);
+                        break;
                     }
                     case 2: {
                         setTimeValue(30);
+                        break;
                     }
                 }
 

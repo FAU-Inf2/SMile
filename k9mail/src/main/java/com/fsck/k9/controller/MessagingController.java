@@ -4242,7 +4242,6 @@ public class MessagingController implements Runnable {
         return uids;
     }
 
-    private List<String> deletedMessageIds;
     private void processPendingDeleteFromTrash(PendingCommand command, Account account)
             throws MessagingException {
         Store remoteStore = account.getRemoteStore();
@@ -4258,7 +4257,7 @@ public class MessagingController implements Runnable {
                 for(Message trashMessage : trashMessages) {
                     try {
                         remoteFolder.fetch(Collections.singletonList(trashMessage), fp, null);
-                        if (deletedMessageIds.contains(trashMessage.getMessageId()))
+                        if(trashMessage.getMessageId().startsWith("SmileStorage"))
                             deleteMessages.add(trashMessage);
                     } catch (Exception e) {}
                 }
@@ -4276,9 +4275,7 @@ public class MessagingController implements Runnable {
         }
     }
 
-    public void deleteFromTrash(final Account account, MessagingListener listener,
-                                final List<String> deletedMessageIds) {
-        this.deletedMessageIds = deletedMessageIds;
+    public void deleteFromTrash(final Account account, MessagingListener listener) {
         putBackground("deleteFromTrash", listener, new Runnable() {
             @Override
             public void run() {
@@ -4293,7 +4290,7 @@ public class MessagingController implements Runnable {
                     List<LocalMessage> localMessages = localFolder.getMessages(null, true);
                     List<LocalMessage> deleteMessages = new ArrayList<LocalMessage>();
                     for (LocalMessage localMessage : localMessages)
-                        if (deletedMessageIds.contains(localMessage.getMessageId()))
+                        if (localMessage.getMessageId().startsWith("SmileStorage"))
                             deleteMessages.add(localMessage);
 
                     localFolder.setFlags(deleteMessages, Collections.singleton(Flag.DELETED), true);

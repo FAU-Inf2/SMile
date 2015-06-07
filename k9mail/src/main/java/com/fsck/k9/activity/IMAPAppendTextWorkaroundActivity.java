@@ -1,25 +1,29 @@
 package com.fsck.k9.activity;
 
+import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
 
 import com.fsck.k9.Account;
 import de.fau.cs.mad.smile.android.R;
+
+import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
-import com.fsck.k9.mail.Message;
+import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.mail.MessagingException;
 
 public class IMAPAppendTextWorkaroundActivity extends K9Activity {
-/* Use IMAP-command "append" to upload a text to the server.*/
+/* Workaround-Activity for testing the functionality of IMAPAppendText.*/
 
     private static final String EXTRA_MESSAGE_REFERENCE = "message_reference";
     private static final String EXTRA_ACCOUNT = "account";
     private MessageReference mMessageReference;
     private Account mAccount;
-
+    private Context mContext;
     public IMAPAppendTextWorkaroundActivity() {
     }
 
@@ -28,6 +32,8 @@ public class IMAPAppendTextWorkaroundActivity extends K9Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.imapappendtext);
 
+
+        // get current Account
         final Intent intent = getIntent();
         mMessageReference = intent.getParcelableExtra(EXTRA_MESSAGE_REFERENCE);
         final String accountUuid = (mMessageReference != null) ?
@@ -47,45 +53,42 @@ public class IMAPAppendTextWorkaroundActivity extends K9Activity {
             return;
         }
 
+        //get current Context
+        mContext = this.getBaseContext();
+
+        //Button for testing
         Button execute_button = (Button) this.findViewById(R.id.imapAppendExecuteButton);
         execute_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                Toast toast = Toast.makeText(getApplicationContext(), R.string.
-                        //imap_append_notimplemented, Toast.LENGTH_SHORT);
-                        imap_append_wait, Toast.LENGTH_SHORT);
-                //toast.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL, 0, 0);
-
-                toast.show();
-                // use imap command "append"
-                IMAPAppendText appendText = new IMAPAppendText(mAccount);
-                try {
-                    appendText.appendNewContent("Test-content from Workaround");
-
-                } catch (MessagingException e) {
-                    toast = Toast.makeText(getApplicationContext(), R.string.imap_append_failed,
-                            Toast.LENGTH_SHORT);
-                    toast.show();
-                    return;
-                }
-
-                toast = Toast.makeText(getApplicationContext(), R.string.imap_append_done,
-                        Toast.LENGTH_SHORT);
-                toast.show();
-
-                /*String curr =  appendText.getCurrentMessageID();
-                toast = Toast.makeText(getApplicationContext(), "Newest MsgID: "+curr, Toast.LENGTH_SHORT);
-                toast.show();
-
-                toast = Toast.makeText(getApplicationContext(), "Newest Content: "+appendText.getCurrentContent(null),
-                        Toast.LENGTH_LONG);
-                toast.show();
-                */
-
+                handleAppend();
             }
         });
-
+        }
+    private String testContent;
+    private void handleAppend() {
+        testContent = "Test-content from Workaround!";
+        new AppendAndReceiveSmileStorageMessages().execute();
     }
+    private class AppendAndReceiveSmileStorageMessages extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected Void doInBackground(Void... params) {
+            MessagingController messagingController = MessagingController.getInstance(getApplication());
+            IMAPAppendText appendText = new IMAPAppendText(mAccount, mContext, messagingController);
+            Log.i(K9.LOG_TAG, "Newest MsgID: " + appendText.getCurrentMessageId());
+            Log.i(K9.LOG_TAG, "Newest Content: " + appendText.getCurrentContent(null));
 
+            try {
+                appendText.appendNewContent(testContent);
+
+            } catch (MessagingException e) {
+                Log.e(K9.LOG_TAG, getResources().getString(R.string.imap_append_failed));
+                return null;
+            }
+            Log.i(K9.LOG_TAG, getResources().getString(R.string.imap_append_done));
+            Log.i(K9.LOG_TAG, "Newest MsgID: " + appendText.getCurrentMessageId());
+            Log.i(K9.LOG_TAG, "Newest Content: " + appendText.getCurrentContent(null));
+            return null;
+        }
+    }
 }

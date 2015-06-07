@@ -1,6 +1,12 @@
 package com.fsck.k9.activity;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.util.Log;
+
 import com.fsck.k9.Account;
+import com.fsck.k9.K9;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.controller.MessagingListener;
 import com.fsck.k9.mail.Body;
@@ -25,7 +31,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-public class IMAPAppendText extends K9Activity {
+public class IMAPAppendText{
 /* This class handles the storage on the server of the internal data structures which should be
 * accessible from different platform.
 *
@@ -43,13 +49,16 @@ public class IMAPAppendText extends K9Activity {
     private Account mAccount;
     private MimeMessage mimeMessage;
     private MessagingController messagingController;
+    private Context mContext;
 
     private long timestamp = 0;
     private boolean deleteOldContent = true;
     private final static String MESSAGE_ID_MAGIC_STRING = "SmileStorage";
 
-    public IMAPAppendText(Account account) {
+    public IMAPAppendText(Account account, Context context, MessagingController messagingController) {
         this.mAccount = account;
+        this.mContext = context;
+        this.messagingController = messagingController;
     }
 
     /**
@@ -191,7 +200,6 @@ public class IMAPAppendText extends K9Activity {
             fp.add(FetchProfile.Item.BODY);
             localFolder.fetch(Collections.singletonList(localMessage), fp, null);
             localFolder.close();
-
             return localMessage;
 
         } catch (Exception e) {
@@ -200,30 +208,43 @@ public class IMAPAppendText extends K9Activity {
     }
 
     private void synchronizeFolder(){
-        if(messagingController == null)
-            messagingController = MessagingController.getInstance(getApplication());
+        if(messagingController == null) {
+            Log.e(K9.LOG_TAG, "messagingController was null -- folders will not be synchronized.");
+            return;
+        }
 
+        if(!isNetworkAvailable()) { //no network connection
+            Log.e(K9.LOG_TAG, "No network connection available -- will not synchronize folders.");
+            return;
+        }
         final CountDownLatch latch = new CountDownLatch(1);
         messagingController.synchronizeMailbox(mAccount, mAccount.getSmileStorageFolderName(),
                 new MessagingListener() {
-            @Override
-            public void synchronizeMailboxFinished(Account account, String folder,
-                                                   int totalMessagesInMailbox, int numNewMessages) {
-                latch.countDown();
-            }
+                    @Override
+                    public void synchronizeMailboxFinished(Account account, String folder,
+                                                           int totalMessagesInMailbox, int numNewMessages) {
+                        latch.countDown();
+                    }
 
-            @Override
-            public void synchronizeMailboxFailed(Account account, String folder,
-                                                 String message) {
-                latch.countDown();
-            }
-        }, null);
+                    @Override
+                    public void synchronizeMailboxFailed(Account account, String folder,
+                                                         String message) {
+                        latch.countDown();
+                    }
+                }, null);
 
         try {
-            //wait for countdown -- suspend after 1s
-            latch.await(1000, TimeUnit.MILLISECONDS);
+            //wait for countdown -- suspend after 5s
+            latch.await(5000, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
         }
+    }
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
     private static String streamToString(InputStream stream) throws Exception {
@@ -264,9 +285,10 @@ public class IMAPAppendText extends K9Activity {
      */
     public void appendNewMimeMessage(MimeMessage mimeMessage) {
         /*same like appendNewContent() but with full MimeMessage containing content and new messageID. */
-
-        if(messagingController == null)
-            messagingController = MessagingController.getInstance(getApplication());
+        if(messagingController == null) {
+            Log.e(K9.LOG_TAG, "messagingController was null -- no message will be appended.");
+            return;
+        }
 
         this.mimeMessage = mimeMessage;
         //append message
@@ -285,7 +307,6 @@ public class IMAPAppendText extends K9Activity {
             localFolder.open(Folder.OPEN_MODE_RW);
             List<LocalMessage> messages = localFolder.getMessages(null, false);
             List<LocalMessage> deleteMessagesList = new ArrayList<LocalMessage>();
-            List<String> deletedMessageIds = new ArrayList<String>();
 
             int nMessages = localFolder.getMessageCount();
             if (nMessages == 0) {
@@ -300,7 +321,6 @@ public class IMAPAppendText extends K9Activity {
                             MESSAGE_ID_MAGIC_STRING, "")) < timestamp) {
                         //delete older message
                         deleteMessagesList.add(messages.get(0));
-                        deletedMessageIds.add(messages.get(0).getMessageId());
                     } else {
                         // one message stored, but it is not ours -- ignore message
                         return;
@@ -317,7 +337,6 @@ public class IMAPAppendText extends K9Activity {
                                 MESSAGE_ID_MAGIC_STRING, "")) < timestamp) {
                             //delete all older messages
                             deleteMessagesList.add(msg);
-                            deletedMessageIds.add(msg.getMessageId());
                         }
                     } catch (Exception e) {
                         // getMessageId may return Null if no MessageId is set -- ignore message
@@ -332,7 +351,7 @@ public class IMAPAppendText extends K9Activity {
             //close local folder
             localFolder.close();
             //remove deleted messages from Trash folder
-            messagingController.deleteFromTrash(mAccount, null, deletedMessageIds);
+            messagingController.deleteFromTrash(mAccount, null);
         } catch (MessagingException e) {
         }
     }

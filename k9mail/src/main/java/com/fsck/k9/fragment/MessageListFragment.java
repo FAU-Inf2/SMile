@@ -1657,7 +1657,34 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
 
     }
 
-    public void onSwipeRightToLeft(final MotionEvent e1, final MotionEvent e2) {
+    public void onSwipeRightToLeft(final MotionEvent e1, final MotionEvent e2){handleSwipe(e1);}
+    public void onSwipeLeftToRight(final MotionEvent e1, final MotionEvent e2){handleSwipe(e1);}
+
+    private void handleSwipe(final MotionEvent e1) {
+        int x = (int) e1.getRawX();
+        int y = (int) e1.getRawY();
+
+        Rect headerRect = new Rect();
+        mListView.getGlobalVisibleRect(headerRect);
+
+        // Only handle swipes in the visible area of the message list
+        if (headerRect.contains(x, y)) {
+            int[] listPosition = new int[2];
+            mListView.getLocationOnScreen(listPosition);
+
+            int listX = x - listPosition[0];
+            int listY = y - listPosition[1];
+
+            int listViewPosition = mListView.pointToPosition(listX, listY);
+            int adapterPosition = listViewToAdapterPosition(listViewPosition);
+            if (adapterPosition == AdapterView.INVALID_POSITION) {
+                return;
+            }
+            onFollowUp(getMessageAtPosition(adapterPosition));
+        }
+    }
+
+    /*public void onSwipeRightToLeft(final MotionEvent e1, final MotionEvent e2) {
         // Handle right-to-left as an un-select
         handleSwipe(e1, false);
     }
@@ -1665,7 +1692,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
     public void onSwipeLeftToRight(final MotionEvent e1, final MotionEvent e2) {
         // Handle left-to-right as a select.
         handleSwipe(e1, true);
-    }
+    }*/
 
     /**
      * Handle a select or unselect swipe event.
@@ -1675,7 +1702,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
      * @param selected
      *         {@code true} if this was an attempt to select (i.e. left to right).
      */
-    private void handleSwipe(final MotionEvent downMotion, final boolean selected) {
+   /* private void handleSwipe(final MotionEvent downMotion, final boolean selected) {
         int x = (int) downMotion.getRawX();
         int y = (int) downMotion.getRawY();
 
@@ -1694,7 +1721,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
 
             toggleMessageSelect(listViewPosition);
         }
-    }
+    }*/
 
     protected int listViewToAdapterPosition(int position) {
         if (position > 0 && position <= mAdapter.getCount()) {

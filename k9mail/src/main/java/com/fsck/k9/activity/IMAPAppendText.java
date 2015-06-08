@@ -53,7 +53,7 @@ public class IMAPAppendText{
 
     private long timestamp = 0;
     private boolean deleteOldContent = true;
-    private final static String MESSAGE_ID_MAGIC_STRING = "SmileStorage";
+    public final static String MESSAGE_ID_MAGIC_STRING = "SmileStorage";
 
     public IMAPAppendText(Account account, Context context, MessagingController messagingController) {
         this.mAccount = account;
@@ -177,12 +177,16 @@ public class IMAPAppendText{
             } else if(nMessages == 1){
                 List<? extends LocalMessage> messages = localFolder.getMessages(null, false);
                 localMessage = messages.get(0);
+                if(!localMessage.getMessageId().startsWith(MESSAGE_ID_MAGIC_STRING))
+                    return null;
             } else {
                 //more than one, find newest
                 List<? extends LocalMessage> messages = localFolder.getMessages(null, false);
                 localMessage = messages.get(0);
                 for (LocalMessage msg : messages) {
                     try {
+                        if(!msg.getMessageId().startsWith(MESSAGE_ID_MAGIC_STRING))
+                            continue;
                         if (Long.parseLong(msg.getMessageId().replace(
                                 MESSAGE_ID_MAGIC_STRING, "")) >
                                 Long.parseLong(localMessage.getMessageId().replace(
@@ -253,8 +257,9 @@ public class IMAPAppendText{
 
     /**
      * @param new_content containing the new content to be stored
+     * @return timestamp of new message
      */
-    public void appendNewContent(String new_content) throws MessagingException {
+    public long appendNewContent(String new_content) throws MessagingException {
         /* same like appendNewMimeMessage() but with a String as parameter containing content;
         sets new messageID. */
 
@@ -272,12 +277,12 @@ public class IMAPAppendText{
 
         //set messageID and body
         newMimeMessage.setMessageId(messageId);
-        new_content += " -- messageID is " + newMimeMessage.getMessageId() + "."; //just for testing
 
         Body b = new TextBody(new_content);
         newMimeMessage.setBody(b);
 
         appendNewMimeMessage(newMimeMessage);
+        return timestamp;
     }
 
     /**

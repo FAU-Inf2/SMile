@@ -130,7 +130,6 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
         ThreadColumns.ROOT,
         SpecialColumns.ACCOUNT_UUID,
         SpecialColumns.FOLDER_NAME,
-
         SpecialColumns.THREAD_COUNT,
     };
 
@@ -156,8 +155,6 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
 
     private static final String[] PROJECTION = Arrays.copyOf(THREADED_PROJECTION,
             THREAD_COUNT_COLUMN);
-
-
 
     public static MessageListFragment newInstance(LocalSearch search, boolean isThreadDisplay, boolean threadedList) {
         MessageListFragment fragment = new MessageListFragment();
@@ -338,12 +335,8 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
     private static final int ACTIVITY_CHOOSE_FOLDER_COPY = 2;
 
     protected static final String ARG_SEARCH = "searchObject";
-
     protected static final String ARG_THREADED_LIST = "threadedList";
-
     protected static final String ARG_IS_THREAD_DISPLAY = "isThreadedDisplay";
-
-
 
     private static final String STATE_SELECTED_MESSAGES = "selectedMessages";
     private static final String STATE_ACTIVE_MESSAGE = "activeMessage";
@@ -1890,19 +1883,16 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
                 holder.preview = (TextView) view.findViewById(R.id.sender_compact);
                 holder.flagged = (CheckBox) view.findViewById(R.id.flagged_center_right);
                 view.findViewById(R.id.flagged_bottom_right).setVisibility(View.GONE);
-
-
-
             } else {
                 view.findViewById(R.id.sender_compact).setVisibility(View.GONE);
                 holder.preview = (TextView) view.findViewById(R.id.preview);
                 holder.flagged = (CheckBox) view.findViewById(R.id.flagged_bottom_right);
                 view.findViewById(R.id.flagged_center_right).setVisibility(View.GONE);
-
             }
 
             QuickContactBadge contactBadge =
                     (QuickContactBadge) view.findViewById(R.id.contact_badge);
+
             if (mContactsPictureLoader != null) {
                 holder.contactBadge = contactBadge;
             } else {
@@ -1912,11 +1902,9 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
             if (mSenderAboveSubject) {
                 holder.from = (TextView) view.findViewById(R.id.subject);
                 mFontSizes.setViewTextSize(holder.from, mFontSizes.getMessageListSender());
-
             } else {
                 holder.subject = (TextView) view.findViewById(R.id.subject);
                 mFontSizes.setViewTextSize(holder.subject, mFontSizes.getMessageListSubject());
-
             }
 
             mFontSizes.setViewTextSize(holder.date, mFontSizes.getMessageListDate());
@@ -1932,10 +1920,8 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
             holder.flagged.setVisibility(mStars ? View.VISIBLE : View.GONE);
             holder.flagged.setOnClickListener(holder);
 
-
             holder.selected = (CheckBox) view.findViewById(R.id.selected_checkbox);
             holder.selected.setOnClickListener(holder);
-
 
             view.setTag(holder);
 
@@ -2005,6 +1991,7 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
             if (mStars) {
                 holder.flagged.setChecked(flagged);
             }
+
             holder.position = cursor.getPosition();
 
             if (holder.contactBadge != null) {

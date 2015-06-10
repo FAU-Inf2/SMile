@@ -386,7 +386,6 @@ public class MessageProvider extends ContentProvider {
             }
             return extractors;
         }
-
     }
 
     /**

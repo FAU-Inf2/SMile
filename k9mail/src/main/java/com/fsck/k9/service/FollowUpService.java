@@ -8,19 +8,15 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
-import com.fsck.k9.activity.MessageReference;
 import com.fsck.k9.Account;
-import com.fsck.k9.mail.Folder;
 import com.fsck.k9.mail.FollowUp;
-import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.MessagingException;
-import com.fsck.k9.mailstore.LocalFolder;
+import com.fsck.k9.mailstore.LocalFollowUp;
 
 import de.fau.cs.mad.smile.android.R;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 
 public class FollowUpService extends CoreService {
@@ -50,55 +46,44 @@ public class FollowUpService extends CoreService {
     }
 
     private void handleAccount(Account acc) {
-        try {
-            Context context = getApplication();
+        Context context = getApplication();
 
-            LocalFolder folder = acc.getLocalStore().getFolder("FollowUp");
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
+        NotificationManager notifyMgr =
+                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
-            if(!folder.exists()) {
-                folder.create(Folder.FolderType.HOLDS_MESSAGES);
+        List<FollowUp> followUps = getFollowUpItems(acc);
+        Date now = new Date();
+
+        for(FollowUp item : followUps) {
+            if(item.getRemindTime().after(now)) {
+                continue;
             }
 
-            List<? extends Message> localMessages = folder.getMessages(null);
+            builder.setSmallIcon(R.drawable.ic_notify_new_mail);
+            builder.setContentTitle(item.getTitle());
+            builder.setContentText(item.getTitle());
+            builder.setWhen(item.getRemindTime().getTime());
 
-            for(Message msg : localMessages) {
-            }
+            builder.addAction(
+                    R.drawable.ic_action_mark_as_read_dark,
+                    context.getString(R.string.notification_action_mark_as_read),
+                    NotificationActionService.getFollowUpIntent(context, acc));
 
-            NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
-            NotificationManager notifyMgr =
-                    (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-
-            List<FollowUp> followUps = getFollowUpItems(acc);
-            Date now = new Date();
-
-            for(FollowUp item : followUps) {
-                if(item.getRemindTime().after(now))
-                    continue;
-
-                builder.setSmallIcon(R.drawable.ic_notify_new_mail);
-                builder.setContentTitle(item.getTitle());
-                builder.setContentText(item.getTitle());
-                builder.setWhen(item.getRemindTime().getTime());
-
-                builder.addAction(
-                        R.drawable.ic_action_mark_as_read_dark,
-                        context.getString(R.string.notification_action_mark_as_read),
-                        NotificationActionService.getFollowUpIntent(context, acc));
-
-                Notification notification = builder.build();
-                //TODO: stable ID for FollowUpItem ?
-                notifyMgr.notify(acc.getAccountNumber(), notification);
-            }
-
-        } catch (MessagingException e) {
-            e.printStackTrace();
+            Notification notification = builder.build();
+            notifyMgr.notify(item.getId(), notification);
         }
     }
 
     private List<FollowUp> getFollowUpItems(Account acc) {
-        // TODO: real DataSource for Items
-        ArrayList<FollowUp> items = new ArrayList<FollowUp>();
-        items.add(new FollowUp("Test 1", new Date()));
-        return items;
+        ArrayList<FollowUp> followUps = new ArrayList<FollowUp>();
+        try {
+            LocalFollowUp localFollowUp = new LocalFollowUp(acc.getLocalStore());
+            followUps.addAll(localFollowUp.getAllFollowUps());
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
+
+        return followUps;
     }
 }

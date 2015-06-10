@@ -127,8 +127,7 @@ public class LocalStore extends Store implements Serializable {
      */
     private static final int THREAD_FLAG_UPDATE_BATCH_SIZE = 500;
 
-    public static final int DB_VERSION = 51;
-
+    public static final int DB_VERSION = 52;
 
     public static String getColumnNameForFlag(Flag flag) {
         switch (flag) {
@@ -162,12 +161,12 @@ public class LocalStore extends Store implements Serializable {
 
     /**
      * local://localhost/path/to/database/uuid.db
-     * This constructor is only used by {@link Store#getLocalInstance(Account, Context)}
+     * This constructor is only used by {@link LocalStore#getInstance(Account, Context)}
      * @param account
      * @param context
      * @throws UnavailableStorageException if not {@link StorageProvider#isReady(Context)}
      */
-    public LocalStore(final Account account, final Context context) throws MessagingException {
+    private LocalStore(final Account account, final Context context) throws MessagingException {
         mAccount = account;
         database = new LockableDatabase(context, account.getUuid(), new StoreSchemaDefinition(this));
 

@@ -12,9 +12,11 @@ import android.os.IBinder;
 import android.util.Log;
 
 import com.fsck.k9.Account;
+import com.fsck.k9.FeatureStorage;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.Account.FolderMode;
+import com.fsck.k9.activity.MessageReference;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.helper.Utility;
 import com.fsck.k9.mail.Pusher;
@@ -155,6 +157,26 @@ public class MailService extends CoreService {
 
         if (K9.DEBUG)
             Log.i(K9.LOG_TAG, "MailService.onStart took " + (System.currentTimeMillis() - startTime) + "ms");
+
+
+        // get current Account
+        MessageReference mMessageReference = intent.getParcelableExtra("message_reference");
+        final String accountUuid = (mMessageReference != null) ?
+                mMessageReference.getAccountUuid() :
+                intent.getStringExtra("account");
+        Account mAccount = Preferences.getPreferences(this).getAccount(accountUuid);
+        if (mAccount == null) {
+            mAccount = Preferences.getPreferences(this).getDefaultAccount();
+        }
+        MessagingController messagingController = MessagingController.getInstance(getApplication());
+        //get current Context
+        Context mContext = this.getBaseContext();
+
+        String filesDirectory = this.getFilesDir().getAbsolutePath();
+        Log.i(K9.LOG_TAG, "Calling FeatureStorage from MailService.");
+        FeatureStorage featureStorage = new FeatureStorage(mAccount, mContext, messagingController,
+                filesDirectory);
+        featureStorage.pollService();
 
         return START_NOT_STICKY;
     }

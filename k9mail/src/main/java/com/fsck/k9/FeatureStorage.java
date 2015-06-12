@@ -6,11 +6,17 @@ import android.util.Log;
 
 import com.fsck.k9.activity.IMAPAppendText;
 import com.fsck.k9.controller.MessagingController;
+import com.fsck.k9.mail.FollowUp;
 import com.fsck.k9.mail.MessagingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fsck.k9.mailstore.LocalFollowUp;
+import com.fsck.k9.mailstore.LocalStore;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -21,6 +27,7 @@ public class FeatureStorage {
 
     private Account mAccount;
     private IMAPAppendText appendText;
+    private LocalFollowUp localFollowUp;
     private static ObjectMapper objectMapper;
     private static File localFile;
     private static long lastUpdate = -1; // last time when the local file was parsed
@@ -32,8 +39,14 @@ public class FeatureStorage {
         this.mAccount = mAccount;
         this.appendText = new IMAPAppendText(mAccount, mContext, messagingController);
         this.absolutePath = absolutePath + "/";
+        try {
+            this.localFollowUp = new LocalFollowUp(mAccount.getLocalStore());
+        } catch (Exception e) {}
     }
 
+    public void pollService() {
+        new UpdateAddSaveManager().execute();
+    }
     /**
      * User wants a notification for a certain mail; save information in local file and on mail
      * server.
@@ -177,12 +190,27 @@ public class FeatureStorage {
                 SmileFeaturesJsonRoot root;
                 try {
                     root = objectMapper.readValue(localFile, SmileFeaturesJsonRoot.class);
-                    root.addFollowUpMailInformation(newFollowUpMail);
+                    if(newFollowUpMail != null)
+                        root.addFollowUpMailInformation(newFollowUpMail);
                 } catch (Exception e) {
                     //local file may be empty --> new file contains only newFollowUpMail
                     Log.e(K9.LOG_TAG, "Error while reading local file, create new root.");
                     root = new SmileFeaturesJsonRoot();
-                    root.addFollowUpMailInformation(newFollowUpMail);
+                    if(newFollowUpMail != null)
+                        root.addFollowUpMailInformation(newFollowUpMail);
+                }
+
+                //Merge FollowUps
+                try {
+                    List<FollowUp> allFollowUps = new ArrayList<FollowUp>();
+                    try {
+                        allFollowUps = localFollowUp.getAllFollowUps();
+                    } catch (Exception e) {
+                        Log.e(K9.LOG_TAG, "Could not get all FollowUps from db: " + e.getMessage());
+                    }
+                    root.setAllFollowUps(mergeFollowUps(root.getAllFollowUps(), allFollowUps));
+                } catch (Exception e){
+                    Log.e(K9.LOG_TAG, "Exception while adding allFollowUps to root: " + e.getMessage());
                 }
 
                 // remove expired nodes
@@ -202,6 +230,23 @@ public class FeatureStorage {
             return null;
         }
 
+        private List<FollowUp> mergeFollowUps(List<FollowUp> fileFollowUps, List<FollowUp> dbFollowUps) {
+            for(FollowUp f : fileFollowUps) {
+                if(dbFollowUps.contains(f)) //TODO! Check whether they are equals -- check for newer?! -- get timestamp!
+                    continue;
+
+                try {
+                    //TODO: Uncomment later -- now there will be an error because of f's attributes...
+                    // localFollowUp.add(f);
+                } catch (Exception e) {
+                    Log.e(K9.LOG_TAG, "Error while adding new FollowUp to Database.");
+                }
+                dbFollowUps.add(f);
+            }
+
+            return dbFollowUps;
+        }
+
         private void removePastNodes(SmileFeaturesJsonRoot root) {
             //remove nodes where there was already an notification
             long timestamp = System.currentTimeMillis();
@@ -218,6 +263,24 @@ public class FeatureStorage {
                     hashSet.size());
 
             root.setAllFollowUpMails(hashSet);
+
+            List<FollowUp> followUps = root.getAllFollowUps();
+            Log.d(K9.LOG_TAG, "Sum of all FollowUps: " + followUps.size());
+            for (Iterator<FollowUp> i = followUps.iterator(); i.hasNext();) {
+                FollowUp f = i.next();
+                if (f.getRemindTime().before(new Date(timestamp))) {
+                    try {
+                        localFollowUp.delete(f);
+                    } catch (Exception e) {
+                        Log.e(K9.LOG_TAG, "Error while removing old FollowUp from Database.");
+                    }
+                    i.remove();
+                }
+            }
+            Log.d(K9.LOG_TAG, "Sum of all FollowUpMailInformation after removing expired ones: " +
+                    followUps.size());
+            root.setAllFollowUps(followUps);
+
         }
 
         /**
@@ -234,5 +297,4 @@ public class FeatureStorage {
             }
         }
     }
-
 }

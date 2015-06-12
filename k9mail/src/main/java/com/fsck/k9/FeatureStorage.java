@@ -10,11 +10,9 @@ import com.fsck.k9.mail.FollowUp;
 import com.fsck.k9.mail.MessagingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fsck.k9.mailstore.LocalFollowUp;
-import com.fsck.k9.mailstore.LocalStore;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;

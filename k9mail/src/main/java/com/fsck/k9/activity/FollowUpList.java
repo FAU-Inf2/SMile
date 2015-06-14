@@ -16,7 +16,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.fsck.k9.Account;
-import com.fsck.k9.FollowUpDialog;
+import com.fsck.k9.fragment.FollowUpDialog;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.mail.FollowUp;
@@ -26,16 +26,13 @@ import com.fsck.k9.mailstore.LocalFollowUp;
 import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.mailstore.LocalStore;
 
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
 import de.fau.cs.mad.smile.android.R;
 
 public class FollowUpList extends K9ListActivity implements FollowUpDialog.NoticeDialogListener {
-    //private List<FollowUp> items = new ArrayList<FollowUp>();
     private LocalFollowUp mLocalFollowUp;
     public static final String EXTRA_MESSAGE_REFERENCE = "de.fau.cs.mad.smile.android.MESSAGE_REFERENCE";
     public static final String CREATE_FOLLOWUP = "de.fau.cs.mad.smile.android.CREATE_FOLLOWUP";
@@ -107,6 +104,7 @@ public class FollowUpList extends K9ListActivity implements FollowUpDialog.Notic
             msg = acc.getLocalStore().getFolder(reference.getFolderName()).getMessage(reference.getUid());
         } catch (MessagingException e) {
             e.printStackTrace();
+            return;
         }
 
         FollowUp followUp = new FollowUp(msg.getSubject(), calendar.getTime(), msg);

@@ -755,9 +755,9 @@
         <item>WHEN_IN_LANDSCAPE</item>
     </string-array>
     <string-array name="follow_up_default_time_values">
-        <item name="0">on time</item>
-        <item name="10">10 minutes before</item>
-        <item name="30">30 minutes before</item>
-        <item name="-1">user defined</item>
+        <item>on time</item>
+        <item>10 minutes before</item>
+        <item>30 minutes before</item>
+        <item>user defined</item>
     </string-array>
 </resources>

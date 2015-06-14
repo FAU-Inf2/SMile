@@ -1,4 +1,4 @@
-package com.fsck.k9;
+package com.fsck.k9.fragment;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -71,6 +71,11 @@ public class FollowUpDialog extends DialogFragment {
                         setTimeValue(30);
                         break;
                     }
+                    case 3: {
+                        FollowUpTimePickerDialog timePickerDialog = new FollowUpTimePickerDialog();
+                        timePickerDialog.show(getFragmentManager(), "followUpTimePicker");
+                        break;
+                    }
                 }
 
                 mListener.onDialogClick(FollowUpDialog.this);
@@ -80,3 +85,4 @@ public class FollowUpDialog extends DialogFragment {
         return builder.create();
     }
 }
+

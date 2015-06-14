@@ -38,7 +38,9 @@ public class LocalFollowUp {
         int folderId= cursor.getInt(cursor.getColumnIndex(COLUMN_FOLLOWUP_FOLDERID));
         String messageUid = this.localStore.getFolderById(folderId).getMessageUidById(cursor.getLong(cursor.getColumnIndex(COLUMN_FOLLOWUP_MESSAGEID)));
         Message m = this.localStore.getFolderById(folderId).getMessage(messageUid);
+        followUp.setFolderId(folderId);
         followUp.setReference(m);
+        followUp.setTitle(m.getSubject());
         return followUp;
     }
 
@@ -65,7 +67,7 @@ public class LocalFollowUp {
             public Void doDbWork(SQLiteDatabase db) throws LockableDatabase.WrappedException, MessagingException {
                 ContentValues cv = new ContentValues();
                 cv.put(COLUMN_FOLLOWUP_MESSAGEID, followUp.getReference().getId());
-                cv.put(COLUMN_FOLLOWUP_FOLDERID, ((LocalFolder) followUp.getReference().getFolder()).getId());
+                cv.put(COLUMN_FOLLOWUP_FOLDERID, followUp.getFolderId());
                 cv.put(COLUMN_FOLLOWUP_REMINDTIME, followUp.getRemindTime().getTime());
                 db.insert(LocalFollowUp.TABLE_FOLLOWUP, null, cv);
                 return null;
@@ -90,7 +92,7 @@ public class LocalFollowUp {
             public Void doDbWork(SQLiteDatabase db) throws LockableDatabase.WrappedException, MessagingException {
                 ContentValues cv = new ContentValues();
                 cv.put(COLUMN_FOLLOWUP_MESSAGEID, followUp.getReference().getId());
-                cv.put(COLUMN_FOLLOWUP_FOLDERID, ((LocalFolder) followUp.getReference().getFolder()).getId());
+                cv.put(COLUMN_FOLLOWUP_FOLDERID, followUp.getFolderId());
                 cv.put(COLUMN_FOLLOWUP_REMINDTIME, followUp.getRemindTime().getTime());
                 db.update(LocalFollowUp.TABLE_FOLLOWUP, cv, "id=?", new String[] {Long.toString(followUp.getId())});
                 return null;

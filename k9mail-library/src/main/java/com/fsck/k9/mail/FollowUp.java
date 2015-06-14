@@ -9,6 +9,7 @@ public class FollowUp {
     private String title;
     private Date remindTime;
     private Message message;
+    private long folderId;
 
     public FollowUp() {
 
@@ -56,4 +57,11 @@ public class FollowUp {
         this.id = id;
     }
 
+    public long getFolderId() {
+        return folderId;
+    }
+
+    public void setFolderId(long folderId) {
+        this.folderId = folderId;
+    }
 }

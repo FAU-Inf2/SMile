@@ -22,6 +22,7 @@ import com.fsck.k9.Preferences;
 import com.fsck.k9.mail.FollowUp;
 import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.MessagingException;
+import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.mailstore.LocalFollowUp;
 import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.mailstore.LocalStore;
@@ -99,15 +100,16 @@ public class FollowUpList extends K9ListActivity implements FollowUpDialog.Notic
         Message msg = null;
         MessageReference reference = dlg.getReference();
         Account acc = prefs.getAccount(reference.getAccountUuid());
-
+        long folderId = 0;
         try {
             msg = acc.getLocalStore().getFolder(reference.getFolderName()).getMessage(reference.getUid());
+            folderId = ((LocalFolder) msg.getFolder()).getId();
         } catch (MessagingException e) {
             e.printStackTrace();
             return;
         }
 
-        FollowUp followUp = new FollowUp(msg.getSubject(), calendar.getTime(), msg);
+        FollowUp followUp = new FollowUp(msg.getSubject(), calendar.getTime(), msg, folderId);
         new InsertFollowUp().execute(followUp);
         new LoadFollowUp().execute();
         ((BaseAdapter)getListView().getAdapter()).notifyDataSetChanged();

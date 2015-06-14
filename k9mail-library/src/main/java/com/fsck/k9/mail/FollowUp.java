@@ -16,13 +16,22 @@ public class FollowUp {
     }
 
     public FollowUp(String title, Date remindTime) {
-        this(title, remindTime, null);
+        this(title, remindTime, null, -1);
     }
 
     public FollowUp(String title, Date remindTime, Message reference) {
+        this(title, remindTime, reference, -1);
+    }
+
+    public FollowUp(String title, Date remindTime, long folderId) {
+        this(title, remindTime, null, folderId);
+    }
+
+    public FollowUp(String title, Date remindTime, Message reference, long folderId) {
         setTitle(title);
         setRemindTime(remindTime);
         setReference(reference);
+        setFolderId(folderId);
     }
 
     public Date getRemindTime() {

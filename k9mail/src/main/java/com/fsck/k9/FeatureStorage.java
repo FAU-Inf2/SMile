@@ -285,6 +285,10 @@ public class FeatureStorage {
          * Appends the local file to the server as newest version.
          */
         private void appendUpdatedFile(String newContent) {
+            if (newContent == null) {
+                Log.i(K9.LOG_TAG, "Will not append new content because String is null.");
+                return;
+            }
             try {
                 Log.d(K9.LOG_TAG, "New content to append: " + newContent);
                 long newTimestamp = appendText.appendNewContent(newContent);

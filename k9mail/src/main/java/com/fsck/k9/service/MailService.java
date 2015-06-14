@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.FeatureStorage;
@@ -284,15 +285,7 @@ public class MailService extends CoreService {
             lastCheckEnd = System.currentTimeMillis();
         }
 
-        int shortestInterval = -1;
-        for (Account account : prefs.getAvailableAccounts()) {
-            if (account.getAutomaticCheckIntervalMinutes() != -1 &&
-                    account.getFolderSyncMode() != FolderMode.NONE &&
-                    (account.getAutomaticCheckIntervalMinutes() < shortestInterval ||
-                            shortestInterval == -1)) {
-                shortestInterval = account.getAutomaticCheckIntervalMinutes();
-            }
-        }
+        int shortestInterval = getShortestInterval(prefs);
         SharedPreferences.Editor editor = sPrefs.edit();
         editor.putInt(PREVIOUS_INTERVAL, shortestInterval);
         editor.commit();
@@ -337,6 +330,20 @@ public class MailService extends CoreService {
             i.setAction(ACTION_CHECK_MAIL);
             BootReceiver.scheduleIntent(MailService.this, nextTime, i);
         }
+    }
+
+    private int getShortestInterval(Preferences prefs) {
+        int shortestInterval = -1;
+        for (Account account : prefs.getAvailableAccounts()) {
+            if (account.getAutomaticCheckIntervalMinutes() != -1 &&
+                    account.getFolderSyncMode() != FolderMode.NONE &&
+                    (account.getAutomaticCheckIntervalMinutes() < shortestInterval ||
+                            shortestInterval == -1)) {
+                shortestInterval = account.getAutomaticCheckIntervalMinutes();
+            }
+        }
+
+        return shortestInterval;
     }
 
     public static boolean isSyncDisabled() {

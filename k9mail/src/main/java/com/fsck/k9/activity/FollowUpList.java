@@ -36,7 +36,7 @@ import java.util.List;
 import de.fau.cs.mad.smile.android.R;
 
 public class FollowUpList extends K9ListActivity
-        implements FollowUpDialog.NoticeDialogListener, TimePickerDialog.OnTimeSetListener {
+        implements FollowUpDialog.NoticeDialogListener {
     private LocalFollowUp mLocalFollowUp;
     public static final String EXTRA_MESSAGE_REFERENCE = "de.fau.cs.mad.smile.android.MESSAGE_REFERENCE";
     public static final String CREATE_FOLLOWUP = "de.fau.cs.mad.smile.android.CREATE_FOLLOWUP";
@@ -101,8 +101,7 @@ public class FollowUpList extends K9ListActivity
         Message msg = null;
         MessageReference reference = dlg.getReference();
         Account acc = prefs.getAccount(reference.getAccountUuid());
-        long folderId = 0;
-
+        long folderId = -1;
         try {
             msg = acc.getLocalStore().getFolder(reference.getFolderName()).getMessage(reference.getUid());
             folderId = ((LocalFolder) msg.getFolder()).getId();
@@ -115,11 +114,6 @@ public class FollowUpList extends K9ListActivity
         new InsertFollowUp().execute(followUp);
         new LoadFollowUp().execute();
         ((BaseAdapter)getListView().getAdapter()).notifyDataSetChanged();
-    }
-
-    @Override
-    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-        Log.i(K9.LOG_TAG, "TimePicker " + hourOfDay + ":" + minute);
     }
 
     class FollowUpAdapter extends ArrayAdapter<FollowUp> {

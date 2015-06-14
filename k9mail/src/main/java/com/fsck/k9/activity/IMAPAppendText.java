@@ -263,6 +263,9 @@ public class IMAPAppendText{
         /* same like appendNewMimeMessage() but with a String as parameter containing content;
         sets new messageID. */
 
+        if(new_content == null)
+            return -1;
+
         MimeMessage newMimeMessage = new MimeMessage();
 
         //create messageID (magic string + timestamp)

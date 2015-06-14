@@ -1,16 +1,27 @@
 package com.fsck.k9.fragment;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
 import android.app.TimePickerDialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.NotificationCompat;
 import android.widget.DatePicker;
 import android.widget.TimePicker;
 
+import com.fsck.k9.activity.FollowUpList;
 import com.fsck.k9.activity.MessageReference;
 
 import java.util.Calendar;
@@ -34,6 +45,7 @@ public class FollowUpDialog extends DialogFragment implements TimePickerDialog.O
         this.setRemindTime(new Date());
     }
 
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     @Override
     public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
         Calendar calendar = Calendar.getInstance();
@@ -42,8 +54,18 @@ public class FollowUpDialog extends DialogFragment implements TimePickerDialog.O
         calendar.set(Calendar.MONTH, monthOfYear);
         calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
         setRemindTime(calendar.getTime());
+
+        FragmentTransaction ft = getParentFragment().getFragmentManager().beginTransaction();
+        Fragment prev = getParentFragment().getFragmentManager().findFragmentByTag("followUpTimePicker");
+
+        if (prev != null) {
+            ft.remove(prev);
+        }
+
+        ft.addToBackStack(null);
+
         FollowUpTimePickerDialog timePickerDialog = FollowUpTimePickerDialog.newInstance(this);
-        timePickerDialog.show(getFragmentManager(), "followUpTimePicker");
+        timePickerDialog.show(ft, "followUpTimePicker");
     }
 
     @Override
@@ -98,27 +120,55 @@ public class FollowUpDialog extends DialogFragment implements TimePickerDialog.O
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(getRemindTime());
         calendar.add(Calendar.MINUTE, minute);
+        setRemindTime(calendar.getTime());
+    }
+
+    private void showNotification() {
+        Context context = getActivity();
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
+        NotificationManager notifyMgr =
+                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        builder.setSmallIcon(R.drawable.ic_notify_new_mail);
+        builder.setContentTitle("TEST");
+        builder.setContentText("test text");
+
+        Intent resultIntent = new Intent(context, FollowUpList.class);
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
+        stackBuilder.addParentStack(FollowUpList.class);
+        stackBuilder.addNextIntent(resultIntent);
+        PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+        builder.setContentIntent(resultPendingIntent);
+        notifyMgr.notify(1, builder.build());
     }
 
     private class AlertDialogOnClickListener implements DialogInterface.OnClickListener {
         @Override
         public void onClick(DialogInterface dialog, int which) {
-            boolean finishedProcessing = false;
+            boolean finishedProcessing = true;
+            //showNotification();
 
             switch(which) {
                 case 1: {
                     addMinute(10);
-                    finishedProcessing = true;
                     break;
                 }
                 case 2: {
                     addMinute(30);
-                    finishedProcessing = true;
                     break;
                 }
                 case 3: {
+                    finishedProcessing = false;
+                    FragmentTransaction ft = getFragmentManager().beginTransaction();
+                    Fragment prev = getFragmentManager().findFragmentByTag("followUpDatePicker");
+
+                    if (prev != null) {
+                        ft.remove(prev);
+                    }
+
+                    ft.addToBackStack(null);
+
                     FollowUpDatePickerDialog datePickerDialog = FollowUpDatePickerDialog.newInstance(FollowUpDialog.this);
-                    datePickerDialog.show(getFragmentManager(), "followUpDatePicker");
+                    datePickerDialog.show(ft, "followUpDatePicker");
                     break;
                 }
             }
@@ -128,5 +178,6 @@ public class FollowUpDialog extends DialogFragment implements TimePickerDialog.O
             }
         }
     }
+
 }
 

@@ -384,8 +384,9 @@
             android:enabled="true"/>
 
         <service
-                android:name="com.fsck.k9.service.FollowUpService"
-                android:enabled="true"/>
+            android:name="com.fsck.k9.service.FollowUpService"
+            android:enabled="true"/>
+
         <service
             android:name="com.fsck.k9.service.NotificationActionService"
             android:enabled="true"/>

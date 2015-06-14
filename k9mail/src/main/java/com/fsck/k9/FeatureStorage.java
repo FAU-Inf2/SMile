@@ -58,19 +58,6 @@ public class FeatureStorage {
         new UpdateAddSaveManager().execute();
     }
 
-    /**
-     * User wants a notification for a multiple mails; save information in local file and on mail
-     * server.
-     * @param uids uids of the mails TODO: is this necessary?
-     * @param messageIds messageIds of all mails
-     * @param timestamp timestamp of time when there should be a notification (follow up)
-     */
-    public void saveNewFollowUpMailsInformation(List<String> uids, List<String> messageIds,
-                                                Long timestamp) {
-
-        //TODO: implement...
-    }
-
     private class UpdateAddSaveManager extends AsyncTask<Void, Void, Void> {
         @Override
         protected Void doInBackground(Void... params) {
@@ -83,23 +70,22 @@ public class FeatureStorage {
                     localFile.createNewFile();
                 } catch (IOException e) {
                     Log.e(K9.LOG_TAG, "Error while creating local file." + e.getMessage());
-                    //TODO: return? abort?
+                    return null;
                 }
             }
 
             try {
                 objectMapper = new ObjectMapper();
 
-                Log.d(K9.LOG_TAG, "New object to add: \n" +
-                        objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(
-                                newFollowUpMail));
-
-
+                // Is external version newer than the version which is saved locally?
                 String newerMessageId = hasUpdate();
                 if(newerMessageId != null)
-                    updateLocalStorage(newerMessageId);
+                    mergeLocalExternalVersion(newerMessageId); // Merge external and local version
 
+                // update/add/delete elements
                 String newContent = createUpdatedFile();
+
+                // save new version on server
                 appendUpdatedFile(newContent);
 
             } catch (Exception e) {
@@ -135,14 +121,13 @@ public class FeatureStorage {
         /**
          * Merges the new version with the local one and saves it locally.
          */
-        private void updateLocalStorage(String newerMessageId) {
+        private void mergeLocalExternalVersion(String newerMessageId) {
             Log.d(K9.LOG_TAG, "External version of smilestorage.json is newer -- merge files.");
 
             String currentContent = appendText.getCurrentContent(newerMessageId);
 
             SmileFeaturesJsonRoot externalRoot;
             SmileFeaturesJsonRoot internalRoot;
-            //TODO: this is merging -- but I want to install new notifications too...
             try{
                 try {
                     externalRoot = objectMapper.readValue(currentContent,
@@ -165,8 +150,25 @@ public class FeatureStorage {
                             appendText.MESSAGE_ID_MAGIC_STRING, ""));
                     return;
                 }
+
+                //TODO: this is merging
                 internalRoot.mergeAllFollowUpMails(externalRoot.getAllFollowUpMails());
-                Log.d(K9.LOG_TAG, "New version from updateLocalStorage(): " + objectMapper.
+
+                //Merge FollowUps
+                try {
+                    List<FollowUp> allFollowUps = new ArrayList<FollowUp>();
+                    try {
+                        allFollowUps = localFollowUp.getAllFollowUps();
+                    } catch (Exception e) {
+                        Log.e(K9.LOG_TAG, "Could not get all FollowUps from db: " + e.getMessage());
+                    }
+                    internalRoot.setAllFollowUps(mergeFollowUps(externalRoot.getAllFollowUps(),
+                            allFollowUps));
+                } catch (Exception e){
+                    Log.e(K9.LOG_TAG, "Exception while adding allFollowUps to root: " + e.getMessage());
+                }
+
+                Log.d(K9.LOG_TAG, "New version from mergeLocalExternalVersion(): " + objectMapper.
                         writerWithDefaultPrettyPrinter().writeValueAsString(internalRoot));
                 objectMapper.writeValue(localFile, internalRoot);
                 lastUpdate = Long.parseLong(newerMessageId.replace(
@@ -188,17 +190,17 @@ public class FeatureStorage {
                 SmileFeaturesJsonRoot root;
                 try {
                     root = objectMapper.readValue(localFile, SmileFeaturesJsonRoot.class);
+
                     if(newFollowUpMail != null)
                         root.addFollowUpMailInformation(newFollowUpMail);
                 } catch (Exception e) {
-                    //local file may be empty --> new file contains only newFollowUpMail
+                    //local file may be empty
                     Log.e(K9.LOG_TAG, "Error while reading local file, create new root.");
                     root = new SmileFeaturesJsonRoot();
                     if(newFollowUpMail != null)
                         root.addFollowUpMailInformation(newFollowUpMail);
                 }
 
-                //Merge FollowUps
                 try {
                     List<FollowUp> allFollowUps = new ArrayList<FollowUp>();
                     try {
@@ -206,7 +208,7 @@ public class FeatureStorage {
                     } catch (Exception e) {
                         Log.e(K9.LOG_TAG, "Could not get all FollowUps from db: " + e.getMessage());
                     }
-                    root.setAllFollowUps(mergeFollowUps(root.getAllFollowUps(), allFollowUps));
+                    root.setAllFollowUps(allFollowUps);
                 } catch (Exception e){
                     Log.e(K9.LOG_TAG, "Exception while adding allFollowUps to root: " + e.getMessage());
                 }
@@ -230,10 +232,18 @@ public class FeatureStorage {
 
         private List<FollowUp> mergeFollowUps(List<FollowUp> fileFollowUps, List<FollowUp> dbFollowUps) {
             for(FollowUp f : fileFollowUps) {
-                if(dbFollowUps.contains(f)) //TODO! Check whether they are equals -- check for newer?! -- get timestamp!
+                boolean found = false;
+                for(FollowUp dbf : dbFollowUps) {
+                    if(dbf.getRemindTime().getTime() == f.getRemindTime().getTime() &&
+                            dbf.getTitle().equals(f.getTitle())) { //TODO! Check whether they are equals -- check for newer! -- get timestamp!
+                        found = true;
+                        break;
+                    }
+                }
+                if (found)
                     continue;
-
                 try {
+                    Log.d(K9.LOG_TAG, "New FollowUp from server version -- add to local database");
                     //TODO: Uncomment later -- now there will be an error because of f's attributes...
                     // localFollowUp.add(f);
                 } catch (Exception e) {
@@ -275,7 +285,7 @@ public class FeatureStorage {
                     i.remove();
                 }
             }
-            Log.d(K9.LOG_TAG, "Sum of all FollowUpMailInformation after removing expired ones: " +
+            Log.d(K9.LOG_TAG, "Sum of all FollowUpMail after removing expired ones: " +
                     followUps.size());
             root.setAllFollowUps(followUps);
 

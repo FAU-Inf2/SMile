@@ -100,7 +100,7 @@ public class FollowUpList extends K9ListActivity implements FollowUpDialog.Notic
         Message msg = null;
         MessageReference reference = dlg.getReference();
         Account acc = prefs.getAccount(reference.getAccountUuid());
-        long folderId = 0;
+        long folderId = -1;
         try {
             msg = acc.getLocalStore().getFolder(reference.getFolderName()).getMessage(reference.getUid());
             folderId = ((LocalFolder) msg.getFolder()).getId();

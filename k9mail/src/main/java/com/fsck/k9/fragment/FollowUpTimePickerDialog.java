@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.text.format.DateFormat;
 
 import java.util.Calendar;
+import java.util.Date;
 
 public class FollowUpTimePickerDialog extends DialogFragment {
     TimePickerDialog.OnTimeSetListener mOnTimeSetListener;

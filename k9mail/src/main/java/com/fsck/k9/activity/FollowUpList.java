@@ -1,19 +1,27 @@
 package com.fsck.k9.activity;
 
 
+import android.app.DatePickerDialog;
 import android.app.DialogFragment;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
+import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.BaseAdapter;
+import android.widget.DatePicker;
 import android.widget.ListView;
+import android.widget.TimePicker;
 
 import com.fsck.k9.Account;
+import com.fsck.k9.fragment.FollowUpDatePickerDialog;
 import com.fsck.k9.fragment.FollowUpDialog;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
+import com.fsck.k9.fragment.FollowUpTimePickerDialog;
 import com.fsck.k9.mail.FollowUp;
 import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.MessagingException;
@@ -22,15 +30,20 @@ import com.fsck.k9.mailstore.LocalFollowUp;
 import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.mailstore.LocalStore;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import de.fau.cs.mad.smile.android.R;
 
 public class FollowUpList extends K9ListActivity
-        implements FollowUpDialog.NoticeDialogListener {
-    private LocalFollowUp mLocalFollowUp;
+        implements FollowUpDialog.NoticeDialogListener,
+            TimePickerDialog.OnTimeSetListener,
+            DatePickerDialog.OnDateSetListener  {
     public static final String EXTRA_MESSAGE_REFERENCE = "de.fau.cs.mad.smile.android.MESSAGE_REFERENCE";
     public static final String CREATE_FOLLOWUP = "de.fau.cs.mad.smile.android.CREATE_FOLLOWUP";
+
+    private LocalFollowUp mLocalFollowUp;
 
     public static Intent createFollowUp(Context context,
                                         LocalMessage message) {
@@ -68,6 +81,36 @@ public class FollowUpList extends K9ListActivity
         }
     }
 
+    @Override
+    public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.YEAR, year);
+        calendar.set(Calendar.MONTH, monthOfYear);
+        calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+
+        // TODO: export selected date
+
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        Fragment prev = getFragmentManager().findFragmentByTag("followUpTimePicker");
+
+        if (prev != null) {
+            ft.remove(prev);
+        }
+
+        ft.addToBackStack(null);
+
+        FollowUpTimePickerDialog timePickerDialog = FollowUpTimePickerDialog.newInstance(this);
+        timePickerDialog.show(ft, "followUpTimePicker");
+    }
+
+    @Override
+    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+        calendar.set(Calendar.MINUTE, minute);
+        // TODO: export selected date
+    }
+
     public void populateListView(List<FollowUp> items) {
         FollowUpAdapter adapter = new FollowUpAdapter(this, items);
         ListView listView = getListView();
@@ -88,23 +131,51 @@ public class FollowUpList extends K9ListActivity
     public void onDialogClick(DialogFragment dialog) {
         Log.i(K9.LOG_TAG, "FollowUpList.onDialogClick");
         FollowUpDialog dlg = (FollowUpDialog)dialog;
-        Preferences prefs = Preferences.getPreferences(getApplicationContext());
+        Preferences prefs = Preferences.getPreferences(this);
+        FollowUp followUp = new FollowUp();
+
         Message msg = null;
         MessageReference reference = dlg.getReference();
         Account acc = prefs.getAccount(reference.getAccountUuid());
         long folderId = -1;
+
         try {
             msg = acc.getLocalStore().getFolder(reference.getFolderName()).getMessage(reference.getUid());
             folderId = ((LocalFolder) msg.getFolder()).getId();
         } catch (MessagingException e) {
-            e.printStackTrace();
+            Log.e(K9.LOG_TAG, "error while retrieving message", e);
             return;
         }
 
-        FollowUp followUp = new FollowUp(msg.getSubject(), dlg.getRemindTime(), msg, folderId);
-        new InsertFollowUp().execute(followUp);
-        new LoadFollowUp().execute();
-        ((BaseAdapter)getListView().getAdapter()).notifyDataSetChanged();
+        followUp.setFolderId(folderId);
+        followUp.setReference(msg);
+        followUp.setTitle(msg.getSubject());
+
+        if(dlg.getTimeValue() < 0) {
+            FragmentTransaction ft = getFragmentManager().beginTransaction();
+            Fragment prev = getFragmentManager().findFragmentByTag("followUpDatePicker");
+
+            if (prev != null) {
+                ft.remove(prev);
+            }
+
+            ft.addToBackStack(null);
+
+            FollowUpDatePickerDialog datePickerDialog = FollowUpDatePickerDialog.newInstance(this);
+            datePickerDialog.show(ft, "followUpDatePicker");
+        } else {
+            followUp.setRemindTime(addMinute(new Date(System.currentTimeMillis()), dlg.getTimeValue()));
+            new InsertFollowUp().execute(followUp);
+            new LoadFollowUp().execute();
+            ((BaseAdapter)getListView().getAdapter()).notifyDataSetChanged();
+        }
+    }
+
+    private Date addMinute(Date date, int minute) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(Calendar.MINUTE, minute);
+        return calendar.getTime();
     }
 
     class LoadFollowUp extends AsyncTask<Void, Void, List<FollowUp>> {

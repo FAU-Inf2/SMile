@@ -5,6 +5,8 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.os.Bundle;
 
+import com.fsck.k9.mail.FollowUp;
+
 import java.util.Calendar;
 
 public class FollowUpDatePickerDialog extends DialogFragment {

@@ -2,20 +2,13 @@ package com.fsck.k9.activity;
 
 
 import android.app.DialogFragment;
-import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.text.format.DateUtils;
 import android.util.Log;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.TimePicker;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.fragment.FollowUpDialog;
@@ -29,8 +22,6 @@ import com.fsck.k9.mailstore.LocalFollowUp;
 import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.mailstore.LocalStore;
 
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import de.fau.cs.mad.smile.android.R;
@@ -68,9 +59,9 @@ public class FollowUpList extends K9ListActivity
         ListView listView = getListView();
         listView.setItemsCanFocus(false);
 
-        List<Account> accounts = Preferences.getPreferences(getApplicationContext()).getAccounts();
+        List<Account> accounts = Preferences.getPreferences(this).getAccounts();
         try {
-            LocalStore store = LocalStore.getInstance(accounts.get(0), getApplicationContext());
+            LocalStore store = LocalStore.getInstance(accounts.get(0), this);
             mLocalFollowUp = new LocalFollowUp(store);
         } catch (MessagingException e) {
             Log.e(K9.LOG_TAG, "Unable to retrieve message", e);
@@ -78,7 +69,7 @@ public class FollowUpList extends K9ListActivity
     }
 
     public void populateListView(List<FollowUp> items) {
-        FollowUpAdapter adapter = new FollowUpAdapter(items);
+        FollowUpAdapter adapter = new FollowUpAdapter(this, items);
         ListView listView = getListView();
         listView.setAdapter(adapter);
         listView.invalidate();
@@ -114,31 +105,6 @@ public class FollowUpList extends K9ListActivity
         new InsertFollowUp().execute(followUp);
         new LoadFollowUp().execute();
         ((BaseAdapter)getListView().getAdapter()).notifyDataSetChanged();
-    }
-
-    class FollowUpAdapter extends ArrayAdapter<FollowUp> {
-        public FollowUpAdapter(List<FollowUp> followUps) {
-            super(FollowUpList.this, 0, followUps);
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            FollowUp item = getItem(position);
-            final View view;
-            if (convertView != null) {
-                view = convertView;
-            } else {
-                view = getLayoutInflater().inflate(R.layout.followup_list_item, parent, false);
-            }
-
-            TextView subject = (TextView) view.findViewById(R.id.subject);
-            TextView date = (TextView) view.findViewById(R.id.date);
-            subject.setText(item.getTitle());
-            CharSequence formatedDate = DateUtils.getRelativeTimeSpanString(getApplication(), item.getRemindTime().getTime());
-            date.setText(formatedDate);
-
-            return view;
-        }
     }
 
     class LoadFollowUp extends AsyncTask<Void, Void, List<FollowUp>> {

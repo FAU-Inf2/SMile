@@ -68,7 +68,6 @@ public class FollowUpService extends CoreService {
     }
 
     private void handleAccount(Account acc) {
-        Log.i(K9.LOG_TAG, "Working account " + acc);
         Context context = getApplication();
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
@@ -109,7 +108,7 @@ public class FollowUpService extends CoreService {
             LocalFollowUp localFollowUp = new LocalFollowUp(acc.getLocalStore());
             followUps.addAll(localFollowUp.getAllFollowUps());
         } catch (MessagingException e) {
-            e.printStackTrace();
+            Log.e(K9.LOG_TAG, "Exception thrown while calling getAllFollowUps()", e);
         }
 
         return followUps;

@@ -140,14 +140,12 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
         return intent;
     }
 
-
     private enum DisplayMode {
         MESSAGE_LIST,
         MESSAGE_VIEW,
         SMS_LIST,
         SPLIT_VIEW
     }
-
 
     private StorageManager.StorageListener mStorageListener = new StorageListenerImplementation();
 

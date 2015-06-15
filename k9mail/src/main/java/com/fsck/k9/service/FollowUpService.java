@@ -86,7 +86,7 @@ public class FollowUpService extends CoreService {
             builder.setSmallIcon(R.drawable.ic_notify_new_mail);
             builder.setContentTitle(item.getTitle());
             builder.setContentText(item.getTitle());
-            builder.setWhen(item.getRemindTime().getTime());
+            builder.setWhen(System.currentTimeMillis());
 
             builder.addAction(
                     R.drawable.ic_action_mark_as_read_dark,

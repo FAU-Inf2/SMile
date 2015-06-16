@@ -45,6 +45,7 @@ public class FollowUpList extends K9ListActivity
     public static final String CREATE_FOLLOWUP = "de.fau.cs.mad.smile.android.CREATE_FOLLOWUP";
 
     private LocalFollowUp mLocalFollowUp;
+    private FollowUp newFollowUp;
 
     public static Intent createFollowUp(Context context,
                                         LocalMessage message) {
@@ -100,8 +101,8 @@ public class FollowUpList extends K9ListActivity
         calendar.set(Calendar.MONTH, monthOfYear);
         calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
 
-        // TODO: export selected date
         Log.d(K9.LOG_TAG, "Selected date: " + calendar.getTime());
+        newFollowUp.setRemindTime(calendar.getTime());
         FollowUpTimePickerDialog timePickerDialog = FollowUpTimePickerDialog.newInstance(this);
         timePickerDialog.show(getFragmentManager(), timePickerTag);
     }
@@ -109,10 +110,14 @@ public class FollowUpList extends K9ListActivity
     @Override
     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
         Calendar calendar = Calendar.getInstance();
+        calendar.setTime(newFollowUp.getRemindTime());
         calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
         calendar.set(Calendar.MINUTE, minute);
         Log.d(K9.LOG_TAG, "Selected time: " + calendar.getTime());
-        // TODO: export selected time
+        newFollowUp.setRemindTime(calendar.getTime());
+        new InsertFollowUp().execute(newFollowUp);
+        new LoadFollowUp().execute();
+        ((BaseAdapter)getListView().getAdapter()).notifyDataSetChanged();
     }
 
     public void populateListView(List<FollowUp> items) {
@@ -136,7 +141,7 @@ public class FollowUpList extends K9ListActivity
         Log.i(K9.LOG_TAG, "FollowUpList.onDialogClick");
         FollowUpDialog dlg = (FollowUpDialog)dialog;
         Preferences prefs = Preferences.getPreferences(this);
-        FollowUp followUp = new FollowUp();
+        newFollowUp = new FollowUp();
 
         Message msg = null;
         MessageReference reference = dlg.getReference();
@@ -151,9 +156,9 @@ public class FollowUpList extends K9ListActivity
             return;
         }
 
-        followUp.setFolderId(folderId);
-        followUp.setReference(msg);
-        followUp.setTitle(msg.getSubject());
+        newFollowUp.setFolderId(folderId);
+        newFollowUp.setReference(msg);
+        newFollowUp.setTitle(msg.getSubject());
 
         if(dlg.getTimeValue() < 0) {
             final String datePickerTag = "followUpDatePicker";
@@ -169,8 +174,8 @@ public class FollowUpList extends K9ListActivity
             FollowUpDatePickerDialog datePickerDialog = FollowUpDatePickerDialog.newInstance(this);
             datePickerDialog.show(ft, datePickerTag);
         } else {
-            followUp.setRemindTime(addMinute(new Date(System.currentTimeMillis()), dlg.getTimeValue()));
-            new InsertFollowUp().execute(followUp);
+            newFollowUp.setRemindTime(addMinute(new Date(System.currentTimeMillis()), dlg.getTimeValue()));
+            new InsertFollowUp().execute(newFollowUp);
             new LoadFollowUp().execute();
             ((BaseAdapter)getListView().getAdapter()).notifyDataSetChanged();
         }

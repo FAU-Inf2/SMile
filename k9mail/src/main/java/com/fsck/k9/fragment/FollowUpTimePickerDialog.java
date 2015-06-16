@@ -10,7 +10,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 public class FollowUpTimePickerDialog extends DialogFragment {
-    TimePickerDialog.OnTimeSetListener mOnTimeSetListener;
+    private TimePickerDialog.OnTimeSetListener mOnTimeSetListener;
 
     public static FollowUpTimePickerDialog newInstance(TimePickerDialog.OnTimeSetListener onTimeSetListener) {
         FollowUpTimePickerDialog followUpTimePickerDialog = new FollowUpTimePickerDialog();

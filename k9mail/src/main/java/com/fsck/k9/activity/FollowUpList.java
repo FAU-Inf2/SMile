@@ -4,6 +4,7 @@ package com.fsck.k9.activity;
 import android.app.DatePickerDialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
+import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.app.TimePickerDialog;
 import android.content.Context;
@@ -57,6 +58,16 @@ public class FollowUpList extends K9ListActivity
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        getFragmentManager().addOnBackStackChangedListener(
+                new FragmentManager.OnBackStackChangedListener() {
+                    public void onBackStackChanged() {
+                        for (int i = 0; i < getFragmentManager().getBackStackEntryCount(); i++) {
+                            Log.d(K9.LOG_TAG, "BackStack changed, count " + getFragmentManager().getBackStackEntryCount());
+                            Log.d(K9.LOG_TAG, "BackStack changed: " + getFragmentManager().getBackStackEntryAt(i).getName());
+                        }
+                    }
+                });
+
         final Intent intent = getIntent();
 
         // TODO: this is ugly, search for better solution to expose onClick result and handling intents
@@ -83,24 +94,16 @@ public class FollowUpList extends K9ListActivity
 
     @Override
     public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+        final String timePickerTag = "followUpTimePicker";
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.YEAR, year);
         calendar.set(Calendar.MONTH, monthOfYear);
         calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
 
         // TODO: export selected date
-
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        Fragment prev = getFragmentManager().findFragmentByTag("followUpTimePicker");
-
-        if (prev != null) {
-            ft.remove(prev);
-        }
-
-        ft.addToBackStack(null);
-
+        Log.d(K9.LOG_TAG, "Selected date: " + calendar.getTime());
         FollowUpTimePickerDialog timePickerDialog = FollowUpTimePickerDialog.newInstance(this);
-        timePickerDialog.show(ft, "followUpTimePicker");
+        timePickerDialog.show(getFragmentManager(), timePickerTag);
     }
 
     @Override
@@ -108,7 +111,8 @@ public class FollowUpList extends K9ListActivity
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
         calendar.set(Calendar.MINUTE, minute);
-        // TODO: export selected date
+        Log.d(K9.LOG_TAG, "Selected time: " + calendar.getTime());
+        // TODO: export selected time
     }
 
     public void populateListView(List<FollowUp> items) {
@@ -152,17 +156,18 @@ public class FollowUpList extends K9ListActivity
         followUp.setTitle(msg.getSubject());
 
         if(dlg.getTimeValue() < 0) {
+            final String datePickerTag = "followUpDatePicker";
             FragmentTransaction ft = getFragmentManager().beginTransaction();
-            Fragment prev = getFragmentManager().findFragmentByTag("followUpDatePicker");
+            Fragment prev = getFragmentManager().findFragmentByTag(datePickerTag);
 
             if (prev != null) {
                 ft.remove(prev);
             }
 
-            ft.addToBackStack(null);
+            ft.addToBackStack(datePickerTag);
 
             FollowUpDatePickerDialog datePickerDialog = FollowUpDatePickerDialog.newInstance(this);
-            datePickerDialog.show(ft, "followUpDatePicker");
+            datePickerDialog.show(ft, datePickerTag);
         } else {
             followUp.setRemindTime(addMinute(new Date(System.currentTimeMillis()), dlg.getTimeValue()));
             new InsertFollowUp().execute(followUp);

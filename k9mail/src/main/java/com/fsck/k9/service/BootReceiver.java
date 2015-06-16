@@ -28,7 +28,7 @@ public class BootReceiver extends CoreReceiver {
             Log.i(K9.LOG_TAG, "BootReceiver.onReceive" + intent);
 
         final String action = intent.getAction();
-        FollowUpService.actionReset(context, tmpWakeLockId);
+        //FollowUpService.actionReset(context, tmpWakeLockId);
 
         if (Intent.ACTION_BOOT_COMPLETED.equals(action)) {
             //K9.setServicesEnabled(context, tmpWakeLockId);

@@ -12,6 +12,9 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.View;
 import android.widget.BaseAdapter;
 import android.widget.DatePicker;
 import android.widget.ListView;
@@ -43,6 +46,8 @@ public class FollowUpList extends K9ListActivity
             DatePickerDialog.OnDateSetListener  {
     public static final String EXTRA_MESSAGE_REFERENCE = "de.fau.cs.mad.smile.android.MESSAGE_REFERENCE";
     public static final String CREATE_FOLLOWUP = "de.fau.cs.mad.smile.android.CREATE_FOLLOWUP";
+    public static final String EDIT_FOLLOWUP = "de.fau.cs.mad.smile.android.EDIT_FOLLOWUP";
+    public static final String DELETE_FOLLOWUP = "de.fau.cs.mad.smile.android.DELETE_FOLLOWUP";
 
     private LocalFollowUp mLocalFollowUp;
     private FollowUp newFollowUp;
@@ -58,17 +63,6 @@ public class FollowUpList extends K9ListActivity
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        getFragmentManager().addOnBackStackChangedListener(
-                new FragmentManager.OnBackStackChangedListener() {
-                    public void onBackStackChanged() {
-                        for (int i = 0; i < getFragmentManager().getBackStackEntryCount(); i++) {
-                            Log.d(K9.LOG_TAG, "BackStack changed, count " + getFragmentManager().getBackStackEntryCount());
-                            Log.d(K9.LOG_TAG, "BackStack changed: " + getFragmentManager().getBackStackEntryAt(i).getName());
-                        }
-                    }
-                });
-
         final Intent intent = getIntent();
 
         // TODO: this is ugly, search for better solution to expose onClick result and handling intents
@@ -91,6 +85,13 @@ public class FollowUpList extends K9ListActivity
         } catch (MessagingException e) {
             Log.e(K9.LOG_TAG, "Unable to retrieve message", e);
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.followup_list_actions, menu);
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -134,6 +135,16 @@ public class FollowUpList extends K9ListActivity
     public void onResume() {
         super.onResume();
         new LoadFollowUp().execute();
+    }
+
+    @Override
+    protected void onListItemClick(ListView listView, View view, int position, long id) {
+        Object obj = listView.getItemAtPosition(position);
+        if(obj instanceof FollowUp) {
+            FollowUp followUp = (FollowUp)obj;
+            Log.d(K9.LOG_TAG, "listItem is instanceof FollowUp: " + followUp);
+        }
+        super.onListItemClick(listView, view, position, id);
     }
 
     @Override

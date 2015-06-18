@@ -73,4 +73,21 @@ public class FollowUp {
     public void setFolderId(long folderId) {
         this.folderId = folderId;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("Id: ");
+        builder.append(getId());
+        builder.append(", FolderId: ");
+        builder.append(getFolderId());
+        builder.append(", MessageId: ");
+        builder.append(getReference().getId());
+        builder.append(", MessageUID: ");
+        builder.append(getReference().getUid());
+        builder.append(", RemindTime: ");
+        builder.append(getRemindTime());
+
+        return builder.toString();
+    }
 }

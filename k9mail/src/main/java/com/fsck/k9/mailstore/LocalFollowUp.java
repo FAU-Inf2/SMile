@@ -3,7 +3,10 @@ package com.fsck.k9.mailstore;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
+import com.fsck.k9.Account;
+import com.fsck.k9.K9;
 import com.fsck.k9.mail.FollowUp;
 import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.MessagingException;
@@ -26,18 +29,29 @@ public class LocalFollowUp {
     };
 
     private final LocalStore localStore;
+    private Account mAccount;
 
     public LocalFollowUp(LocalStore localStore) {
         this.localStore = localStore;
+        this.mAccount = localStore.getAccount();
     }
 
     private FollowUp populateFromCursor(Cursor cursor) throws MessagingException {
         FollowUp followUp = new FollowUp();
         followUp.setId(cursor.getInt(cursor.getColumnIndex(COLUMN_FOLLOWUP_ID)));
         followUp.setRemindTime(new Date(cursor.getLong(cursor.getColumnIndex(COLUMN_FOLLOWUP_REMINDTIME))));
-        int folderId= cursor.getInt(cursor.getColumnIndex(COLUMN_FOLLOWUP_FOLDERID));
-        String messageUid = this.localStore.getFolderById(folderId).getMessageUidById(cursor.getLong(cursor.getColumnIndex(COLUMN_FOLLOWUP_MESSAGEID)));
-        Message m = this.localStore.getFolderById(folderId).getMessage(messageUid);
+        int folderId = cursor.getInt(cursor.getColumnIndex(COLUMN_FOLLOWUP_FOLDERID));
+        String messageUid;
+        Message m;
+        try {
+            // not moved yed
+            messageUid = this.localStore.getFolderById(folderId).getMessageUidById(cursor.getLong(cursor.getColumnIndex(COLUMN_FOLLOWUP_MESSAGEID)));
+            m = this.localStore.getFolderById(folderId).getMessage(messageUid);
+        } catch (Exception e) {
+            // already moved to FollowUp-folder
+            messageUid = this.localStore.getFolder(mAccount.getFollowUpFolderName()).getMessageUidById(cursor.getLong(cursor.getColumnIndex(COLUMN_FOLLOWUP_MESSAGEID)));
+            m = this.localStore.getFolder(mAccount.getFollowUpFolderName()).getMessage(messageUid);
+        }
         followUp.setFolderId(folderId);
         followUp.setReference(m);
         followUp.setTitle(m.getSubject());

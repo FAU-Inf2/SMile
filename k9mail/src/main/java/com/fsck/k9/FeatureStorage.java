@@ -63,7 +63,8 @@ public class FeatureStorage {
             }
 
             try {
-                objectMapper = new ObjectMapper();
+                if(objectMapper == null)
+                    objectMapper = new ObjectMapper();
 
                 // Is external version newer than the version which is saved locally?
                 String newerMessageId = hasUpdate();

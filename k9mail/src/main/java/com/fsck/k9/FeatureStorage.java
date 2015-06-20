@@ -7,6 +7,7 @@ import android.util.Log;
 import com.fsck.k9.activity.IMAPAppendText;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.mail.FollowUp;
+import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.MessagingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fsck.k9.mailstore.LocalFollowUp;
@@ -30,7 +31,6 @@ public class FeatureStorage {
     private static File localFile;
     private static long lastUpdate = -1; // last time when the local file was parsed
     private String absolutePath; // absolute path to local files
-    private FollowUpMailInformation newFollowUpMail;
 
     public FeatureStorage(Account mAccount, Context mContext, MessagingController
             messagingController, String absolutePath) {
@@ -43,18 +43,6 @@ public class FeatureStorage {
     }
 
     public void pollService() {
-        new UpdateAddSaveManager().execute();
-    }
-    /**
-     * User wants a notification for a certain mail; save information in local file and on mail
-     * server.
-     * @param uid uid of the mail TODO: is this necessary?
-     * @param messageId messageId of the mail
-     * @param timestamp timestamp of time when there should be a notification (follow up)
-     */
-    public void saveNewFollowUpMailInformation(String uid, String messageId, Long timestamp) {
-        newFollowUpMail = new FollowUpMailInformation(mAccount.getEmail(), uid, messageId,
-                timestamp);
         new UpdateAddSaveManager().execute();
     }
 
@@ -145,20 +133,27 @@ public class FeatureStorage {
                     // local file was empty -- save external version
                     Log.d(K9.LOG_TAG, "Local version was empty/invalid -- save external "
                             + "version: " + currentContent);
+                    externalRoot.setAllFollowUps(mergeFollowUps(externalRoot.getAllFollowUps(),
+                            null));
                     objectMapper.writeValue(localFile, externalRoot);
                     lastUpdate = Long.parseLong(newerMessageId.replace(
                             appendText.MESSAGE_ID_MAGIC_STRING, ""));
                     return;
                 }
 
-                //TODO: this is merging
-                internalRoot.mergeAllFollowUpMails(externalRoot.getAllFollowUpMails());
-
                 //Merge FollowUps
                 try {
                     List<FollowUp> allFollowUps = new ArrayList<FollowUp>();
                     try {
                         allFollowUps = localFollowUp.getAllFollowUps();
+                        for(FollowUp f : allFollowUps) {
+                            if(f.getReference() == null)
+                                continue;
+                            try {
+                                f.setMessageId(f.getReference().getMessageId());
+                            } catch (Exception e) {}
+                            f.setUid(f.getReference().getUid());
+                        }
                     } catch (Exception e) {
                         Log.e(K9.LOG_TAG, "Could not get all FollowUps from db: " + e.getMessage());
                     }
@@ -190,15 +185,10 @@ public class FeatureStorage {
                 SmileFeaturesJsonRoot root;
                 try {
                     root = objectMapper.readValue(localFile, SmileFeaturesJsonRoot.class);
-
-                    if(newFollowUpMail != null)
-                        root.addFollowUpMailInformation(newFollowUpMail);
                 } catch (Exception e) {
                     //local file may be empty
                     Log.e(K9.LOG_TAG, "Error while reading local file, create new root.");
                     root = new SmileFeaturesJsonRoot();
-                    if(newFollowUpMail != null)
-                        root.addFollowUpMailInformation(newFollowUpMail);
                 }
 
                 try {
@@ -231,23 +221,30 @@ public class FeatureStorage {
         }
 
         private List<FollowUp> mergeFollowUps(List<FollowUp> fileFollowUps, List<FollowUp> dbFollowUps) {
+            if(dbFollowUps == null)
+                dbFollowUps = new ArrayList<FollowUp>();
+
             for(FollowUp f : fileFollowUps) {
                 boolean found = false;
                 for(FollowUp dbf : dbFollowUps) {
-                    if(dbf.getRemindTime().getTime() == f.getRemindTime().getTime() &&
-                            dbf.getTitle().equals(f.getTitle())) { //TODO! Check whether they are equals -- check for newer! -- get timestamp!
-                        found = true;
-                        break;
-                    }
+                    try {
+                        if (dbf.getMessageId().equals(f.getMessageId())) { //TODO! Check whether they are equals -- check for newer! -- get timestamp!
+                            found = true;
+                            break;
+                        }
+                    } catch (Exception e) {}
                 }
                 if (found)
                     continue;
                 try {
                     Log.d(K9.LOG_TAG, "New FollowUp from server version -- add to local database");
-                    //TODO: Uncomment later -- now there will be an error because of f's attributes...
-                    // localFollowUp.add(f);
+                    String []uids = {f.getUid()};
+                    Message m = mAccount.getLocalStore().getFolderById(f.getFolderId()).getMessages(uids, null).get(0);
+                    f.setReference(m);
+                    localFollowUp.add(f);
+                    //TODO: set timer?
                 } catch (Exception e) {
-                    Log.e(K9.LOG_TAG, "Error while adding new FollowUp to Database.");
+                    Log.e(K9.LOG_TAG, "Error while adding new FollowUp to Database: " + e.getMessage());
                 }
                 dbFollowUps.add(f);
             }
@@ -259,19 +256,6 @@ public class FeatureStorage {
             //remove nodes where there was already an notification
             long timestamp = System.currentTimeMillis();
             //go through and remove old nodes
-            HashSet<FollowUpMailInformation> hashSet = root.getAllFollowUpMails();
-            Log.d(K9.LOG_TAG, "Sum of all FollowUpMailInformation: " + hashSet.size());
-
-            for (Iterator<FollowUpMailInformation> i = hashSet.iterator(); i.hasNext();) {
-                FollowUpMailInformation f = i.next();
-                if(f.getNotificationTimestamp() < timestamp)
-                    i.remove();
-            }
-            Log.d(K9.LOG_TAG, "Sum of all FollowUpMailInformation after removing expired ones: " +
-                    hashSet.size());
-
-            root.setAllFollowUpMails(hashSet);
-
             List<FollowUp> followUps = root.getAllFollowUps();
             Log.d(K9.LOG_TAG, "Sum of all FollowUps: " + followUps.size());
             for (Iterator<FollowUp> i = followUps.iterator(); i.hasNext();) {

@@ -18,6 +18,7 @@ import android.widget.ListView;
 import android.widget.TimePicker;
 
 import com.fsck.k9.Account;
+import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.fragment.FollowUpDatePickerDialog;
 import com.fsck.k9.fragment.FollowUpDialog;
 import com.fsck.k9.K9;
@@ -31,9 +32,12 @@ import com.fsck.k9.mailstore.LocalFollowUp;
 import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.mailstore.LocalStore;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import de.fau.cs.mad.smile.android.R;
 
@@ -43,7 +47,9 @@ public class FollowUpList extends K9ListActivity
             DatePickerDialog.OnDateSetListener  {
     public static final String EXTRA_MESSAGE_REFERENCE = "de.fau.cs.mad.smile.android.MESSAGE_REFERENCE";
     public static final String CREATE_FOLLOWUP = "de.fau.cs.mad.smile.android.CREATE_FOLLOWUP";
+    public static final String FOLLOW_UP_FOLDERNAME = "RemindMe";
 
+    private Account mAccount;
     private LocalFollowUp mLocalFollowUp;
     private FollowUp newFollowUp;
 
@@ -86,7 +92,8 @@ public class FollowUpList extends K9ListActivity
 
         List<Account> accounts = Preferences.getPreferences(this).getAccounts();
         try {
-            LocalStore store = LocalStore.getInstance(accounts.get(0), this);
+            mAccount = accounts.get(0);
+            LocalStore store = LocalStore.getInstance(mAccount, this);
             mLocalFollowUp = new LocalFollowUp(store);
         } catch (MessagingException e) {
             Log.e(K9.LOG_TAG, "Unable to retrieve message", e);
@@ -145,11 +152,11 @@ public class FollowUpList extends K9ListActivity
 
         Message msg = null;
         MessageReference reference = dlg.getReference();
-        Account acc = prefs.getAccount(reference.getAccountUuid());
+        mAccount = prefs.getAccount(reference.getAccountUuid());
         long folderId = -1;
 
         try {
-            msg = acc.getLocalStore().getFolder(reference.getFolderName()).getMessage(reference.getUid());
+            msg = mAccount.getLocalStore().getFolder(reference.getFolderName()).getMessage(reference.getUid());
             folderId = ((LocalFolder) msg.getFolder()).getId();
         } catch (MessagingException e) {
             Log.e(K9.LOG_TAG, "error while retrieving message", e);
@@ -214,6 +221,12 @@ public class FollowUpList extends K9ListActivity
             for(FollowUp followUp : params) {
                 try {
                     mLocalFollowUp.add(followUp);
+
+                    MessagingController messagingController = MessagingController.getInstance(getApplication());
+                    messagingController.moveMessages(mAccount,
+                            ((LocalFolder) followUp.getReference().getFolder()).getName(),
+                            new ArrayList<LocalMessage>(Arrays.asList((LocalMessage) followUp.getReference())),
+                            mAccount.getFollowUpFolderName(), null);
                 } catch (MessagingException e) {
                     Log.e(K9.LOG_TAG, "Unable to insert followup", e);
                 }

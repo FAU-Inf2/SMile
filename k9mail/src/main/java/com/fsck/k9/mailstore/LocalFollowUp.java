@@ -39,20 +39,26 @@ public class LocalFollowUp {
         followUp.setId(cursor.getInt(cursor.getColumnIndex(COLUMN_FOLLOWUP_ID)));
         followUp.setRemindTime(new Date(cursor.getLong(cursor.getColumnIndex(COLUMN_FOLLOWUP_REMINDTIME))));
         int folderId = cursor.getInt(cursor.getColumnIndex(COLUMN_FOLLOWUP_FOLDERID));
+        long messageId = cursor.getLong(cursor.getColumnIndex(COLUMN_FOLLOWUP_MESSAGEID));
+
         String messageUid;
-        Message m;
+        Message message;
+
         try {
             // not moved yet
-            messageUid = this.localStore.getFolderById(folderId).getMessageUidById(cursor.getLong(cursor.getColumnIndex(COLUMN_FOLLOWUP_MESSAGEID)));
-            m = this.localStore.getFolderById(folderId).getMessage(messageUid);
+            LocalFolder folder = this.localStore.getFolderById(folderId);
+            messageUid = folder.getMessageUidById(messageId);
+            message = folder.getMessage(messageUid);
         } catch (Exception e) {
             // already moved to FollowUp-folder
-            messageUid = this.localStore.getFolder(mAccount.getFollowUpFolderName()).getMessageUidById(cursor.getLong(cursor.getColumnIndex(COLUMN_FOLLOWUP_MESSAGEID)));
-            m = this.localStore.getFolder(mAccount.getFollowUpFolderName()).getMessage(messageUid);
+            LocalFolder folder = this.localStore.getFolder(mAccount.getFollowUpFolderName());
+            messageUid = folder.getMessageUidById(messageId);
+            message = folder.getMessage(messageUid);
         }
+
         followUp.setFolderId(folderId);
-        followUp.setReference(m);
-        followUp.setTitle(m.getSubject());
+        followUp.setReference(message);
+        followUp.setTitle(message.getSubject());
         return followUp;
     }
 

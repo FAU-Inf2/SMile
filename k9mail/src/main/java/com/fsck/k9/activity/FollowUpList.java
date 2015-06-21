@@ -82,6 +82,7 @@ public class FollowUpList extends K9ListActivity
         }
 
         setContentView(R.layout.followup_list);
+
         // Enable gesture detection for FollowUpList
         setupGestureDetector(this);
 
@@ -151,10 +152,12 @@ public class FollowUpList extends K9ListActivity
     @Override
     protected void onListItemClick(ListView listView, View view, int position, long id) {
         Object obj = listView.getItemAtPosition(position);
+
         if(obj instanceof FollowUp) {
             FollowUp followUp = (FollowUp)obj;
             Log.d(K9.LOG_TAG, "listItem is instanceof FollowUp: " + followUp);
         }
+
         super.onListItemClick(listView, view, position, id);
     }
 
@@ -274,17 +277,21 @@ public class FollowUpList extends K9ListActivity
         protected Void doInBackground(FollowUp... params) {
             for(FollowUp followUp : params) {
                 try {
+                    LocalStore store = LocalStore.getInstance(mAccount, getApplication());
+                    LocalFolder folder = new LocalFolder(store, mAccount.getFollowUpFolderName());
+                    followUp.setFolderId(folder.getId());
+
+                    MessagingController messagingController = MessagingController.getInstance(getApplication());
+                    messagingController.moveMessages(mAccount,
+                            followUp.getReference().getFolder().getName(),
+                            new ArrayList<LocalMessage>(Arrays.asList((LocalMessage) followUp.getReference())),
+                            mAccount.getFollowUpFolderName(), null);
+
                     if(followUp.getId() > 0) {
                         mLocalFollowUp.update(followUp);
                     } else {
                         mLocalFollowUp.add(followUp);
                     }
-
-                    MessagingController messagingController = MessagingController.getInstance(getApplication());
-                    messagingController.moveMessages(mAccount,
-                            ((LocalFolder) followUp.getReference().getFolder()).getName(),
-                            new ArrayList<LocalMessage>(Arrays.asList((LocalMessage) followUp.getReference())),
-                            mAccount.getFollowUpFolderName(), null);
                 } catch (MessagingException e) {
                     Log.e(K9.LOG_TAG, "Unable to insert followup", e);
                 }

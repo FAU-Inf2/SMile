@@ -4221,9 +4221,12 @@ public class MessagingController implements Runnable {
 
                     List<LocalMessage> localMessages = localFolder.getMessages(null, true);
                     List<LocalMessage> deleteMessages = new ArrayList<LocalMessage>();
-                    for (LocalMessage localMessage : localMessages)
-                        if (localMessage.getMessageId().startsWith("SmileStorage"))
+                    for (LocalMessage localMessage : localMessages) {
+                        String messageId = localMessage.getMessageId();
+                        if (messageId != null && messageId.startsWith("SmileStorage")) {
                             deleteMessages.add(localMessage);
+                        }
+                    }
 
                     localFolder.setFlags(deleteMessages, Collections.singleton(Flag.DELETED), true);
 

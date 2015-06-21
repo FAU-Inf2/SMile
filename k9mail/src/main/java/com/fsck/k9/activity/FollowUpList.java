@@ -23,6 +23,7 @@ import android.widget.TimePicker;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.activity.misc.SwipeGestureDetector.OnSwipeGestureListener;
+import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.fragment.FollowUpDatePickerDialog;
 import com.fsck.k9.fragment.FollowUpDialog;
 import com.fsck.k9.K9;
@@ -36,6 +37,8 @@ import com.fsck.k9.mailstore.LocalFollowUp;
 import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.mailstore.LocalStore;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -51,9 +54,11 @@ public class FollowUpList extends K9ListActivity
     public static final String CREATE_FOLLOWUP = "de.fau.cs.mad.smile.android.CREATE_FOLLOWUP";
     public static final String EDIT_FOLLOWUP = "de.fau.cs.mad.smile.android.EDIT_FOLLOWUP";
     public static final String DELETE_FOLLOWUP = "de.fau.cs.mad.smile.android.DELETE_FOLLOWUP";
+    public static final String FOLLOW_UP_FOLDERNAME = "RemindMe";
 
+    private Account mAccount;
     private LocalFollowUp mLocalFollowUp;
-    private FollowUp newFollowUp;
+    private FollowUp currentFollowUp;
 
     public static Intent createFollowUp(Context context,
                                         LocalMessage message) {
@@ -85,7 +90,8 @@ public class FollowUpList extends K9ListActivity
 
         List<Account> accounts = Preferences.getPreferences(this).getAccounts();
         try {
-            LocalStore store = LocalStore.getInstance(accounts.get(0), this);
+            mAccount = accounts.get(0);
+            LocalStore store = LocalStore.getInstance(mAccount, this);
             mLocalFollowUp = new LocalFollowUp(store);
         } catch (MessagingException e) {
             Log.e(K9.LOG_TAG, "Unable to retrieve message", e);
@@ -108,7 +114,7 @@ public class FollowUpList extends K9ListActivity
         calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
 
         Log.d(K9.LOG_TAG, "Selected date: " + calendar.getTime());
-        newFollowUp.setRemindTime(calendar.getTime());
+        currentFollowUp.setRemindTime(calendar.getTime());
         FollowUpTimePickerDialog timePickerDialog = FollowUpTimePickerDialog.newInstance(this);
         timePickerDialog.show(getFragmentManager(), timePickerTag);
     }
@@ -116,12 +122,12 @@ public class FollowUpList extends K9ListActivity
     @Override
     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(newFollowUp.getRemindTime());
+        calendar.setTime(currentFollowUp.getRemindTime());
         calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
         calendar.set(Calendar.MINUTE, minute);
         Log.d(K9.LOG_TAG, "Selected time: " + calendar.getTime());
-        newFollowUp.setRemindTime(calendar.getTime());
-        new InsertFollowUp().execute(newFollowUp);
+        currentFollowUp.setRemindTime(calendar.getTime());
+        new InsertFollowUp().execute(currentFollowUp);
         new LoadFollowUp().execute();
         ((BaseAdapter)getListView().getAdapter()).notifyDataSetChanged();
     }
@@ -156,16 +162,9 @@ public class FollowUpList extends K9ListActivity
     public void onDialogClick(DialogFragment dialog) {
         Log.i(K9.LOG_TAG, "FollowUpList.onDialogClick");
         FollowUpDialog dlg = (FollowUpDialog)dialog;
-        newFollowUp = new FollowUp();
+        currentFollowUp = dlg.getFollowUp();
 
-        Message msg = dlg.getMessage();
-        long folderId = ((LocalFolder) msg.getFolder()).getId();
-
-        newFollowUp.setFolderId(folderId);
-        newFollowUp.setReference(msg);
-        newFollowUp.setTitle(msg.getSubject());
-
-        if(dlg.getTimeValue() < 0) {
+        if(currentFollowUp.getRemindInterval() == FollowUp.RemindInterval.CUSTOM) {
             final String datePickerTag = "followUpDatePicker";
             FragmentTransaction ft = getFragmentManager().beginTransaction();
             Fragment prev = getFragmentManager().findFragmentByTag(datePickerTag);
@@ -179,8 +178,19 @@ public class FollowUpList extends K9ListActivity
             FollowUpDatePickerDialog datePickerDialog = FollowUpDatePickerDialog.newInstance(this);
             datePickerDialog.show(ft, datePickerTag);
         } else {
-            newFollowUp.setRemindTime(addMinute(new Date(System.currentTimeMillis()), dlg.getTimeValue()));
-            new InsertFollowUp().execute(newFollowUp);
+            switch (currentFollowUp.getRemindInterval()) {
+                case TEN_MINUTES:
+                    currentFollowUp.setRemindTime(addMinute(new Date(System.currentTimeMillis()), 10));
+                    break;
+                case THIRTY_MINUTES:
+                    currentFollowUp.setRemindTime(addMinute(new Date(System.currentTimeMillis()), 30));
+                    break;
+                case TOMORROW:
+                    currentFollowUp.setRemindTime(addMinute(new Date(System.currentTimeMillis()), 24*60));
+                    break;
+            }
+
+            new InsertFollowUp().execute(currentFollowUp);
             new LoadFollowUp().execute();
             ((BaseAdapter)getListView().getAdapter()).notifyDataSetChanged();
         }
@@ -200,7 +210,7 @@ public class FollowUpList extends K9ListActivity
 
         if(followUp != null) {
             Log.d(K9.LOG_TAG, "RightToLeftSwipe, Object: " + followUp);
-            FollowUpDialog dialog = FollowUpDialog.newInstance(followUp.getReference());
+            FollowUpDialog dialog = FollowUpDialog.newInstance(followUp);
             dialog.show(getFragmentManager(), "mTimeValue");
         }
     }
@@ -264,7 +274,17 @@ public class FollowUpList extends K9ListActivity
         protected Void doInBackground(FollowUp... params) {
             for(FollowUp followUp : params) {
                 try {
-                    mLocalFollowUp.add(followUp);
+                    if(followUp.getId() > 0) {
+                        mLocalFollowUp.update(followUp);
+                    } else {
+                        mLocalFollowUp.add(followUp);
+                    }
+
+                    MessagingController messagingController = MessagingController.getInstance(getApplication());
+                    messagingController.moveMessages(mAccount,
+                            ((LocalFolder) followUp.getReference().getFolder()).getName(),
+                            new ArrayList<LocalMessage>(Arrays.asList((LocalMessage) followUp.getReference())),
+                            mAccount.getFollowUpFolderName(), null);
                 } catch (MessagingException e) {
                     Log.e(K9.LOG_TAG, "Unable to insert followup", e);
                 }

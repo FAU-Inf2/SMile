@@ -755,9 +755,9 @@
         <item>WHEN_IN_LANDSCAPE</item>
     </string-array>
     <string-array name="follow_up_default_time_values">
-        <item>on time</item>
         <item>10 minutes</item>
         <item>30 minutes</item>
+        <item>tomorrow</item>
         <item>user defined</item>
     </string-array>
 </resources>

@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -16,20 +17,24 @@ import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.Account;
 import com.fsck.k9.activity.FollowUpList;
+import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.mail.FollowUp;
 import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mailstore.LocalFollowUp;
-import com.fsck.k9.mailstore.LocalStore;
+import com.fsck.k9.mailstore.LocalMessage;
 
 import de.fau.cs.mad.smile.android.R;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
 public class FollowUpService extends CoreService {
     private static final String ACTION_RESET = "com.fsck.k9.intent.action.FOLLOWUP_SERVICE_RESET";
     private static final String ACTION_CHECK_FOLLOWUP = "com.fsck.k9.intent.action.FOLLOWUP_SERVICE_CHECK";
+
+    private Account mAccount;
 
     public static void actionReset(Context context, Integer wakeLockId) {
         Intent i = new Intent();
@@ -69,6 +74,7 @@ public class FollowUpService extends CoreService {
 
     private void handleAccount(Account acc) {
         Context context = getApplication();
+        mAccount = acc;
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
         NotificationManager notifyMgr =
@@ -86,6 +92,9 @@ public class FollowUpService extends CoreService {
             builder.setContentTitle(item.getTitle());
             builder.setContentText(item.getTitle());
             builder.setWhen(System.currentTimeMillis());
+
+            // move mail back to inbox
+            new MoveFollowUpBack().execute(item);
 
             builder.addAction(
                     R.drawable.ic_action_mark_as_read_dark,
@@ -112,5 +121,22 @@ public class FollowUpService extends CoreService {
         }
 
         return followUps;
+    }
+
+    class MoveFollowUpBack extends AsyncTask<FollowUp, Void, Void> {
+
+        @Override
+        protected Void doInBackground(FollowUp... params) {
+            for(FollowUp followUp : params) {
+                MessagingController messagingController = MessagingController.getInstance(getApplication());
+                messagingController.moveMessages(mAccount,
+                        mAccount.getFollowUpFolderName(),
+                        new ArrayList<LocalMessage>(Arrays.asList((LocalMessage) followUp.getReference())),
+                        //mAccount.getLocalStore().getFolderById(followUp.getFolderId()).getName(), null);
+                        mAccount.getInboxFolderName(), null);
+                //TODO: Mark as unread?
+            }
+            return null;
+        }
     }
 }

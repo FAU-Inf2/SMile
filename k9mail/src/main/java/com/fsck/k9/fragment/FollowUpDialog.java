@@ -12,6 +12,7 @@ import android.os.Bundle;
 import com.fsck.k9.activity.MessageReference;
 import com.fsck.k9.mail.FollowUp;
 import com.fsck.k9.mail.Message;
+import com.fsck.k9.mailstore.LocalFolder;
 
 import de.fau.cs.mad.smile.android.R;
 
@@ -23,15 +24,20 @@ public class FollowUpDialog extends DialogFragment {
 
     public static FollowUpDialog newInstance(Message message) {
         FollowUpDialog dlg = new FollowUpDialog();
-        dlg.setMessage(message);
+        dlg.setFollowUp(new FollowUp());
+        dlg.getFollowUp().setReference(message);
+        return dlg;
+    }
+
+    public static FollowUpDialog newInstance(FollowUp followUp) {
+        FollowUpDialog dlg = new FollowUpDialog();
+        dlg.setFollowUp(followUp);
         return dlg;
     }
 
     // Use this instance of the interface to deliver action events
-    NoticeDialogListener mListener;
-    private int mTimeValue = 0;
-    private MessageReference reference;
-    private Message message;
+    private NoticeDialogListener mListener;
+    private FollowUp followUp;
 
     // Override the Fragment.onAttach() method to instantiate the NoticeDialogListener
     @Override
@@ -55,36 +61,32 @@ public class FollowUpDialog extends DialogFragment {
         return builder.create();
     }
 
-    public Message getMessage() {
-        return message;
+    private void setFollowUp(FollowUp followUp) {
+        this.followUp = followUp;
     }
 
-    private void setMessage(Message message) {
-        this.message = message;
-    }
-
-    public int getTimeValue() {
-        return mTimeValue;
-    }
-
-    private void setTimeValue(int timeValue) {
-        this.mTimeValue = timeValue;
+    public FollowUp getFollowUp() {
+        return followUp;
     }
 
     private class AlertDialogOnClickListener implements DialogInterface.OnClickListener {
         @Override
         public void onClick(DialogInterface dialog, int which) {
             switch(which) {
+                case 0: {
+                    getFollowUp().setRemindInterval(FollowUp.RemindInterval.TEN_MINUTES);
+                    break;
+                }
                 case 1: {
-                    setTimeValue(10);
+                    getFollowUp().setRemindInterval(FollowUp.RemindInterval.THIRTY_MINUTES);
                     break;
                 }
                 case 2: {
-                    setTimeValue(30);
+                    getFollowUp().setRemindInterval(FollowUp.RemindInterval.TOMORROW);
                     break;
                 }
                 case 3: {
-                    setTimeValue(-1);
+                    getFollowUp().setRemindInterval(FollowUp.RemindInterval.CUSTOM);
                     break;
                 }
             }

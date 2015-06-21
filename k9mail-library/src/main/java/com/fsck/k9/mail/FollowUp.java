@@ -2,6 +2,12 @@ package com.fsck.k9.mail;
 import java.util.Date;
 
 public class FollowUp {
+    public enum RemindInterval {
+        TEN_MINUTES,
+        THIRTY_MINUTES,
+        TOMORROW,
+        CUSTOM
+    }
 
     private int id;
     private String title;
@@ -10,6 +16,8 @@ public class FollowUp {
     private long folderId;
     private String uid;
     private String messageId;
+    private RemindInterval remindInterval;
+
 
     public FollowUp() {
     }
@@ -61,6 +69,10 @@ public class FollowUp {
     }
 
     public String getTitle() {
+        if ((title == null || title.isEmpty()) && getReference() != null) {
+            setTitle(getReference().getSubject());
+        }
+
         return title;
     }
 
@@ -95,6 +107,7 @@ public class FollowUp {
     public String getUid() {
         return this.uid;
     }
+
     public void setUid(String uid) {
         this.uid = uid;
     }
@@ -105,6 +118,14 @@ public class FollowUp {
 
     public void setMessageId(String messageId) {
         this.messageId = messageId;
+    }
+
+    public RemindInterval getRemindInterval() {
+        return remindInterval;
+    }
+
+    public void setRemindInterval(RemindInterval remindInterval) {
+        this.remindInterval = remindInterval;
     }
 
     @Override

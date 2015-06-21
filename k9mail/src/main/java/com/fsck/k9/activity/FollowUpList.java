@@ -4,16 +4,17 @@ package com.fsck.k9.activity;
 import android.app.DatePickerDialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
-import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Rect;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.BaseAdapter;
 import android.widget.DatePicker;
@@ -21,6 +22,7 @@ import android.widget.ListView;
 import android.widget.TimePicker;
 
 import com.fsck.k9.Account;
+import com.fsck.k9.activity.misc.SwipeGestureDetector.OnSwipeGestureListener;
 import com.fsck.k9.fragment.FollowUpDatePickerDialog;
 import com.fsck.k9.fragment.FollowUpDialog;
 import com.fsck.k9.K9;
@@ -43,7 +45,8 @@ import de.fau.cs.mad.smile.android.R;
 public class FollowUpList extends K9ListActivity
         implements FollowUpDialog.NoticeDialogListener,
             TimePickerDialog.OnTimeSetListener,
-            DatePickerDialog.OnDateSetListener  {
+            DatePickerDialog.OnDateSetListener,
+            OnSwipeGestureListener {
     public static final String EXTRA_MESSAGE_REFERENCE = "de.fau.cs.mad.smile.android.MESSAGE_REFERENCE";
     public static final String CREATE_FOLLOWUP = "de.fau.cs.mad.smile.android.CREATE_FOLLOWUP";
     public static final String EDIT_FOLLOWUP = "de.fau.cs.mad.smile.android.EDIT_FOLLOWUP";
@@ -68,12 +71,14 @@ public class FollowUpList extends K9ListActivity
         // TODO: this is ugly, search for better solution to expose onClick result and handling intents
         if(CREATE_FOLLOWUP.equals(intent.getAction())) {
             MessageReference reference = intent.getParcelableExtra(EXTRA_MESSAGE_REFERENCE);
-            FollowUpDialog dialog = new FollowUpDialog();
-            dialog.setReference(reference);
+            Message message = reference.restoreToLocalMessage(this);
+            FollowUpDialog dialog = FollowUpDialog.newInstance(message);
             dialog.show(getFragmentManager(), "mTimeValue");
         }
 
         setContentView(R.layout.followup_list);
+        // Enable gesture detection for FollowUpList
+        setupGestureDetector(this);
 
         ListView listView = getListView();
         listView.setItemsCanFocus(false);
@@ -151,21 +156,10 @@ public class FollowUpList extends K9ListActivity
     public void onDialogClick(DialogFragment dialog) {
         Log.i(K9.LOG_TAG, "FollowUpList.onDialogClick");
         FollowUpDialog dlg = (FollowUpDialog)dialog;
-        Preferences prefs = Preferences.getPreferences(this);
         newFollowUp = new FollowUp();
 
-        Message msg = null;
-        MessageReference reference = dlg.getReference();
-        Account acc = prefs.getAccount(reference.getAccountUuid());
-        long folderId = -1;
-
-        try {
-            msg = acc.getLocalStore().getFolder(reference.getFolderName()).getMessage(reference.getUid());
-            folderId = ((LocalFolder) msg.getFolder()).getId();
-        } catch (MessagingException e) {
-            Log.e(K9.LOG_TAG, "error while retrieving message", e);
-            return;
-        }
+        Message msg = dlg.getMessage();
+        long folderId = ((LocalFolder) msg.getFolder()).getId();
 
         newFollowUp.setFolderId(folderId);
         newFollowUp.setReference(msg);
@@ -199,6 +193,52 @@ public class FollowUpList extends K9ListActivity
         return calendar.getTime();
     }
 
+    @Override
+    public void onSwipeRightToLeft(MotionEvent e1, MotionEvent e2) {
+        // edit
+        FollowUp followUp = getFollowUpFromListSwipe(e1, e2);
+
+        if(followUp != null) {
+            Log.d(K9.LOG_TAG, "RightToLeftSwipe, Object: " + followUp);
+            FollowUpDialog dialog = FollowUpDialog.newInstance(followUp.getReference());
+            dialog.show(getFragmentManager(), "mTimeValue");
+        }
+    }
+
+    @Override
+    public void onSwipeLeftToRight(MotionEvent e1, MotionEvent e2) {
+        // delete
+        FollowUp followUp = getFollowUpFromListSwipe(e1, e2);
+
+        if(followUp != null) {
+            Log.d(K9.LOG_TAG, "LeftToRightSwipe, Object: " + followUp);
+            new DeleteFollowUp().execute(followUp);
+            ((FollowUpAdapter)getListView().getAdapter()).remove(followUp);
+        }
+    }
+
+    private FollowUp getFollowUpFromListSwipe(MotionEvent e1, MotionEvent e2) {
+        int x = (int) e1.getRawX();
+        int y = (int) e1.getRawY();
+
+        ListView listView = getListView();
+        Rect rect = new Rect();
+        listView.getGlobalVisibleRect(rect);
+
+        if (rect.contains(x, y)) {
+            int[] listPosition = new int[2];
+            listView.getLocationOnScreen(listPosition);
+
+            int listX = x - listPosition[0];
+            int listY = y - listPosition[1];
+
+            int listViewPosition = listView.pointToPosition(listX, listY);
+            return (FollowUp) listView.getAdapter().getItem(listViewPosition);
+        }
+
+        return  null;
+    }
+
     class LoadFollowUp extends AsyncTask<Void, Void, List<FollowUp>> {
 
         @Override
@@ -225,6 +265,21 @@ public class FollowUpList extends K9ListActivity
             for(FollowUp followUp : params) {
                 try {
                     mLocalFollowUp.add(followUp);
+                } catch (MessagingException e) {
+                    Log.e(K9.LOG_TAG, "Unable to insert followup", e);
+                }
+            }
+            return null;
+        }
+    }
+
+    class DeleteFollowUp extends AsyncTask<FollowUp, Void, Void> {
+
+        @Override
+        protected Void doInBackground(FollowUp... params) {
+            for(FollowUp followUp : params) {
+                try {
+                    mLocalFollowUp.delete(followUp);
                 } catch (MessagingException e) {
                     Log.e(K9.LOG_TAG, "Unable to insert followup", e);
                 }

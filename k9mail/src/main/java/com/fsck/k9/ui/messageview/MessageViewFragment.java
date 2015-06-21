@@ -54,8 +54,11 @@ import com.fsck.k9.ui.message.LocalMessageLoader;
 import com.fsck.k9.ui.crypto.MessageCryptoAnnotations;
 import com.fsck.k9.view.MessageHeader;
 
-public class MessageViewFragment extends Fragment implements ConfirmationDialogFragmentListener,
-        AttachmentViewCallback, OpenPgpHeaderViewCallback, MessageCryptoCallback {
+public class MessageViewFragment extends Fragment
+        implements ConfirmationDialogFragmentListener,
+            AttachmentViewCallback,
+            OpenPgpHeaderViewCallback,
+            MessageCryptoCallback {
 
     private static final String ARG_REFERENCE = "reference";
 

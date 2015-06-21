@@ -108,8 +108,10 @@ import com.handmark.pulltorefresh.library.PullToRefreshBase;
 import com.handmark.pulltorefresh.library.PullToRefreshListView;
 
 
-public class MessageListFragment extends Fragment implements OnItemClickListener,
-        ConfirmationDialogFragmentListener, LoaderCallbacks<Cursor> {
+public class MessageListFragment extends Fragment
+        implements OnItemClickListener,
+            ConfirmationDialogFragmentListener,
+            LoaderCallbacks<Cursor> {
 
     private static final String[] THREADED_PROJECTION = {
         MessageColumns.ID,
@@ -370,7 +372,6 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
     private Parcelable mSavedListState;
 
     private int mPreviewLines = 0;
-
 
     private MessageListAdapter mAdapter;
 
@@ -1650,8 +1651,13 @@ public class MessageListFragment extends Fragment implements OnItemClickListener
 
     }
 
-    public void onSwipeRightToLeft(final MotionEvent e1, final MotionEvent e2){handleSwipe(e1);}
-    public void onSwipeLeftToRight(final MotionEvent e1, final MotionEvent e2){handleSwipe(e1);}
+    public void onSwipeRightToLeft(final MotionEvent e1, final MotionEvent e2) {
+        handleSwipe(e1);
+    }
+
+    public void onSwipeLeftToRight(final MotionEvent e1, final MotionEvent e2) {
+        handleSwipe(e1);
+    }
 
     private void handleSwipe(final MotionEvent e1) {
         int x = (int) e1.getRawX();

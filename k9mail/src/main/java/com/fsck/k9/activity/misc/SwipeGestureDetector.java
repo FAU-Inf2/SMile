@@ -8,16 +8,13 @@ import android.view.GestureDetector.SimpleOnGestureListener;
 
 public class SwipeGestureDetector extends SimpleOnGestureListener {
     public static final int BEZEL_SWIPE_THRESHOLD = 20;
-
     private static final float SWIPE_MAX_OFF_PATH_DIP = 250f;
     private static final float SWIPE_THRESHOLD_VELOCITY_DIP = 325f;
-
 
     private final OnSwipeGestureListener mListener;
     private int mMinVelocity;
     private int mMaxOffPath;
     private MotionEvent mLastOnDownEvent = null;
-
 
     public SwipeGestureDetector(Context context, OnSwipeGestureListener listener) {
         super();
@@ -83,7 +80,6 @@ public class SwipeGestureDetector extends SimpleOnGestureListener {
 
         return false;
     }
-
 
     /**
      * A listener that will be notified when a right to left or left to right swipe has been

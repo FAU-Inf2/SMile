@@ -10,6 +10,8 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 
 import com.fsck.k9.activity.MessageReference;
+import com.fsck.k9.mail.FollowUp;
+import com.fsck.k9.mail.Message;
 
 import de.fau.cs.mad.smile.android.R;
 
@@ -19,10 +21,17 @@ public class FollowUpDialog extends DialogFragment {
         void onDialogClick(DialogFragment dialog);
     }
 
+    public static FollowUpDialog newInstance(Message message) {
+        FollowUpDialog dlg = new FollowUpDialog();
+        dlg.setMessage(message);
+        return dlg;
+    }
+
     // Use this instance of the interface to deliver action events
     NoticeDialogListener mListener;
     private int mTimeValue = 0;
     private MessageReference reference;
+    private Message message;
 
     // Override the Fragment.onAttach() method to instantiate the NoticeDialogListener
     @Override
@@ -46,12 +55,12 @@ public class FollowUpDialog extends DialogFragment {
         return builder.create();
     }
 
-    public MessageReference getReference() {
-        return reference;
+    public Message getMessage() {
+        return message;
     }
 
-    public void setReference(MessageReference reference) {
-        this.reference = reference;
+    private void setMessage(Message message) {
+        this.message = message;
     }
 
     public int getTimeValue() {

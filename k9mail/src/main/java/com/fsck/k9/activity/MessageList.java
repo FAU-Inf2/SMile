@@ -70,9 +70,12 @@ import de.cketti.library.changelog.ChangeLog;
  * shows a list of messages.
  * From this Activity the user can perform all standard message operations.
  */
-public class MessageList extends K9Activity implements MessageListFragmentListener,
-        MessageViewFragmentListener, OnBackStackChangedListener, OnSwipeGestureListener,
-        OnSwitchCompleteListener {
+public class MessageList extends K9Activity
+        implements MessageListFragmentListener,
+            MessageViewFragmentListener,
+            OnBackStackChangedListener,
+            OnSwipeGestureListener,
+            OnSwitchCompleteListener {
 
     // for this activity
     private static final String EXTRA_SEARCH = "search";
@@ -489,9 +492,9 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
     private void decodeExtraActionView(Intent intent) {
         Uri uri = intent.getData();
         List<String> segmentList = uri.getPathSegments();
-
         String accountId = segmentList.get(0);
         Collection<Account> accounts = Preferences.getPreferences(this).getAvailableAccounts();
+
         for (Account account : accounts) {
             if (String.valueOf(account.getAccountNumber()).equals(accountId)) {
                 String folderName = segmentList.get(1);
@@ -523,6 +526,7 @@ public class MessageList extends K9Activity implements MessageListFragmentListen
             onAccountUnavailable();
             return;
         }
+
         StorageManager.getInstance(getApplication()).addListener(mStorageListener);
     }
 

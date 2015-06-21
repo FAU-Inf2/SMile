@@ -139,6 +139,4 @@ public class FollowUpService extends CoreService {
             return null;
         }
     }
-
-
 }

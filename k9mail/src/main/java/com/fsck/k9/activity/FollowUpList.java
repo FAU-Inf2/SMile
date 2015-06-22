@@ -1,6 +1,7 @@
 package com.fsck.k9.activity;
 
 
+import android.app.ActionBar;
 import android.app.DatePickerDialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
@@ -29,6 +30,7 @@ import com.fsck.k9.fragment.FollowUpDialog;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.fragment.FollowUpTimePickerDialog;
+import com.fsck.k9.mail.Folder;
 import com.fsck.k9.mail.FollowUp;
 import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.MessagingException;
@@ -85,6 +87,9 @@ public class FollowUpList extends K9ListActivity
 
         // Enable gesture detection for FollowUpList
         setupGestureDetector(this);
+
+        ActionBar actionBar = getActionBar();
+        actionBar.setDisplayHomeAsUpEnabled(true);
 
         ListView listView = getListView();
         listView.setItemsCanFocus(false);
@@ -279,6 +284,12 @@ public class FollowUpList extends K9ListActivity
                 try {
                     LocalStore store = LocalStore.getInstance(mAccount, getApplication());
                     LocalFolder folder = new LocalFolder(store, mAccount.getFollowUpFolderName());
+
+                    // FIXME: probably not the best place
+                    if(!folder.exists()) {
+                        folder.create(Folder.FolderType.HOLDS_MESSAGES);
+                    }
+
                     followUp.setFolderId(folder.getId());
 
                     MessagingController messagingController = MessagingController.getInstance(getApplication());

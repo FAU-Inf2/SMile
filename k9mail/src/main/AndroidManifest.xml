@@ -207,7 +207,8 @@
             android:name="com.fsck.k9.activity.FollowUpList"
             android:configChanges="locale"
             android:launchMode="singleTop"
-            android:uiOptions="splitActionBarWhenNarrow">
+            android:uiOptions="splitActionBarWhenNarrow"
+            android:parentActivityName="com.fsck.k9.activity.MessageList">
             <intent-filter>
                 <!-- This action is only to allow an entry point for launcher shortcuts -->
                 <action android:name="android.intent.action.MAIN"/>

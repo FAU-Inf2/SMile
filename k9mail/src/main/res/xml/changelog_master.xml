@@ -8,8 +8,8 @@
      They are automatically updated with "ant bump-version".
 -->
 <changelog>
-    <release version="0.900" versioncode="00001">
-        <change>First version of "Follow Up"-Notifications</change>
+    <release version="1.0" versioncode="00001">
+        <change>First version of "RemindMe!"-Notifications</change>
         <change>Added template for Material Design</change>
         <change>Forked K9-Mail in version 5.106</change>
     </release>

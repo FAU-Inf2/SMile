@@ -44,25 +44,19 @@ public class LocalFollowUp {
         long messageId = cursor.getLong(cursor.getColumnIndex(COLUMN_FOLLOWUP_MESSAGEID));
 
         String messageUid;
-        Message message;
+        Message message = null;
 
-        try {
-            // not moved yet
-            LocalFolder folder = this.localStore.getFolderById(folderId);
-            messageUid = folder.getMessageUidById(messageId);
-            Log.d(K9.LOG_TAG, "FollowUp.populateFromCursor: " + messageUid);
+        Log.d(K9.LOG_TAG, "FollowUp.populateFromCursor, folderId: " + folderId + " messageId: " + messageId);
+        LocalFolder folder = this.localStore.getFolderById(folderId);
+        messageUid = folder.getMessageUidById(messageId);
+
+        if(messageUid != null) {
             message = folder.getMessage(messageUid);
-        } catch (Exception e) {
-            // already moved to FollowUp-folder
-            LocalFolder folder = this.localStore.getFolder(mAccount.getFollowUpFolderName());
-            messageUid = folder.getMessageUidById(messageId);
-            Log.d(K9.LOG_TAG, "FollowUp.populateFromCursor, exception: " + messageUid);
-            message = folder.getMessage(messageUid);
+            followUp.setReference(message);
+            followUp.setTitle(message.getSubject());
         }
 
         followUp.setFolderId(folderId);
-        followUp.setReference(message);
-        followUp.setTitle(message.getSubject());
         return followUp;
     }
 

@@ -196,7 +196,8 @@
         <activity
             android:name="com.fsck.k9.activity.FolderList"
             android:configChanges="locale"
-            android:uiOptions="splitActionBarWhenNarrow">
+            android:uiOptions="splitActionBarWhenNarrow"
+            android:parentActivityName="com.fsck.k9.activity.Accounts">
             <intent-filter>
                 <!-- This action is only to allow an entry point for launcher shortcuts -->
                 <action android:name="android.intent.action.MAIN"/>
@@ -219,7 +220,8 @@
             android:name="com.fsck.k9.activity.MessageList"
             android:configChanges="locale"
             android:launchMode="singleTop"
-            android:uiOptions="splitActionBarWhenNarrow">
+            android:uiOptions="splitActionBarWhenNarrow"
+            android:parentActivityName="com.fsck.k9.activity.FolderList">
             <intent-filter>
                 <!-- This action is only to allow an entry point for launcher shortcuts -->
                 <action android:name="android.intent.action.MAIN"/>

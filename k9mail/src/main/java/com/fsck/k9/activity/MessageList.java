@@ -48,6 +48,7 @@ import com.fsck.k9.fragment.MessageListFragment;
 import com.fsck.k9.fragment.MessageListFragment.MessageListFragmentListener;
 import com.fsck.k9.fragment.SmsListFragment;
 import com.fsck.k9.mail.Address;
+import com.fsck.k9.mailstore.LocalStore;
 import com.fsck.k9.search.ConditionsTreeNode;
 import com.fsck.k9.ui.messageview.MessageViewFragment;
 import com.fsck.k9.ui.messageview.MessageViewFragment.MessageViewFragmentListener;
@@ -262,6 +263,7 @@ public class MessageList extends K9Activity
                     FragmentManager.POP_BACK_STACK_INCLUSIVE);
             mFirstBackStackId = -1;
         }
+
         removeMessageListFragment();
         removeMessageViewFragment();
 
@@ -390,6 +392,7 @@ public class MessageList extends K9Activity
 
     private boolean decodeExtras(Intent intent) {
         String action = intent.getAction();
+
         if (Intent.ACTION_VIEW.equals(action) && intent.getData() != null) {
             decodeExtraActionView(intent);
         } else if (ACTION_SHORTCUT.equals(action)) {
@@ -427,9 +430,13 @@ public class MessageList extends K9Activity
         Preferences prefs = Preferences.getPreferences(getApplicationContext());
 
         String[] accountUuids = mSearch.getAccountUuids();
+
+        Log.d(K9.LOG_TAG, "MessageList.decodeExtras Account: " + mAccount);
+
         if (mSearch.searchAllAccounts()) {
             List<Account> accounts = prefs.getAccounts();
             mSingleAccountMode = (accounts.size() == 1);
+
             if (mSingleAccountMode) {
                 mAccount = accounts.get(0);
             }
@@ -439,6 +446,7 @@ public class MessageList extends K9Activity
                 mAccount = prefs.getAccount(accountUuids[0]);
             }
         }
+
         mSingleFolderMode = mSingleAccountMode && (mSearch.getFolderNames().size() == 1);
 
         if (mSingleAccountMode && (mAccount == null || !mAccount.isAvailable(this))) {
@@ -790,6 +798,7 @@ public class MessageList extends K9Activity
     public boolean onOptionsItemSelected(MenuItem item) {
         int itemId = item.getItemId();
         switch (itemId) {
+            // implements up navigation
             case android.R.id.home: {
                 goBack();
                 return true;
@@ -1404,6 +1413,8 @@ public class MessageList extends K9Activity
 
     @Override
     public void goBack() {
+        Log.d(K9.LOG_TAG, "MessageList.goBack");
+
         FragmentManager fragmentManager = getFragmentManager();
 
         if (mDisplayMode == DisplayMode.MESSAGE_VIEW) {

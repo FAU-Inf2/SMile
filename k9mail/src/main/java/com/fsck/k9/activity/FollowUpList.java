@@ -12,9 +12,12 @@ import android.content.Intent;
 import android.graphics.Rect;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.v4.app.NavUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.BaseAdapter;
@@ -61,6 +64,7 @@ public class FollowUpList extends K9ListActivity
     private Account mAccount;
     private LocalFollowUp mLocalFollowUp;
     private FollowUp currentFollowUp;
+    private String folderName;
 
     public static Intent createFollowUp(Context context,
                                         LocalMessage message) {
@@ -79,6 +83,10 @@ public class FollowUpList extends K9ListActivity
         if(CREATE_FOLLOWUP.equals(intent.getAction())) {
             MessageReference reference = intent.getParcelableExtra(EXTRA_MESSAGE_REFERENCE);
             Message message = reference.restoreToLocalMessage(this);
+            String accountUuid = ((LocalFolder) message.getFolder()).getAccountUuid();
+            mAccount = Preferences.getPreferences(this).getAccount(accountUuid);
+            folderName = message.getFolder().getName();
+
             FollowUpDialog dialog = FollowUpDialog.newInstance(message);
             dialog.show(getFragmentManager(), "mTimeValue");
         }
@@ -96,9 +104,20 @@ public class FollowUpList extends K9ListActivity
 
         List<Account> accounts = Preferences.getPreferences(this).getAccounts();
         try {
-            mAccount = accounts.get(0);
+            if(mAccount == null) {
+                mAccount = accounts.get(0);
+            }
+
             LocalStore store = LocalStore.getInstance(mAccount, this);
             mLocalFollowUp = new LocalFollowUp(store);
+
+            LocalFolder folder = new LocalFolder(store, mAccount.getFollowUpFolderName());
+
+            // FIXME: probably not the best place
+            if (!folder.exists()) {
+                folder.create(Folder.FolderType.HOLDS_MESSAGES);
+                folder.open(LocalFolder.OPEN_MODE_RO);
+            }
         } catch (MessagingException e) {
             Log.e(K9.LOG_TAG, "Unable to retrieve message", e);
         }
@@ -109,6 +128,15 @@ public class FollowUpList extends K9ListActivity
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.followup_list_actions, menu);
         return super.onCreateOptionsMenu(menu);
+    }
+
+    @Nullable
+    @Override
+    public Intent getParentActivityIntent() {
+        Intent intent = super.getParentActivityIntent();
+        intent.putExtra("account", mAccount.getUuid());
+        intent.putExtra("folder", folderName);
+        return intent;
     }
 
     @Override
@@ -136,13 +164,6 @@ public class FollowUpList extends K9ListActivity
         new InsertFollowUp().execute(currentFollowUp);
         new LoadFollowUp().execute();
         ((BaseAdapter)getListView().getAdapter()).notifyDataSetChanged();
-    }
-
-    public void populateListView(List<FollowUp> items) {
-        FollowUpAdapter adapter = new FollowUpAdapter(this, items);
-        ListView listView = getListView();
-        listView.setAdapter(adapter);
-        listView.invalidate();
     }
 
     /**
@@ -257,6 +278,13 @@ public class FollowUpList extends K9ListActivity
         return  null;
     }
 
+    private void populateListView(List<FollowUp> items) {
+        FollowUpAdapter adapter = new FollowUpAdapter(this, items);
+        ListView listView = getListView();
+        listView.setAdapter(adapter);
+        listView.invalidate();
+    }
+
     class LoadFollowUp extends AsyncTask<Void, Void, List<FollowUp>> {
 
         @Override
@@ -284,14 +312,11 @@ public class FollowUpList extends K9ListActivity
                 try {
                     LocalStore store = LocalStore.getInstance(mAccount, getApplication());
                     LocalFolder folder = new LocalFolder(store, mAccount.getFollowUpFolderName());
-
-                    // FIXME: probably not the best place
-                    if(!folder.exists()) {
-                        folder.create(Folder.FolderType.HOLDS_MESSAGES);
-                    }
+                    folder.open(Folder.OPEN_MODE_RW);
 
                     followUp.setFolderId(folder.getId());
 
+                    Log.d(K9.LOG_TAG, "Inserting followUp: " + followUp);
                     MessagingController messagingController = MessagingController.getInstance(getApplication());
                     messagingController.moveMessages(mAccount,
                             followUp.getReference().getFolder().getName(),

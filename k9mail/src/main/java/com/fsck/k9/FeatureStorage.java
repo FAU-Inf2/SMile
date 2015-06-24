@@ -6,17 +6,16 @@ import android.util.Log;
 
 import com.fsck.k9.activity.IMAPAppendText;
 import com.fsck.k9.controller.MessagingController;
-import com.fsck.k9.mail.FollowUp;
+import com.fsck.k9.mail.RemindMe;
 import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.MessagingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fsck.k9.mailstore.LocalFollowUp;
+import com.fsck.k9.mailstore.LocalRemindMe;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -26,7 +25,7 @@ public class FeatureStorage {
 
     private Account mAccount;
     private IMAPAppendText appendText;
-    private LocalFollowUp localFollowUp;
+    private LocalRemindMe localRemindMe;
     private static ObjectMapper objectMapper;
     private static File localFile;
     private static long lastUpdate = -1; // last time when the local file was parsed
@@ -38,7 +37,7 @@ public class FeatureStorage {
         this.appendText = new IMAPAppendText(mAccount, mContext, messagingController);
         this.absolutePath = absolutePath + "/";
         try {
-            this.localFollowUp = new LocalFollowUp(mAccount.getLocalStore());
+            this.localRemindMe = new LocalRemindMe(mAccount.getLocalStore());
         } catch (Exception e) {}
     }
 
@@ -134,7 +133,7 @@ public class FeatureStorage {
                     // local file was empty -- save external version
                     Log.d(K9.LOG_TAG, "Local version was empty/invalid -- save external "
                             + "version: " + currentContent);
-                    externalRoot.setAllFollowUps(mergeFollowUps(externalRoot.getAllFollowUps(),
+                    externalRoot.setAllRemindMes(mergeFollowUps(externalRoot.getAllRemindMes(),
                             null));
                     objectMapper.writeValue(localFile, externalRoot);
                     lastUpdate = Long.parseLong(newerMessageId.replace(
@@ -144,10 +143,10 @@ public class FeatureStorage {
 
                 //Merge FollowUps
                 try {
-                    List<FollowUp> allFollowUps = new ArrayList<FollowUp>();
+                    List<RemindMe> allRemindMes = new ArrayList<RemindMe>();
                     try {
-                        allFollowUps = localFollowUp.getAllFollowUps();
-                        for(FollowUp f : allFollowUps) {
+                        allRemindMes = localRemindMe.getAllFollowUps();
+                        for(RemindMe f : allRemindMes) {
                             if(f.getReference() == null)
                                 continue;
                             try {
@@ -158,8 +157,8 @@ public class FeatureStorage {
                     } catch (Exception e) {
                         Log.e(K9.LOG_TAG, "Could not get all FollowUps from db: " + e.getMessage());
                     }
-                    internalRoot.setAllFollowUps(mergeFollowUps(externalRoot.getAllFollowUps(),
-                            allFollowUps));
+                    internalRoot.setAllRemindMes(mergeFollowUps(externalRoot.getAllRemindMes(),
+                            allRemindMes));
                 } catch (Exception e){
                     Log.e(K9.LOG_TAG, "Exception while adding allFollowUps to root: " + e.getMessage());
                 }
@@ -193,13 +192,13 @@ public class FeatureStorage {
                 }
 
                 try {
-                    List<FollowUp> allFollowUps = new ArrayList<FollowUp>();
+                    List<RemindMe> allRemindMes = new ArrayList<RemindMe>();
                     try {
-                        allFollowUps = localFollowUp.getAllFollowUps();
+                        allRemindMes = localRemindMe.getAllFollowUps();
                     } catch (Exception e) {
                         Log.e(K9.LOG_TAG, "Could not get all FollowUps from db: " + e.getMessage());
                     }
-                    root.setAllFollowUps(allFollowUps);
+                    root.setAllRemindMes(allRemindMes);
                 } catch (Exception e){
                     Log.e(K9.LOG_TAG, "Exception while adding allFollowUps to root: " + e.getMessage());
                 }
@@ -221,13 +220,13 @@ public class FeatureStorage {
             return null;
         }
 
-        private List<FollowUp> mergeFollowUps(List<FollowUp> fileFollowUps, List<FollowUp> dbFollowUps) {
-            if(dbFollowUps == null)
-                dbFollowUps = new ArrayList<FollowUp>();
+        private List<RemindMe> mergeFollowUps(List<RemindMe> fileRemindMes, List<RemindMe> dbRemindMes) {
+            if(dbRemindMes == null)
+                dbRemindMes = new ArrayList<RemindMe>();
 
-            for(FollowUp f : fileFollowUps) {
+            for(RemindMe f : fileRemindMes) {
                 boolean found = false;
-                for(FollowUp dbf : dbFollowUps) {
+                for(RemindMe dbf : dbRemindMes) {
                     try {
                         if (dbf.getMessageId().equals(f.getMessageId())) { //TODO! Check whether they are equals -- check for newer! -- get timestamp!
                             found = true;
@@ -238,41 +237,41 @@ public class FeatureStorage {
                 if (found)
                     continue;
                 try {
-                    Log.d(K9.LOG_TAG, "New FollowUp from server version -- add to local database");
+                    Log.d(K9.LOG_TAG, "New RemindMe from server version -- add to local database");
                     String []uids = {f.getUid()};
                     Message m = mAccount.getLocalStore().getFolderById(f.getFolderId()).getMessages(uids, null).get(0);
                     f.setReference(m);
-                    localFollowUp.add(f);
+                    localRemindMe.add(f);
                     //TODO: set timer?
                 } catch (Exception e) {
-                    Log.e(K9.LOG_TAG, "Error while adding new FollowUp to Database: " + e.getMessage());
+                    Log.e(K9.LOG_TAG, "Error while adding new RemindMe to Database: " + e.getMessage());
                 }
-                dbFollowUps.add(f);
+                dbRemindMes.add(f);
             }
 
-            return dbFollowUps;
+            return dbRemindMes;
         }
 
         private void removePastNodes(SmileFeaturesJsonRoot root) {
             //remove nodes where there was already an notification
             long timestamp = System.currentTimeMillis();
             //go through and remove old nodes
-            List<FollowUp> followUps = root.getAllFollowUps();
-            Log.d(K9.LOG_TAG, "Sum of all FollowUps: " + followUps.size());
-            for (Iterator<FollowUp> i = followUps.iterator(); i.hasNext();) {
-                FollowUp f = i.next();
+            List<RemindMe> remindMes = root.getAllRemindMes();
+            Log.d(K9.LOG_TAG, "Sum of all FollowUps: " + remindMes.size());
+            for (Iterator<RemindMe> i = remindMes.iterator(); i.hasNext();) {
+                RemindMe f = i.next();
                 if (f.getRemindTime().before(new Date(timestamp))) {
                     try {
-                        localFollowUp.delete(f);
+                        localRemindMe.delete(f);
                     } catch (Exception e) {
-                        Log.e(K9.LOG_TAG, "Error while removing old FollowUp from Database.");
+                        Log.e(K9.LOG_TAG, "Error while removing old RemindMe from Database.");
                     }
                     i.remove();
                 }
             }
             Log.d(K9.LOG_TAG, "Sum of all FollowUpMail after removing expired ones: " +
-                    followUps.size());
-            root.setAllFollowUps(followUps);
+                    remindMes.size());
+            root.setAllRemindMes(remindMes);
 
         }
 

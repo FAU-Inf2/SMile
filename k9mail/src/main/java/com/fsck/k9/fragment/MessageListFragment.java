@@ -74,7 +74,7 @@ import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.activity.ActivityListener;
 import com.fsck.k9.activity.ChooseFolder;
 import com.fsck.k9.activity.FolderInfoHolder;
-import com.fsck.k9.activity.FollowUpList;
+import com.fsck.k9.activity.RemindMeList;
 import com.fsck.k9.activity.MessageReference;
 import com.fsck.k9.activity.misc.ContactPictureLoader;
 import com.fsck.k9.cache.EmailProviderCache;
@@ -2468,7 +2468,7 @@ public class MessageListFragment extends Fragment
 
     private void onFollowUp(LocalMessage message) {
         // TODO: build Intent?
-        startActivity(FollowUpList.createFollowUp(this.getActivity(), message));
+        startActivity(RemindMeList.createFollowUp(this.getActivity(), message));
     }
 
     private void onCopy(LocalMessage message) {

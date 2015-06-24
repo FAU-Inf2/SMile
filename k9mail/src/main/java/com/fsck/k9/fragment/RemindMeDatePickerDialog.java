@@ -5,15 +5,13 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.os.Bundle;
 
-import com.fsck.k9.mail.FollowUp;
-
 import java.util.Calendar;
 
-public class FollowUpDatePickerDialog extends DialogFragment {
+public class RemindMeDatePickerDialog extends DialogFragment {
     private DatePickerDialog.OnDateSetListener onDateSetListener;
 
-    public static FollowUpDatePickerDialog newInstance(DatePickerDialog.OnDateSetListener onDateSetListener) {
-        FollowUpDatePickerDialog datePickerDialog = new FollowUpDatePickerDialog();
+    public static RemindMeDatePickerDialog newInstance(DatePickerDialog.OnDateSetListener onDateSetListener) {
+        RemindMeDatePickerDialog datePickerDialog = new RemindMeDatePickerDialog();
         datePickerDialog.setOnDateSetListener(onDateSetListener);
         return datePickerDialog;
     }

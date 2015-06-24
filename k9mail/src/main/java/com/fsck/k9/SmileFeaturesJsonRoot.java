@@ -1,22 +1,23 @@
 package com.fsck.k9;
 
-import com.fsck.k9.mail.FollowUp;
+import com.fsck.k9.mail.RemindMe;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class SmileFeaturesJsonRoot {
     // Root element of json-script containing HashSets/Lists of POJOs.
 
-    private List<FollowUp> allFollowUps;
+    private List<RemindMe> allRemindMes;
 
     public SmileFeaturesJsonRoot() {
-        this.allFollowUps = new ArrayList<FollowUp>();
+        this.allRemindMes = new ArrayList<RemindMe>();
     }
 
-    public List<FollowUp> getAllFollowUps() {return allFollowUps; }
+    public List<RemindMe> getAllRemindMes() {return allRemindMes; }
 
-    public void setAllFollowUps(List<FollowUp> newFollowUps) {
-        for(FollowUp f : newFollowUps) {
+    public void setAllRemindMes(List<RemindMe> newRemindMes) {
+        for(RemindMe f : newRemindMes) {
             if(f.getReference() == null)
                 continue;
             try {
@@ -25,6 +26,6 @@ public class SmileFeaturesJsonRoot {
             f.setUid(f.getReference().getUid());
             f.setReference(null);
         }
-        this.allFollowUps = newFollowUps;
+        this.allRemindMes = newRemindMes;
     }
 }

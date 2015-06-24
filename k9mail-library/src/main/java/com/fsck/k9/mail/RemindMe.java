@@ -1,7 +1,7 @@
 package com.fsck.k9.mail;
 import java.util.Date;
 
-public class FollowUp {
+public class RemindMe {
     public enum RemindInterval {
         TEN_MINUTES,
         THIRTY_MINUTES,
@@ -19,26 +19,26 @@ public class FollowUp {
     private RemindInterval remindInterval;
 
 
-    public FollowUp() {
+    public RemindMe() {
     }
 
-    public FollowUp(String title, Date remindTime) {
+    public RemindMe(String title, Date remindTime) {
         this(title, remindTime, null, -1, null, null);
     }
 
-    public FollowUp(String title, Date remindTime, Message reference) {
+    public RemindMe(String title, Date remindTime, Message reference) {
         this(title, remindTime, reference, -1, null, null);
     }
 
-    public FollowUp(String title, Date remindTime, long folderId) {
+    public RemindMe(String title, Date remindTime, long folderId) {
         this(title, remindTime, null, folderId, null, null);
     }
 
-    public FollowUp(String title, Date remindTime, Message reference, long folderId) {
+    public RemindMe(String title, Date remindTime, Message reference, long folderId) {
         this(title, remindTime, reference, folderId, null, null);
     }
 
-    public FollowUp(String title, Date remindTime, Message reference, long folderId, String uid,
+    public RemindMe(String title, Date remindTime, Message reference, long folderId, String uid,
                     String messageId) {
         setTitle(title);
         setRemindTime(remindTime);
@@ -135,10 +135,15 @@ public class FollowUp {
         builder.append(getId());
         builder.append(", FolderId: ");
         builder.append(getFolderId());
-        builder.append(", MessageId: ");
-        builder.append(getReference().getId());
-        builder.append(", MessageUID: ");
-        builder.append(getReference().getUid());
+        Message message = getReference();
+
+        if(message != null) {
+            builder.append(", MessageId: ");
+            builder.append(message.getId());
+            builder.append(", MessageUID: ");
+            builder.append(message.getUid());
+        }
+
         builder.append(", RemindTime: ");
         builder.append(getRemindTime());
 

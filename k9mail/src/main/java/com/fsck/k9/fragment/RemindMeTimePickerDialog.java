@@ -7,15 +7,14 @@ import android.os.Bundle;
 import android.text.format.DateFormat;
 
 import java.util.Calendar;
-import java.util.Date;
 
-public class FollowUpTimePickerDialog extends DialogFragment {
+public class RemindMeTimePickerDialog extends DialogFragment {
     private TimePickerDialog.OnTimeSetListener mOnTimeSetListener;
 
-    public static FollowUpTimePickerDialog newInstance(TimePickerDialog.OnTimeSetListener onTimeSetListener) {
-        FollowUpTimePickerDialog followUpTimePickerDialog = new FollowUpTimePickerDialog();
-        followUpTimePickerDialog.setOnTimeSetListener(onTimeSetListener);
-        return  followUpTimePickerDialog;
+    public static RemindMeTimePickerDialog newInstance(TimePickerDialog.OnTimeSetListener onTimeSetListener) {
+        RemindMeTimePickerDialog remindMeTimePickerDialog = new RemindMeTimePickerDialog();
+        remindMeTimePickerDialog.setOnTimeSetListener(onTimeSetListener);
+        return remindMeTimePickerDialog;
     }
 
     public TimePickerDialog.OnTimeSetListener getOnTimeSetListener() {

@@ -205,7 +205,7 @@
         </activity>
 
         <activity
-            android:name="com.fsck.k9.activity.FollowUpList"
+            android:name="com.fsck.k9.activity.RemindMeList"
             android:configChanges="locale"
             android:launchMode="singleTop"
             android:uiOptions="splitActionBarWhenNarrow"
@@ -383,7 +383,7 @@
             android:enabled="true"/>
 
         <service
-            android:name="com.fsck.k9.service.FollowUpService"
+            android:name="com.fsck.k9.service.RemindMeService"
             android:enabled="true"/>
 
         <service

@@ -4,40 +4,36 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
-import android.app.Fragment;
-import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.os.Bundle;
 
-import com.fsck.k9.activity.MessageReference;
-import com.fsck.k9.mail.FollowUp;
+import com.fsck.k9.mail.RemindMe;
 import com.fsck.k9.mail.Message;
-import com.fsck.k9.mailstore.LocalFolder;
 
 import de.fau.cs.mad.smile.android.R;
 
-public class FollowUpDialog extends DialogFragment {
+public class RemindMeDialog extends DialogFragment {
 
     public interface NoticeDialogListener {
         void onDialogClick(DialogFragment dialog);
     }
 
-    public static FollowUpDialog newInstance(Message message) {
-        FollowUpDialog dlg = new FollowUpDialog();
-        dlg.setFollowUp(new FollowUp());
-        dlg.getFollowUp().setReference(message);
+    public static RemindMeDialog newInstance(Message message) {
+        RemindMeDialog dlg = new RemindMeDialog();
+        dlg.setRemindMe(new RemindMe());
+        dlg.getRemindMe().setReference(message);
         return dlg;
     }
 
-    public static FollowUpDialog newInstance(FollowUp followUp) {
-        FollowUpDialog dlg = new FollowUpDialog();
-        dlg.setFollowUp(followUp);
+    public static RemindMeDialog newInstance(RemindMe remindMe) {
+        RemindMeDialog dlg = new RemindMeDialog();
+        dlg.setRemindMe(remindMe);
         return dlg;
     }
 
     // Use this instance of the interface to deliver action events
     private NoticeDialogListener mListener;
-    private FollowUp followUp;
+    private RemindMe remindMe;
 
     // Override the Fragment.onAttach() method to instantiate the NoticeDialogListener
     @Override
@@ -61,12 +57,12 @@ public class FollowUpDialog extends DialogFragment {
         return builder.create();
     }
 
-    private void setFollowUp(FollowUp followUp) {
-        this.followUp = followUp;
+    private void setRemindMe(RemindMe remindMe) {
+        this.remindMe = remindMe;
     }
 
-    public FollowUp getFollowUp() {
-        return followUp;
+    public RemindMe getRemindMe() {
+        return remindMe;
     }
 
     private class AlertDialogOnClickListener implements DialogInterface.OnClickListener {
@@ -74,24 +70,24 @@ public class FollowUpDialog extends DialogFragment {
         public void onClick(DialogInterface dialog, int which) {
             switch(which) {
                 case 0: {
-                    getFollowUp().setRemindInterval(FollowUp.RemindInterval.TEN_MINUTES);
+                    getRemindMe().setRemindInterval(RemindMe.RemindInterval.TEN_MINUTES);
                     break;
                 }
                 case 1: {
-                    getFollowUp().setRemindInterval(FollowUp.RemindInterval.THIRTY_MINUTES);
+                    getRemindMe().setRemindInterval(RemindMe.RemindInterval.THIRTY_MINUTES);
                     break;
                 }
                 case 2: {
-                    getFollowUp().setRemindInterval(FollowUp.RemindInterval.TOMORROW);
+                    getRemindMe().setRemindInterval(RemindMe.RemindInterval.TOMORROW);
                     break;
                 }
                 case 3: {
-                    getFollowUp().setRemindInterval(FollowUp.RemindInterval.CUSTOM);
+                    getRemindMe().setRemindInterval(RemindMe.RemindInterval.CUSTOM);
                     break;
                 }
             }
 
-            mListener.onDialogClick(FollowUpDialog.this);
+            mListener.onDialogClick(RemindMeDialog.this);
         }
     }
 

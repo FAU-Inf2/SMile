@@ -32,7 +32,7 @@ import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.activity.ChooseFolder;
-import com.fsck.k9.activity.FollowUpList;
+import com.fsck.k9.activity.RemindMeList;
 import com.fsck.k9.activity.MessageReference;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.controller.MessagingListener;
@@ -398,7 +398,7 @@ public class MessageViewFragment extends Fragment
     }
 
     public void onFollowUp() {
-        startActivity(FollowUpList.createFollowUp(this.getActivity(), mMessage));
+        startActivity(RemindMeList.createFollowUp(this.getActivity(), mMessage));
     }
 
     public void onCopy() {

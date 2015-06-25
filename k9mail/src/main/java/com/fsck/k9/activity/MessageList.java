@@ -36,7 +36,9 @@ import com.fsck.k9.Account.SortType;
 import com.fsck.k9.K9;
 import com.fsck.k9.K9.SplitViewMode;
 import com.fsck.k9.Preferences;
+
 import de.fau.cs.mad.smile.android.R;
+
 import com.fsck.k9.activity.misc.SwipeGestureDetector.OnSwipeGestureListener;
 import com.fsck.k9.activity.setup.AccountSettings;
 import com.fsck.k9.activity.setup.FolderSettings;
@@ -46,6 +48,7 @@ import com.fsck.k9.fragment.MessageListFragment;
 import com.fsck.k9.fragment.MessageListFragment.MessageListFragmentListener;
 import com.fsck.k9.fragment.SmsListFragment;
 import com.fsck.k9.mail.Address;
+import com.fsck.k9.mailstore.LocalStore;
 import com.fsck.k9.search.ConditionsTreeNode;
 import com.fsck.k9.ui.messageview.MessageViewFragment;
 import com.fsck.k9.ui.messageview.MessageViewFragment.MessageViewFragmentListener;
@@ -72,10 +75,10 @@ import de.cketti.library.changelog.ChangeLog;
  */
 public class MessageList extends K9Activity
         implements MessageListFragmentListener,
-            MessageViewFragmentListener,
-            OnBackStackChangedListener,
-            OnSwipeGestureListener,
-            OnSwitchCompleteListener {
+        MessageViewFragmentListener,
+        OnBackStackChangedListener,
+        OnSwipeGestureListener,
+        OnSwitchCompleteListener {
 
     // for this activity
     private static final String EXTRA_SEARCH = "search";
@@ -98,19 +101,23 @@ public class MessageList extends K9Activity
     private static final int NEXT = 2;
 
 
-    public static void actionDisplaySearch(Context context, SearchSpecification search,
-            boolean noThreading, boolean newTask) {
+    public static void actionDisplaySearch(Context context,
+                                           SearchSpecification search,
+                                           boolean noThreading,
+                                           boolean newTask) {
         actionDisplaySearch(context, search, noThreading, newTask, true);
     }
 
-    public static void actionDisplaySearch(Context context, SearchSpecification search,
-            boolean noThreading, boolean newTask, boolean clearTop) {
-        context.startActivity(
-                intentDisplaySearch(context, search, noThreading, newTask, clearTop));
+    public static void actionDisplaySearch(Context context,
+                                           SearchSpecification search,
+                                           boolean noThreading,
+                                           boolean newTask,
+                                           boolean clearTop) {
+        context.startActivity(intentDisplaySearch(context, search, noThreading, newTask, clearTop));
     }
 
     public static Intent intentDisplaySearch(Context context, SearchSpecification search,
-            boolean noThreading, boolean newTask, boolean clearTop) {
+                                             boolean noThreading, boolean newTask, boolean clearTop) {
         Intent intent = new Intent(context, MessageList.class);
         intent.putExtra(EXTRA_SEARCH, search);
         intent.putExtra(EXTRA_NO_THREADING, noThreading);
@@ -118,6 +125,7 @@ public class MessageList extends K9Activity
         if (clearTop) {
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         }
+
         if (newTask) {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         }
@@ -136,7 +144,7 @@ public class MessageList extends K9Activity
     }
 
     public static Intent actionDisplayMessageIntent(Context context,
-            MessageReference messageReference) {
+                                                    MessageReference messageReference) {
         Intent intent = new Intent(context, MessageList.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.putExtra(EXTRA_MESSAGE_REFERENCE, messageReference);
@@ -255,6 +263,7 @@ public class MessageList extends K9Activity
                     FragmentManager.POP_BACK_STACK_INCLUSIVE);
             mFirstBackStackId = -1;
         }
+
         removeMessageListFragment();
         removeMessageViewFragment();
 
@@ -311,15 +320,14 @@ public class MessageList extends K9Activity
 
     /**
      * Set the initial display mode (message list, message view, or split view).
-     *
+     * <p/>
      * <p><strong>Note:</strong>
      * This method has to be called after {@link #findFragments()} because the result depends on
      * the availability of a {@link MessageViewFragment} instance.
      * </p>
      *
-     * @param savedInstanceState
-     *         The saved instance state that was passed to the activity as argument to
-     *         {@link #onCreate(Bundle)}. May be {@code null}.
+     * @param savedInstanceState The saved instance state that was passed to the activity as argument to
+     *                           {@link #onCreate(Bundle)}. May be {@code null}.
      */
     private void initializeDisplayMode(Bundle savedInstanceState) {
         if (useSplitView()) {
@@ -349,7 +357,7 @@ public class MessageList extends K9Activity
 
         return (splitViewMode == SplitViewMode.ALWAYS ||
                 (splitViewMode == SplitViewMode.WHEN_IN_LANDSCAPE &&
-                orientation == Configuration.ORIENTATION_LANDSCAPE));
+                        orientation == Configuration.ORIENTATION_LANDSCAPE));
     }
 
     private void initializeLayout() {
@@ -384,6 +392,7 @@ public class MessageList extends K9Activity
 
     private boolean decodeExtras(Intent intent) {
         String action = intent.getAction();
+
         if (Intent.ACTION_VIEW.equals(action) && intent.getData() != null) {
             decodeExtraActionView(intent);
         } else if (ACTION_SHORTCUT.equals(action)) {
@@ -421,9 +430,13 @@ public class MessageList extends K9Activity
         Preferences prefs = Preferences.getPreferences(getApplicationContext());
 
         String[] accountUuids = mSearch.getAccountUuids();
+
+        Log.d(K9.LOG_TAG, "MessageList.decodeExtras Account: " + mAccount);
+
         if (mSearch.searchAllAccounts()) {
             List<Account> accounts = prefs.getAccounts();
             mSingleAccountMode = (accounts.size() == 1);
+
             if (mSingleAccountMode) {
                 mAccount = accounts.get(0);
             }
@@ -433,6 +446,7 @@ public class MessageList extends K9Activity
                 mAccount = prefs.getAccount(accountUuids[0]);
             }
         }
+
         mSingleFolderMode = mSingleAccountMode && (mSearch.getFolderNames().size() == 1);
 
         if (mSingleAccountMode && (mAccount == null || !mAccount.isAvailable(this))) {
@@ -456,7 +470,7 @@ public class MessageList extends K9Activity
         if (!Intent.ACTION_SEARCH.equals(intent.getAction())) {
             return;
         }
-            //Query was received from Search Dialog
+        //Query was received from Search Dialog
         String query = intent.getStringExtra(SearchManager.QUERY).trim();
 
         mSearch = new LocalSearch(getString(R.string.search_results));
@@ -586,17 +600,14 @@ public class MessageList extends K9Activity
 
     /**
      * Handle hotkeys
-     *
+     * <p/>
      * <p>
      * This method is called by {@link #dispatchKeyEvent(KeyEvent)} before any view had the chance
      * to consume this key event.
      * </p>
      *
-     * @param keyCode
-     *         The value in {@code event.getKeyCode()}.
-     * @param event
-     *         Description of the key event.
-     *
+     * @param keyCode The value in {@code event.getKeyCode()}.
+     * @param event   Description of the key event.
      * @return {@code true} if this event was consumed.
      */
     public boolean onCustomKeyDown(final int keyCode, final KeyEvent event) {
@@ -787,6 +798,7 @@ public class MessageList extends K9Activity
     public boolean onOptionsItemSelected(MenuItem item) {
         int itemId = item.getItemId();
         switch (itemId) {
+            // implements up navigation
             case android.R.id.home: {
                 goBack();
                 return true;
@@ -968,7 +980,7 @@ public class MessageList extends K9Activity
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.message_list_option, menu);
         mMenu = menu;
-        mMenuButtonCheckMail= menu.findItem(R.id.check_mail);
+        mMenuButtonCheckMail = menu.findItem(R.id.check_mail);
         return true;
     }
 
@@ -980,15 +992,14 @@ public class MessageList extends K9Activity
 
     /**
      * Hide menu items not appropriate for the current context.
-     *
+     * <p/>
      * <p><strong>Note:</strong>
      * Please adjust the comments in {@code res/menu/message_list_option.xml} if you change the
      * visibility of a menu item in this method.
      * </p>
      *
-     * @param menu
-     *         The {@link Menu} instance that should be modified. May be {@code null}; in that case
-     *         the method does nothing and immediately returns.
+     * @param menu The {@link Menu} instance that should be modified. May be {@code null}; in that case
+     *             the method does nothing and immediately returns.
      */
     private void configureMenu(Menu menu) {
         if (menu == null) {
@@ -1293,44 +1304,6 @@ public class MessageList extends K9Activity
         }
     }
 
-    private final class StorageListenerImplementation implements StorageManager.StorageListener {
-        @Override
-        public void onUnmount(String providerId) {
-            if (mAccount != null && providerId.equals(mAccount.getLocalStorageProviderId())) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        onAccountUnavailable();
-                    }
-                });
-            }
-        }
-
-        @Override
-        public void onMount(String providerId) {
-            // no-op
-        }
-    }
-
-    private void addMessageListFragment(MessageListFragment fragment, boolean addToBackStack) {
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-
-        if (mDisplayMode != DisplayMode.SMS_LIST)
-            ft.replace(R.id.message_list_container, fragment);
-        else
-            ft.replace(R.id.sms_message_list_container, fragment);
-
-        if (addToBackStack)
-            ft.addToBackStack(null);
-
-        mMessageListFragment = fragment;
-
-        int transactionId = ft.commit();
-        if (transactionId >= 0 && mFirstBackStackId < 0) {
-            mFirstBackStackId = transactionId;
-        }
-    }
-
     @Override
     public boolean startSearch(Account account, String folderName) {
         // If this search was started from a MessageList of a single folder, pass along that folder info
@@ -1360,6 +1333,53 @@ public class MessageList extends K9Activity
         addMessageListFragment(fragment, true);
     }
 
+    private final class StorageListenerImplementation implements StorageManager.StorageListener {
+        @Override
+        public void onUnmount(String providerId) {
+            if (mAccount != null && providerId.equals(mAccount.getLocalStorageProviderId())) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        onAccountUnavailable();
+                    }
+                });
+            }
+        }
+
+        @Override
+        public void onMount(String providerId) {
+            // no-op
+        }
+    }
+
+    private void addMessageListFragment(MessageListFragment fragment, boolean addToBackStack) {
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+
+        if (mDisplayMode != DisplayMode.SMS_LIST) {
+            ft.replace(R.id.message_list_container, fragment);
+        } else {
+            ft.replace(R.id.sms_message_list_container, fragment);
+        }
+
+        if (addToBackStack) {
+            ft.addToBackStack(null);
+        }
+
+        mMessageListFragment = fragment;
+        int transactionId = ft.commit();
+
+        if (transactionId >= 0 && mFirstBackStackId < 0) {
+            mFirstBackStackId = transactionId;
+        }
+    }
+
+    private void removeMessageListFragment() {
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        ft.remove(mMessageListFragment);
+        mMessageListFragment = null;
+        ft.commit();
+    }
+
     private void showMessageViewPlaceHolder() {
         removeMessageViewFragment();
 
@@ -1385,13 +1405,6 @@ public class MessageList extends K9Activity
         }
     }
 
-    private void removeMessageListFragment() {
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        ft.remove(mMessageListFragment);
-        mMessageListFragment = null;
-        ft.commit();
-    }
-
     @Override
     public void remoteSearchStarted() {
         // Remove action button for remote search
@@ -1400,7 +1413,10 @@ public class MessageList extends K9Activity
 
     @Override
     public void goBack() {
+        Log.d(K9.LOG_TAG, "MessageList.goBack");
+
         FragmentManager fragmentManager = getFragmentManager();
+
         if (mDisplayMode == DisplayMode.MESSAGE_VIEW) {
             showMessageList();
         } else if (fragmentManager.getBackStackEntryCount() > 0) {
@@ -1418,6 +1434,7 @@ public class MessageList extends K9Activity
     public void enableActionBarProgress(boolean enable) {
         if (mMenuButtonCheckMail != null && mMenuButtonCheckMail.isVisible()) {
             mActionBarProgress.setVisibility(ProgressBar.GONE);
+
             if (enable) {
                 mMenuButtonCheckMail
                         .setActionView(mActionButtonIndeterminateProgress);
@@ -1475,6 +1492,7 @@ public class MessageList extends K9Activity
      */
     private boolean showLogicalNextMessage() {
         boolean result = false;
+
         if (mLastDirection == NEXT) {
             result = showNextMessage();
         } else if (mLastDirection == PREVIOUS) {
@@ -1506,6 +1524,7 @@ public class MessageList extends K9Activity
                 return true;
             }
         }
+
         return false;
     }
 
@@ -1534,7 +1553,7 @@ public class MessageList extends K9Activity
         configureMenu(mMenu);
     }
 
-    private void showSmsView(){
+    private void showSmsView() {
         mMessageListWasDisplayed = true;
 
         switchMessageListFragment(R.id.sms_message_list_container);
@@ -1550,10 +1569,9 @@ public class MessageList extends K9Activity
         configureMenu(mMenu);
     }
 
-    private void fillContacts(MessageListFragment fragment){
+    private void fillContacts(MessageListFragment fragment) {
 
         leftLinearLayoutContacts = (LinearLayout) findViewById(R.id.smsLikeView_leftlinear_contacts);
-
         leftLinearLayoutContacts.removeAllViews();
 
         List<MessageReference> list = fragment.getMessageReferences();
@@ -1561,23 +1579,28 @@ public class MessageList extends K9Activity
         TreeSet<Address> addressSet = new TreeSet<Address>(new Comparator<Address>() {
             @Override
             public int compare(Address lhs, Address rhs) {
-                    if (lhs.equals(rhs)) return 0;
-                    return lhs.getAddress().compareTo(rhs.getAddress());
+                if (lhs.equals(rhs))
+                    return 0;
+
+                return lhs.getAddress().compareTo(rhs.getAddress());
             }
         });
 
 
-        for(MessageReference ref : list){
+        for (MessageReference ref : list) {
             LocalMessage msg = ref.restoreToLocalMessage(this);
             msg.getRootId();
             Address[] addresses = msg.getFrom();
-            for (Address address : addresses)
+
+            for (Address address : addresses) {
                 addressSet.add(address);
+            }
         }
 
         final Button[] buttons = new Button[addressSet.size()];
         int i = 0;
-        for (final Address address: addressSet){
+
+        for (final Address address : addressSet) {
             final String senderAddress = address.getAddress();
             Button button = new Button(this);
             buttons[i++] = button;
@@ -1586,46 +1609,14 @@ public class MessageList extends K9Activity
             leftLinearLayoutContacts.addView(button);
         }
 
-        for (final Button button : buttons){
+        for (final Button button : buttons) {
             final String senderAddress = ((Address) button.getTag()).getAddress();
-            button.setOnClickListener(new View.OnClickListener() {
-
-
-                private SmsListFragment getFragmentForSender(){
-                    LocalSearch tmpSearch = new LocalSearch();
-                    tmpSearch.addAccountUuids(mSearch.getAccountUuids());
-
-                   try {
-                       tmpSearch.or (new ConditionsTreeNode(new SearchCondition(SearchField.SENDER, Attribute.CONTAINS, senderAddress))
-                                .and(new ConditionsTreeNode(new SearchCondition(SearchField.FOLDER, Attribute.EQUALS,   mFolderName))));
-
-              //         tmpSearch.or (new ConditionsTreeNode(new SearchCondition(SearchField.FOLDER, Attribute.EQUALS,   mAccount.getSentFolderName()))
-              //                  .and(new ConditionsTreeNode(new SearchCondition(SearchField.TO,     Attribute.CONTAINS, senderAddress))));
-
-                   }catch (Exception e){};
-
-                    SmsListFragment frag = SmsListFragment.newInstance(tmpSearch, false, true);
-                    return frag;
-
-                }
-
-                public void onClick(View v) {
-
-                    SmsListFragment fragment = getFragmentForSender();
-
-                    displayContactMessages(fragment);
-
-                    button.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_dark));
-                    for (Button buttonOther : buttons){
-                        if (!button.equals(buttonOther))buttonOther.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_light));
-                    }
-                }
-            });
+            button.setOnClickListener(new ButtonOnClickListener(senderAddress, button, buttons));
         }
 
-        if (buttons.length > 0) buttons[0].callOnClick();
-
-
+        if (buttons.length > 0) {
+            buttons[0].callOnClick();
+        }
     }
 
     private void showMessageView() {
@@ -1634,33 +1625,36 @@ public class MessageList extends K9Activity
         if (!mMessageListWasDisplayed) {
             mViewSwitcher.setAnimateFirstView(false);
         }
+
         mViewSwitcher.showSecondView();
 
         showMessageTitleView();
         configureMenu(mMenu);
     }
 
-    private void switchMessageListFragment(int toViewID){
+    private void switchMessageListFragment(int toViewID) {
         View vMessageList = mMessageListFragment.getView();
 
-        if (vMessageList == null)
+        if (vMessageList == null) {
             return;
+        }
 
         ViewGroup parent = (ViewGroup) vMessageList.getParent();
         ViewGroup parentNew = (ViewGroup) findViewById(toViewID);
 
-        if (parentNew != null){
+        if (parentNew != null) {
             if (parent != null && !parent.equals(parentNew)) {
                 parent.removeView(vMessageList);
                 parent.clearDisappearingChildren();
             }
+
             parentNew.removeAllViews();
             parentNew.addView(vMessageList, parentNew.getLayoutParams());
             parentNew.bringChildToFront(vMessageList);
         }
     }
 
-    private void displayContactMessages(MessageListFragment fragment){
+    private void displayContactMessages(MessageListFragment fragment) {
 
         View vMessageList = mMessageListFragment.getView();
 
@@ -1678,7 +1672,7 @@ public class MessageList extends K9Activity
     }
 
     @Override
-    public void showSMS(Account account, String FolderName, long rootId, MessageReference messageReference){
+    public void showSMS(Account account, String FolderName, long rootId, MessageReference messageReference) {
 
     }
 
@@ -1747,6 +1741,52 @@ public class MessageList extends K9Activity
 
         if (mMessageViewFragment != null) {
             mMessageViewFragment.handleCryptoResult(requestCode, resultCode, data);
+        }
+    }
+
+    private class ButtonOnClickListener implements View.OnClickListener {
+
+        private final String senderAddress;
+        private final Button button;
+        private final Button[] buttons;
+
+        public ButtonOnClickListener(String senderAddress, Button button, Button[] buttons) {
+            this.senderAddress = senderAddress;
+            this.button = button;
+            this.buttons = buttons;
+        }
+
+        private SmsListFragment getFragmentForSender() {
+            LocalSearch tmpSearch = new LocalSearch();
+            tmpSearch.addAccountUuids(mSearch.getAccountUuids());
+
+            try {
+                tmpSearch.or(new ConditionsTreeNode(new SearchCondition(SearchField.SENDER, Attribute.CONTAINS, senderAddress))
+                        .and(new ConditionsTreeNode(new SearchCondition(SearchField.FOLDER, Attribute.EQUALS, mFolderName))));
+
+                //         tmpSearch.or (new ConditionsTreeNode(new SearchCondition(SearchField.FOLDER, Attribute.EQUALS,   mAccount.getSentFolderName()))
+                //                  .and(new ConditionsTreeNode(new SearchCondition(SearchField.TO,     Attribute.CONTAINS, senderAddress))));
+
+            } catch (Exception e) {
+            }
+
+            SmsListFragment frag = SmsListFragment.newInstance(tmpSearch, false, true);
+            return frag;
+
+        }
+
+        public void onClick(View v) {
+
+            SmsListFragment fragment = getFragmentForSender();
+
+            displayContactMessages(fragment);
+
+            button.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_dark));
+            for (Button buttonOther : buttons) {
+                if (!button.equals(buttonOther)) {
+                    buttonOther.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_light));
+                }
+            }
         }
     }
 }

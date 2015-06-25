@@ -1,26 +1,22 @@
 package com.fsck.k9.service;
 
-import android.annotation.TargetApi;
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.Account;
-import com.fsck.k9.activity.FollowUpList;
+import com.fsck.k9.activity.RemindMeList;
 import com.fsck.k9.controller.MessagingController;
-import com.fsck.k9.mail.FollowUp;
+import com.fsck.k9.mail.RemindMe;
 import com.fsck.k9.mail.MessagingException;
-import com.fsck.k9.mailstore.LocalFollowUp;
+import com.fsck.k9.mailstore.LocalRemindMe;
 import com.fsck.k9.mailstore.LocalMessage;
 
 import de.fau.cs.mad.smile.android.R;
@@ -30,7 +26,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-public class FollowUpService extends CoreService {
+public class RemindMeService extends CoreService {
     private static final String ACTION_RESET = "com.fsck.k9.intent.action.FOLLOWUP_SERVICE_RESET";
     private static final String ACTION_CHECK_FOLLOWUP = "com.fsck.k9.intent.action.FOLLOWUP_SERVICE_CHECK";
 
@@ -38,8 +34,8 @@ public class FollowUpService extends CoreService {
 
     public static void actionReset(Context context, Integer wakeLockId) {
         Intent i = new Intent();
-        i.setClass(context, FollowUpService.class);
-        i.setAction(FollowUpService.ACTION_RESET);
+        i.setClass(context, RemindMeService.class);
+        i.setAction(RemindMeService.ACTION_RESET);
         addWakeLockId(context, i, wakeLockId, true);
         context.startService(i);
     }
@@ -59,16 +55,16 @@ public class FollowUpService extends CoreService {
             Log.i(K9.LOG_TAG, "WiedervorlageService.startService(" + intent + ", " + startId + ") alive and kicking");
         }
 
-        Preferences prefs = Preferences.getPreferences(FollowUpService.this);
+        Preferences prefs = Preferences.getPreferences(RemindMeService.this);
 
         for(Account acc : prefs.getAccounts()) {
             handleAccount(acc);
         }
-        Intent i = new Intent(this, FollowUpService.class);
+        Intent i = new Intent(this, RemindMeService.class);
         i.setAction(ACTION_CHECK_FOLLOWUP);
         long delay = (10 * (60 * 1000)); // wait 10 min
         long nextTime  = System.currentTimeMillis() + delay;
-        BootReceiver.scheduleIntent(FollowUpService.this, nextTime, i);
+        BootReceiver.scheduleIntent(RemindMeService.this, nextTime, i);
         return 0;
     }
 
@@ -80,10 +76,10 @@ public class FollowUpService extends CoreService {
         NotificationManager notifyMgr =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
-        List<FollowUp> followUps = getFollowUpItems(acc);
+        List<RemindMe> remindMes = getFollowUpItems(acc);
         Date now = new Date();
 
-        for(FollowUp item : followUps) {
+        for(RemindMe item : remindMes) {
             if(item.getRemindTime().after(now)) {
                 continue;
             }
@@ -101,9 +97,9 @@ public class FollowUpService extends CoreService {
                     context.getString(R.string.notification_action_mark_as_read),
                     NotificationActionService.getFollowUpIntent(context, acc));
 
-            Intent resultIntent = new Intent(context, FollowUpList.class);
+            Intent resultIntent = new Intent(context, RemindMeList.class);
             TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
-            stackBuilder.addParentStack(FollowUpList.class);
+            stackBuilder.addParentStack(RemindMeList.class);
             stackBuilder.addNextIntent(resultIntent);
             PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
             builder.setContentIntent(resultPendingIntent);
@@ -111,28 +107,28 @@ public class FollowUpService extends CoreService {
         }
     }
 
-    private List<FollowUp> getFollowUpItems(Account acc) {
-        ArrayList<FollowUp> followUps = new ArrayList<FollowUp>();
+    private List<RemindMe> getFollowUpItems(Account acc) {
+        ArrayList<RemindMe> remindMes = new ArrayList<RemindMe>();
         try {
-            LocalFollowUp localFollowUp = new LocalFollowUp(acc.getLocalStore());
-            followUps.addAll(localFollowUp.getAllFollowUps());
+            LocalRemindMe localRemindMe = new LocalRemindMe(acc.getLocalStore());
+            remindMes.addAll(localRemindMe.getAllFollowUps());
         } catch (MessagingException e) {
-            Log.e(K9.LOG_TAG, "Exception thrown while calling getAllFollowUps()", e);
+            Log.e(K9.LOG_TAG, "Exception thrown while calling getAllRemindMes()", e);
         }
 
-        return followUps;
+        return remindMes;
     }
 
-    class MoveFollowUpBack extends AsyncTask<FollowUp, Void, Void> {
+    class MoveFollowUpBack extends AsyncTask<RemindMe, Void, Void> {
 
         @Override
-        protected Void doInBackground(FollowUp... params) {
-            for(FollowUp followUp : params) {
+        protected Void doInBackground(RemindMe... params) {
+            for(RemindMe remindMe : params) {
                 MessagingController messagingController = MessagingController.getInstance(getApplication());
                 messagingController.moveMessages(mAccount,
                         mAccount.getFollowUpFolderName(),
-                        new ArrayList<LocalMessage>(Arrays.asList((LocalMessage) followUp.getReference())),
-                        //mAccount.getLocalStore().getFolderById(followUp.getFolderId()).getName(), null);
+                        new ArrayList<LocalMessage>(Arrays.asList((LocalMessage) remindMe.getReference())),
+                        //mAccount.getLocalStore().getFolderById(remindMe.getFolderId()).getName(), null);
                         mAccount.getInboxFolderName(), null);
                 //TODO: Mark as unread?
             }

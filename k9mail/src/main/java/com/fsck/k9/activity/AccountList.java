@@ -6,12 +6,9 @@ import java.util.List;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.BaseAccount;
@@ -31,7 +28,6 @@ import com.fsck.k9.search.SearchAccount;
  * </p>
  */
 public abstract class AccountList extends K9ListActivity implements OnItemClickListener {
-    private FontSizes mFontSizes = K9.getFontSizes();
 
     @Override
     public void onCreate(Bundle icicle) {
@@ -79,7 +75,7 @@ public abstract class AccountList extends K9ListActivity implements OnItemClickL
         }
 
         accounts.addAll(realAccounts);
-        AccountsAdapter adapter = new AccountsAdapter(accounts);
+        AccountsAdapter adapter = new AccountsAdapter(this, accounts);
         ListView listView = getListView();
         listView.setAdapter(adapter);
         listView.invalidate();
@@ -99,71 +95,6 @@ public abstract class AccountList extends K9ListActivity implements OnItemClickL
      *         The account the user selected.
      */
     protected abstract void onAccountSelected(BaseAccount account);
-
-    class AccountsAdapter extends ArrayAdapter<BaseAccount> {
-        public AccountsAdapter(List<BaseAccount> accounts) {
-            super(AccountList.this, 0, accounts);
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            final BaseAccount account = getItem(position);
-
-            final View view;
-            if (convertView != null) {
-                view = convertView;
-            } else {
-                view = getLayoutInflater().inflate(R.layout.accounts_item, parent, false);
-                view.findViewById(R.id.active_icons).setVisibility(View.GONE);
-                view.findViewById(R.id.folders).setVisibility(View.GONE);
-            }
-
-            AccountViewHolder holder = (AccountViewHolder) view.getTag();
-            if (holder == null) {
-                holder = new AccountViewHolder();
-                holder.description = (TextView) view.findViewById(R.id.description);
-                holder.email = (TextView) view.findViewById(R.id.email);
-                holder.chip = view.findViewById(R.id.chip);
-
-                view.setTag(holder);
-            }
-
-            String description = account.getDescription();
-            if (account.getEmail().equals(description)) {
-                holder.email.setVisibility(View.GONE);
-            } else {
-                holder.email.setVisibility(View.VISIBLE);
-                holder.email.setText(account.getEmail());
-            }
-
-            if (description == null || description.isEmpty()) {
-                description = account.getEmail();
-            }
-
-            holder.description.setText(description);
-
-            if (account instanceof Account) {
-                Account realAccount = (Account) account;
-                holder.chip.setBackgroundColor(realAccount.getChipColor());
-            } else {
-                holder.chip.setBackgroundColor(0xff999999);
-            }
-
-            holder.chip.getBackground().setAlpha(255);
-
-            mFontSizes.setViewTextSize(holder.description, mFontSizes.getAccountName());
-            mFontSizes.setViewTextSize(holder.email, mFontSizes.getAccountDescription());
-
-
-            return view;
-        }
-
-        class AccountViewHolder {
-            public TextView description;
-            public TextView email;
-            public View chip;
-        }
-    }
 
     /**
      * Load accounts in a background thread

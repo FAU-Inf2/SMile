@@ -44,7 +44,9 @@ import com.fsck.k9.BaseAccount;
 import com.fsck.k9.FontSizes;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
+
 import de.fau.cs.mad.smile.android.R;
+
 import com.fsck.k9.activity.setup.AccountSettings;
 import com.fsck.k9.activity.setup.FolderSettings;
 import com.fsck.k9.activity.setup.Prefs;
@@ -70,19 +72,13 @@ import de.cketti.library.changelog.ChangeLog;
 
 public class FolderList extends K9ListActivity {
     private static final String EXTRA_ACCOUNT = "account";
-
     private static final String EXTRA_FROM_SHORTCUT = "fromShortcut";
-
     private static final boolean REFRESH_REMOTE = true;
 
     private ListView mListView;
-
     private FolderListAdapter mAdapter;
-
     private Account mAccount;
-
     private FolderListHandler mHandler = new FolderListHandler();
-
     private int mUnreadMessageCount;
 
     private MenuItem mRefreshMenuItem;
@@ -155,7 +151,6 @@ public class FolderList extends K9ListActivity {
                 public void run() {
                     FolderInfoHolder folderHolder = mAdapter.getFolder(folder);
 
-
                     if (folderHolder != null) {
                         folderHolder.loading = loading;
                     }
@@ -193,9 +188,9 @@ public class FolderList extends K9ListActivity {
     }
 
     /**
-    * This class is responsible for reloading the list of local messages for a
-    * given folder, notifying the adapter that the message have been loaded and
-    * queueing up a remote update of the folder.
+     * This class is responsible for reloading the list of local messages for a
+     * given folder, notifying the adapter that the message have been loaded and
+     * queueing up a remote update of the folder.
      */
 
     private void checkMail(FolderInfoHolder folder) {
@@ -214,7 +209,7 @@ public class FolderList extends K9ListActivity {
 
             @Override
             public void synchronizeMailboxFailed(Account account, String folder,
-            String message) {
+                                                 String message) {
                 if (!account.equals(mAccount)) {
                     return;
                 }
@@ -254,6 +249,7 @@ public class FolderList extends K9ListActivity {
         mActionBarProgressView = getLayoutInflater().inflate(R.layout.actionbar_indeterminate_progress_actionview, null);
         mActionBar = getActionBar();
         initializeActionBar();
+
         setContentView(R.layout.folder_list);
         mListView = getListView();
         mListView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
@@ -316,7 +312,7 @@ public class FolderList extends K9ListActivity {
         }
 
         if (intent.getBooleanExtra(EXTRA_FROM_SHORTCUT, false) &&
-                   !K9.FOLDER_NONE.equals(mAccount.getAutoExpandFolderName())) {
+                !K9.FOLDER_NONE.equals(mAccount.getAutoExpandFolderName())) {
             onOpenFolder(mAccount.getAutoExpandFolderName());
             finish();
         } else {
@@ -355,9 +351,9 @@ public class FolderList extends K9ListActivity {
     }
 
     /**
-    * On resume we refresh the folder list (in the background) and we refresh the
-    * messages for any folder that is currently open. This guarantees that things
-    * like unread message count and read status are updated.
+     * On resume we refresh the folder list (in the background) and we refresh the
+     * messages for any folder that is currently open. This guarantees that things
+     * like unread message count and read status are updated.
      */
     @Override
     public void onResume() {
@@ -388,38 +384,38 @@ public class FolderList extends K9ListActivity {
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         //Shortcuts that work no matter what is selected
         switch (keyCode) {
-        case KeyEvent.KEYCODE_Q: {
-            onAccounts();
-            return true;
-        }
+            case KeyEvent.KEYCODE_Q: {
+                onAccounts();
+                return true;
+            }
 
-        case KeyEvent.KEYCODE_S: {
-            onEditAccount();
-            return true;
-        }
+            case KeyEvent.KEYCODE_S: {
+                onEditAccount();
+                return true;
+            }
 
-        case KeyEvent.KEYCODE_H: {
-            Toast toast = Toast.makeText(this, R.string.folder_list_help_key, Toast.LENGTH_LONG);
-            toast.show();
-            return true;
-        }
+            case KeyEvent.KEYCODE_H: {
+                Toast toast = Toast.makeText(this, R.string.folder_list_help_key, Toast.LENGTH_LONG);
+                toast.show();
+                return true;
+            }
 
-        case KeyEvent.KEYCODE_1: {
-            setDisplayMode(FolderMode.FIRST_CLASS);
-            return true;
-        }
-        case KeyEvent.KEYCODE_2: {
-            setDisplayMode(FolderMode.FIRST_AND_SECOND_CLASS);
-            return true;
-        }
-        case KeyEvent.KEYCODE_3: {
-            setDisplayMode(FolderMode.NOT_SECOND_CLASS);
-            return true;
-        }
-        case KeyEvent.KEYCODE_4: {
-            setDisplayMode(FolderMode.ALL);
-            return true;
-        }
+            case KeyEvent.KEYCODE_1: {
+                setDisplayMode(FolderMode.FIRST_CLASS);
+                return true;
+            }
+            case KeyEvent.KEYCODE_2: {
+                setDisplayMode(FolderMode.FIRST_AND_SECOND_CLASS);
+                return true;
+            }
+            case KeyEvent.KEYCODE_3: {
+                setDisplayMode(FolderMode.NOT_SECOND_CLASS);
+                return true;
+            }
+            case KeyEvent.KEYCODE_4: {
+                setDisplayMode(FolderMode.ALL);
+                return true;
+            }
         }//switch
 
 
@@ -488,84 +484,74 @@ public class FolderList extends K9ListActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-        case android.R.id.home:
-            onAccounts();
+            case android.R.id.home:
+                onAccounts();
+                return true;
 
-            return true;
+            case R.id.search:
+                onSearchRequested();
+                return true;
 
-        case R.id.search:
-            onSearchRequested();
+            case R.id.compose:
+                MessageCompose.actionCompose(this, mAccount);
+                return true;
 
-            return true;
+            case R.id.check_mail:
+                MessagingController.getInstance(getApplication()).checkMail(this, mAccount, true, true, mAdapter.mListener);
+                return true;
 
-        case R.id.compose:
-            MessageCompose.actionCompose(this, mAccount);
+            case R.id.send_messages:
+                MessagingController.getInstance(getApplication()).sendPendingMessages(mAccount, null);
+                return true;
 
-            return true;
+            case R.id.list_folders:
+                onRefresh(REFRESH_REMOTE);
+                return true;
 
-        case R.id.check_mail:
-            MessagingController.getInstance(getApplication()).checkMail(this, mAccount, true, true, mAdapter.mListener);
+            case R.id.account_settings:
+                onEditAccount();
+                return true;
 
-            return true;
+            case R.id.app_settings:
+                onEditPrefs();
+                return true;
 
-        case R.id.send_messages:
-            MessagingController.getInstance(getApplication()).sendPendingMessages(mAccount, null);
+            case R.id.empty_trash:
+                onEmptyTrash(mAccount);
+                return true;
 
-            return true;
+            case R.id.compact:
+                onCompact(mAccount);
+                return true;
 
-        case R.id.list_folders:
-            onRefresh(REFRESH_REMOTE);
-
-            return true;
-
-        case R.id.account_settings:
-            onEditAccount();
-
-            return true;
-
-        case R.id.app_settings:
-            onEditPrefs();
-
-            return true;
-
-        case R.id.empty_trash:
-            onEmptyTrash(mAccount);
-
-            return true;
-
-        case R.id.compact:
-            onCompact(mAccount);
-
-            return true;
-
-        case R.id.display_1st_class: {
-            setDisplayMode(FolderMode.FIRST_CLASS);
-            return true;
-        }
-        case R.id.display_1st_and_2nd_class: {
-            setDisplayMode(FolderMode.FIRST_AND_SECOND_CLASS);
-            return true;
-        }
-        case R.id.display_not_second_class: {
-            setDisplayMode(FolderMode.NOT_SECOND_CLASS);
-            return true;
-        }
-        case R.id.display_all: {
-            setDisplayMode(FolderMode.ALL);
-            return true;
-        }
-        default:
-            return super.onOptionsItemSelected(item);
+            case R.id.display_1st_class: {
+                setDisplayMode(FolderMode.FIRST_CLASS);
+                return true;
+            }
+            case R.id.display_1st_and_2nd_class: {
+                setDisplayMode(FolderMode.FIRST_AND_SECOND_CLASS);
+                return true;
+            }
+            case R.id.display_not_second_class: {
+                setDisplayMode(FolderMode.NOT_SECOND_CLASS);
+                return true;
+            }
+            case R.id.display_all: {
+                setDisplayMode(FolderMode.ALL);
+                return true;
+            }
+            default:
+                return super.onOptionsItemSelected(item);
         }
     }
 
     @Override
     public boolean onSearchRequested() {
-         Bundle appData = new Bundle();
-         appData.putString(MessageList.EXTRA_SEARCH_ACCOUNT, mAccount.getUuid());
-         startSearch(null, false, appData, false);
-         return true;
-     }
+        Bundle appData = new Bundle();
+        appData.putString(MessageList.EXTRA_SEARCH_ACCOUNT, mAccount.getUuid());
+        startSearch(null, false, appData, false);
+        return true;
+    }
 
     private void onOpenFolder(String folder) {
         LocalSearch search = new LocalSearch(folder);
@@ -620,25 +606,26 @@ public class FolderList extends K9ListActivity {
 
     @Override
     public boolean onContextItemSelected(android.view.MenuItem item) {
-        AdapterContextMenuInfo info = (AdapterContextMenuInfo) item .getMenuInfo();
+        AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
         FolderInfoHolder folder = (FolderInfoHolder) mAdapter.getItem(info.position);
 
         switch (item.getItemId()) {
-        case R.id.clear_local_folder:
-            onClearFolder(mAccount, folder.name);
-            break;
-        case R.id.refresh_folder:
-            checkMail(folder);
-            break;
-        case R.id.folder_settings:
-            FolderSettings.actionSettings(this, mAccount, folder.name);
-            break;
+            case R.id.clear_local_folder:
+                onClearFolder(mAccount, folder.name);
+                break;
+            case R.id.refresh_folder:
+                checkMail(folder);
+                break;
+            case R.id.folder_settings:
+                FolderSettings.actionSettings(this, mAccount, folder.name);
+                break;
         }
 
         return super.onContextItemSelected(item);
     }
 
-    @Override public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
         AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
         getMenuInflater().inflate(R.menu.folder_context, menu);
@@ -658,7 +645,7 @@ public class FolderList extends K9ListActivity {
         }
 
         public long getItemId(int position) {
-            return mFilteredFolders.get(position).folder.getName().hashCode() ;
+            return mFilteredFolders.get(position).folder.getName().hashCode();
         }
 
         public int getCount() {
@@ -699,10 +686,10 @@ public class FolderList extends K9ListActivity {
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             if (position <= getCount()) {
-                return  getItemView(position, convertView, parent);
+                return getItemView(position, convertView, parent);
             } else {
                 Log.e(K9.LOG_TAG, "getView with illegal positon=" + position
-                      + " called! count is only " + getCount());
+                        + " called! count is only " + getCount());
                 return null;
             }
         }
@@ -731,7 +718,7 @@ public class FolderList extends K9ListActivity {
                 holder.folderStatus = (TextView) view.findViewById(R.id.folder_status);
                 holder.activeIcons = (RelativeLayout) view.findViewById(R.id.active_icons);
                 holder.chip = view.findViewById(R.id.chip);
-                holder.folderListItemLayout = (LinearLayout)view.findViewById(R.id.folder_list_item_layout);
+                holder.folderListItemLayout = (LinearLayout) view.findViewById(R.id.folder_list_item_layout);
                 holder.rawFolderName = folder.name;
 
                 view.setTag(holder);
@@ -761,8 +748,8 @@ public class FolderList extends K9ListActivity {
                 }
 
                 folderStatus = getString(folder.pushActive
-                        ? R.string.last_refresh_time_format_with_push
-                        : R.string.last_refresh_time_format,
+                                ? R.string.last_refresh_time_format_with_push
+                                : R.string.last_refresh_time_format,
                         formattedDate);
             } else {
                 folderStatus = null;
@@ -776,13 +763,13 @@ public class FolderList extends K9ListActivity {
                 holder.folderStatus.setVisibility(View.GONE);
             }
 
-            if(folder.unreadMessageCount == -1) {
-               folder.unreadMessageCount = 0;
+            if (folder.unreadMessageCount == -1) {
+                folder.unreadMessageCount = 0;
                 try {
-                    folder.unreadMessageCount  = folder.folder.getUnreadMessageCount();
+                    folder.unreadMessageCount = folder.folder.getUnreadMessageCount();
                 } catch (Exception e) {
                     Log.e(K9.LOG_TAG, "Unable to get unreadMessageCount for " + mAccount.getDescription() + ":"
-                          + folder.name);
+                            + folder.name);
                 }
             }
             if (folder.unreadMessageCount > 0) {
@@ -802,10 +789,10 @@ public class FolderList extends K9ListActivity {
                     folder.flaggedMessageCount = folder.folder.getFlaggedMessageCount();
                 } catch (Exception e) {
                     Log.e(K9.LOG_TAG, "Unable to get flaggedMessageCount for " + mAccount.getDescription() + ":"
-                          + folder.name);
+                            + folder.name);
                 }
 
-                    }
+            }
 
             if (K9.messageListStars() && folder.flaggedMessageCount > 0) {
                 holder.flaggedMessageCount.setText(Integer.toString(folder.flaggedMessageCount));
@@ -813,7 +800,7 @@ public class FolderList extends K9ListActivity {
                         createFlaggedSearch(mAccount, folder));
                 holder.flaggedMessageCountWrapper.setVisibility(View.VISIBLE);
                 holder.flaggedMessageCountIcon.setBackgroundDrawable(
-                        mAccount.generateColorChip(false, false, false, false,true).drawable());
+                        mAccount.generateColorChip(false, false, false, false, true).drawable());
             } else {
                 holder.flaggedMessageCountWrapper.setVisibility(View.GONE);
             }
@@ -831,8 +818,7 @@ public class FolderList extends K9ListActivity {
             if (K9.wrapFolderNames()) {
                 holder.folderName.setEllipsize(null);
                 holder.folderName.setSingleLine(false);
-            }
-            else {
+            } else {
                 holder.folderName.setEllipsize(TruncateAt.START);
                 holder.folderName.setSingleLine(true);
             }
@@ -1017,9 +1003,9 @@ public class FolderList extends K9ListActivity {
 
                         if ((aMode == FolderMode.FIRST_CLASS && fMode != Folder.FolderClass.FIRST_CLASS)
                                 || (aMode == FolderMode.FIRST_AND_SECOND_CLASS &&
-                                    fMode != Folder.FolderClass.FIRST_CLASS &&
-                                    fMode != Folder.FolderClass.SECOND_CLASS)
-                        || (aMode == FolderMode.NOT_SECOND_CLASS && fMode == Folder.FolderClass.SECOND_CLASS)) {
+                                fMode != Folder.FolderClass.FIRST_CLASS &&
+                                fMode != Folder.FolderClass.SECOND_CLASS)
+                                || (aMode == FolderMode.NOT_SECOND_CLASS && fMode == Folder.FolderClass.SECOND_CLASS)) {
                             continue;
                         }
 

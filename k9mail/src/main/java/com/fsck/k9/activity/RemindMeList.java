@@ -1,6 +1,7 @@
 package com.fsck.k9.activity;
 
 
+import android.app.ActionBar;
 import android.app.DatePickerDialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
@@ -11,6 +12,7 @@ import android.content.Intent;
 import android.graphics.Rect;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -24,16 +26,17 @@ import android.widget.TimePicker;
 import com.fsck.k9.Account;
 import com.fsck.k9.activity.misc.SwipeGestureDetector.OnSwipeGestureListener;
 import com.fsck.k9.controller.MessagingController;
-import com.fsck.k9.fragment.FollowUpDatePickerDialog;
-import com.fsck.k9.fragment.FollowUpDialog;
+import com.fsck.k9.fragment.RemindMeDatePickerDialog;
+import com.fsck.k9.fragment.RemindMeDialog;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
-import com.fsck.k9.fragment.FollowUpTimePickerDialog;
-import com.fsck.k9.mail.FollowUp;
+import com.fsck.k9.fragment.RemindMeTimePickerDialog;
+import com.fsck.k9.mail.Folder;
+import com.fsck.k9.mail.RemindMe;
 import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mailstore.LocalFolder;
-import com.fsck.k9.mailstore.LocalFollowUp;
+import com.fsck.k9.mailstore.LocalRemindMe;
 import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.mailstore.LocalStore;
 
@@ -45,8 +48,8 @@ import java.util.List;
 
 import de.fau.cs.mad.smile.android.R;
 
-public class FollowUpList extends K9ListActivity
-        implements FollowUpDialog.NoticeDialogListener,
+public class RemindMeList extends K9ListActivity
+        implements RemindMeDialog.NoticeDialogListener,
             TimePickerDialog.OnTimeSetListener,
             DatePickerDialog.OnDateSetListener,
             OnSwipeGestureListener {
@@ -57,12 +60,13 @@ public class FollowUpList extends K9ListActivity
     public static final String FOLLOW_UP_FOLDERNAME = "RemindMe";
 
     private Account mAccount;
-    private LocalFollowUp mLocalFollowUp;
-    private FollowUp currentFollowUp;
+    private LocalRemindMe mLocalRemindMe;
+    private RemindMe currentRemindMe;
+    private String folderName;
 
     public static Intent createFollowUp(Context context,
                                         LocalMessage message) {
-        Intent i = new Intent(context, FollowUpList.class);
+        Intent i = new Intent(context, RemindMeList.class);
         i.putExtra(EXTRA_MESSAGE_REFERENCE, message.makeMessageReference());
         i.setAction(CREATE_FOLLOWUP);
         return i;
@@ -77,23 +81,41 @@ public class FollowUpList extends K9ListActivity
         if(CREATE_FOLLOWUP.equals(intent.getAction())) {
             MessageReference reference = intent.getParcelableExtra(EXTRA_MESSAGE_REFERENCE);
             Message message = reference.restoreToLocalMessage(this);
-            FollowUpDialog dialog = FollowUpDialog.newInstance(message);
+            String accountUuid = ((LocalFolder) message.getFolder()).getAccountUuid();
+            mAccount = Preferences.getPreferences(this).getAccount(accountUuid);
+            folderName = message.getFolder().getName();
+
+            RemindMeDialog dialog = RemindMeDialog.newInstance(message);
             dialog.show(getFragmentManager(), "mTimeValue");
         }
 
-        setContentView(R.layout.followup_list);
+        setContentView(R.layout.remindme_list);
 
-        // Enable gesture detection for FollowUpList
+        // Enable gesture detection for RemindMeList
         setupGestureDetector(this);
+
+        // enable up navigation in ActionBar
+        ActionBar actionBar = getActionBar();
+        actionBar.setDisplayHomeAsUpEnabled(true);
 
         ListView listView = getListView();
         listView.setItemsCanFocus(false);
 
-        List<Account> accounts = Preferences.getPreferences(this).getAccounts();
         try {
-            mAccount = accounts.get(0);
+            if(mAccount == null) {
+                List<Account> accounts = Preferences.getPreferences(this).getAccounts();
+                mAccount = accounts.get(0);
+            }
+
             LocalStore store = LocalStore.getInstance(mAccount, this);
-            mLocalFollowUp = new LocalFollowUp(store);
+            mLocalRemindMe = new LocalRemindMe(store);
+            LocalFolder folder = new LocalFolder(store, mAccount.getFollowUpFolderName());
+
+            // FIXME: probably not the best place
+            if (!folder.exists()) {
+                folder.create(Folder.FolderType.HOLDS_MESSAGES);
+                folder.open(LocalFolder.OPEN_MODE_RO);
+            }
         } catch (MessagingException e) {
             Log.e(K9.LOG_TAG, "Unable to retrieve message", e);
         }
@@ -106,6 +128,15 @@ public class FollowUpList extends K9ListActivity
         return super.onCreateOptionsMenu(menu);
     }
 
+    @Nullable
+    @Override
+    public Intent getParentActivityIntent() {
+        Intent intent = super.getParentActivityIntent();
+        intent.putExtra("account", mAccount.getUuid());
+        intent.putExtra("folder", folderName);
+        return intent;
+    }
+
     @Override
     public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
         final String timePickerTag = "followUpTimePicker";
@@ -115,33 +146,26 @@ public class FollowUpList extends K9ListActivity
         calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
 
         Log.d(K9.LOG_TAG, "Selected date: " + calendar.getTime());
-        currentFollowUp.setRemindTime(calendar.getTime());
-        FollowUpTimePickerDialog timePickerDialog = FollowUpTimePickerDialog.newInstance(this);
+        currentRemindMe.setRemindTime(calendar.getTime());
+        RemindMeTimePickerDialog timePickerDialog = RemindMeTimePickerDialog.newInstance(this);
         timePickerDialog.show(getFragmentManager(), timePickerTag);
     }
 
     @Override
     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(currentFollowUp.getRemindTime());
+        calendar.setTime(currentRemindMe.getRemindTime());
         calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
         calendar.set(Calendar.MINUTE, minute);
         Log.d(K9.LOG_TAG, "Selected time: " + calendar.getTime());
-        currentFollowUp.setRemindTime(calendar.getTime());
-        new InsertFollowUp().execute(currentFollowUp);
+        currentRemindMe.setRemindTime(calendar.getTime());
+        new InsertFollowUp().execute(currentRemindMe);
         new LoadFollowUp().execute();
         ((BaseAdapter)getListView().getAdapter()).notifyDataSetChanged();
     }
 
-    public void populateListView(List<FollowUp> items) {
-        FollowUpAdapter adapter = new FollowUpAdapter(this, items);
-        ListView listView = getListView();
-        listView.setAdapter(adapter);
-        listView.invalidate();
-    }
-
     /**
-     * Reload list of FollowUp when this activity is resumed.
+     * Reload list of RemindMe when this activity is resumed.
      */
     @Override
     public void onResume() {
@@ -153,9 +177,9 @@ public class FollowUpList extends K9ListActivity
     protected void onListItemClick(ListView listView, View view, int position, long id) {
         Object obj = listView.getItemAtPosition(position);
 
-        if(obj instanceof FollowUp) {
-            FollowUp followUp = (FollowUp)obj;
-            Log.d(K9.LOG_TAG, "listItem is instanceof FollowUp: " + followUp);
+        if(obj instanceof RemindMe) {
+            RemindMe remindMe = (RemindMe)obj;
+            Log.d(K9.LOG_TAG, "listItem is instanceof RemindMe: " + remindMe);
         }
 
         super.onListItemClick(listView, view, position, id);
@@ -163,11 +187,11 @@ public class FollowUpList extends K9ListActivity
 
     @Override
     public void onDialogClick(DialogFragment dialog) {
-        Log.i(K9.LOG_TAG, "FollowUpList.onDialogClick");
-        FollowUpDialog dlg = (FollowUpDialog)dialog;
-        currentFollowUp = dlg.getFollowUp();
+        Log.i(K9.LOG_TAG, "RemindMeList.onDialogClick");
+        RemindMeDialog dlg = (RemindMeDialog)dialog;
+        currentRemindMe = dlg.getRemindMe();
 
-        if(currentFollowUp.getRemindInterval() == FollowUp.RemindInterval.CUSTOM) {
+        if(currentRemindMe.getRemindInterval() == RemindMe.RemindInterval.CUSTOM) {
             final String datePickerTag = "followUpDatePicker";
             FragmentTransaction ft = getFragmentManager().beginTransaction();
             Fragment prev = getFragmentManager().findFragmentByTag(datePickerTag);
@@ -178,22 +202,22 @@ public class FollowUpList extends K9ListActivity
 
             ft.addToBackStack(datePickerTag);
 
-            FollowUpDatePickerDialog datePickerDialog = FollowUpDatePickerDialog.newInstance(this);
+            RemindMeDatePickerDialog datePickerDialog = RemindMeDatePickerDialog.newInstance(this);
             datePickerDialog.show(ft, datePickerTag);
         } else {
-            switch (currentFollowUp.getRemindInterval()) {
+            switch (currentRemindMe.getRemindInterval()) {
                 case TEN_MINUTES:
-                    currentFollowUp.setRemindTime(addMinute(new Date(System.currentTimeMillis()), 10));
+                    currentRemindMe.setRemindTime(addMinute(new Date(System.currentTimeMillis()), 10));
                     break;
                 case THIRTY_MINUTES:
-                    currentFollowUp.setRemindTime(addMinute(new Date(System.currentTimeMillis()), 30));
+                    currentRemindMe.setRemindTime(addMinute(new Date(System.currentTimeMillis()), 30));
                     break;
                 case TOMORROW:
-                    currentFollowUp.setRemindTime(addMinute(new Date(System.currentTimeMillis()), 24*60));
+                    currentRemindMe.setRemindTime(addMinute(new Date(System.currentTimeMillis()), 24*60));
                     break;
             }
 
-            new InsertFollowUp().execute(currentFollowUp);
+            new InsertFollowUp().execute(currentRemindMe);
             new LoadFollowUp().execute();
             ((BaseAdapter)getListView().getAdapter()).notifyDataSetChanged();
         }
@@ -209,11 +233,11 @@ public class FollowUpList extends K9ListActivity
     @Override
     public void onSwipeRightToLeft(MotionEvent e1, MotionEvent e2) {
         // edit
-        FollowUp followUp = getFollowUpFromListSwipe(e1, e2);
+        RemindMe remindMe = getFollowUpFromListSwipe(e1, e2);
 
-        if(followUp != null) {
-            Log.d(K9.LOG_TAG, "RightToLeftSwipe, Object: " + followUp);
-            FollowUpDialog dialog = FollowUpDialog.newInstance(followUp);
+        if(remindMe != null) {
+            Log.d(K9.LOG_TAG, "RightToLeftSwipe, Object: " + remindMe);
+            RemindMeDialog dialog = RemindMeDialog.newInstance(remindMe);
             dialog.show(getFragmentManager(), "mTimeValue");
         }
     }
@@ -221,16 +245,16 @@ public class FollowUpList extends K9ListActivity
     @Override
     public void onSwipeLeftToRight(MotionEvent e1, MotionEvent e2) {
         // delete
-        FollowUp followUp = getFollowUpFromListSwipe(e1, e2);
+        RemindMe remindMe = getFollowUpFromListSwipe(e1, e2);
 
-        if(followUp != null) {
-            Log.d(K9.LOG_TAG, "LeftToRightSwipe, Object: " + followUp);
-            new DeleteFollowUp().execute(followUp);
-            ((FollowUpAdapter)getListView().getAdapter()).remove(followUp);
+        if(remindMe != null) {
+            Log.d(K9.LOG_TAG, "LeftToRightSwipe, Object: " + remindMe);
+            new DeleteFollowUp().execute(remindMe);
+            ((RemindMeAdapter)getListView().getAdapter()).remove(remindMe);
         }
     }
 
-    private FollowUp getFollowUpFromListSwipe(MotionEvent e1, MotionEvent e2) {
+    private RemindMe getFollowUpFromListSwipe(MotionEvent e1, MotionEvent e2) {
         int x = (int) e1.getRawX();
         int y = (int) e1.getRawY();
 
@@ -246,18 +270,25 @@ public class FollowUpList extends K9ListActivity
             int listY = y - listPosition[1];
 
             int listViewPosition = listView.pointToPosition(listX, listY);
-            return (FollowUp) listView.getAdapter().getItem(listViewPosition);
+            return (RemindMe) listView.getAdapter().getItem(listViewPosition);
         }
 
         return  null;
     }
 
-    class LoadFollowUp extends AsyncTask<Void, Void, List<FollowUp>> {
+    private void populateListView(List<RemindMe> items) {
+        RemindMeAdapter adapter = new RemindMeAdapter(this, items);
+        ListView listView = getListView();
+        listView.setAdapter(adapter);
+        listView.invalidate();
+    }
+
+    class LoadFollowUp extends AsyncTask<Void, Void, List<RemindMe>> {
 
         @Override
-        protected List<FollowUp> doInBackground(Void... params) {
+        protected List<RemindMe> doInBackground(Void... params) {
             try {
-                return mLocalFollowUp.getAllFollowUps();
+                return mLocalRemindMe.getAllFollowUps();
             } catch (MessagingException e) {
                 Log.e(K9.LOG_TAG, "Unable to retrieve FollowUps", e);
             }
@@ -265,32 +296,35 @@ public class FollowUpList extends K9ListActivity
         }
 
         @Override
-        protected void onPostExecute(List<FollowUp> followUps) {
-            super.onPostExecute(followUps);
-            populateListView(followUps);
+        protected void onPostExecute(List<RemindMe> remindMes) {
+            super.onPostExecute(remindMes);
+            populateListView(remindMes);
         }
     }
 
-    class InsertFollowUp extends AsyncTask<FollowUp, Void, Void> {
+    class InsertFollowUp extends AsyncTask<RemindMe, Void, Void> {
 
         @Override
-        protected Void doInBackground(FollowUp... params) {
-            for(FollowUp followUp : params) {
+        protected Void doInBackground(RemindMe... params) {
+            for(RemindMe remindMe : params) {
                 try {
                     LocalStore store = LocalStore.getInstance(mAccount, getApplication());
                     LocalFolder folder = new LocalFolder(store, mAccount.getFollowUpFolderName());
-                    followUp.setFolderId(folder.getId());
+                    folder.open(Folder.OPEN_MODE_RW);
 
+                    remindMe.setFolderId(folder.getId());
+
+                    Log.d(K9.LOG_TAG, "Inserting remindMe: " + remindMe);
                     MessagingController messagingController = MessagingController.getInstance(getApplication());
                     messagingController.moveMessages(mAccount,
-                            followUp.getReference().getFolder().getName(),
-                            new ArrayList<LocalMessage>(Arrays.asList((LocalMessage) followUp.getReference())),
+                            remindMe.getReference().getFolder().getName(),
+                            new ArrayList<LocalMessage>(Arrays.asList((LocalMessage) remindMe.getReference())),
                             mAccount.getFollowUpFolderName(), null);
 
-                    if(followUp.getId() > 0) {
-                        mLocalFollowUp.update(followUp);
+                    if(remindMe.getId() > 0) {
+                        mLocalRemindMe.update(remindMe);
                     } else {
-                        mLocalFollowUp.add(followUp);
+                        mLocalRemindMe.add(remindMe);
                     }
                 } catch (MessagingException e) {
                     Log.e(K9.LOG_TAG, "Unable to insert followup", e);
@@ -300,13 +334,13 @@ public class FollowUpList extends K9ListActivity
         }
     }
 
-    class DeleteFollowUp extends AsyncTask<FollowUp, Void, Void> {
+    class DeleteFollowUp extends AsyncTask<RemindMe, Void, Void> {
 
         @Override
-        protected Void doInBackground(FollowUp... params) {
-            for(FollowUp followUp : params) {
+        protected Void doInBackground(RemindMe... params) {
+            for(RemindMe remindMe : params) {
                 try {
-                    mLocalFollowUp.delete(followUp);
+                    mLocalRemindMe.delete(remindMe);
                 } catch (MessagingException e) {
                     Log.e(K9.LOG_TAG, "Unable to insert followup", e);
                 }

@@ -21,11 +21,13 @@ public class LocalRemindMe {
     private static final String COLUMN_FOLLOWUP_MESSAGEID = "MessageId";
     private static final String COLUMN_FOLLOWUP_FOLDERID = "FolderId";
     private static final String COLUMN_FOLLOWUP_REMINDTIME = "RemindTime";
+    private static final String COLUMN_FOLLOWUP_LASTMODIFIED = "LastModified";
     private static final String[] allColumns = {
             COLUMN_FOLLOWUP_ID,
             COLUMN_FOLLOWUP_MESSAGEID,
             COLUMN_FOLLOWUP_FOLDERID,
-            COLUMN_FOLLOWUP_REMINDTIME
+            COLUMN_FOLLOWUP_REMINDTIME,
+            COLUMN_FOLLOWUP_LASTMODIFIED
     };
 
     private final LocalStore localStore;
@@ -40,6 +42,7 @@ public class LocalRemindMe {
         RemindMe remindMe = new RemindMe();
         remindMe.setId(cursor.getInt(cursor.getColumnIndex(COLUMN_FOLLOWUP_ID)));
         remindMe.setRemindTime(new Date(cursor.getLong(cursor.getColumnIndex(COLUMN_FOLLOWUP_REMINDTIME))));
+        remindMe.setLastModified(new Date(cursor.getLong(cursor.getColumnIndex(COLUMN_FOLLOWUP_LASTMODIFIED))));
         int folderId = cursor.getInt(cursor.getColumnIndex(COLUMN_FOLLOWUP_FOLDERID));
         long messageId = cursor.getLong(cursor.getColumnIndex(COLUMN_FOLLOWUP_MESSAGEID));
 
@@ -53,7 +56,10 @@ public class LocalRemindMe {
         if(messageUid != null) {
             message = folder.getMessage(messageUid);
             remindMe.setReference(message);
-            remindMe.setTitle(message.getSubject());
+            if (message != null)
+                remindMe.setTitle(message.getSubject());
+            else
+                Log.d(K9.LOG_TAG, "RemindMe.populateFromCursor, message was null.");
         }
 
         remindMe.setFolderId(folderId);
@@ -65,7 +71,7 @@ public class LocalRemindMe {
             @Override
             public List<RemindMe> doDbWork(SQLiteDatabase db) throws LockableDatabase.WrappedException, MessagingException {
                 ArrayList<RemindMe> remindMes = new ArrayList<RemindMe>();
-                Cursor cursor = db.query(TABLE_FOLLOWUP, allColumns, null, null, null, null, null);
+                Cursor cursor = db.query(TABLE_FOLLOWUP, allColumns, null, null, null, null, null, null);
 
                 while (cursor.moveToNext()) {
                     remindMes.add(populateFromCursor(cursor));
@@ -85,6 +91,7 @@ public class LocalRemindMe {
                 cv.put(COLUMN_FOLLOWUP_MESSAGEID, remindMe.getReference().getId());
                 cv.put(COLUMN_FOLLOWUP_FOLDERID, remindMe.getFolderId());
                 cv.put(COLUMN_FOLLOWUP_REMINDTIME, remindMe.getRemindTime().getTime());
+                cv.put(COLUMN_FOLLOWUP_LASTMODIFIED, System.currentTimeMillis());
                 db.insert(LocalRemindMe.TABLE_FOLLOWUP, null, cv);
                 return null;
             }
@@ -110,6 +117,7 @@ public class LocalRemindMe {
                 cv.put(COLUMN_FOLLOWUP_MESSAGEID, remindMe.getReference().getId());
                 cv.put(COLUMN_FOLLOWUP_FOLDERID, remindMe.getFolderId());
                 cv.put(COLUMN_FOLLOWUP_REMINDTIME, remindMe.getRemindTime().getTime());
+                cv.put(COLUMN_FOLLOWUP_LASTMODIFIED, System.currentTimeMillis());
                 db.update(LocalRemindMe.TABLE_FOLLOWUP, cv, "id=?", new String[] {Long.toString(remindMe.getId())});
                 return null;
             }

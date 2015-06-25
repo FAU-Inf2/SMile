@@ -17,7 +17,7 @@ public class RemindMe {
     private String uid;
     private String messageId;
     private RemindInterval remindInterval;
-
+    private Date lastModified;
 
     public RemindMe() {
     }
@@ -126,6 +126,14 @@ public class RemindMe {
 
     public void setRemindInterval(RemindInterval remindInterval) {
         this.remindInterval = remindInterval;
+    }
+
+    public Date getLastModified() {
+        return lastModified;
+    }
+
+    public void setLastModified(Date lastModified) {
+        this.lastModified = lastModified;
     }
 
     @Override

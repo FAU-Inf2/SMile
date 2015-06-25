@@ -228,7 +228,15 @@ public class FeatureStorage {
                 boolean found = false;
                 for(RemindMe dbf : dbRemindMes) {
                     try {
-                        if (dbf.getMessageId().equals(f.getMessageId())) { //TODO! Check whether they are equals -- check for newer! -- get timestamp!
+                        if (dbf.getMessageId().equals(f.getMessageId())) { //Check whether they are equals
+                            // remindTime has changed and external version was newer
+                            if(f.getRemindTime().getTime() != dbf.getRemindTime().getTime() &&
+                                    dbf.getLastModified().getTime() < f.getLastModified().getTime()) {
+                                //TODO: set new timer?
+                                Log.d(K9.LOG_TAG, "Existing RemindMe was updated -- update in local database.");
+                                localRemindMe.update(f);
+                            }
+
                             found = true;
                             break;
                         }
@@ -237,18 +245,17 @@ public class FeatureStorage {
                 if (found)
                     continue;
                 try {
-                    Log.d(K9.LOG_TAG, "New RemindMe from server version -- add to local database");
+                    Log.d(K9.LOG_TAG, "New RemindMe from server version -- add to local database.");
                     String []uids = {f.getUid()};
                     Message m = mAccount.getLocalStore().getFolderById(f.getFolderId()).getMessages(uids, null).get(0);
                     f.setReference(m);
-                    localRemindMe.add(f);
                     //TODO: set timer?
+                    localRemindMe.add(f);
                 } catch (Exception e) {
                     Log.e(K9.LOG_TAG, "Error while adding new RemindMe to Database: " + e.getMessage());
                 }
                 dbRemindMes.add(f);
             }
-
             return dbRemindMes;
         }
 

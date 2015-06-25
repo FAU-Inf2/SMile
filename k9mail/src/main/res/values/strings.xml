@@ -30,6 +30,7 @@ SMile is a powerful free email client for Android based on K-9.
 Its improved features include:
 </p>
 <ul>
+  <li>RemindMe!-functionality for emails</li>
   <li>Push mail using IMAP IDLE</li>
   <li>Better performance</li>
   <li>Message refiling</li>
@@ -41,7 +42,6 @@ Its improved features include:
   <li>Keyboard shortcuts</li>
   <li>Better IMAP support</li>
   <li>Saving attachments to SD</li>
-  <li>Empty Trash</li>
   <li>Message sorting</li>
   <li>…and more</li>
 </ul>

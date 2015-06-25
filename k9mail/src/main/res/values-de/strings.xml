@@ -20,9 +20,10 @@ Teile \u00a9 2006-<xliff:g>%s</xliff:g> Android Open Source Project.</string>
 <p>
 SMile ist eine quelloffene E-Mail-Anwendung für Android basierend auf K-9.
 </p><p>
-Verbesserte Funktionen:
+Angebotene Funktionen:
 </p>
 <ul>
+  <li>RemindMe!-Funktionalität für Emails</li>
   <li>Benachrichtigung über neue Nachrichten per IMAP IDLE</li>
   <li>Höhere Performance</li>
   <li>E-Mail-Signaturen</li>
@@ -33,7 +34,6 @@ Verbesserte Funktionen:
   <li>Tastatur-Shortcuts</li>
   <li>Verbesserte IMAP-Unterstützung</li>
   <li>Speichern von Anhängen auf SD-Karte</li>
-  <li>Papierkorb leeren</li>
   <li>Sortieren der Nachrichten</li>
   <li>…und viele mehr</li>
 </ul>

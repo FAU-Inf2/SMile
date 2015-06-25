@@ -15,7 +15,7 @@
         android:id="@+id/goto_sms_like_view"
         android:title="SmsLikeView"
         android:icon="?attr/iconActionAbout"
-        android:showAsAction="always"
+        android:showAsAction="never"
     />
 
     <!-- MessageView -->

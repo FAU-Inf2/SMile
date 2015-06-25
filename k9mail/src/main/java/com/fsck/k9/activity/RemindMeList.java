@@ -341,8 +341,14 @@ public class RemindMeList extends K9ListActivity
             for(RemindMe remindMe : params) {
                 try {
                     mLocalRemindMe.delete(remindMe);
+                    MessagingController messagingController = MessagingController.getInstance(getApplication());
+                    //move back to inbox
+                    messagingController.moveMessages(mAccount,
+                            remindMe.getReference().getFolder().getName(),
+                            new ArrayList<LocalMessage>(Arrays.asList((LocalMessage) remindMe.getReference())),
+                            mAccount.getInboxFolderName(), null);
                 } catch (MessagingException e) {
-                    Log.e(K9.LOG_TAG, "Unable to insert followup", e);
+                    Log.e(K9.LOG_TAG, "Unable to delete followup", e);
                 }
             }
             return null;

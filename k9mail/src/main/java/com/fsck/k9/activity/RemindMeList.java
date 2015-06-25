@@ -341,14 +341,18 @@ public class RemindMeList extends K9ListActivity
             for(RemindMe remindMe : params) {
                 try {
                     mLocalRemindMe.delete(remindMe);
-                    MessagingController messagingController = MessagingController.getInstance(getApplication());
+                } catch (MessagingException e) {
+                    Log.e(K9.LOG_TAG, "Unable to delete RemindMe", e);
+                }
+                try {
                     //move back to inbox
+                    MessagingController messagingController = MessagingController.getInstance(getApplication());
                     messagingController.moveMessages(mAccount,
                             remindMe.getReference().getFolder().getName(),
                             new ArrayList<LocalMessage>(Arrays.asList((LocalMessage) remindMe.getReference())),
                             mAccount.getInboxFolderName(), null);
-                } catch (MessagingException e) {
-                    Log.e(K9.LOG_TAG, "Unable to delete followup", e);
+                } catch (Exception e) {
+                    Log.e(K9.LOG_TAG, "Moving back deleted RemindMe failed: " + e.getMessage());
                 }
             }
             return null;

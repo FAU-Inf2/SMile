@@ -940,13 +940,13 @@ public class MessageList extends K9Activity
                 updateMenu();
                 return true;
             }
-            case R.id.goto_sms_like_view: {
+            /*case R.id.goto_sms_like_view: {
                 if (mDisplayMode == DisplayMode.MESSAGE_LIST)
                     showSmsView();
                 else if (mDisplayMode == DisplayMode.SMS_LIST)
                     showMessageList();
                 return true;
-            }
+            } */
         }
 
         if (!mSingleFolderMode) {
@@ -1142,7 +1142,7 @@ public class MessageList extends K9Activity
             menu.findItem(R.id.expunge).setVisible(false);
             menu.findItem(R.id.mark_all_as_read).setVisible(false);
             menu.findItem(R.id.show_folder_list).setVisible(false);
-            menu.findItem(R.id.goto_sms_like_view).setVisible(false);
+            //menu.findItem(R.id.goto_sms_like_view).setVisible(false);
         } else {
             menu.findItem(R.id.set_sort).setVisible(true);
             menu.findItem(R.id.select_all).setVisible(true);

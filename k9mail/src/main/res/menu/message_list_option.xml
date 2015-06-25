@@ -10,14 +10,6 @@
     MessageList.configureMenu() if you make any changes to this file.
     -->
 
-    <!-- MessageList -->
-    <item
-        android:id="@+id/goto_sms_like_view"
-        android:title="SmsLikeView"
-        android:icon="?attr/iconActionAbout"
-        android:showAsAction="never"
-    />
-
     <!-- MessageView -->
     <item
         android:id="@+id/previous_message"

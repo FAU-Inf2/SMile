@@ -8,6 +8,9 @@ repositories {
     jcenter()
 }
 
+def isTravis = "true".equals(System.getenv("TRAVIS"))
+def preDexEnabled = "true".equals(System.getProperty("pre-dex", "true"))
+
 dependencies {
     compile project(':k9mail-library')
     compile project(':plugins:Android-PullToRefresh:library')
@@ -92,6 +95,11 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_6
         targetCompatibility JavaVersion.VERSION_1_6
+    }
+    
+    dexOptions {
+        // Skip pre-dexing when running on Travis CI or when disabled via -Dpre-dex=false.
+        preDexLibraries = preDexEnabled && !isTravis
     }
 }
 

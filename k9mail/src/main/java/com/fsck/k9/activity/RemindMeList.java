@@ -326,7 +326,7 @@ public class RemindMeList extends K9ListActivity
                     } else {
                         mLocalRemindMe.add(remindMe);
                     }
-                } catch (MessagingException e) {
+                } catch (Exception e) {
                     Log.e(K9.LOG_TAG, "Unable to insert followup", e);
                 }
             }

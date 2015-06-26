@@ -16,8 +16,10 @@ import com.fsck.k9.activity.RemindMeList;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.mail.RemindMe;
 import com.fsck.k9.mail.MessagingException;
+import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.mailstore.LocalRemindMe;
 import com.fsck.k9.mailstore.LocalMessage;
+import com.fsck.k9.mailstore.LocalStore;
 
 import de.fau.cs.mad.smile.android.R;
 
@@ -125,11 +127,15 @@ public class RemindMeService extends CoreService {
         protected Void doInBackground(RemindMe... params) {
             for(RemindMe remindMe : params) {
                 MessagingController messagingController = MessagingController.getInstance(getApplication());
-                messagingController.moveMessages(mAccount,
-                        mAccount.getFollowUpFolderName(),
-                        new ArrayList<LocalMessage>(Arrays.asList((LocalMessage) remindMe.getReference())),
-                        //mAccount.getLocalStore().getFolderById(remindMe.getFolderId()).getName(), null);
-                        mAccount.getInboxFolderName(), null);
+                try {
+                    messagingController.moveMessages(mAccount,
+                            mAccount.getFollowUpFolderName(),
+                            new ArrayList<LocalMessage>(Arrays.asList((LocalMessage) remindMe.getReference())),
+                            //mAccount.getLocalStore().getFolderById(remindMe.getFolderId()).getName(), null);
+                            mAccount.getInboxFolderName(), null);
+                } catch (Exception e) {
+                    Log.e(K9.LOG_TAG, "Error while moving message back to inbox: " + e.getMessage());
+                }
                 //TODO: Mark as unread?
             }
             return null;

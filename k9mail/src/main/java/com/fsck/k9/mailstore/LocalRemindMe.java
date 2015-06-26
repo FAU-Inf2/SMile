@@ -50,18 +50,22 @@ public class LocalRemindMe {
         Message message = null;
 
         Log.d(K9.LOG_TAG, "RemindMe.populateFromCursor, folderId: " + folderId + " messageId: " + messageId);
-        LocalFolder folder = this.localStore.getFolderById(folderId);
+        //LocalFolder folder = this.localStore.getFolderById(folderId);
+        //check inbox and RemindMe-folder -- folderId can be different
+        LocalFolder folder = this.localStore.getFolder(mAccount.getInboxFolderName());
         messageUid = folder.getMessageUidById(messageId);
-
+        if(messageUid == null) {
+            folder = this.localStore.getFolder(mAccount.getFollowUpFolderName());
+            messageUid = folder.getMessageUidById(messageId);
+        }
         if(messageUid != null) {
             message = folder.getMessage(messageUid);
             remindMe.setReference(message);
             if (message != null)
                 remindMe.setTitle(message.getSubject());
             else
-                Log.d(K9.LOG_TAG, "RemindMe.populateFromCursor, message was null.");
+                Log.e(K9.LOG_TAG, "RemindMe.populateFromCursor, message was null.");
         }
-
         remindMe.setFolderId(folderId);
         return remindMe;
     }

@@ -1,15 +1,20 @@
 package com.fsck.k9;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.util.Log;
 
 import com.fsck.k9.activity.IMAPAppendText;
 import com.fsck.k9.controller.MessagingController;
+import com.fsck.k9.controller.MessagingListener;
+import com.fsck.k9.mail.Folder;
 import com.fsck.k9.mail.RemindMe;
 import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.MessagingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.mailstore.LocalRemindMe;
 
 import java.io.File;
@@ -18,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 public class FeatureStorage {
     /* Handles saving and parsing information from our features (e.g. follow-up) to the
@@ -30,12 +37,14 @@ public class FeatureStorage {
     private static File localFile;
     private static long lastUpdate = -1; // last time when the local file was parsed
     private String absolutePath; // absolute path to local files
+    private MessagingController messagingController;
 
     public FeatureStorage(Account mAccount, Context mContext, MessagingController
             messagingController, String absolutePath) {
         this.mAccount = mAccount;
         this.appendText = new IMAPAppendText(mAccount, mContext, messagingController);
         this.absolutePath = absolutePath + "/";
+        this.messagingController = messagingController;
         try {
             this.localRemindMe = new LocalRemindMe(mAccount.getLocalStore());
         } catch (Exception e) {}
@@ -65,6 +74,7 @@ public class FeatureStorage {
                 if(objectMapper == null)
                     objectMapper = new ObjectMapper();
 
+                synchronizeRemindMeFolder();
                 // Is external version newer than the version which is saved locally?
                 String newerMessageId = hasUpdate();
                 if(newerMessageId != null)
@@ -232,8 +242,6 @@ public class FeatureStorage {
                             // remindTime has changed and external version was newer
                             if(f.getRemindTime().getTime() != dbf.getRemindTime().getTime() &&
                                     dbf.getLastModified().getTime() < f.getLastModified().getTime()) {
-                                //TODO: set new timer?
-                                Log.d(K9.LOG_TAG, "Existing RemindMe was updated -- update in local database.");
                                 localRemindMe.update(f);
                             }
 
@@ -247,10 +255,19 @@ public class FeatureStorage {
                 try {
                     Log.d(K9.LOG_TAG, "New RemindMe from server version -- add to local database.");
                     String []uids = {f.getUid()};
-                    Message m = mAccount.getLocalStore().getFolderById(f.getFolderId()).getMessages(uids, null).get(0);
+                    Message m = null;
+                    try {
+                        m = mAccount.getLocalStore().getFolder(mAccount.getFollowUpFolderName()).getMessages(uids, null).get(0);
+                    } catch (Exception e) {
+                            Log.d(K9.LOG_TAG, "Failed to get message: " + e.getMessage());
+                    }
+                    if(m == null)
+                        continue;
+
                     f.setReference(m);
-                    //TODO: set timer?
                     localRemindMe.add(f);
+                    Log.d(K9.LOG_TAG, "Added new RemindMe to database. MessageId: " + f.getMessageId()
+                            + ", title: " +  f.getTitle() + ", uid: " + f.getUid());
                 } catch (Exception e) {
                     Log.e(K9.LOG_TAG, "Error while adding new RemindMe to Database: " + e.getMessage());
                 }
@@ -279,6 +296,40 @@ public class FeatureStorage {
             Log.d(K9.LOG_TAG, "Sum of all FollowUpMail after removing expired ones: " +
                     remindMes.size());
             root.setAllRemindMes(remindMes);
+
+        }
+
+        private void synchronizeRemindMeFolder() {
+            if(messagingController == null) {
+                Log.e(K9.LOG_TAG, "messagingController was null -- folders will not be synchronized.");
+                return;
+            }
+
+            if(!appendText.isNetworkAvailable()) { //no network connection
+                Log.e(K9.LOG_TAG, "No network connection available -- will not synchronize folders.");
+                return;
+            }
+            final CountDownLatch latch = new CountDownLatch(1);
+            messagingController.synchronizeMailbox(mAccount, mAccount.getFollowUpFolderName(),
+                    new MessagingListener() {
+                        @Override
+                        public void synchronizeMailboxFinished(Account account, String folder,
+                                                               int totalMessagesInMailbox, int numNewMessages) {
+                            latch.countDown();
+                        }
+
+                        @Override
+                        public void synchronizeMailboxFailed(Account account, String folder,
+                                                             String message) {
+                            latch.countDown();
+                        }
+                    }, null);
+
+            try {
+                //wait for countdown -- suspend after 2s
+                latch.await(2000, TimeUnit.MILLISECONDS);
+            } catch (Exception e) {
+            }
 
         }
 

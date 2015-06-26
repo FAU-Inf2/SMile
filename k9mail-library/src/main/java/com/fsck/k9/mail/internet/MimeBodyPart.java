@@ -78,9 +78,10 @@ public class MimeBodyPart extends BodyPart {
 
     @Override
     public void setEncoding(String encoding) throws MessagingException {
-        if (mBody != null) {
+        //this throws an exception...
+        /*if (mBody != null) {
             mBody.setEncoding(encoding);
-        }
+        }*/
         setHeader(MimeHeader.HEADER_CONTENT_TRANSFER_ENCODING, encoding);
     }
 

@@ -77,7 +77,7 @@ public class MessageList extends K9Activity
         implements MessageListFragmentListener,
         MessageViewFragmentListener,
         OnBackStackChangedListener,
-        OnSwipeGestureListener,
+       // OnSwipeGestureListener,
         OnSwitchCompleteListener {
 
     // for this activity
@@ -234,7 +234,7 @@ public class MessageList extends K9Activity
         initializeActionBar();
 
         // Enable gesture detection for MessageLists
-        setupGestureDetector(this);
+        //setupGestureDetector(this);
 
         if (!decodeExtras(getIntent())) {
             return;
@@ -1290,7 +1290,7 @@ public class MessageList extends K9Activity
         configureMenu(mMenu);
     }
 
-    @Override
+   /* @Override
     public void onSwipeRightToLeft(MotionEvent e1, MotionEvent e2) {
         if (mMessageListFragment != null && mDisplayMode != DisplayMode.MESSAGE_VIEW && mDisplayMode != DisplayMode.SMS_LIST) {
             mMessageListFragment.onSwipeRightToLeft(e1, e2);
@@ -1302,7 +1302,7 @@ public class MessageList extends K9Activity
         if (mMessageListFragment != null && mDisplayMode != DisplayMode.MESSAGE_VIEW && mDisplayMode != DisplayMode.SMS_LIST) {
             mMessageListFragment.onSwipeLeftToRight(e1, e2);
         }
-    }
+    }*/
 
     @Override
     public boolean startSearch(Account account, String folderName) {

@@ -2,7 +2,6 @@
 <com.daimajia.swipe.SwipeLayout
     xmlns:swipe="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/swipe"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     swipe:leftEdgeSwipeOffset="0dp"
@@ -74,32 +73,38 @@
 
     </LinearLayout>
 
-    <QuickContactBadge
-            android:id="@+id/contact_badge"
-            android:layout_marginRight="8dip"
-            android:layout_marginTop="4dip"
-            android:layout_marginBottom="3dip"
-            android:layout_height="40dip"
-            android:layout_width="40dip"
-            android:layout_gravity="center_vertical"
-            android:layout_marginLeft="4dp"
-            android:src="@drawable/ic_contact_picture"
-            style="?android:attr/quickContactBadgeStyleWindowLarge"
-            android:background="@android:color/transparent"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
 
 
-    <RelativeLayout
-            android:id="@+id/list_item_inner"
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <QuickContactBadge
+                android:id="@+id/contact_badge"
+                android:layout_marginRight="8dip"
+                android:layout_marginTop="4dip"
+                android:layout_marginBottom="3dip"
+                android:layout_height="40dip"
+                android:layout_width="40dip"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="4dp"
+                android:src="@drawable/ic_contact_picture"
+                style="?android:attr/quickContactBadgeStyleWindowLarge"
+                android:background="@android:color/transparent"/>
+
+        </RelativeLayout>
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="5dip"
-            android:clickable="false"
-            android:focusable="false"
-            android:focusableInTouchMode="false"
-            android:layout_gravity="center_vertical"
-            android:paddingBottom="6dp">
+            android:padding="6dip"
+            android:layout_marginLeft="2dp" >
 
-        <TextView
+            <TextView
                 android:id="@+id/preview"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -117,7 +122,7 @@
                 android:gravity="top"
                 android:layout_alignParentBottom="false"/>
 
-        <LinearLayout
+            <LinearLayout
                 android:id="@+id/subject_wrapper"
                 android:layout_centerInParent="true"
                 android:layout_width="match_parent"
@@ -128,7 +133,7 @@
                 android:layout_alignParentLeft="false"
                 android:layout_toLeftOf="@+id/date">
 
-            <TextView
+                <TextView
                     android:id="@+id/sender_compact"
                     android:layout_height="wrap_content"
                     android:layout_width="0dp"
@@ -141,7 +146,7 @@
                     android:textColor="?android:attr/textColorPrimary"
                     />
 
-            <TextView
+                <TextView
                     android:id="@+id/subject"
                     android:layout_width="0dp"
                     android:layout_weight="0.7"
@@ -154,10 +159,8 @@
                     android:textColor="?android:attr/textColorPrimary"
                     />
 
-            <TextView
+                <TextView
                     android:id="@+id/thread_count"
-                    android:textColor="?attr/messageListThreadCountForegroundColor"
-                    android:background="?attr/messageListThreadCountBackground"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="3dip"
@@ -167,9 +170,9 @@
                     android:paddingLeft="4dip"
                     android:focusable="false"
                     />
-        </LinearLayout>
+            </LinearLayout>
 
-        <CheckBox
+            <CheckBox
                 android:id="@+id/flagged_center_right"
                 style="?android:attr/starStyle"
                 android:layout_width="wrap_content"
@@ -183,7 +186,7 @@
                 android:visibility="gone"
                 />
 
-        <TextView
+            <TextView
                 android:id="@+id/date"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -197,7 +200,7 @@
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:textColor="?android:attr/textColorSecondary"/>
 
-        <CheckBox
+            <CheckBox
                 android:id="@+id/flagged_bottom_right"
                 style="?android:attr/starStyle"
                 android:layout_width="wrap_content"
@@ -211,7 +214,9 @@
                 android:visibility="visible"
                 android:gravity="center_vertical"/>
 
+        </RelativeLayout>
 
-    </RelativeLayout>
+    </LinearLayout>
+
 
 </com.daimajia.swipe.SwipeLayout>

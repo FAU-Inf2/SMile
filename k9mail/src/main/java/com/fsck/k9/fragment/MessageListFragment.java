@@ -1883,19 +1883,6 @@ public class MessageListFragment extends Fragment
         public View newView(Context context, Cursor cursor, ViewGroup parent) {
             View view = mInflater.inflate(R.layout.message_list_item, parent, false);
             view.setId(R.layout.message_list_item);
-            SwipeLayout swipeLayout = (SwipeLayout) view;
-            swipeLayout.addSwipeListener(new SimpleSwipeListener() {
-                @Override
-                public void onOpen(SwipeLayout layout) {
-                    YoYo.with(Techniques.Tada).duration(500).delay(100).playOn(layout.findViewById(R.id.trash));
-                }
-            });
-            view.findViewById(R.id.delete).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    ;
-                }
-            });
 
             MessageViewHolder holder = new MessageViewHolder();
             holder.date = (TextView) view.findViewById(R.id.date);
@@ -1935,7 +1922,7 @@ public class MessageListFragment extends Fragment
 
 
             // 1 preview line is needed even if it is set to 0, because subject is part of the same text view
-            holder.preview.setLines(Math.max(mPreviewLines,1));
+            holder.preview.setLines(Math.max(mPreviewLines, 1));
             mFontSizes.setViewTextSize(holder.preview, mFontSizes.getMessageListPreview());
             holder.threadCount = (TextView) view.findViewById(R.id.thread_count);
             mFontSizes.setViewTextSize(holder.threadCount, mFontSizes.getMessageListSubject()); // thread count is next to subject
@@ -1949,11 +1936,21 @@ public class MessageListFragment extends Fragment
 
             view.setTag(holder);
 
+            SwipeLayout swipeLayout = (SwipeLayout) view;
+            swipeLayout.addSwipeListener(new SimpleSwipeListener() {
+                @Override
+                public void onOpen(SwipeLayout layout) {
+                    YoYo.with(Techniques.Tada).duration(500).delay(100).playOn(layout.findViewById(R.id.trash));
+                }
+            });
+
+            view.findViewById(R.id.delete).setOnClickListener(holder);
+
             return view;
         }
 
         @Override
-        public void bindView(View view, Context context, Cursor cursor) {
+        public void bindView(View view, final Context context, Cursor cursor) {
             Account account = getAccountFromCursor(cursor);
 
             String fromList = cursor.getString(SENDER_LIST_COLUMN);
@@ -2149,6 +2146,7 @@ public class MessageListFragment extends Fragment
             }
 
             holder.date.setText(displayDate);
+
         }
     }
 
@@ -2172,6 +2170,8 @@ public class MessageListFragment extends Fragment
                     case R.id.selected_checkbox:
                         toggleMessageSelectWithAdapterPosition(position);
                         break;
+                    case R.id.delete:
+                        onDelete(getMessageAtPosition(position));
                     case R.id.flagged_bottom_right:
                     case R.id.flagged_center_right:
                         toggleMessageFlagWithAdapterPosition(position);

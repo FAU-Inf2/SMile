@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 
 import android.app.ActionBar;
 import android.content.Context;
@@ -18,7 +17,6 @@ import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -41,12 +39,13 @@ import com.fsck.k9.Account;
 import com.fsck.k9.Account.FolderMode;
 import com.fsck.k9.AccountStats;
 import com.fsck.k9.BaseAccount;
-import com.fsck.k9.FontSizes;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 
 import de.fau.cs.mad.smile.android.R;
 
+import com.fsck.k9.activity.holder.FolderInfoHolder;
+import com.fsck.k9.activity.holder.FolderViewHolder;
 import com.fsck.k9.activity.setup.AccountSettings;
 import com.fsck.k9.activity.setup.FolderSettings;
 import com.fsck.k9.activity.setup.Prefs;
@@ -103,7 +102,7 @@ public class FolderList extends K9ListActivity {
                         mActionBarUnread.setVisibility(View.VISIBLE);
                     }
 
-                    String operation = mAdapter.mListener.getOperation(FolderList.this);
+                    String operation = mAdapter.getListener().getOperation(FolderList.this);
                     if (operation.length() < 1) {
                         mActionBarSubTitle.setText(mAccount.getEmail());
                     } else {
@@ -117,9 +116,9 @@ public class FolderList extends K9ListActivity {
         public void newFolders(final List<FolderInfoHolder> newFolders) {
             runOnUiThread(new Runnable() {
                 public void run() {
-                    mAdapter.mFolders.clear();
-                    mAdapter.mFolders.addAll(newFolders);
-                    mAdapter.mFilteredFolders = mAdapter.mFolders;
+                    mAdapter.getFolders().clear();
+                    mAdapter.getFolders().addAll(newFolders);
+                    mAdapter.setFilterFolders(mAdapter.mFolders);
                     mHandler.dataChanged();
                 }
             });
@@ -185,39 +184,6 @@ public class FolderList extends K9ListActivity {
                 }
             });
         }
-    }
-
-    /**
-     * This class is responsible for reloading the list of local messages for a
-     * given folder, notifying the adapter that the message have been loaded and
-     * queueing up a remote update of the folder.
-     */
-
-    private void checkMail(FolderInfoHolder folder) {
-        TracingPowerManager pm = TracingPowerManager.getPowerManager(this);
-        final TracingWakeLock wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "FolderList checkMail");
-        wakeLock.setReferenceCounted(false);
-        wakeLock.acquire(K9.WAKE_LOCK_TIMEOUT);
-        MessagingListener listener = new MessagingListener() {
-            @Override
-            public void synchronizeMailboxFinished(Account account, String folder, int totalMessagesInMailbox, int numNewMessages) {
-                if (!account.equals(mAccount)) {
-                    return;
-                }
-                wakeLock.release();
-            }
-
-            @Override
-            public void synchronizeMailboxFailed(Account account, String folder,
-                                                 String message) {
-                if (!account.equals(mAccount)) {
-                    return;
-                }
-                wakeLock.release();
-            }
-        };
-        MessagingController.getInstance(getApplication()).synchronizeMailbox(mAccount, folder.name, listener, null);
-        sendMail(mAccount);
     }
 
     public static Intent actionHandleAccountIntent(Context context, Account account, boolean fromShortcut) {
@@ -333,21 +299,21 @@ public class FolderList extends K9ListActivity {
         final Object previousData = getLastNonConfigurationInstance();
 
         if (previousData != null) {
-            mAdapter.mFolders = (ArrayList<FolderInfoHolder>) previousData;
-            mAdapter.mFilteredFolders = Collections.unmodifiableList(mAdapter.mFolders);
+            mAdapter.setFolders((ArrayList<FolderInfoHolder>) previousData);
+            mAdapter.setFilterFolders(Collections.unmodifiableList(mAdapter.getFolders()));
         }
     }
 
     @Override
     public Object onRetainNonConfigurationInstance() {
-        return (mAdapter == null) ? null : mAdapter.mFolders;
+        return (mAdapter == null) ? null : mAdapter.getFolders();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        MessagingController.getInstance(getApplication()).removeListener(mAdapter.mListener);
-        mAdapter.mListener.onPause(this);
+        MessagingController.getInstance(getApplication()).removeListener(mAdapter.getListener());
+        mAdapter.getListener().onPause(this);
     }
 
     /**
@@ -370,14 +336,14 @@ public class FolderList extends K9ListActivity {
 
         mHandler.refreshTitle();
 
-        MessagingController.getInstance(getApplication()).addListener(mAdapter.mListener);
+        MessagingController.getInstance(getApplication()).addListener(mAdapter.getListener());
         //mAccount.refresh(Preferences.getPreferences(this));
-        MessagingController.getInstance(getApplication()).getAccountStats(this, mAccount, mAdapter.mListener);
+        MessagingController.getInstance(getApplication()).getAccountStats(this, mAccount, mAdapter.getListener());
 
         onRefresh(!REFRESH_REMOTE);
 
         MessagingController.getInstance(getApplication()).notifyAccountCancel(this, mAccount);
-        mAdapter.mListener.onResume(this);
+        mAdapter.getListener().onResume(this);
     }
 
     @Override
@@ -433,7 +399,7 @@ public class FolderList extends K9ListActivity {
     }
 
     private void onRefresh(final boolean forceRemote) {
-        MessagingController.getInstance(getApplication()).listFolders(mAccount, forceRemote, mAdapter.mListener);
+        MessagingController.getInstance(getApplication()).listFolders(mAccount, forceRemote, mAdapter.getListener());
     }
 
     private void onEditPrefs() {
@@ -478,7 +444,7 @@ public class FolderList extends K9ListActivity {
     }
 
     private void sendMail(Account account) {
-        MessagingController.getInstance(getApplication()).sendPendingMessages(account, mAdapter.mListener);
+        MessagingController.getInstance(getApplication()).sendPendingMessages(account, mAdapter.getListener());
     }
 
     @Override
@@ -497,7 +463,7 @@ public class FolderList extends K9ListActivity {
                 return true;
 
             case R.id.check_mail:
-                MessagingController.getInstance(getApplication()).checkMail(this, mAccount, true, true, mAdapter.mListener);
+                MessagingController.getInstance(getApplication()).checkMail(this, mAccount, true, true, mAdapter.getListener());
                 return true;
 
             case R.id.send_messages:
@@ -624,6 +590,38 @@ public class FolderList extends K9ListActivity {
         return super.onContextItemSelected(item);
     }
 
+    /**
+     * This class is responsible for reloading the list of local messages for a
+     * given folder, notifying the adapter that the message have been loaded and
+     * queueing up a remote update of the folder.
+     */
+    private void checkMail(FolderInfoHolder folder) {
+        TracingPowerManager pm = TracingPowerManager.getPowerManager(this);
+        final TracingWakeLock wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "FolderList checkMail");
+        wakeLock.setReferenceCounted(false);
+        wakeLock.acquire(K9.WAKE_LOCK_TIMEOUT);
+        MessagingListener listener = new MessagingListener() {
+            @Override
+            public void synchronizeMailboxFinished(Account account, String folder, int totalMessagesInMailbox, int numNewMessages) {
+                if (!account.equals(mAccount)) {
+                    return;
+                }
+                wakeLock.release();
+            }
+
+            @Override
+            public void synchronizeMailboxFailed(Account account, String folder,
+                                                 String message) {
+                if (!account.equals(mAccount)) {
+                    return;
+                }
+                wakeLock.release();
+            }
+        };
+        MessagingController.getInstance(getApplication()).synchronizeMailbox(mAccount, folder.name, listener, null);
+        sendMail(mAccount);
+    }
+
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
@@ -635,10 +633,32 @@ public class FolderList extends K9ListActivity {
         menu.setHeaderTitle(folder.displayName);
     }
 
-    class FolderListAdapter extends BaseAdapter implements Filterable {
+    public class FolderListAdapter extends BaseAdapter implements Filterable {
         private List<FolderInfoHolder> mFolders = new ArrayList<FolderInfoHolder>();
         private List<FolderInfoHolder> mFilteredFolders = Collections.unmodifiableList(mFolders);
-        private Filter mFilter = new FolderListFilter();
+        private Filter mFilter = new FolderListFilter(this);
+        private Account mAccount;
+        private ActivityListener mListener = new MyActivityListener();
+
+        public FolderListAdapter(Account account) {
+            this.mAccount = account;
+        }
+
+        public List<FolderInfoHolder> getFolders() {
+            return this.mFolders;
+        }
+
+        public void setFolders(List<FolderInfoHolder> folders) {
+            this.mFolders = folders;
+        }
+
+        public List<FolderInfoHolder> getFilteredFolders() {
+            return this.mFilteredFolders;
+        }
+
+        public void setFilterFolders(List<FolderInfoHolder> filterFolders) {
+            this.mFilteredFolders = filterFolders;
+        }
 
         public Object getItem(int position) {
             return mFilteredFolders.get(position);
@@ -661,8 +681,6 @@ public class FolderList extends K9ListActivity {
         public boolean areAllItemsEnabled() {
             return true;
         }
-
-        private ActivityListener mListener = new MyActivityListener();
 
         public int getFolderIndex(String folder) {
             FolderInfoHolder searchHolder = new FolderInfoHolder();
@@ -839,7 +857,7 @@ public class FolderList extends K9ListActivity {
             search.addAllowedFolder(folder.name);
             search.addAccountUuid(account.getUuid());
 
-            return new FolderClickListener(search);
+            return new FolderClickListener(getApplication(), search);
         }
 
         private OnClickListener createUnreadSearch(Account account, FolderInfoHolder folder) {
@@ -854,7 +872,7 @@ public class FolderList extends K9ListActivity {
             search.addAllowedFolder(folder.name);
             search.addAccountUuid(account.getUuid());
 
-            return new FolderClickListener(search);
+            return new FolderClickListener(getApplication(), search);
         }
 
         @Override
@@ -870,75 +888,8 @@ public class FolderList extends K9ListActivity {
             return mFilter;
         }
 
-        /**
-         * Filter to search for occurences of the search-expression in any place of the
-         * folder-name instead of doing jsut a prefix-search.
-         *
-         * @author Marcus@Wolschon.biz
-         */
-        public class FolderListFilter extends Filter {
-            private CharSequence mSearchTerm;
-
-            public CharSequence getSearchTerm() {
-                return mSearchTerm;
-            }
-
-            /**
-             * Do the actual search.
-             * {@inheritDoc}
-             *
-             * @see #publishResults(CharSequence, FilterResults)
-             */
-            @Override
-            protected FilterResults performFiltering(CharSequence searchTerm) {
-                mSearchTerm = searchTerm;
-                FilterResults results = new FilterResults();
-
-                Locale locale = Locale.getDefault();
-                if ((searchTerm == null) || (searchTerm.length() == 0)) {
-                    List<FolderInfoHolder> list = new ArrayList<FolderInfoHolder>(mFolders);
-                    results.values = list;
-                    results.count = list.size();
-                } else {
-                    final String searchTermString = searchTerm.toString().toLowerCase(locale);
-                    final String[] words = searchTermString.split(" ");
-                    final int wordCount = words.length;
-
-                    final List<FolderInfoHolder> newValues = new ArrayList<FolderInfoHolder>();
-
-                    for (final FolderInfoHolder value : mFolders) {
-                        if (value.displayName == null) {
-                            continue;
-                        }
-                        final String valueText = value.displayName.toLowerCase(locale);
-
-                        for (int k = 0; k < wordCount; k++) {
-                            if (valueText.contains(words[k])) {
-                                newValues.add(value);
-                                break;
-                            }
-                        }
-                    }
-
-                    results.values = newValues;
-                    results.count = newValues.size();
-                }
-
-                return results;
-            }
-
-            /**
-             * Publish the results to the user-interface.
-             * {@inheritDoc}
-             */
-            @SuppressWarnings("unchecked")
-            @Override
-            protected void publishResults(CharSequence constraint, FilterResults results) {
-                //noinspection unchecked
-                mFilteredFolders = Collections.unmodifiableList((ArrayList<FolderInfoHolder>) results.values);
-                // Send notification that the data set changed now
-                notifyDataSetChanged();
-            }
+        public ActivityListener getListener() {
+            return mListener;
         }
 
         private class MyActivityListener extends ActivityListener {
@@ -1183,17 +1134,5 @@ public class FolderList extends K9ListActivity {
         }
     }
 
-    private class FolderClickListener implements OnClickListener {
 
-        final LocalSearch search;
-
-        FolderClickListener(LocalSearch search) {
-            this.search = search;
-        }
-
-        @Override
-        public void onClick(View v) {
-            MessageList.actionDisplaySearch(FolderList.this, search, true, false);
-        }
-    }
 }

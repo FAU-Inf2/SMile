@@ -1161,5 +1161,7 @@ Please submit bug reports, contribute new features and ask questions at
     <string name="followup_create_hint">Subject</string>
     <string name="followup_create_default_time_value">10</string>
     <string name="edit_followup_action">Edit</string>
+    <string name="drawer_open">Open navigation drawer</string>
+    <string name="drawer_close">Close navigation drawer</string>
 
 </resources>

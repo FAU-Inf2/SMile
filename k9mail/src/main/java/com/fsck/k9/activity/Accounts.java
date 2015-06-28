@@ -278,14 +278,18 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
             if (oldStats != null) {
                 oldUnreadMessageCount = oldStats.unreadMessageCount;
             }
+
             if (stats == null) {
                 stats = new AccountStats(); // empty stats for unavailable accounts
                 stats.available = false;
             }
+
             accountStats.put(account.getUuid(), stats);
+
             if (account instanceof Account) {
                 mUnreadMessageCount += stats.unreadMessageCount - oldUnreadMessageCount;
             }
+
             mHandler.dataChanged();
             pendingWork.remove(account);
 

@@ -73,7 +73,7 @@ import com.fsck.k9.Preferences;
 import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.activity.ActivityListener;
 import com.fsck.k9.activity.ChooseFolder;
-import com.fsck.k9.activity.FolderInfoHolder;
+import com.fsck.k9.activity.holder.FolderInfoHolder;
 import com.fsck.k9.activity.RemindMeList;
 import com.fsck.k9.activity.MessageReference;
 import com.fsck.k9.activity.misc.ContactPictureLoader;
@@ -822,12 +822,11 @@ public class MessageListFragment extends Fragment
             Bundle savedInstanceState) {
 
         mInflater = inflater;
-
         View view = inflater.inflate(R.layout.message_list_fragment, container, false);
 
         initializePullToRefresh(inflater, view);
-
         initializeLayout();
+
         mListView.setVerticalFadingEdgeEnabled(false);
 
         return view;

@@ -18,6 +18,7 @@ dependencies {
     compile project(':plugins:openpgp-api-library')
     compile 'commons-io:commons-io:2.4'
     compile 'com.android.support:support-v4:21.0.2'
+    compile 'com.android.support:appcompat-v7:21.0.0'
     compile 'com.android.support:support-v13:21.0.2'
     compile 'com.android.support:recyclerview-v7:21.0.0'
     compile "com.daimajia.swipelayout:library:1.2.0@aar"

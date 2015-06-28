@@ -60,6 +60,7 @@ import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.CheckBox;
 import android.widget.CursorAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.QuickContactBadge;
 import android.widget.TextView;
@@ -1884,7 +1885,7 @@ public class MessageListFragment extends Fragment
         }
 
         @Override
-        public View newView(Context context, Cursor cursor, ViewGroup parent) {
+        public View newView(final Context context, Cursor cursor, ViewGroup parent) {
             View view = mInflater.inflate(R.layout.message_list_item, parent, false);
             view.setId(R.layout.message_list_item);
 
@@ -1940,7 +1941,7 @@ public class MessageListFragment extends Fragment
 
             view.setTag(holder);
 
-            SwipeLayout swipeLayout = (SwipeLayout) view;
+            final SwipeLayout swipeLayout = (SwipeLayout) view;
             swipeLayout.addSwipeListener(new SimpleSwipeListener() {
                 @Override
                 public void onOpen(SwipeLayout layout) {
@@ -1949,9 +1950,47 @@ public class MessageListFragment extends Fragment
             });
 
             view.findViewById(R.id.delete).setOnClickListener(holder);
+            swipeLayout.addRevealListener(R.id.pull_out, new SwipeLayout.OnRevealListener() {
+                private boolean img_set1 = false;
+                private boolean img_set2 = false;
 
+                @Override
+                public void onReveal(View view, SwipeLayout.DragEdge dragEdge, float v, int i) {
+                    if (dragEdge != SwipeLayout.DragEdge.Left) {
+                        return;
+                    }
+                    ImageView archive = (ImageView) swipeLayout.findViewById(R.id.pull_out_archive);
+                    ImageView remindMe = (ImageView) swipeLayout.findViewById(R.id.pull_out_remind_me);
+                    if (v <= 0.2) {
+                        img_set1 = img_set2 = false;
+                        archive.setVisibility(View.INVISIBLE);
+                        remindMe.setVisibility(View.INVISIBLE);
+                    }
+                    if (v > 0.2 && !img_set1) {
+                        img_set1 = img_set2 = false;
+                        archive.setVisibility(View.INVISIBLE);
+                        remindMe.setVisibility(View.VISIBLE);
+                    }
+                    if (v > 0.5 && !img_set2) {
+                        img_set1 = img_set2 = false;
+                        archive.setVisibility(View.VISIBLE);
+                        remindMe.setVisibility(View.INVISIBLE);
+                    }
+                    if(v <= 0.2) {
+                        view.setBackgroundColor(Color.LTGRAY);
+                    } else {
+                        if(0.2 < v && v < 0.5) {
+                            view.setBackgroundColor(Color.BLUE);
+                        } else {
+                            view.setBackgroundColor(Color.YELLOW);
+                        }
+                    }
+                }
+            });
+            swipeLayout.addSwipeListener(holder);
             return view;
         }
+
 
         @Override
         public void bindView(View view, final Context context, Cursor cursor) {
@@ -2154,7 +2193,7 @@ public class MessageListFragment extends Fragment
         }
     }
 
-    class MessageViewHolder implements View.OnClickListener {
+    class MessageViewHolder extends SimpleSwipeListener implements View.OnClickListener {
         public TextView subject;
         public TextView preview;
         public TextView from;
@@ -2182,6 +2221,20 @@ public class MessageListFragment extends Fragment
                         break;
                 }
             }
+        }
+        @Override
+        public void onHandRelease(SwipeLayout layout, float xvel, float yvel) {
+            if(position == -1)
+                return;
+            ImageView archive = (ImageView) layout.findViewById(R.id.pull_out_archive);
+            ImageView remindMe = (ImageView) layout.findViewById(R.id.pull_out_remind_me);
+            if(archive.getVisibility() == View.VISIBLE) {
+                onArchive(getMessageAtPosition(position));
+            }
+            if(remindMe.getVisibility() == View.VISIBLE) {
+                onFollowUp(getMessageAtPosition(position));
+            }
+            layout.close(true);
         }
     }
 

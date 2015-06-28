@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.FeatureStorage;
@@ -92,43 +91,33 @@ public class MailService extends CoreService {
     @Override
     public int startService(Intent intent, int startId) {
         long startTime = System.currentTimeMillis();
-        boolean oldIsSyncDisabled = isSyncDisabled();
-        boolean doBackground = true;
-
+        final boolean oldIsSyncDisabled = isSyncDisabled();
+        final boolean doBackground = isBackground();
         final boolean hasConnectivity = Utility.hasConnectivity(getApplication());
-        boolean autoSync = ContentResolver.getMasterSyncAutomatically();
-
-        K9.BACKGROUND_OPS bOps = K9.getBackgroundOps();
-
-        switch (bOps) {
-            case NEVER:
-                doBackground = false;
-                break;
-            case ALWAYS:
-                doBackground = true;
-                break;
-            case WHEN_CHECKED_AUTO_SYNC:
-                doBackground = autoSync;
-                break;
-        }
 
         syncBlocked = !(doBackground && hasConnectivity);
 
-        if (K9.DEBUG)
+        if (K9.DEBUG) {
             Log.i(K9.LOG_TAG, "MailService.onStart(" + intent + ", " + startId
-                  + "), hasConnectivity = " + hasConnectivity + ", doBackground = " + doBackground);
+                    + "), hasConnectivity = " + hasConnectivity + ", doBackground = " + doBackground);
+        }
+
+        RemindMeService.startService(this);
 
         // MessagingController.getInstance(getApplication()).addListener(mListener);
         if (ACTION_CHECK_MAIL.equals(intent.getAction())) {
             if (K9.DEBUG)
                 Log.i(K9.LOG_TAG, "***** MailService *****: checking mail");
+
             if (hasConnectivity && doBackground) {
                 PollService.startService(this);
             }
+
             reschedulePollInBackground(hasConnectivity, doBackground, startId, false);
         } else if (ACTION_CANCEL.equals(intent.getAction())) {
-            if (K9.DEBUG)
+            if (K9.DEBUG) {
                 Log.v(K9.LOG_TAG, "***** MailService *****: cancel");
+            }
             cancel();
         } else if (ACTION_RESET.equals(intent.getAction())) {
             if (K9.DEBUG)
@@ -194,6 +183,22 @@ public class MailService extends CoreService {
         Intent i = new Intent(this, MailService.class);
         i.setAction(ACTION_CHECK_MAIL);
         BootReceiver.cancelIntent(this, i);
+    }
+
+    private boolean isBackground() {
+        K9.BACKGROUND_OPS bOps = K9.getBackgroundOps();
+        boolean autoSync = ContentResolver.getMasterSyncAutomatically();
+
+        switch (bOps) {
+            case NEVER:
+                return false;
+            case ALWAYS:
+                return true;
+            case WHEN_CHECKED_AUTO_SYNC:
+                return autoSync;
+        }
+
+        return false;
     }
 
     private final static String PREVIOUS_INTERVAL = "MailService.previousInterval";

@@ -16,10 +16,8 @@ import com.fsck.k9.activity.RemindMeList;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.mail.RemindMe;
 import com.fsck.k9.mail.MessagingException;
-import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.mailstore.LocalRemindMe;
 import com.fsck.k9.mailstore.LocalMessage;
-import com.fsck.k9.mailstore.LocalStore;
 
 import de.fau.cs.mad.smile.android.R;
 
@@ -29,41 +27,38 @@ import java.util.Date;
 import java.util.List;
 
 public class RemindMeService extends CoreService {
-    private static final String ACTION_RESET = "com.fsck.k9.intent.action.FOLLOWUP_SERVICE_RESET";
-    private static final String ACTION_CHECK_FOLLOWUP = "com.fsck.k9.intent.action.FOLLOWUP_SERVICE_CHECK";
+    private static final String START_SERVICE = "com.fsck.k9.intent.action.startService";
+    private static final String ACTION_CHECK_FOLLOWUP = "com.fsck.k9.intent.action.REMINDME_SERVICE_CHECK";
 
     private Account mAccount;
 
-    public static void actionReset(Context context, Integer wakeLockId) {
+    public static void startService(Context context) {
         Intent i = new Intent();
         i.setClass(context, RemindMeService.class);
-        i.setAction(RemindMeService.ACTION_RESET);
-        addWakeLockId(context, i, wakeLockId, true);
+        i.setAction(RemindMeService.START_SERVICE);
+        addWakeLock(context, i);
         context.startService(i);
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
-
-        if (K9.DEBUG) {
-            Log.v(K9.LOG_TAG, "***** WiedervorlageService *****: onCreate");
-        }
+        Log.v(K9.LOG_TAG, "***** RemindMeService *****: onCreate");
     }
 
     @Override
     public int startService(Intent intent, int startId) {
-        if (K9.DEBUG) {
-            Log.i(K9.LOG_TAG, "WiedervorlageService.startService(" + intent + ", " + startId + ") alive and kicking");
-        }
+        Log.i(K9.LOG_TAG, "RemindMeService.startService(" + intent + ", " + startId + ") alive and kicking");
 
         Preferences prefs = Preferences.getPreferences(RemindMeService.this);
 
         for(Account acc : prefs.getAccounts()) {
             handleAccount(acc);
         }
+
         Intent i = new Intent(this, RemindMeService.class);
         i.setAction(ACTION_CHECK_FOLLOWUP);
+        // TODO: get interval from preferences
         long delay = (10 * (60 * 1000)); // wait 10 min
         long nextTime  = System.currentTimeMillis() + delay;
         BootReceiver.scheduleIntent(RemindMeService.this, nextTime, i);

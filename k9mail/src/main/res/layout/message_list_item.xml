@@ -3,16 +3,45 @@
     xmlns:swipe="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="fill_parent"
     swipe:leftEdgeSwipeOffset="0dp"
     swipe:rightEdgeSwipeOffset="0dp">
 
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="left"
+        android:layout_toLeftOf="@+id/msg"
+        android:id="@+id/pull_out"
+        android:background="@android:color/darker_gray"
+        >
+        <ImageView
+            android:id="@+id/pull_out_remind_me"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginRight="10dip"
+            android:layout_weight="1"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_action_import_export_dark"/>
+        <ImageView
+            android:id="@+id/pull_out_archive"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginRight="10dip"
+            android:layout_weight="1"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_action_archive_material_light"/>
+    </RelativeLayout>
+
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="80dp"
+        android:layout_height="match_parent"
         android:background="#FF5534"
         android:gravity="center"
-        android:tag="Bottom3"
+        android:tag="Delete"
         android:weightSum="10">
 
             <ImageView
@@ -73,10 +102,13 @@
 
     </LinearLayout>
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal" >
+        android:orientation="horizontal"
+        android:id="@+id/msg"
+        android:layout_gravity="center"
+        >
 
 
         <RelativeLayout
@@ -110,7 +142,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentLeft="true"
                 android:layout_toLeftOf="@+id/flagged_bottom_right"
-                android:layout_marginLeft="1dip"
+                android:layout_marginLeft="50dip"
                 android:layout_marginRight="3dip"
                 android:bufferType="spannable"
                 android:layout_below="@+id/subject_wrapper"
@@ -141,7 +173,7 @@
                     android:ellipsize="end"
                     android:singleLine="true"
                     android:layout_marginBottom="1dip"
-                    android:layout_marginLeft="1dip"
+                    android:layout_marginLeft="50dip"
                     android:textAppearance="?android:attr/textAppearanceSmall"
                     android:textColor="?android:attr/textColorPrimary"
                     />
@@ -152,7 +184,7 @@
                     android:layout_weight="0.7"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="1dip"
-                    android:layout_marginLeft="1dip"
+                    android:layout_marginLeft="50dip"
                     android:ellipsize="marquee"
                     android:singleLine="true"
                     android:textAppearance="?android:attr/textAppearanceSmall"
@@ -216,7 +248,7 @@
 
         </RelativeLayout>
 
-    </LinearLayout>
+    </RelativeLayout>
 
 
 </com.daimajia.swipe.SwipeLayout>

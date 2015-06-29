@@ -1963,12 +1963,14 @@ public class MessageListFragment extends Fragment
                         remindMe.setVisibility(View.INVISIBLE);
                     }
                     if (v > 0.2 && !img_set1) {
-                        img_set1 = img_set2 = false;
+                        img_set1 = true;
+                        img_set2 = false;
                         archive.setVisibility(View.INVISIBLE);
                         remindMe.setVisibility(View.VISIBLE);
                     }
                     if (v > 0.5 && !img_set2) {
-                        img_set1 = img_set2 = false;
+                        img_set1 = false;
+                        img_set2 = true;
                         archive.setVisibility(View.VISIBLE);
                         remindMe.setVisibility(View.INVISIBLE);
                     }
@@ -1976,9 +1978,9 @@ public class MessageListFragment extends Fragment
                         view.setBackgroundColor(Color.LTGRAY);
                     } else {
                         if(0.2 < v && v < 0.5) {
-                            view.setBackgroundColor(Color.BLUE);
-                        } else {
                             view.setBackgroundColor(Color.YELLOW);
+                        } else {
+                            view.setBackgroundColor(Color.GREEN);
                         }
                     }
                 }

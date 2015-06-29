@@ -28,6 +28,7 @@ public class FolderInfoHolder implements Comparable<FolderInfoHolder> {
         return name.hashCode();
     }
 
+    @Override
     public int compareTo(FolderInfoHolder o) {
         String s1 = this.name;
         String s2 = o.name;
@@ -39,6 +40,11 @@ public class FolderInfoHolder implements Comparable<FolderInfoHolder> {
             return s1.compareTo(s2);
         }
 
+    }
+
+    @Override
+    public String toString() {
+        return this.name;
     }
 
     private String truncateStatus(String mess) {
@@ -68,7 +74,6 @@ public class FolderInfoHolder implements Comparable<FolderInfoHolder> {
         this.unreadMessageCount = unreadCount;
         folder.close();
     }
-
 
     public void populate(Context context, Folder folder, Account account) {
         this.folder = folder;

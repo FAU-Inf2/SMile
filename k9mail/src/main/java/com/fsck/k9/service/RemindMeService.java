@@ -108,7 +108,7 @@ public class RemindMeService extends CoreService {
         ArrayList<RemindMe> remindMes = new ArrayList<RemindMe>();
         try {
             LocalRemindMe localRemindMe = new LocalRemindMe(acc.getLocalStore());
-            remindMes.addAll(localRemindMe.getAllFollowUps());
+            remindMes.addAll(localRemindMe.getAllRemindMes());
         } catch (MessagingException e) {
             Log.e(K9.LOG_TAG, "Exception thrown while calling getAllRemindMes()", e);
         }
@@ -124,7 +124,7 @@ public class RemindMeService extends CoreService {
                 MessagingController messagingController = MessagingController.getInstance(getApplication());
                 try {
                     messagingController.moveMessages(mAccount,
-                            mAccount.getFollowUpFolderName(),
+                            mAccount.getRemindMeFolderName(),
                             new ArrayList<LocalMessage>(Arrays.asList((LocalMessage) remindMe.getReference())),
                             //mAccount.getLocalStore().getFolderById(remindMe.getFolderId()).getName(), null);
                             mAccount.getInboxFolderName(), null);

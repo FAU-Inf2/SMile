@@ -31,8 +31,8 @@
         android:icon="?attr/iconActionMove"
     />
     <item
-        android:id="@+id/followup"
-        android:title="@string/followup_action"
+        android:id="@+id/remindme"
+        android:title="@string/remindme_action"
         android:showAsAction="ifRoom"
         android:icon="?attr/iconActionMove"
         />

@@ -67,7 +67,6 @@ public class FolderInfoHolder implements Comparable<FolderInfoHolder> {
         populate(context, folder, account);
         this.unreadMessageCount = unreadCount;
         folder.close();
-
     }
 
 
@@ -75,9 +74,7 @@ public class FolderInfoHolder implements Comparable<FolderInfoHolder> {
         this.folder = folder;
         this.name = folder.getName();
         this.lastChecked = folder.getLastUpdate();
-
         this.status = truncateStatus(folder.getStatus());
-
         this.displayName = getDisplayName(context, account, name);
     }
 

@@ -55,7 +55,7 @@ public class LocalRemindMe {
         LocalFolder folder = this.localStore.getFolder(mAccount.getInboxFolderName());
         messageUid = folder.getMessageUidById(messageId);
         if(messageUid == null) {
-            folder = this.localStore.getFolder(mAccount.getFollowUpFolderName());
+            folder = this.localStore.getFolder(mAccount.getRemindMeFolderName());
             messageUid = folder.getMessageUidById(messageId);
         }
         if(messageUid != null) {
@@ -70,7 +70,7 @@ public class LocalRemindMe {
         return remindMe;
     }
 
-    public List<RemindMe> getAllFollowUps() throws MessagingException {
+    public List<RemindMe> getAllRemindMes() throws MessagingException {
         return this.localStore.database.execute(false, new LockableDatabase.DbCallback<List<RemindMe>>() {
             @Override
             public List<RemindMe> doDbWork(SQLiteDatabase db) throws LockableDatabase.WrappedException, MessagingException {

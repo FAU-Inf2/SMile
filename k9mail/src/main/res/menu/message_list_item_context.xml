@@ -38,8 +38,8 @@
         android:title="@string/move_action"
     />
     <item
-        android:id="@+id/followup"
-        android:title="@string/followup_action"
+        android:id="@+id/remindme"
+        android:title="@string/remindme_action"
         />
     <item
         android:id="@+id/copy"

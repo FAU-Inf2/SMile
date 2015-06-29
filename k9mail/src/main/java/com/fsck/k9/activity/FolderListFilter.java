@@ -15,10 +15,10 @@ import com.fsck.k9.activity.holder.FolderInfoHolder;
  *
  * @author Marcus@Wolschon.biz
  */
-public class FolderListFilter extends Filter {
-    private FolderList.FolderListAdapter mAdapter;
+public class FolderListFilter<T> extends Filter {
+    private FolderListAdapter mAdapter;
 
-    public FolderListFilter(FolderList.FolderListAdapter adapter) {
+    public FolderListFilter(FolderListAdapter adapter) {
         this.mAdapter = adapter;
     }
 

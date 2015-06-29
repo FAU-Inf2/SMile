@@ -48,7 +48,6 @@ import com.fsck.k9.fragment.MessageListFragment;
 import com.fsck.k9.fragment.MessageListFragment.MessageListFragmentListener;
 import com.fsck.k9.fragment.SmsListFragment;
 import com.fsck.k9.mail.Address;
-import com.fsck.k9.mailstore.LocalStore;
 import com.fsck.k9.search.ConditionsTreeNode;
 import com.fsck.k9.ui.messageview.MessageViewFragment;
 import com.fsck.k9.ui.messageview.MessageViewFragment.MessageViewFragmentListener;
@@ -921,7 +920,7 @@ public class MessageList extends K9Activity
                 mMessageViewFragment.onMove();
                 return true;
             }
-            case R.id.followup: {
+            case R.id.remindme: {
                 mMessageViewFragment.onFollowUp();
                 return true;
             }

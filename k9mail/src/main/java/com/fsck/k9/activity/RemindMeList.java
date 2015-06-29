@@ -57,10 +57,9 @@ public class RemindMeList extends K9Activity
             OnSwipeGestureListener {
 
     public static final String EXTRA_MESSAGE_REFERENCE = "de.fau.cs.mad.smile.android.MESSAGE_REFERENCE";
-    public static final String CREATE_FOLLOWUP = "de.fau.cs.mad.smile.android.CREATE_FOLLOWUP";
-    public static final String EDIT_FOLLOWUP = "de.fau.cs.mad.smile.android.EDIT_FOLLOWUP";
-    public static final String DELETE_FOLLOWUP = "de.fau.cs.mad.smile.android.DELETE_FOLLOWUP";
-    public static final String FOLLOW_UP_FOLDERNAME = "RemindMe";
+    public static final String CREATE_REMINDME = "de.fau.cs.mad.smile.android.CREATE_REMINDME";
+    public static final String EDIT_REMINDME = "de.fau.cs.mad.smile.android.EDIT_REMINDME";
+    public static final String DELETE_REMINDME = "de.fau.cs.mad.smile.android.DELETE_REMINDME";
 
     private Account mAccount;
     private LocalRemindMe mLocalRemindMe;
@@ -73,11 +72,11 @@ public class RemindMeList extends K9Activity
     private ArrayAdapter<String> mAdapter;
     private RemindMeFragment remindMeFragment;
 
-    public static Intent createFollowUp(Context context,
+    public static Intent createRemindMe(Context context,
                                         LocalMessage message) {
         Intent i = new Intent(context, RemindMeList.class);
         i.putExtra(EXTRA_MESSAGE_REFERENCE, message.makeMessageReference());
-        i.setAction(CREATE_FOLLOWUP);
+        i.setAction(CREATE_REMINDME);
         return i;
     }
 
@@ -89,7 +88,7 @@ public class RemindMeList extends K9Activity
         setContentView(R.layout.remindme_list);
 
         // TODO: this is ugly, search for better solution to expose onClick result and handling intents
-        if(CREATE_FOLLOWUP.equals(intent.getAction())) {
+        if(CREATE_REMINDME.equals(intent.getAction())) {
             MessageReference reference = intent.getParcelableExtra(EXTRA_MESSAGE_REFERENCE);
             LocalMessage message = reference.restoreToLocalMessage(this);
             String accountUuid = reference.getAccountUuid();
@@ -128,7 +127,7 @@ public class RemindMeList extends K9Activity
 
             LocalStore store = LocalStore.getInstance(mAccount, this);
             mLocalRemindMe = new LocalRemindMe(store);
-            LocalFolder folder = new LocalFolder(store, mAccount.getFollowUpFolderName());
+            LocalFolder folder = new LocalFolder(store, mAccount.getRemindMeFolderName());
 
             // FIXME: probably not the best place
             if (!folder.exists()) {

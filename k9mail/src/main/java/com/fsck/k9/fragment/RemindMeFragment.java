@@ -10,7 +10,6 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 
 import com.fsck.k9.Account;
@@ -153,7 +152,7 @@ public class RemindMeFragment extends ListFragment {
         @Override
         protected List<RemindMe> doInBackground(Void... params) {
             try {
-                return mLocalRemindMe.getAllFollowUps();
+                return mLocalRemindMe.getAllRemindMes();
             } catch (MessagingException e) {
                 Log.e(K9.LOG_TAG, "Unable to retrieve FollowUps", e);
             }
@@ -174,7 +173,7 @@ public class RemindMeFragment extends ListFragment {
             for(RemindMe remindMe : params) {
                 try {
                     LocalStore store = LocalStore.getInstance(mAccount, getActivity());
-                    LocalFolder folder = new LocalFolder(store, mAccount.getFollowUpFolderName());
+                    LocalFolder folder = new LocalFolder(store, mAccount.getRemindMeFolderName());
                     folder.open(Folder.OPEN_MODE_RW);
 
                     remindMe.setFolderId(folder.getId());
@@ -184,7 +183,7 @@ public class RemindMeFragment extends ListFragment {
                     messagingController.moveMessages(mAccount,
                             remindMe.getReference().getFolder().getName(),
                             new ArrayList<LocalMessage>(Arrays.asList((LocalMessage) remindMe.getReference())),
-                            mAccount.getFollowUpFolderName(), null);
+                            mAccount.getRemindMeFolderName(), null);
 
                     if(remindMe.getId() > 0) {
                         mLocalRemindMe.update(remindMe);

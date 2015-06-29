@@ -1569,7 +1569,7 @@ public class MessageListFragment extends Fragment
                 onMove(getMessageAtPosition(adapterPosition));
                 break;
             }
-            case R.id.followup: {
+            case R.id.remindme: {
                 onFollowUp(getMessageAtPosition(adapterPosition));
                 break;
             }
@@ -2467,7 +2467,7 @@ public class MessageListFragment extends Fragment
 
     private void onFollowUp(LocalMessage message) {
         // TODO: build Intent?
-        startActivity(RemindMeList.createFollowUp(this.getActivity(), message));
+        startActivity(RemindMeList.createRemindMe(this.getActivity(), message));
     }
 
     private void onCopy(LocalMessage message) {

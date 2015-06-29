@@ -104,6 +104,7 @@ public class ChooseFolder extends K9ListActivity {
                 if (myFilter == null) {
                     myFilter = new FolderListFilter<String>(this);
                 }
+
                 return myFilter;
             }
         };

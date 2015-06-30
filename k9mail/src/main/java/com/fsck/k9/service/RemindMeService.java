@@ -1,11 +1,8 @@
 package com.fsck.k9.service;
 
 import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
@@ -13,19 +10,16 @@ import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.Account;
 import com.fsck.k9.activity.ActivityListener;
-import com.fsck.k9.activity.RemindMeList;
 import com.fsck.k9.controller.MessagingController;
+import com.fsck.k9.mail.FetchProfile;
 import com.fsck.k9.mail.Flag;
-import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.RemindMe;
 import com.fsck.k9.mail.MessagingException;
+import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.mailstore.LocalRemindMe;
 import com.fsck.k9.mailstore.LocalMessage;
 
-import de.fau.cs.mad.smile.android.R;
-
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -71,7 +65,7 @@ public class RemindMeService extends CoreService {
         return 0;
     }
 
-    private Date handleAccount(Account acc) {
+    private Date handleAccount(final Account acc) {
         Context context = getApplication();
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
@@ -82,9 +76,9 @@ public class RemindMeService extends CoreService {
         Date now = new Date();
         Date minDate = null;
 
-        MessagingController messagingController = MessagingController.getInstance(getApplication());
-        List<LocalMessage> messages = new ArrayList<LocalMessage>();
-        List<Long> messageIds = new ArrayList<Long>();
+        final MessagingController messagingController = MessagingController.getInstance(getApplication());
+        final List<LocalMessage> messages = new ArrayList<LocalMessage>();
+        final List<Long> messageIds = new ArrayList<Long>();
         LocalRemindMe localRemindMe = null;
 
         try {
@@ -138,17 +132,13 @@ public class RemindMeService extends CoreService {
             */
         }
 
-        messagingController.setFlag(acc, messageIds, Flag.SEEN, false);
-        messagingController.synchronizeMailbox(acc, acc.getInboxFolderName(),
-                new ActivityListener() {
-                    @Override
-                    public void folderStatusChanged(Account account, String folder, int unreadMessageCount) {
-                        Log.d(K9.LOG_TAG, "folderStatusChanged in synchronize Mailbox");
-                        super.folderStatusChanged(account, folder, unreadMessageCount);
-                    }
-                }, null);
+        if(messages.size() == 0) {
+            Log.e(K9.LOG_TAG, "No messages to handle until " + minDate);
+            return minDate;
+        }
 
         // move mail back to inbox
+        Log.d(K9.LOG_TAG, "Will move mails from RemindMe back to inbox.");
         messagingController.moveMessages(acc,
                 acc.getRemindMeFolderName(),
                 messages,
@@ -160,6 +150,38 @@ public class RemindMeService extends CoreService {
                         super.folderStatusChanged(account, folder, unreadMessageCount);
                     }
                 });
+
+        //TODO: check whether move-to-inbox has finished!
+
+        Log.d(K9.LOG_TAG, "Will synchronize inbox.");
+        messagingController.synchronizeMailbox(acc, acc.getInboxFolderName(),
+                new ActivityListener() {
+                    @Override
+                    public void folderStatusChanged(Account account, String folder, int unreadMessageCount) {
+                        Log.d(K9.LOG_TAG, "folderStatusChanged in synchronize Mailbox");
+                        super.folderStatusChanged(account, folder, unreadMessageCount);
+                    }
+
+                    @Override
+                    public void synchronizeMailboxFinished(Account account, String folder,
+                                                           int totalMessagesInMailbox, int numNewMessages) {
+                        Log.e(K9.LOG_TAG, "synchronization finished successfully.");
+                        Log.d(K9.LOG_TAG, "Mark mails from RemindMe as unread.");
+                        messagingController.setFlag(acc, messageIds, Flag.SEEN, false);
+
+                        FetchProfile fp = new FetchProfile();
+                        fp.add(FetchProfile.Item.ENVELOPE);
+                        try {
+                            Log.d(K9.LOG_TAG, "Fetch flags.");
+                            LocalFolder localFolder = acc.getLocalStore().getFolder(acc.getInboxFolderName());
+                            localFolder.fetch(messages, fp, null);
+                            localFolder.close();
+                        } catch (Exception e) {
+                            Log.e(K9.LOG_TAG, "Error while fetching flags for mail (remindMe): " +
+                                    e.getMessage());
+                        }
+                    }
+                }, null);
 
         return minDate;
     }

@@ -39,6 +39,7 @@ import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.mailstore.LocalRemindMe;
 import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.mailstore.LocalStore;
+import com.fsck.k9.service.RemindMeService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -319,6 +320,8 @@ public class RemindMeList extends K9ListActivity
                             remindMe.getReference().getFolder().getName(),
                             new ArrayList<LocalMessage>(Arrays.asList((LocalMessage) remindMe.getReference())),
                             mAccount.getRemindMeFolderName(), null);
+
+                    RemindMeService.startService(getApplication());
 
                     if(remindMe.getId() > 0) {
                         mLocalRemindMe.update(remindMe);

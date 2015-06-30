@@ -5001,10 +5001,12 @@ public class MessagingController implements Runnable {
                             getMessageSender(context, account, m),
                             getMessageSubject(context, m)));
                 }
+
                 if (!data.droppedMessages.isEmpty()) {
                     style.setSummaryText(context.getString(R.string.notification_additional_messages,
                             data.droppedMessages.size(), accountDescr));
                 }
+
                 final String title = context.getResources().getQuantityString(
                     R.plurals.notification_new_messages_title, newMessages, newMessages);
                 style.setBigContentTitle(title);

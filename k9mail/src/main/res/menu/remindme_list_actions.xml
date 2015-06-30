@@ -1,24 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--
     <item
         android:id="@+id/search"
         android:icon="?attr/iconActionSearch"
         android:showAsAction="always"
-        android:title="@string/search_action"/>
-
-    <item
-        android:id="@+id/edit"
-        android:title="@string/edit_remindme_action"
-        android:showAsAction="always"
-        android:icon="?attr/iconActionAdd"
-        />
-
-    <item
-        android:id="@+id/delete"
-        android:title="@string/delete_action"
-        android:showAsAction="always"
-        android:icon="?attr/iconActionDelete"
-        />
+        android:title="@string/search_action"/>-->
 
     <item
         android:id="@+id/settings"

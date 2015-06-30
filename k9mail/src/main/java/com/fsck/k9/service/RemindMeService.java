@@ -13,6 +13,7 @@ import com.fsck.k9.activity.ActivityListener;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.mail.FetchProfile;
 import com.fsck.k9.mail.Flag;
+import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.RemindMe;
 import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mailstore.LocalFolder;
@@ -22,6 +23,8 @@ import com.fsck.k9.mailstore.LocalMessage;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 public class RemindMeService extends CoreService {
     private static final String START_SERVICE = "com.fsck.k9.intent.action.startService";
@@ -133,7 +136,7 @@ public class RemindMeService extends CoreService {
         }
 
         if(messages.size() == 0) {
-            Log.e(K9.LOG_TAG, "No messages to handle until " + minDate);
+            Log.e(K9.LOG_TAG, "No messages to handle.");
             return minDate;
         }
 
@@ -152,7 +155,6 @@ public class RemindMeService extends CoreService {
                 });
 
         //TODO: check whether move-to-inbox has finished!
-
         Log.d(K9.LOG_TAG, "Will synchronize inbox.");
         messagingController.synchronizeMailbox(acc, acc.getInboxFolderName(),
                 new ActivityListener() {
@@ -180,6 +182,22 @@ public class RemindMeService extends CoreService {
                             Log.e(K9.LOG_TAG, "Error while fetching flags for mail (remindMe): " +
                                     e.getMessage());
                         }
+                        //need moved local messages
+                        final List<LocalMessage> messages2 = new ArrayList<LocalMessage>();
+                        LocalFolder inbox;
+                        try {
+                            inbox = acc.getLocalStore().getFolder(acc.getInboxFolderName());
+                            for(long id: messageIds)
+                                messages2.add(inbox.getMessage(inbox.getMessageUidById(id)));
+                        }catch (Exception e) {
+                            Log.e(K9.LOG_TAG, "Error getting inbox." + e.getMessage());
+                            return;
+                        }
+                        //set notification
+                        Log.d(K9.LOG_TAG, "Set notification for remindMes.");
+                        int i = 0;
+                        for(LocalMessage m : messages2)
+                            messagingController.notifyAccount(getApplication(), acc, m, i++);
                     }
                 }, null);
 

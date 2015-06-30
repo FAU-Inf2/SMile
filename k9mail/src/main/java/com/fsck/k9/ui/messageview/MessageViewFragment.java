@@ -231,7 +231,7 @@ public class MessageViewFragment extends Fragment
         displayMessageHeader(message);
 
         if (message.isBodyMissing()) {
-            startDownloadingMessageBody(message);
+            //startDownloadingMessageBody(message);
         } else {
             messageCryptoHelper.decryptOrVerifyMessagePartsIfNecessary(message);
         }

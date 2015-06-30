@@ -4929,7 +4929,7 @@ public class MessagingController implements Runnable {
     /**
      * Creates a notification of a newly received message.
      */
-    private void notifyAccount(Context context, Account account,
+    public void notifyAccount(Context context, Account account,
             LocalMessage message, int previousUnreadMessageCount) {
         final NotificationData data = getNotificationData(account, previousUnreadMessageCount);
         synchronized (data) {

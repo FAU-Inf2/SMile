@@ -28,7 +28,7 @@ import java.util.List;
 
 public class RemindMeService extends CoreService {
     private static final String START_SERVICE = "com.fsck.k9.intent.action.startService";
-    private static final String ACTION_CHECK_FOLLOWUP = "com.fsck.k9.intent.action.REMINDME_SERVICE_CHECK";
+    private static final String ACTION_CHECK_REMINDME = "com.fsck.k9.intent.action.REMINDME_SERVICE_CHECK";
 
     private Account mAccount;
 
@@ -57,7 +57,7 @@ public class RemindMeService extends CoreService {
         }
 
         Intent i = new Intent(this, RemindMeService.class);
-        i.setAction(ACTION_CHECK_FOLLOWUP);
+        i.setAction(ACTION_CHECK_REMINDME);
         // TODO: get interval from preferences
         long delay = (10 * (60 * 1000)); // wait 10 min
         long nextTime  = System.currentTimeMillis() + delay;
@@ -73,7 +73,7 @@ public class RemindMeService extends CoreService {
         NotificationManager notifyMgr =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
-        List<RemindMe> remindMes = getFollowUpItems(acc);
+        List<RemindMe> remindMes = getRemindMeItems(acc);
         Date now = new Date();
 
         for(RemindMe item : remindMes) {
@@ -85,14 +85,15 @@ public class RemindMeService extends CoreService {
             builder.setContentTitle(item.getTitle());
             builder.setContentText(item.getTitle());
             builder.setWhen(System.currentTimeMillis());
+            builder.setAutoCancel(true);
 
             // move mail back to inbox
-            new MoveFollowUpBack().execute(item);
+            new MoveRemindMeBack().execute(item);
 
             builder.addAction(
                     R.drawable.ic_action_mark_as_read_dark,
                     context.getString(R.string.notification_action_mark_as_read),
-                    NotificationActionService.getFollowUpIntent(context, acc));
+                    NotificationActionService.getRemindMeIntent(context, acc, item.getId()));
 
             Intent resultIntent = new Intent(context, RemindMeList.class);
             TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
@@ -104,11 +105,11 @@ public class RemindMeService extends CoreService {
         }
     }
 
-    private List<RemindMe> getFollowUpItems(Account acc) {
+    private List<RemindMe> getRemindMeItems(Account acc) {
         ArrayList<RemindMe> remindMes = new ArrayList<RemindMe>();
         try {
             LocalRemindMe localRemindMe = new LocalRemindMe(acc.getLocalStore());
-            remindMes.addAll(localRemindMe.getAllFollowUps());
+            remindMes.addAll(localRemindMe.getAllRemindMes());
         } catch (MessagingException e) {
             Log.e(K9.LOG_TAG, "Exception thrown while calling getAllRemindMes()", e);
         }
@@ -116,7 +117,7 @@ public class RemindMeService extends CoreService {
         return remindMes;
     }
 
-    class MoveFollowUpBack extends AsyncTask<RemindMe, Void, Void> {
+    class MoveRemindMeBack extends AsyncTask<RemindMe, Void, Void> {
 
         @Override
         protected Void doInBackground(RemindMe... params) {
@@ -124,7 +125,7 @@ public class RemindMeService extends CoreService {
                 MessagingController messagingController = MessagingController.getInstance(getApplication());
                 try {
                     messagingController.moveMessages(mAccount,
-                            mAccount.getFollowUpFolderName(),
+                            mAccount.getRemindMeFolderName(),
                             new ArrayList<LocalMessage>(Arrays.asList((LocalMessage) remindMe.getReference())),
                             //mAccount.getLocalStore().getFolderById(remindMe.getFolderId()).getName(), null);
                             mAccount.getInboxFolderName(), null);

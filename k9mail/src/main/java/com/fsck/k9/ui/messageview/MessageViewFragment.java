@@ -397,8 +397,8 @@ public class MessageViewFragment extends Fragment
 
     }
 
-    public void onFollowUp() {
-        startActivity(RemindMeList.createFollowUp(this.getActivity(), mMessage));
+    public void onRemindMe() {
+        startActivity(RemindMeList.createRemindMe(this.getActivity(), mMessage));
     }
 
     public void onCopy() {

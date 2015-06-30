@@ -1570,8 +1570,8 @@ public class MessageListFragment extends Fragment
                 onMove(getMessageAtPosition(adapterPosition));
                 break;
             }
-            case R.id.followup: {
-                onFollowUp(getMessageAtPosition(adapterPosition));
+            case R.id.remindme: {
+                onRemindMe(getMessageAtPosition(adapterPosition));
                 break;
             }
             case R.id.copy: {
@@ -1676,10 +1676,12 @@ public class MessageListFragment extends Fragment
 
             int listViewPosition = mListView.pointToPosition(listX, listY);
             int adapterPosition = listViewToAdapterPosition(listViewPosition);
+
             if (adapterPosition == AdapterView.INVALID_POSITION) {
                 return;
             }
-            onFollowUp(getMessageAtPosition(adapterPosition));
+
+            onRemindMe(getMessageAtPosition(adapterPosition));
         }
     }
 
@@ -2466,9 +2468,9 @@ public class MessageListFragment extends Fragment
                 messages);
     }
 
-    private void onFollowUp(LocalMessage message) {
+    private void onRemindMe(LocalMessage message) {
         // TODO: build Intent?
-        startActivity(RemindMeList.createFollowUp(this.getActivity(), message));
+        startActivity(RemindMeList.createRemindMe(this.getActivity(), message));
     }
 
     private void onCopy(LocalMessage message) {

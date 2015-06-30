@@ -54,21 +54,20 @@ public class RemindMeList extends K9ListActivity
             DatePickerDialog.OnDateSetListener,
             OnSwipeGestureListener {
     public static final String EXTRA_MESSAGE_REFERENCE = "de.fau.cs.mad.smile.android.MESSAGE_REFERENCE";
-    public static final String CREATE_FOLLOWUP = "de.fau.cs.mad.smile.android.CREATE_FOLLOWUP";
-    public static final String EDIT_FOLLOWUP = "de.fau.cs.mad.smile.android.EDIT_FOLLOWUP";
-    public static final String DELETE_FOLLOWUP = "de.fau.cs.mad.smile.android.DELETE_FOLLOWUP";
-    public static final String FOLLOW_UP_FOLDERNAME = "RemindMe";
+    public static final String CREATE_REMINDME = "de.fau.cs.mad.smile.android.CREATE_REMINDME";
+    public static final String EDIT_REMINDME = "de.fau.cs.mad.smile.android.EDIT_REMINDME";
+    public static final String DELETE_REMINDME = "de.fau.cs.mad.smile.android.DELETE_REMINDME";
 
     private Account mAccount;
     private LocalRemindMe mLocalRemindMe;
     private RemindMe currentRemindMe;
     private String folderName;
 
-    public static Intent createFollowUp(Context context,
+    public static Intent createRemindMe(Context context,
                                         LocalMessage message) {
         Intent i = new Intent(context, RemindMeList.class);
         i.putExtra(EXTRA_MESSAGE_REFERENCE, message.makeMessageReference());
-        i.setAction(CREATE_FOLLOWUP);
+        i.setAction(CREATE_REMINDME);
         return i;
     }
 
@@ -78,7 +77,7 @@ public class RemindMeList extends K9ListActivity
         final Intent intent = getIntent();
 
         // TODO: this is ugly, search for better solution to expose onClick result and handling intents
-        if(CREATE_FOLLOWUP.equals(intent.getAction())) {
+        if(CREATE_REMINDME.equals(intent.getAction())) {
             MessageReference reference = intent.getParcelableExtra(EXTRA_MESSAGE_REFERENCE);
             Message message = reference.restoreToLocalMessage(this);
             String accountUuid = ((LocalFolder) message.getFolder()).getAccountUuid();
@@ -109,7 +108,7 @@ public class RemindMeList extends K9ListActivity
 
             LocalStore store = LocalStore.getInstance(mAccount, this);
             mLocalRemindMe = new LocalRemindMe(store);
-            LocalFolder folder = new LocalFolder(store, mAccount.getFollowUpFolderName());
+            LocalFolder folder = new LocalFolder(store, mAccount.getRemindMeFolderName());
 
             // FIXME: probably not the best place
             if (!folder.exists()) {
@@ -124,7 +123,7 @@ public class RemindMeList extends K9ListActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.followup_list_actions, menu);
+        inflater.inflate(R.menu.remindme_list_actions, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -139,7 +138,7 @@ public class RemindMeList extends K9ListActivity
 
     @Override
     public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-        final String timePickerTag = "followUpTimePicker";
+        final String timePickerTag = "remindMeTimePicker";
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.YEAR, year);
         calendar.set(Calendar.MONTH, monthOfYear);
@@ -159,8 +158,8 @@ public class RemindMeList extends K9ListActivity
         calendar.set(Calendar.MINUTE, minute);
         Log.d(K9.LOG_TAG, "Selected time: " + calendar.getTime());
         currentRemindMe.setRemindTime(calendar.getTime());
-        new InsertFollowUp().execute(currentRemindMe);
-        new LoadFollowUp().execute();
+        new InsertRemindMe().execute(currentRemindMe);
+        new LoadRemindMe().execute();
         ((BaseAdapter)getListView().getAdapter()).notifyDataSetChanged();
     }
 
@@ -170,7 +169,7 @@ public class RemindMeList extends K9ListActivity
     @Override
     public void onResume() {
         super.onResume();
-        new LoadFollowUp().execute();
+        new LoadRemindMe().execute();
     }
 
     @Override
@@ -192,7 +191,7 @@ public class RemindMeList extends K9ListActivity
         currentRemindMe = dlg.getRemindMe();
 
         if(currentRemindMe.getRemindInterval() == RemindMe.RemindInterval.CUSTOM) {
-            final String datePickerTag = "followUpDatePicker";
+            final String datePickerTag = "remindMeDatePicker";
             FragmentTransaction ft = getFragmentManager().beginTransaction();
             Fragment prev = getFragmentManager().findFragmentByTag(datePickerTag);
 
@@ -217,8 +216,8 @@ public class RemindMeList extends K9ListActivity
                     break;
             }
 
-            new InsertFollowUp().execute(currentRemindMe);
-            new LoadFollowUp().execute();
+            new InsertRemindMe().execute(currentRemindMe);
+            new LoadRemindMe().execute();
             ((BaseAdapter)getListView().getAdapter()).notifyDataSetChanged();
         }
     }
@@ -233,7 +232,7 @@ public class RemindMeList extends K9ListActivity
     @Override
     public void onSwipeRightToLeft(MotionEvent e1, MotionEvent e2) {
         // edit
-        RemindMe remindMe = getFollowUpFromListSwipe(e1, e2);
+        RemindMe remindMe = getRemindMeFromListSwipe(e1, e2);
 
         if(remindMe != null) {
             Log.d(K9.LOG_TAG, "RightToLeftSwipe, Object: " + remindMe);
@@ -245,16 +244,16 @@ public class RemindMeList extends K9ListActivity
     @Override
     public void onSwipeLeftToRight(MotionEvent e1, MotionEvent e2) {
         // delete
-        RemindMe remindMe = getFollowUpFromListSwipe(e1, e2);
+        RemindMe remindMe = getRemindMeFromListSwipe(e1, e2);
 
         if(remindMe != null) {
             Log.d(K9.LOG_TAG, "LeftToRightSwipe, Object: " + remindMe);
-            new DeleteFollowUp().execute(remindMe);
+            new DeleteRemindMe().execute(remindMe);
             ((RemindMeAdapter)getListView().getAdapter()).remove(remindMe);
         }
     }
 
-    private RemindMe getFollowUpFromListSwipe(MotionEvent e1, MotionEvent e2) {
+    private RemindMe getRemindMeFromListSwipe(MotionEvent e1, MotionEvent e2) {
         int x = (int) e1.getRawX();
         int y = (int) e1.getRawY();
 
@@ -283,14 +282,14 @@ public class RemindMeList extends K9ListActivity
         listView.invalidate();
     }
 
-    class LoadFollowUp extends AsyncTask<Void, Void, List<RemindMe>> {
+    class LoadRemindMe extends AsyncTask<Void, Void, List<RemindMe>> {
 
         @Override
         protected List<RemindMe> doInBackground(Void... params) {
             try {
-                return mLocalRemindMe.getAllFollowUps();
+                return mLocalRemindMe.getAllRemindMes();
             } catch (MessagingException e) {
-                Log.e(K9.LOG_TAG, "Unable to retrieve FollowUps", e);
+                Log.e(K9.LOG_TAG, "Unable to retrieve RemindMes", e);
             }
             return null;
         }
@@ -302,14 +301,14 @@ public class RemindMeList extends K9ListActivity
         }
     }
 
-    class InsertFollowUp extends AsyncTask<RemindMe, Void, Void> {
+    class InsertRemindMe extends AsyncTask<RemindMe, Void, Void> {
 
         @Override
         protected Void doInBackground(RemindMe... params) {
             for(RemindMe remindMe : params) {
                 try {
                     LocalStore store = LocalStore.getInstance(mAccount, getApplication());
-                    LocalFolder folder = new LocalFolder(store, mAccount.getFollowUpFolderName());
+                    LocalFolder folder = new LocalFolder(store, mAccount.getRemindMeFolderName());
                     folder.open(Folder.OPEN_MODE_RW);
 
                     remindMe.setFolderId(folder.getId());
@@ -319,7 +318,7 @@ public class RemindMeList extends K9ListActivity
                     messagingController.moveMessages(mAccount,
                             remindMe.getReference().getFolder().getName(),
                             new ArrayList<LocalMessage>(Arrays.asList((LocalMessage) remindMe.getReference())),
-                            mAccount.getFollowUpFolderName(), null);
+                            mAccount.getRemindMeFolderName(), null);
 
                     if(remindMe.getId() > 0) {
                         mLocalRemindMe.update(remindMe);
@@ -327,14 +326,14 @@ public class RemindMeList extends K9ListActivity
                         mLocalRemindMe.add(remindMe);
                     }
                 } catch (Exception e) {
-                    Log.e(K9.LOG_TAG, "Unable to insert followup", e);
+                    Log.e(K9.LOG_TAG, "Unable to insert RemindMe", e);
                 }
             }
             return null;
         }
     }
 
-    class DeleteFollowUp extends AsyncTask<RemindMe, Void, Void> {
+    class DeleteRemindMe extends AsyncTask<RemindMe, Void, Void> {
 
         @Override
         protected Void doInBackground(RemindMe... params) {

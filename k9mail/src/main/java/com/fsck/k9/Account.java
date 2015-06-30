@@ -184,7 +184,7 @@ public class Account implements BaseAccount, StoreConfig {
     private String mInboxFolderName;
     private String mDraftsFolderName;
     private String mSmileStorageFolderName = "SmileStorage"; //TODO
-    private String mFollowUpFolderName = "RemindMe";
+    private String mRemindMeFolderName = "RemindMe";
     private String mSentFolderName;
     private String mTrashFolderName;
     private String mArchiveFolderName;
@@ -404,7 +404,7 @@ public class Account implements BaseAccount, StoreConfig {
         mInboxFolderName = prefs.getString(mUuid + ".inboxFolderName", INBOX);
         mDraftsFolderName = prefs.getString(mUuid  + ".draftsFolderName", "Drafts");
         mSmileStorageFolderName = prefs.getString(mUuid  + ".smileStorageFolderName", "SmileStorage"); //TODO
-        mFollowUpFolderName = prefs.getString(mUuid  + ".followUpFolderName", "RemindMe");
+        mRemindMeFolderName = prefs.getString(mUuid  + ".remindMeFolderName", "RemindMe");
         mSentFolderName = prefs.getString(mUuid  + ".sentFolderName", "Sent");
         mTrashFolderName = prefs.getString(mUuid  + ".trashFolderName", "Trash");
         mArchiveFolderName = prefs.getString(mUuid  + ".archiveFolderName", "Archive");
@@ -522,7 +522,7 @@ public class Account implements BaseAccount, StoreConfig {
         editor.remove(mUuid + ".deletePolicy");
         editor.remove(mUuid + ".draftsFolderName");
         editor.remove(mUuid + ".smileStorageFolderName");
-        editor.remove(mUuid + ".followUpFolderName");
+        editor.remove(mUuid + ".remindMeFolderName");
         editor.remove(mUuid + ".sentFolderName");
         editor.remove(mUuid + ".trashFolderName");
         editor.remove(mUuid + ".archiveFolderName");
@@ -694,7 +694,7 @@ public class Account implements BaseAccount, StoreConfig {
         editor.putString(mUuid + ".inboxFolderName", mInboxFolderName);
         editor.putString(mUuid + ".draftsFolderName", mDraftsFolderName);
         editor.putString(mUuid + ".smileStorageFolderName", mSmileStorageFolderName);
-        editor.putString(mUuid + ".followUpFolderName", mFollowUpFolderName);
+        editor.putString(mUuid + ".remindMeFolderName", mRemindMeFolderName);
         editor.putString(mUuid + ".sentFolderName", mSentFolderName);
         editor.putString(mUuid + ".trashFolderName", mTrashFolderName);
         editor.putString(mUuid + ".archiveFolderName", mArchiveFolderName);
@@ -1055,7 +1055,7 @@ public class Account implements BaseAccount, StoreConfig {
                 folderName.equals(getTrashFolderName()) ||
                 folderName.equals(getDraftsFolderName()) ||
                 folderName.equals(getSmileStorageFolderName()) ||
-                folderName.equals(getFollowUpFolderName()) ||
+                folderName.equals(getRemindMeFolderName()) ||
                 folderName.equals(getArchiveFolderName()) ||
                 folderName.equals(getSpamFolderName()) ||
                 folderName.equals(getOutboxFolderName()) ||
@@ -1072,8 +1072,8 @@ public class Account implements BaseAccount, StoreConfig {
     }
 
 
-    public synchronized String getFollowUpFolderName() {
-        return mFollowUpFolderName;
+    public synchronized String getRemindMeFolderName() {
+        return mRemindMeFolderName;
     }
 
     public synchronized void setDraftsFolderName(String name) {
@@ -1084,8 +1084,8 @@ public class Account implements BaseAccount, StoreConfig {
         mSmileStorageFolderName = name;
     }
 
-    public synchronized void setFollowUpFolderName(String name) {
-        mFollowUpFolderName = name;
+    public synchronized void setRemindMeFolderName(String name) {
+        mRemindMeFolderName = name;
     }
 
     /**

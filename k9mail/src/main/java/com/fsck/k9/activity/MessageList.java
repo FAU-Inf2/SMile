@@ -48,7 +48,6 @@ import com.fsck.k9.fragment.MessageListFragment;
 import com.fsck.k9.fragment.MessageListFragment.MessageListFragmentListener;
 import com.fsck.k9.fragment.SmsListFragment;
 import com.fsck.k9.mail.Address;
-import com.fsck.k9.mailstore.LocalStore;
 import com.fsck.k9.search.ConditionsTreeNode;
 import com.fsck.k9.ui.messageview.MessageViewFragment;
 import com.fsck.k9.ui.messageview.MessageViewFragment.MessageViewFragmentListener;
@@ -479,7 +478,8 @@ public class MessageList extends K9Activity
 
         mSearch.or(new SearchCondition(SearchField.SENDER, Attribute.CONTAINS, query));
         mSearch.or(new SearchCondition(SearchField.SUBJECT, Attribute.CONTAINS, query));
-        mSearch.or(new SearchCondition(SearchField.MESSAGE_CONTENTS, Attribute.CONTAINS, query));
+        // FIXME: SqlQueryBuilder throws RTE
+        //mSearch.or(new SearchCondition(SearchField.MESSAGE_CONTENTS, Attribute.CONTAINS, query));
 
         Bundle appData = intent.getBundleExtra(SearchManager.APP_DATA);
         if (appData != null) {
@@ -921,8 +921,8 @@ public class MessageList extends K9Activity
                 mMessageViewFragment.onMove();
                 return true;
             }
-            case R.id.followup: {
-                mMessageViewFragment.onFollowUp();
+            case R.id.remindme: {
+                mMessageViewFragment.onRemindMe();
                 return true;
             }
             case R.id.copy:

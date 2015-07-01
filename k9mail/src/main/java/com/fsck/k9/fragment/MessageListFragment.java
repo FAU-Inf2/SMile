@@ -1055,7 +1055,7 @@ public class MessageListFragment extends Fragment
 
         mLocalBroadcastManager.unregisterReceiver(mCacheBroadcastReceiver);
         mListener.onPause(getActivity());
-        mController.removeListener(mListener);
+        //mController.removeListener(mListener);
     }
 
     /**
@@ -1084,7 +1084,7 @@ public class MessageListFragment extends Fragment
 
         mLocalBroadcastManager.registerReceiver(mCacheBroadcastReceiver, mCacheIntentFilter);
         mListener.onResume(getActivity());
-        mController.addListener(mListener);
+        //mController.addListener(mListener);
 
         //Cancel pending new mail notifications when we open an account
         List<Account> accountsWithNotification;

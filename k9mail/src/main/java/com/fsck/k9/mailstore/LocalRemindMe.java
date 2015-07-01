@@ -59,7 +59,10 @@ public class LocalRemindMe {
         String messageUid;
         Message message = null;
 
-        Log.d(K9.LOG_TAG, "RemindMe.populateFromCursor, folderId: " + folderId + " messageId: " + messageId);
+        if(K9.DEBUG) {
+            Log.d(K9.LOG_TAG, "RemindMe.populateFromCursor, folderId: " + folderId + " messageId: " + messageId);
+        }
+
         //LocalFolder folder = this.localStore.getFolderById(folderId);
         //check inbox and RemindMe-folder -- folderId can be different
         LocalFolder folder = this.localStore.getFolder(mAccount.getInboxFolderName());

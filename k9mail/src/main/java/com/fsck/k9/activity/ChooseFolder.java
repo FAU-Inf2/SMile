@@ -40,7 +40,6 @@ public class ChooseFolder extends K9ListActivity {
     public static final String EXTRA_SHOW_FOLDER_NONE = "com.fsck.k9.ChooseFolder_showOptionNone";
     public static final String EXTRA_SHOW_DISPLAYABLE_ONLY = "com.fsck.k9.ChooseFolder_showDisplayableOnly";
 
-
     String mFolder;
     String mSelectFolder;
     Account mAccount;

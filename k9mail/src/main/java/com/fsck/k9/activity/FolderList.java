@@ -180,13 +180,11 @@ public final class FolderList extends K9ListActivity {
 
     private final void initializeActivityView() {
         mAdapter = new FolderListAdapter(this, mAccount);
-        restorePreviousData();
-
+        // TODO: renable data restoration on configuration change in Fragment restorePreviousData();
         setListAdapter(mAdapter);
         getListView().setTextFilterEnabled(mAdapter.getFilter() != null); // should never be false but better safe then sorry
     }
-
-    @SuppressWarnings("unchecked")
+/*
     private final void restorePreviousData() {
         final Object previousData = getLastNonConfigurationInstance();
 
@@ -194,11 +192,11 @@ public final class FolderList extends K9ListActivity {
             mAdapter.setFolders((ArrayList<FolderInfoHolder>) previousData);
             mAdapter.setFilterFolders(Collections.unmodifiableList(mAdapter.getFolders()));
         }
-    }
+    }*/
 
     @Override
     public final Object onRetainNonConfigurationInstance() {
-        return (mAdapter == null) ? null : mAdapter.getFolders();
+        return (mAdapter == null) ? null : mAdapter;
     }
 
     @Override
@@ -310,9 +308,9 @@ public final class FolderList extends K9ListActivity {
     }
 
     public final void newFolders(final List<FolderInfoHolder> newFolders) {
-        mAdapter.getFolders().clear();
-        mAdapter.getFolders().addAll(newFolders);
-        mAdapter.setFilterFolders(mAdapter.getFolders());
+        mAdapter.clear();
+        mAdapter.addAll(newFolders);
+        //mAdapter.setFilterFolders(mAdapter.getFolders());
         mAdapter.notifyDataSetChanged();
     }
 

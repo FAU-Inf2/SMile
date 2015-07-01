@@ -30,70 +30,25 @@ import java.util.List;
 import de.fau.cs.mad.smile.android.R;
 
 public class FolderListAdapter extends ArrayAdapter<FolderInfoHolder> {
-    private List<FolderInfoHolder> mFolders = new ArrayList<FolderInfoHolder>();
-    private List<FolderInfoHolder> mFilteredFolders = Collections.unmodifiableList(mFolders);
-    private Filter mFilter = new FolderListFilter(this);
+    private Filter mFilter;
     private Account mAccount;
 
     public FolderListAdapter(Context context, Account account) {
         super(context, R.layout.folder_list_item);
+        setFilter(new FolderListFilter(this));
         this.mAccount = account;
     }
 
-    public List<FolderInfoHolder> getFolders() {
-        return this.mFolders;
-    }
-
-    public void setFolders(List<FolderInfoHolder> folders) {
-        this.mFolders = folders;
-    }
-
-    public List<FolderInfoHolder> getFilteredFolders() {
-        return this.mFilteredFolders;
-    }
-
-    public void setFilterFolders(List<FolderInfoHolder> filterFolders) {
-        this.mFilteredFolders = filterFolders;
-    }
-
-    public FolderInfoHolder getItem(int position) {
-        return mFilteredFolders.get(position);
-    }
-
-    public long getItemId(int position) {
-        return mFilteredFolders.get(position).folder.getName().hashCode();
-    }
-
-    public int getCount() {
-        return mFilteredFolders.size();
-    }
-
-    @Override
-    public boolean isEnabled(int item) {
-        return true;
-    }
-
-    @Override
-    public boolean areAllItemsEnabled() {
-        return true;
-    }
-
-    public int getFolderIndex(String folder) {
-        FolderInfoHolder searchHolder = new FolderInfoHolder();
-        searchHolder.name = folder;
-        return mFilteredFolders.indexOf(searchHolder);
-    }
-
     public FolderInfoHolder getFolder(String folder) {
-        FolderInfoHolder holder = null;
+        FolderInfoHolder search = new FolderInfoHolder();
+        search.name = folder;
 
-        int index = getFolderIndex(folder);
-        if (index >= 0) {
-            holder = getItem(index);
-            if (holder != null) {
+        for(int i = 0; i < getCount(); i++) {
+            FolderInfoHolder holder = getItem(i);
+            if(holder == search)
                 return holder;
-            }
         }
+
         return null;
     }
 
@@ -200,7 +155,7 @@ public class FolderListAdapter extends ArrayAdapter<FolderInfoHolder> {
         return view;
     }
 
-    private FolderViewHolder getOrCreateFolderInfoHolder(FolderInfoHolder folder, View view) {
+    private final FolderViewHolder getOrCreateFolderInfoHolder(final FolderInfoHolder folder, final View view) {
         FolderViewHolder holder = (FolderViewHolder) view.getTag();
 
         if (holder == null) {
@@ -225,7 +180,7 @@ public class FolderListAdapter extends ArrayAdapter<FolderInfoHolder> {
         return holder;
     }
 
-    private String getFolderStatus(FolderInfoHolder folder) {
+    private final String getFolderStatus(final FolderInfoHolder folder) {
         if (folder.loading) {
             return getContext().getString(R.string.status_loading);
         }
@@ -257,7 +212,7 @@ public class FolderListAdapter extends ArrayAdapter<FolderInfoHolder> {
         return null;
     }
 
-    private View.OnClickListener createFlaggedSearch(Account account, FolderInfoHolder folder) {
+    private final View.OnClickListener createFlaggedSearch(final Account account, final FolderInfoHolder folder) {
         String searchTitle = getContext().getString(R.string.search_title,
                 getContext().getString(R.string.message_list_title, account.getDescription(),
                         folder.displayName),
@@ -272,7 +227,7 @@ public class FolderListAdapter extends ArrayAdapter<FolderInfoHolder> {
         return new FolderClickListener(getContext(), search);
     }
 
-    private View.OnClickListener createUnreadSearch(Account account, FolderInfoHolder folder) {
+    private final View.OnClickListener createUnreadSearch(final Account account, final FolderInfoHolder folder) {
         String searchTitle = getContext().getString(R.string.search_title,
                 getContext().getString(R.string.message_list_title, account.getDescription(),
                         folder.displayName),
@@ -288,15 +243,16 @@ public class FolderListAdapter extends ArrayAdapter<FolderInfoHolder> {
     }
 
     @Override
-    public boolean hasStableIds() {
+    public final boolean hasStableIds() {
         return true;
     }
 
-    public void setFilter(final Filter filter) {
+    public final void setFilter(final Filter filter) {
         this.mFilter = filter;
     }
 
-    public Filter getFilter() {
-        return mFilter;
+    @Override
+    public final Filter getFilter() {
+        return this.mFilter;
     }
 }

@@ -24,7 +24,7 @@ public class FolderListFilter<T> extends Filter {
      * changes due to the filtering performed by {@link #performFiltering}.
      * This in turn will change the folders displayed in the ListView.
      */
-    private ArrayAdapter<T> mFolders;
+    private ArrayAdapter<T> mAdapter;
 
     /**
      * All folders.
@@ -34,10 +34,10 @@ public class FolderListFilter<T> extends Filter {
     /**
      * Create a filter for a list of folders.
      *
-     * @param folderNames
+     * @param adapter
      */
-    public FolderListFilter(final ArrayAdapter<T> folderNames) {
-        this.mFolders = folderNames;
+    public FolderListFilter(final ArrayAdapter<T> adapter) {
+        this.mAdapter = adapter;
     }
 
     /**
@@ -50,13 +50,13 @@ public class FolderListFilter<T> extends Filter {
     protected FilterResults performFiltering(CharSequence searchTerm) {
         FilterResults results = new FilterResults();
 
-        // Copy the values from mFolders to mOriginalValues if this is the
+        // Copy the values from mAdapter to mOriginalValues if this is the
         // first time this method is called.
         if (mOriginalValues == null) {
-            int count = mFolders.getCount();
+            int count = mAdapter.getCount();
             mOriginalValues = new ArrayList<T>(count);
             for (int i = 0; i < count; i++) {
-                mOriginalValues.add(mFolders.getItem(i));
+                mOriginalValues.add(mAdapter.getItem(i));
             }
         }
 
@@ -100,16 +100,16 @@ public class FolderListFilter<T> extends Filter {
     @Override
     protected void publishResults(CharSequence constraint, FilterResults results) {
         // Don't notify for every change
-        mFolders.setNotifyOnChange(false);
+        mAdapter.setNotifyOnChange(false);
         try {
 
             //noinspection unchecked
             final List<T> folders = (List<T>) results.values;
-            mFolders.clear();
+            mAdapter.clear();
             if (folders != null) {
                 for (T folder : folders) {
                     if (folder != null) {
-                        mFolders.add(folder);
+                        mAdapter.add(folder);
                     }
                 }
             } else {
@@ -117,10 +117,10 @@ public class FolderListFilter<T> extends Filter {
             }
 
             // Send notification that the data set changed now
-            mFolders.notifyDataSetChanged();
+            mAdapter.notifyDataSetChanged();
         } finally {
             // restore notification status
-            mFolders.setNotifyOnChange(true);
+            mAdapter.setNotifyOnChange(true);
         }
     }
 

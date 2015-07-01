@@ -2,6 +2,7 @@ package com.fsck.k9.mail;
 import java.util.Date;
 
 public class RemindMe {
+
     public enum RemindInterval {
         TEN_MINUTES,
         THIRTY_MINUTES,
@@ -18,6 +19,7 @@ public class RemindMe {
     private String messageId;
     private RemindInterval remindInterval;
     private Date lastModified;
+    private Date seen;
 
     public RemindMe() {
     }
@@ -134,6 +136,14 @@ public class RemindMe {
 
     public void setLastModified(Date lastModified) {
         this.lastModified = lastModified;
+    }
+
+    public void setSeen(Date seen) {
+        this.seen = seen;
+    }
+
+    public Date getSeen() {
+        return seen;
     }
 
     @Override

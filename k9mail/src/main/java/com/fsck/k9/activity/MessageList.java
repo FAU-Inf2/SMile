@@ -478,7 +478,8 @@ public class MessageList extends K9Activity
 
         mSearch.or(new SearchCondition(SearchField.SENDER, Attribute.CONTAINS, query));
         mSearch.or(new SearchCondition(SearchField.SUBJECT, Attribute.CONTAINS, query));
-        mSearch.or(new SearchCondition(SearchField.MESSAGE_CONTENTS, Attribute.CONTAINS, query));
+        // FIXME: SqlQueryBuilder throws RTE
+        //mSearch.or(new SearchCondition(SearchField.MESSAGE_CONTENTS, Attribute.CONTAINS, query));
 
         Bundle appData = intent.getBundleExtra(SearchManager.APP_DATA);
         if (appData != null) {
@@ -921,7 +922,7 @@ public class MessageList extends K9Activity
                 return true;
             }
             case R.id.remindme: {
-                mMessageViewFragment.onFollowUp();
+                mMessageViewFragment.onRemindMe();
                 return true;
             }
             case R.id.copy:
@@ -1441,8 +1442,10 @@ public class MessageList extends K9Activity
                 mMenuButtonCheckMail.setActionView(null);
             }
         } else {
-            if (mMenuButtonCheckMail != null)
+            if (mMenuButtonCheckMail != null) {
                 mMenuButtonCheckMail.setActionView(null);
+            }
+
             if (enable) {
                 mActionBarProgress.setVisibility(ProgressBar.VISIBLE);
             } else {

@@ -43,6 +43,7 @@ import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.mailstore.LocalRemindMe;
 import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.mailstore.LocalStore;
+import com.fsck.k9.service.RemindMeService;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -68,6 +69,8 @@ public class RemindMeList extends K9Activity
     private ListView mDrawerList;
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
+    private boolean onTimeSetCalled = false;
+    private boolean onDateSetCalled = false;
 
     private ArrayAdapter<String> mAdapter;
     private RemindMeFragment remindMeFragment;
@@ -184,7 +187,7 @@ public class RemindMeList extends K9Activity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.followup_list_actions, menu);
+        inflater.inflate(R.menu.remindme_list_actions, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -214,7 +217,13 @@ public class RemindMeList extends K9Activity
 
     @Override
     public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-        final String timePickerTag = "followUpTimePicker";
+        if(onDateSetCalled) {
+            return;
+        }
+
+        onDateSetCalled = true;
+
+        final String timePickerTag = "remindMeTimePicker";
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.YEAR, year);
         calendar.set(Calendar.MONTH, monthOfYear);
@@ -228,6 +237,12 @@ public class RemindMeList extends K9Activity
 
     @Override
     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+        if(onTimeSetCalled) {
+            return;
+        }
+
+        onTimeSetCalled = true;
+
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(currentRemindMe.getRemindTime());
         calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
@@ -244,7 +259,10 @@ public class RemindMeList extends K9Activity
         currentRemindMe = dlg.getRemindMe();
 
         if(currentRemindMe.getRemindInterval() == RemindMe.RemindInterval.CUSTOM) {
-            final String datePickerTag = "followUpDatePicker";
+            onDateSetCalled = false;
+            onTimeSetCalled = false;
+
+            final String datePickerTag = "remindMeDatePicker";
             FragmentTransaction ft = getFragmentManager().beginTransaction();
             Fragment prev = getFragmentManager().findFragmentByTag(datePickerTag);
 
@@ -291,6 +309,4 @@ public class RemindMeList extends K9Activity
         // delete
         remindMeFragment.onSwipeLeftToRight(e1, e2);
     }
-
-
 }

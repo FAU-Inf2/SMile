@@ -147,7 +147,7 @@ public class FeatureStorage {
                     return;
                 }
 
-                //Merge FollowUps
+                //Merge RemindMes
                 try {
                     List<RemindMe> allRemindMes = new ArrayList<RemindMe>();
                     try {
@@ -161,12 +161,12 @@ public class FeatureStorage {
                             f.setUid(f.getReference().getUid());
                         }
                     } catch (Exception e) {
-                        Log.e(K9.LOG_TAG, "Could not get all FollowUps from db: " + e.getMessage());
+                        Log.e(K9.LOG_TAG, "Could not get all RemindMes from db: " + e.getMessage());
                     }
                     internalRoot.setAllRemindMes(mergeRemindMes(externalRoot.getAllRemindMes(),
                             allRemindMes));
                 } catch (Exception e){
-                    Log.e(K9.LOG_TAG, "Exception while adding allFollowUps to root: " + e.getMessage());
+                    Log.e(K9.LOG_TAG, "Exception while adding allRemindMes to root: " + e.getMessage());
                 }
 
                 Log.d(K9.LOG_TAG, "New version from mergeLocalExternalVersion(): " + objectMapper.
@@ -182,7 +182,7 @@ public class FeatureStorage {
         }
 
         /**
-         * Adds the new FollowUpMailInformation to the file, removes expired elements and
+         * Adds the new RemindMeMailInformation to the file, removes expired elements and
          * saves it locally.
          * @return String which needs to be appended as new version on the server
          */
@@ -202,11 +202,11 @@ public class FeatureStorage {
                     try {
                         allRemindMes = localRemindMe.getAllRemindMes();
                     } catch (Exception e) {
-                        Log.e(K9.LOG_TAG, "Could not get all FollowUps from db: " + e.getMessage());
+                        Log.e(K9.LOG_TAG, "Could not get all RemindMes from db: " + e.getMessage());
                     }
                     root.setAllRemindMes(allRemindMes);
                 } catch (Exception e){
-                    Log.e(K9.LOG_TAG, "Exception while adding allFollowUps to root: " + e.getMessage());
+                    Log.e(K9.LOG_TAG, "Exception while adding allRemindMes to root: " + e.getMessage());
                 }
 
                 // remove expired nodes
@@ -277,7 +277,7 @@ public class FeatureStorage {
             long timestamp = System.currentTimeMillis();
             //go through and remove old nodes
             List<RemindMe> remindMes = root.getAllRemindMes();
-            Log.d(K9.LOG_TAG, "Sum of all FollowUps: " + remindMes.size());
+            Log.d(K9.LOG_TAG, "Sum of all RemindMes: " + remindMes.size());
             for (Iterator<RemindMe> i = remindMes.iterator(); i.hasNext();) {
                 RemindMe f = i.next();
                 if (f.getRemindTime().before(new Date(timestamp))) {
@@ -289,7 +289,7 @@ public class FeatureStorage {
                     i.remove();
                 }
             }
-            Log.d(K9.LOG_TAG, "Sum of all FollowUpMail after removing expired ones: " +
+            Log.d(K9.LOG_TAG, "Sum of all RemindMeMail after removing expired ones: " +
                     remindMes.size());
             root.setAllRemindMes(remindMes);
 

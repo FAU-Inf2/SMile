@@ -4929,7 +4929,7 @@ public class MessagingController implements Runnable {
     /**
      * Creates a notification of a newly received message.
      */
-    private void notifyAccount(Context context, Account account,
+    public void notifyAccount(Context context, Account account,
             LocalMessage message, int previousUnreadMessageCount) {
         final NotificationData data = getNotificationData(account, previousUnreadMessageCount);
         synchronized (data) {
@@ -5001,10 +5001,12 @@ public class MessagingController implements Runnable {
                             getMessageSender(context, account, m),
                             getMessageSubject(context, m)));
                 }
+
                 if (!data.droppedMessages.isEmpty()) {
                     style.setSummaryText(context.getString(R.string.notification_additional_messages,
                             data.droppedMessages.size(), accountDescr));
                 }
+
                 final String title = context.getResources().getQuantityString(
                     R.plurals.notification_new_messages_title, newMessages, newMessages);
                 style.setBigContentTitle(title);
@@ -5771,6 +5773,7 @@ public class MessagingController implements Runnable {
             memory.syncingState = MemorizingState.FAILED;
             memory.failureMessage = message;
         }
+
         synchronized void refreshOther(MessagingListener other) {
             if (other != null) {
 

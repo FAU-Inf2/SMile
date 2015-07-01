@@ -57,7 +57,7 @@ import de.cketti.library.changelog.ChangeLog;
  * Activity shows list of the Account's folders
  */
 
-public class FolderList extends K9ListActivity {
+public final class FolderList extends K9ListActivity {
     private static final String EXTRA_ACCOUNT = "account";
     private static final String EXTRA_FROM_SHORTCUT = "fromShortcut";
     private static final boolean REFRESH_REMOTE = true;
@@ -67,6 +67,7 @@ public class FolderList extends K9ListActivity {
     private FolderListActivityListener mListener;
     private Account mAccount;
     private int mUnreadMessageCount;
+    private Handler mHandler;
 
     private MenuItem mRefreshMenuItem;
     private View mActionBarProgressView;
@@ -94,7 +95,7 @@ public class FolderList extends K9ListActivity {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public final void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         if (UpgradeDatabases.actionUpgradeDatabases(this, getIntent())) {
@@ -102,6 +103,7 @@ public class FolderList extends K9ListActivity {
             return;
         }
 
+        mHandler = new Handler();
         mActionBarProgressView = getLayoutInflater().inflate(R.layout.actionbar_indeterminate_progress_actionview, null);
         mActionBar = getActionBar();
         initializeActionBar();
@@ -137,7 +139,7 @@ public class FolderList extends K9ListActivity {
         }
     }
 
-    private void initializeActionBar() {
+    private final void initializeActionBar() {
         mActionBar.setDisplayShowCustomEnabled(true);
         mActionBar.setCustomView(R.layout.actionbar_custom);
 
@@ -150,7 +152,7 @@ public class FolderList extends K9ListActivity {
     }
 
     @Override
-    public void onNewIntent(Intent intent) {
+    public final void onNewIntent(Intent intent) {
         setIntent(intent); // onNewIntent doesn't autoset our "internal" intent
 
         mUnreadMessageCount = 0;
@@ -176,7 +178,7 @@ public class FolderList extends K9ListActivity {
         }
     }
 
-    private void initializeActivityView() {
+    private final void initializeActivityView() {
         mAdapter = new FolderListAdapter(this, mAccount);
         restorePreviousData();
 
@@ -185,7 +187,7 @@ public class FolderList extends K9ListActivity {
     }
 
     @SuppressWarnings("unchecked")
-    private void restorePreviousData() {
+    private final void restorePreviousData() {
         final Object previousData = getLastNonConfigurationInstance();
 
         if (previousData != null) {
@@ -195,12 +197,12 @@ public class FolderList extends K9ListActivity {
     }
 
     @Override
-    public Object onRetainNonConfigurationInstance() {
+    public final Object onRetainNonConfigurationInstance() {
         return (mAdapter == null) ? null : mAdapter.getFolders();
     }
 
     @Override
-    public void onPause() {
+    public final void onPause() {
         super.onPause();
         MessagingController.getInstance(getApplication()).removeListener(mListener);
         mListener.onPause(this);
@@ -212,7 +214,7 @@ public class FolderList extends K9ListActivity {
      * like unread message count and read status are updated.
      */
     @Override
-    public void onResume() {
+    public final void onResume() {
         super.onResume();
 
         if (!mAccount.isAvailable(this)) {
@@ -226,7 +228,7 @@ public class FolderList extends K9ListActivity {
             initializeActivityView();
         }
 
-        mListener = new FolderListActivityListener(mAdapter, mAccount);
+        mListener = new FolderListActivityListener(mAdapter, mAccount, mHandler);
 
         refreshTitle();
 
@@ -241,7 +243,7 @@ public class FolderList extends K9ListActivity {
     }
 
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
+    public final boolean onKeyDown(int keyCode, KeyEvent event) {
         //Shortcuts that work no matter what is selected
         switch (keyCode) {
             case KeyEvent.KEYCODE_Q: {
@@ -282,11 +284,11 @@ public class FolderList extends K9ListActivity {
         return super.onKeyDown(keyCode, event);
     }
 
-    public void setUnreadMessageCount(int unreadMessageCount) {
+    public final void setUnreadMessageCount(int unreadMessageCount) {
         this.mUnreadMessageCount = unreadMessageCount;
     }
 
-    public void refreshTitle() {
+    public final void refreshTitle() {
         mActionBarTitle.setText(getString(R.string.folders_title));
 
         if (mUnreadMessageCount == 0) {
@@ -307,20 +309,20 @@ public class FolderList extends K9ListActivity {
         mAdapter.notifyDataSetChanged();
     }
 
-    public void newFolders(final List<FolderInfoHolder> newFolders) {
+    public final void newFolders(final List<FolderInfoHolder> newFolders) {
         mAdapter.getFolders().clear();
         mAdapter.getFolders().addAll(newFolders);
         mAdapter.setFilterFolders(mAdapter.getFolders());
         mAdapter.notifyDataSetChanged();
     }
 
-    public void workingAccount(final int res) {
+    public final void workingAccount(final int res) {
         String toastText = getString(res, mAccount.getDescription());
         Toast toast = Toast.makeText(getApplication(), toastText, Toast.LENGTH_SHORT);
         toast.show();
     }
 
-    public void accountSizeChanged(final long oldSize, final long newSize) {
+    public final void accountSizeChanged(final long oldSize, final long newSize) {
         String toastText = getString(R.string.account_size_changed, mAccount.getDescription(),
                 SizeFormatter.formatSize(getApplication(), oldSize),
                 SizeFormatter.formatSize(getApplication(), newSize));
@@ -329,7 +331,7 @@ public class FolderList extends K9ListActivity {
         toast.show();
     }
 
-    public void folderLoading(final String folder, final boolean loading) {
+    public final void folderLoading(final String folder, final boolean loading) {
         FolderInfoHolder folderHolder = mAdapter.getFolder(folder);
 
         if (folderHolder != null) {
@@ -337,7 +339,7 @@ public class FolderList extends K9ListActivity {
         }
     }
 
-    public void progress(final boolean progress) {
+    public final void progress(final boolean progress) {
         // Make sure we don't try this before the menu is initialized
         // this could happen while the activity is initialized.
         if (mRefreshMenuItem == null) {
@@ -351,41 +353,41 @@ public class FolderList extends K9ListActivity {
         }
     }
 
-    private void setDisplayMode(FolderMode newMode) {
+    private final void setDisplayMode(final FolderMode newMode) {
         mAccount.setFolderDisplayMode(newMode);
-        mAccount.save(Preferences.getPreferences(this));
+        mAccount.save(Preferences.getPreferences(getApplication()));
 
         if (mAccount.getFolderPushMode() != FolderMode.NONE) {
-            MailService.actionRestartPushers(this, null);
+            MailService.actionRestartPushers(getApplication(), null);
         }
 
         mAdapter.getFilter().filter(null);
         onRefresh(false);
     }
 
-    private void onRefresh(final boolean forceRemote) {
+    private final void onRefresh(final boolean forceRemote) {
         MessagingController.getInstance(getApplication()).listFolders(mAccount, forceRemote, mListener);
     }
 
-    private void onEditPrefs() {
+    private final void onEditPrefs() {
         Prefs.actionPrefs(this);
     }
 
-    private void onEditAccount() {
+    private final void onEditAccount() {
         AccountSettings.actionSettings(this, mAccount);
     }
 
-    private void onAccounts() {
+    private final void onAccounts() {
         Accounts.listAccounts(this);
         finish();
     }
 
-    private void onEmptyTrash(final Account account) {
+    private final void onEmptyTrash(final Account account) {
         mAdapter.notifyDataSetChanged();
         MessagingController.getInstance(getApplication()).emptyTrash(account, null);
     }
 
-    private void onClearFolder(Account account, String folderName) {
+    private final void onClearFolder(final Account account, final String folderName) {
         // There has to be a cheaper way to get at the localFolder object than this
         LocalFolder localFolder = null;
         try {
@@ -408,12 +410,12 @@ public class FolderList extends K9ListActivity {
         onRefresh(!REFRESH_REMOTE);
     }
 
-    private void sendMail(Account account) {
+    private final void sendMail(final Account account) {
         MessagingController.getInstance(getApplication()).sendPendingMessages(account, mListener);
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public final boolean onOptionsItemSelected(final MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
                 onAccounts();
@@ -477,27 +479,27 @@ public class FolderList extends K9ListActivity {
     }
 
     @Override
-    public boolean onSearchRequested() {
+    public final boolean onSearchRequested() {
         Bundle appData = new Bundle();
         appData.putString(MessageList.EXTRA_SEARCH_ACCOUNT, mAccount.getUuid());
         startSearch(null, false, appData, false);
         return true;
     }
 
-    private void onOpenFolder(String folder) {
+    private final void onOpenFolder(final String folder) {
         LocalSearch search = new LocalSearch(folder);
         search.addAccountUuid(mAccount.getUuid());
         search.addAllowedFolder(folder);
         MessageList.actionDisplaySearch(this, search, false, false);
     }
 
-    private void onCompact(Account account) {
+    private final void onCompact(final Account account) {
         workingAccount(R.string.compacting_account);
         MessagingController.getInstance(getApplication()).compact(account, null);
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public final boolean onCreateOptionsMenu(final Menu menu) {
         super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.folder_list_option, menu);
         mRefreshMenuItem = menu.findItem(R.id.check_mail);
@@ -505,7 +507,7 @@ public class FolderList extends K9ListActivity {
         return true;
     }
 
-    private void configureFolderSearchView(Menu menu) {
+    private final void configureFolderSearchView(final Menu menu) {
         final MenuItem folderMenuItem = menu.findItem(R.id.filter_folders);
         final SearchView folderSearchView = (SearchView) folderMenuItem.getActionView();
         folderSearchView.setQueryHint(getString(R.string.folder_list_filter_hint));
@@ -536,9 +538,9 @@ public class FolderList extends K9ListActivity {
     }
 
     @Override
-    public boolean onContextItemSelected(android.view.MenuItem item) {
+    public final boolean onContextItemSelected(final MenuItem item) {
         AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
-        FolderInfoHolder folder = (FolderInfoHolder) mAdapter.getItem(info.position);
+        FolderInfoHolder folder = mAdapter.getItem(info.position);
 
         switch (item.getItemId()) {
             case R.id.clear_local_folder:
@@ -560,7 +562,7 @@ public class FolderList extends K9ListActivity {
      * given folder, notifying the adapter that the message have been loaded and
      * queueing up a remote update of the folder.
      */
-    private void checkMail(FolderInfoHolder folder) {
+    private final void checkMail(final FolderInfoHolder folder) {
         TracingPowerManager pm = TracingPowerManager.getPowerManager(this);
         final TracingWakeLock wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "FolderList checkMail");
         wakeLock.setReferenceCounted(false);
@@ -588,7 +590,7 @@ public class FolderList extends K9ListActivity {
     }
 
     @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
+    public final void onCreateContextMenu(final ContextMenu menu, final View v, final ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
         AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
         getMenuInflater().inflate(R.menu.folder_context, menu);
@@ -597,122 +599,198 @@ public class FolderList extends K9ListActivity {
         menu.setHeaderTitle(folder.displayName);
     }
 
-    public class FolderListActivityListener extends ActivityListener {
-        private FolderListAdapter mAdapter;
-        private Account mAccount;
-        private Context mContext;
+    public final class FolderListActivityListener extends ActivityListener {
+        private final FolderListAdapter mAdapter;
+        private final Account mAccount;
+        private final Context mContext;
+        private final Handler mHandler;
 
-        public FolderListActivityListener(FolderListAdapter adapter, Account account) {
+        public FolderListActivityListener(FolderListAdapter adapter, Account account, Handler handler) {
             this.mAdapter = adapter;
             this.mAccount = account;
             this.mContext = adapter.getContext();
+            this.mHandler = handler;
         }
 
         @Override
-        public void informUserOfStatus() {
-            refreshTitle();
-        }
-
-        @Override
-        public void accountStatusChanged(BaseAccount account, AccountStats stats) {
-            if (!account.equals(mAccount)) {
-                return;
-            }
-
-            if (stats == null) {
-                return;
-            }
-
-            setUnreadMessageCount(stats.unreadMessageCount);
-            refreshTitle();
-        }
-
-        @Override
-        public void listFoldersStarted(Account account) {
-            if (account.equals(mAccount)) {
-                progress(true);
-            }
-
-            super.listFoldersStarted(account);
-        }
-
-        @Override
-        public void listFoldersFailed(Account account, String message) {
-            if (account.equals(mAccount)) {
-                progress(false);
-            }
-
-            super.listFoldersFailed(account, message);
-        }
-
-        @Override
-        public void listFoldersFinished(Account account) {
-            if (account.equals(mAccount)) {
-                progress(false);
-                MessagingController.getInstance(mAdapter.getContext()).refreshListener(this);
-                mAdapter.notifyDataSetChanged();
-            }
-
-            super.listFoldersFinished(account);
-        }
-
-        @Override
-        public void listFolders(Account account, List<? extends Folder> folders) {
-            if (account.equals(mAccount)) {
-                List<FolderInfoHolder> newFolders = new LinkedList<FolderInfoHolder>();
-                List<FolderInfoHolder> topFolders = new LinkedList<FolderInfoHolder>();
-                FolderMode aMode = account.getFolderDisplayMode();
-
-                for (Folder folder : folders) {
-                    Folder.FolderClass fMode = folder.getDisplayClass();
-
-                    if ((aMode == FolderMode.FIRST_CLASS && fMode != Folder.FolderClass.FIRST_CLASS)
-                            || (aMode == FolderMode.FIRST_AND_SECOND_CLASS &&
-                            fMode != Folder.FolderClass.FIRST_CLASS &&
-                            fMode != Folder.FolderClass.SECOND_CLASS)
-                            || (aMode == FolderMode.NOT_SECOND_CLASS && fMode == Folder.FolderClass.SECOND_CLASS)) {
-                        continue;
-                    }
-
-                    FolderInfoHolder holder = new FolderInfoHolder(mAdapter.getContext(), folder, mAccount, -1);
-
-                    if (folder.isInTopGroup()) {
-                        topFolders.add(holder);
-                    } else {
-                        newFolders.add(holder);
+        public final void accountSizeChanged(final Account account, final long oldSize, final long newSize) {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (account.equals(mAccount)) {
+                        accountSizeChanged(account, oldSize, newSize);
                     }
                 }
-
-                Collections.sort(newFolders);
-                Collections.sort(topFolders);
-                topFolders.addAll(newFolders);
-                newFolders(topFolders);
-            }
-
-            super.listFolders(account, folders);
+            });
         }
 
         @Override
-        public void synchronizeMailboxStarted(Account account, String folder) {
+        public final void accountStatusChanged(final BaseAccount account, final AccountStats stats) {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (!account.equals(mAccount)) {
+                        return;
+                    }
+
+                    if (stats == null) {
+                        return;
+                    }
+
+                    setUnreadMessageCount(stats.unreadMessageCount);
+                    refreshTitle();
+                }
+            });
+        }
+
+        @Override
+        public final void emptyTrashCompleted(final Account account) {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (account.equals(mAccount)) {
+                        refreshFolder(account, mAccount.getTrashFolderName());
+                    }
+                }
+            });
+        }
+
+        @Override
+        public final void folderStatusChanged(final Account account, final String folderName, final int unreadMessageCount) {
+            this.mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (account.equals(mAccount)) {
+                        refreshFolder(account, folderName);
+                        informUserOfStatus();
+                    }
+                }
+            });
+        }
+
+        @Override
+        public final void informUserOfStatus() {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    refreshTitle();
+                }
+            });
+        }
+
+        @Override
+        public final void listFolders(final Account account, final List<? extends Folder> folders) {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (account.equals(mAccount)) {
+                        List<FolderInfoHolder> newFolders = new LinkedList<FolderInfoHolder>();
+                        List<FolderInfoHolder> topFolders = new LinkedList<FolderInfoHolder>();
+                        FolderMode aMode = account.getFolderDisplayMode();
+
+                        for (Folder folder : folders) {
+                            Folder.FolderClass fMode = folder.getDisplayClass();
+
+                            if ((aMode == FolderMode.FIRST_CLASS && fMode != Folder.FolderClass.FIRST_CLASS)
+                                    || (aMode == FolderMode.FIRST_AND_SECOND_CLASS &&
+                                    fMode != Folder.FolderClass.FIRST_CLASS &&
+                                    fMode != Folder.FolderClass.SECOND_CLASS)
+                                    || (aMode == FolderMode.NOT_SECOND_CLASS && fMode == Folder.FolderClass.SECOND_CLASS)) {
+                                continue;
+                            }
+
+                            FolderInfoHolder holder = new FolderInfoHolder(mAdapter.getContext(), folder, mAccount, -1);
+
+                            if (folder.isInTopGroup()) {
+                                topFolders.add(holder);
+                            } else {
+                                newFolders.add(holder);
+                            }
+                        }
+
+                        Collections.sort(newFolders);
+                        Collections.sort(topFolders);
+                        topFolders.addAll(newFolders);
+                        newFolders(topFolders);
+                    }
+                }
+            });
+        }
+
+        @Override
+        public final void listFoldersFailed(final Account account, final String message) {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (account.equals(mAccount)) {
+                        progress(false);
+                    }
+                }
+            });
+        }
+
+        @Override
+        public final void listFoldersFinished(final Account account) {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (account.equals(mAccount)) {
+                        progress(false);
+                        MessagingController.getInstance(mAdapter.getContext()).refreshListener(mListener);
+                        mAdapter.notifyDataSetChanged();
+                    }
+                }
+            });
+        }
+
+        @Override
+        public final void listFoldersStarted(final Account account) {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (account.equals(mAccount)) {
+                        progress(true);
+                    }
+                }
+            });
+        }
+
+        @Override
+        public final void messageDeleted(final Account account, final String folder, final Message message) {
+            synchronizeMailboxRemovedMessage(account, folder, message);
+        }
+
+        @Override
+        public final void synchronizeMailboxStarted(final Account account, final String folder) {
             super.synchronizeMailboxStarted(account, folder);
-            if (account.equals(mAccount)) {
-                progress(true);
-                folderLoading(folder, true);
-                mAdapter.notifyDataSetChanged();
-            }
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (account.equals(mAccount)) {
+                        progress(true);
+                        folderLoading(folder, true);
+                        mAdapter.notifyDataSetChanged();
+                    }
+                }
+            });
         }
 
         @Override
-        public void synchronizeMailboxFinished(Account account, String folder, int totalMessagesInMailbox, int numNewMessages) {
+        public final void synchronizeMailboxFinished(final Account account, final String folder, final int totalMessagesInMailbox, int numNewMessages) {
             super.synchronizeMailboxFinished(account, folder, totalMessagesInMailbox, numNewMessages);
-            if (account.equals(mAccount)) {
-                progress(false);
-                folderLoading(folder, false);
-                refreshFolder(account, folder);
-            }
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (account.equals(mAccount)) {
+                        progress(false);
+                        folderLoading(folder, false);
+                        refreshFolder(account, folder);
+                    }
+                }
+            });
         }
 
-        private void refreshFolder(Account account, String folderName) {
+        private final void refreshFolder(final Account account, final String folderName) {
             // There has to be a cheaper way to get at the localFolder object than this
             Folder localFolder = null;
             try {
@@ -741,88 +819,89 @@ public class FolderList extends K9ListActivity {
         }
 
         @Override
-        public void synchronizeMailboxFailed(Account account, String folder, String message) {
+        public final void synchronizeMailboxFailed(final Account account, final String folder, final String message) {
             super.synchronizeMailboxFailed(account, folder, message);
 
-            if (!account.equals(mAccount)) {
-                return;
-            }
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (!account.equals(mAccount)) {
+                        return;
+                    }
 
-            progress(false);
-            folderLoading(folder, false);
-            FolderInfoHolder holder = mAdapter.getFolder(folder);
+                    progress(false);
+                    folderLoading(folder, false);
+                    FolderInfoHolder holder = mAdapter.getFolder(folder);
 
-            if (holder != null) {
-                holder.lastChecked = 0;
-            }
+                    if (holder != null) {
+                        holder.lastChecked = 0;
+                    }
 
-            mAdapter.notifyDataSetChanged();
+                    mAdapter.notifyDataSetChanged();
+                }
+            });
         }
 
         @Override
-        public void setPushActive(Account account, String folderName, boolean enabled) {
-            if (!account.equals(mAccount)) {
-                return;
-            }
+        public final void setPushActive(final Account account, final String folderName, final boolean enabled) {
 
-            FolderInfoHolder holder = mAdapter.getFolder(folderName);
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (!account.equals(mAccount)) {
+                        return;
+                    }
 
-            if (holder != null) {
-                holder.pushActive = enabled;
-                mAdapter.notifyDataSetChanged();
-            }
+                    FolderInfoHolder holder = mAdapter.getFolder(folderName);
+
+                    if (holder != null) {
+                        holder.pushActive = enabled;
+                        mAdapter.notifyDataSetChanged();
+                    }
+                }
+            });
         }
 
         @Override
-        public void messageDeleted(Account account, String folder, Message message) {
-            synchronizeMailboxRemovedMessage(account, folder, message);
-        }
-
-        @Override
-        public void emptyTrashCompleted(Account account) {
-            if (account.equals(mAccount)) {
-                refreshFolder(account, mAccount.getTrashFolderName());
-            }
-        }
-
-        @Override
-        public void folderStatusChanged(Account account, String folderName, int unreadMessageCount) {
-            if (account.equals(mAccount)) {
-                refreshFolder(account, folderName);
-                informUserOfStatus();
-            }
-        }
-
-        @Override
-        public void sendPendingMessagesCompleted(Account account) {
+        public final void sendPendingMessagesCompleted(final Account account) {
             super.sendPendingMessagesCompleted(account);
-            if (account.equals(mAccount)) {
-                refreshFolder(account, mAccount.getOutboxFolderName());
-            }
+
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (account.equals(mAccount)) {
+                        refreshFolder(account, mAccount.getOutboxFolderName());
+                    }
+                }
+            });
         }
 
         @Override
-        public void sendPendingMessagesStarted(Account account) {
+        public final void sendPendingMessagesStarted(final Account account) {
             super.sendPendingMessagesStarted(account);
 
-            if (account.equals(mAccount)) {
-                mAdapter.notifyDataSetChanged();
-            }
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (account.equals(mAccount)) {
+                        mAdapter.notifyDataSetChanged();
+                    }
+                }
+            });
         }
 
         @Override
-        public void sendPendingMessagesFailed(Account account) {
+        public final void sendPendingMessagesFailed(final Account account) {
             super.sendPendingMessagesFailed(account);
-            if (account.equals(mAccount)) {
-                refreshFolder(account, mAccount.getOutboxFolderName());
-            }
-        }
 
-        @Override
-        public void accountSizeChanged(Account account, long oldSize, long newSize) {
-            if (account.equals(mAccount)) {
-                accountSizeChanged(account, oldSize, newSize);
-            }
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (account.equals(mAccount)) {
+                        refreshFolder(account, mAccount.getOutboxFolderName());
+                    }
+                }
+            });
         }
     }
 }

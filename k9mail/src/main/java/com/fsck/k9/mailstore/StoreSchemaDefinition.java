@@ -115,7 +115,8 @@ class StoreSchemaDefinition implements LockableDatabase.SchemaDefinition {
                         "server_extra TEXT" +
                         ")");
 
-                db.execSQL("CREATE TABLE RemindMe (Id INTEGER PRIMARY KEY, FolderId INTEGER NOT NULL, MessageId INTEGER NOT NULL, RemindTime INTEGER NOT NULL, LastModified INTEGER NOT NULL);");
+                db.execSQL("CREATE TABLE RemindMe (Id INTEGER PRIMARY KEY, FolderId INTEGER NOT NULL, "
+                        + "MessageId INTEGER NOT NULL, RemindTime INTEGER NOT NULL, LastModified INTEGER NOT NULL, Seen INTEGER);");
 
                 db.execSQL("CREATE TRIGGER set_message_part_root " +
                         "AFTER INSERT ON message_parts " +
@@ -561,7 +562,8 @@ class StoreSchemaDefinition implements LockableDatabase.SchemaDefinition {
                 }
 
                 if (db.getVersion() < 51) {
-                    db.execSQL("CREATE TABLE RemindMe (Id INTEGER PRIMARY KEY, FolderId INTEGER NOT NULL, MessageId INTEGER NOT NULL, RemindTime INTEGER NOT NULL, LastModified INTEGER NOT NULL);");
+                    db.execSQL("CREATE TABLE RemindMe (Id INTEGER PRIMARY KEY, FolderId INTEGER NOT NULL, "
+                            + "MessageId INTEGER NOT NULL, RemindTime INTEGER NOT NULL, LastModified INTEGER NOT NULL, Seen INTEGER);");
                 }
 
                 if (db.getVersion() < 52) {

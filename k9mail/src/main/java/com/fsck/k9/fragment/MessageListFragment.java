@@ -826,7 +826,6 @@ public class MessageListFragment extends Fragment
 
         initializePullToRefresh(inflater, view);
         initializeLayout();
-
         mListView.setVerticalFadingEdgeEnabled(false);
 
         return view;
@@ -1054,7 +1053,7 @@ public class MessageListFragment extends Fragment
 
         mLocalBroadcastManager.unregisterReceiver(mCacheBroadcastReceiver);
         mListener.onPause(getActivity());
-        mController.removeListener(mListener);
+        //mController.removeListener(mListener);
     }
 
     /**
@@ -1083,7 +1082,7 @@ public class MessageListFragment extends Fragment
 
         mLocalBroadcastManager.registerReceiver(mCacheBroadcastReceiver, mCacheIntentFilter);
         mListener.onResume(getActivity());
-        mController.addListener(mListener);
+        //mController.addListener(mListener);
 
         //Cancel pending new mail notifications when we open an account
         List<Account> accountsWithNotification;
@@ -1570,7 +1569,7 @@ public class MessageListFragment extends Fragment
                 break;
             }
             case R.id.remindme: {
-                onFollowUp(getMessageAtPosition(adapterPosition));
+                onRemindMe(getMessageAtPosition(adapterPosition));
                 break;
             }
             case R.id.copy: {
@@ -1675,10 +1674,12 @@ public class MessageListFragment extends Fragment
 
             int listViewPosition = mListView.pointToPosition(listX, listY);
             int adapterPosition = listViewToAdapterPosition(listViewPosition);
+
             if (adapterPosition == AdapterView.INVALID_POSITION) {
                 return;
             }
-            onFollowUp(getMessageAtPosition(adapterPosition));
+
+            onRemindMe(getMessageAtPosition(adapterPosition));
         }
     }
 
@@ -1800,17 +1801,21 @@ public class MessageListFragment extends Fragment
                 mHandler.progress(true);
                 mHandler.folderLoading(folder, true);
             }
+
             super.synchronizeMailboxStarted(account, folder);
         }
 
         @Override
         public void synchronizeMailboxFinished(Account account, String folder,
-        int totalMessagesInMailbox, int numNewMessages) {
+                                               int totalMessagesInMailbox, int numNewMessages) {
+
+            Log.d(K9.LOG_TAG, "MessageListFragment.synchronizeMailboxFinished");
 
             if (updateForMe(account, folder)) {
                 mHandler.progress(false);
                 mHandler.folderLoading(folder, false);
             }
+
             super.synchronizeMailboxFinished(account, folder, totalMessagesInMailbox, numNewMessages);
         }
 
@@ -2465,7 +2470,7 @@ public class MessageListFragment extends Fragment
                 messages);
     }
 
-    private void onFollowUp(LocalMessage message) {
+    private void onRemindMe(LocalMessage message) {
         // TODO: build Intent?
         startActivity(RemindMeList.createRemindMe(this.getActivity(), message));
     }

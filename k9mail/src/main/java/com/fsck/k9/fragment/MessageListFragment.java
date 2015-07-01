@@ -1803,17 +1803,21 @@ public class MessageListFragment extends Fragment
                 mHandler.progress(true);
                 mHandler.folderLoading(folder, true);
             }
+
             super.synchronizeMailboxStarted(account, folder);
         }
 
         @Override
         public void synchronizeMailboxFinished(Account account, String folder,
-        int totalMessagesInMailbox, int numNewMessages) {
+                                               int totalMessagesInMailbox, int numNewMessages) {
+
+            Log.d(K9.LOG_TAG, "MessageListFragment.synchronizeMailboxFinished");
 
             if (updateForMe(account, folder)) {
                 mHandler.progress(false);
                 mHandler.folderLoading(folder, false);
             }
+
             super.synchronizeMailboxFinished(account, folder, totalMessagesInMailbox, numNewMessages);
         }
 

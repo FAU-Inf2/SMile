@@ -63,6 +63,8 @@ public class RemindMeList extends K9ListActivity
     private LocalRemindMe mLocalRemindMe;
     private RemindMe currentRemindMe;
     private String folderName;
+    private boolean onTimeSetCalled = false;
+    private boolean onDateSetCalled = false;
 
     public static Intent createRemindMe(Context context,
                                         LocalMessage message) {
@@ -139,6 +141,12 @@ public class RemindMeList extends K9ListActivity
 
     @Override
     public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+        if(onDateSetCalled) {
+            return;
+        }
+
+        onDateSetCalled = true;
+
         final String timePickerTag = "remindMeTimePicker";
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.YEAR, year);
@@ -153,6 +161,12 @@ public class RemindMeList extends K9ListActivity
 
     @Override
     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+        if(onTimeSetCalled) {
+            return;
+        }
+
+        onTimeSetCalled = true;
+
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(currentRemindMe.getRemindTime());
         calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
@@ -192,6 +206,9 @@ public class RemindMeList extends K9ListActivity
         currentRemindMe = dlg.getRemindMe();
 
         if(currentRemindMe.getRemindInterval() == RemindMe.RemindInterval.CUSTOM) {
+            onDateSetCalled = false;
+            onTimeSetCalled = false;
+
             final String datePickerTag = "remindMeDatePicker";
             FragmentTransaction ft = getFragmentManager().beginTransaction();
             Fragment prev = getFragmentManager().findFragmentByTag(datePickerTag);

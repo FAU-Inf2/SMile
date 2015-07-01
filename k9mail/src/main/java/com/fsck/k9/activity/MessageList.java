@@ -1442,8 +1442,10 @@ public class MessageList extends K9Activity
                 mMenuButtonCheckMail.setActionView(null);
             }
         } else {
-            if (mMenuButtonCheckMail != null)
+            if (mMenuButtonCheckMail != null) {
                 mMenuButtonCheckMail.setActionView(null);
+            }
+
             if (enable) {
                 mActionBarProgress.setVisibility(ProgressBar.VISIBLE);
             } else {

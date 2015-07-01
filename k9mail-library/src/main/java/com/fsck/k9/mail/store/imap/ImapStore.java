@@ -684,6 +684,7 @@ public class ImapStore extends RemoteStore {
             super();
             store = nStore;
             this.mName = name;
+            Log.d("k9-lib", this.mName);
         }
 
         public String getPrefixedName() throws MessagingException {

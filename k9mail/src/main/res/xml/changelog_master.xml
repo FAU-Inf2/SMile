@@ -8,6 +8,10 @@
      They are automatically updated with "ant bump-version".
 -->
 <changelog>
+    <release version="1.01" versioncode="00002">
+        <change>Swipe gestures for delete, archive and "RemindMe!"</change>
+    </release>
+
     <release version="1.0" versioncode="00001">
         <change>First version of "RemindMe!"-Notifications</change>
         <change>Added template for Material Design</change>

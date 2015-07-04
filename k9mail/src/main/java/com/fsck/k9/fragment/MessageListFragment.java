@@ -1971,12 +1971,14 @@ public class MessageListFragment extends Fragment
                         img_set2 = false;
                         archive.setVisibility(View.INVISIBLE);
                         remindMe.setVisibility(View.VISIBLE);
+                        YoYo.with(Techniques.Tada).duration(500).delay(100).playOn(remindMe);
                     }
                     if (v > 0.5 && !img_set2) {
                         img_set1 = false;
                         img_set2 = true;
                         archive.setVisibility(View.VISIBLE);
                         remindMe.setVisibility(View.INVISIBLE);
+                        YoYo.with(Techniques.Tada).duration(500).delay(100).playOn(archive);
                     }
                     if(v <= 0.2) {
                         view.setBackgroundColor(Color.LTGRAY);

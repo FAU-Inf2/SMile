@@ -2230,17 +2230,16 @@ public class MessageListFragment extends Fragment
                 return;
             ImageView archive = (ImageView) layout.findViewById(R.id.pull_out_archive);
             ImageView remindMe = (ImageView) layout.findViewById(R.id.pull_out_remind_me);
-            if(archive.getVisibility() == View.VISIBLE) {
+            if(archive.isShown()) {
                 onArchive(getMessageAtPosition(position));
                 archive.setVisibility(View.INVISIBLE);
                 layout.close(true);
             }
-            if(remindMe.getVisibility() == View.VISIBLE) {
+            if(remindMe.isShown()) {
                 onFollowUp(getMessageAtPosition(position));
                 remindMe.setVisibility(View.INVISIBLE);
                 layout.close(true);
             }
-
         }
     }
 

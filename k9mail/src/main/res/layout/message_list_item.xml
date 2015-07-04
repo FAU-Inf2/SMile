@@ -36,38 +36,24 @@
             android:src="@drawable/ic_action_archive_material_light"/>
     </RelativeLayout>
 
-    <LinearLayout
+    <RelativeLayout
+        android:id="@+id/delete"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#FF5534"
-        android:gravity="center"
+        android:gravity="left"
         android:tag="Delete"
         android:weightSum="10">
 
             <ImageView
                 android:id="@+id/trash"
-                android:layout_width="27dp"
+                android:layout_width="50dp"
                 android:layout_height="30dp"
                 android:layout_weight="1"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
                 android:src="@drawable/ic_action_delete_material_light" />
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="5"
-                android:text="Delete this mail?"
-                android:textColor="#fff"
-                android:textSize="17sp" />
-
-            <Button
-                android:id="@+id/delete"
-                android:layout_width="0dp"
-                android:layout_height="40dp"
-                android:layout_weight="4"
-                android:background="@android:color/white"
-                android:text="Yes, delete"
-                android:textColor="#FF5534" />
-    </LinearLayout>
+    </RelativeLayout>
 
     <View
             android:id="@+id/chip"

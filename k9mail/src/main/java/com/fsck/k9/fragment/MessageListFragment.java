@@ -1889,7 +1889,7 @@ public class MessageListFragment extends Fragment
             View view = mInflater.inflate(R.layout.message_list_item, parent, false);
             view.setId(R.layout.message_list_item);
 
-            MessageViewHolder holder = new MessageViewHolder();
+            final MessageViewHolder holder = new MessageViewHolder();
             holder.date = (TextView) view.findViewById(R.id.date);
             holder.chip = view.findViewById(R.id.chip);
 
@@ -1942,53 +1942,50 @@ public class MessageListFragment extends Fragment
             view.setTag(holder);
 
             final SwipeLayout swipeLayout = (SwipeLayout) view;
-            swipeLayout.addSwipeListener(new SimpleSwipeListener() {
+            /*swipeLayout.addSwipeListener(new SimpleSwipeListener() {
                 @Override
                 public void onOpen(SwipeLayout layout) {
                     YoYo.with(Techniques.Tada).duration(500).delay(100).playOn(layout.findViewById(R.id.trash));
                 }
-            });
+            });*/
 
-            view.findViewById(R.id.delete).setOnClickListener(holder);
+            //view.findViewById(R.id.delete).setOnClickListener(holder);
             swipeLayout.addRevealListener(R.id.pull_out, new SwipeLayout.OnRevealListener() {
                 private boolean img_set1 = false;
                 private boolean img_set2 = false;
 
                 @Override
                 public void onReveal(View view, SwipeLayout.DragEdge dragEdge, float v, int i) {
-                    if (dragEdge != SwipeLayout.DragEdge.Left) {
-                        return;
-                    }
-                    ImageView archive = (ImageView) swipeLayout.findViewById(R.id.pull_out_archive);
-                    ImageView remindMe = (ImageView) swipeLayout.findViewById(R.id.pull_out_remind_me);
-                    if (v <= 0.2) {
-                        img_set1 = img_set2 = false;
-                        archive.setVisibility(View.INVISIBLE);
-                        remindMe.setVisibility(View.INVISIBLE);
-                    }
-                    if (v > 0.2 && !img_set1) {
-                        img_set1 = true;
-                        img_set2 = false;
-                        //YoYo.with(Techniques.FadeOutRight).duration(500).delay(0).playOn(archive);
-                        archive.setVisibility(View.INVISIBLE);
-                        remindMe.setVisibility(View.VISIBLE);
-                        YoYo.with(Techniques.FadeInLeft).duration(200).delay(0).playOn(remindMe);
-                    }
-                    if (v > 0.5 && !img_set2) {
-                        img_set1 = false;
-                        img_set2 = true;
-                        //YoYo.with(Techniques.FadeOutRight).duration(500).delay(0).playOn(remindMe);
-                        remindMe.setVisibility(View.INVISIBLE);
-                        archive.setVisibility(View.VISIBLE);
-                        YoYo.with(Techniques.FadeInLeft).duration(200).delay(0).playOn(archive);
-                    }
-                    if(v <= 0.2) {
-                        view.setBackgroundColor(Color.LTGRAY);
-                    } else {
-                        if(0.2 < v && v < 0.5) {
-                            view.setBackgroundColor(Color.YELLOW);
+                    if (dragEdge == SwipeLayout.DragEdge.Left) {
+                        ImageView archive = (ImageView) swipeLayout.findViewById(R.id.pull_out_archive);
+                        ImageView remindMe = (ImageView) swipeLayout.findViewById(R.id.pull_out_remind_me);
+                        if (v <= 0.2) {
+                            img_set1 = img_set2 = false;
+                            archive.setVisibility(View.INVISIBLE);
+                            remindMe.setVisibility(View.INVISIBLE);
+                        }
+                        if (v > 0.2 && !img_set1) {
+                            img_set1 = true;
+                            img_set2 = false;
+                            archive.setVisibility(View.INVISIBLE);
+                            remindMe.setVisibility(View.VISIBLE);
+
+
+                        }
+                        if (v > 0.5 && !img_set2) {
+                            img_set1 = false;
+                            img_set2 = true;
+                            remindMe.setVisibility(View.INVISIBLE);
+                            archive.setVisibility(View.VISIBLE);
+                        }
+                        if (v <= 0.2) {
+                            view.setBackgroundColor(Color.LTGRAY);
                         } else {
-                            view.setBackgroundColor(Color.GREEN);
+                            if (0.2 < v && v < 0.5) {
+                                view.setBackgroundColor(Color.YELLOW);
+                            } else {
+                                view.setBackgroundColor(Color.GREEN);
+                            }
                         }
                     }
                 }
@@ -2211,6 +2208,8 @@ public class MessageListFragment extends Fragment
         public CheckBox selected;
         public int position = -1;
         public QuickContactBadge contactBadge;
+        public float fraction;
+
         @Override
         public void onClick(View view) {
             if (position != -1) {
@@ -2219,9 +2218,9 @@ public class MessageListFragment extends Fragment
                     case R.id.selected_checkbox:
                         toggleMessageSelectWithAdapterPosition(position);
                         break;
-                    case R.id.delete:
+                    /*case R.id.delete:
                         onDelete(getMessageAtPosition(position));
-                        break;
+                        break;*/
                     case R.id.flagged_bottom_right:
                     case R.id.flagged_center_right:
                         toggleMessageFlagWithAdapterPosition(position);
@@ -2235,15 +2234,21 @@ public class MessageListFragment extends Fragment
                 return;
             ImageView archive = (ImageView) layout.findViewById(R.id.pull_out_archive);
             ImageView remindMe = (ImageView) layout.findViewById(R.id.pull_out_remind_me);
+            View delete = layout.findViewById(R.id.delete);
             if(archive.isShown()) {
+                YoYo.with(Techniques.SlideOutRight).playOn(layout);
                 onArchive(getMessageAtPosition(position));
                 archive.setVisibility(View.INVISIBLE);
-                layout.close(true);
+                //layout.close(true);
             }
             if(remindMe.isShown()) {
                 onRemindMe(getMessageAtPosition(position));
                 remindMe.setVisibility(View.INVISIBLE);
-                layout.close(true);
+                //layout.close(true);
+            }
+            if(delete.isShown()) {
+                YoYo.with(Techniques.SlideOutLeft).playOn(layout);
+                onDelete(getMessageAtPosition(position));
             }
         }
     }

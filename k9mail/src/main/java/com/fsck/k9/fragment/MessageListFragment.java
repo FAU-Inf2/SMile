@@ -2237,7 +2237,7 @@ public class MessageListFragment extends Fragment
                 layout.close(true);
             }
             if(remindMe.isShown()) {
-                onFollowUp(getMessageAtPosition(position));
+                onRemindMe(getMessageAtPosition(position));
                 remindMe.setVisibility(View.INVISIBLE);
                 layout.close(true);
             }

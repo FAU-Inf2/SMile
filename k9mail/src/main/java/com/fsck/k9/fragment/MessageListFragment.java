@@ -1969,16 +1969,18 @@ public class MessageListFragment extends Fragment
                     if (v > 0.2 && !img_set1) {
                         img_set1 = true;
                         img_set2 = false;
+                        //YoYo.with(Techniques.FadeOutRight).duration(500).delay(0).playOn(archive);
                         archive.setVisibility(View.INVISIBLE);
                         remindMe.setVisibility(View.VISIBLE);
-                        YoYo.with(Techniques.Tada).duration(500).delay(100).playOn(remindMe);
+                        YoYo.with(Techniques.FadeInLeft).duration(200).delay(0).playOn(remindMe);
                     }
                     if (v > 0.5 && !img_set2) {
                         img_set1 = false;
                         img_set2 = true;
-                        archive.setVisibility(View.VISIBLE);
+                        //YoYo.with(Techniques.FadeOutRight).duration(500).delay(0).playOn(remindMe);
                         remindMe.setVisibility(View.INVISIBLE);
-                        YoYo.with(Techniques.Tada).duration(500).delay(100).playOn(archive);
+                        archive.setVisibility(View.VISIBLE);
+                        YoYo.with(Techniques.FadeInLeft).duration(200).delay(0).playOn(archive);
                     }
                     if(v <= 0.2) {
                         view.setBackgroundColor(Color.LTGRAY);

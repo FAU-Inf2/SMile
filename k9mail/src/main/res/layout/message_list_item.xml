@@ -24,7 +24,7 @@
             android:layout_weight="1"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
-            android:src="@drawable/ic_action_import_export_dark"/>
+            android:src="@drawable/ic_alarm_add_black_24dp"/>
         <ImageView
             android:id="@+id/pull_out_archive"
             android:layout_width="50dp"

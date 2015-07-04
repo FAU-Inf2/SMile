@@ -2236,7 +2236,7 @@ public class MessageListFragment extends Fragment
             ImageView remindMe = (ImageView) layout.findViewById(R.id.pull_out_remind_me);
             View delete = layout.findViewById(R.id.delete);
             if(archive.isShown()) {
-                YoYo.with(Techniques.SlideOutRight).playOn(layout);
+                YoYo.with(Techniques.SlideOutRight).delay(200).duration(1000).playOn(archive);
                 onArchive(getMessageAtPosition(position));
                 archive.setVisibility(View.INVISIBLE);
                 //layout.close(true);
@@ -2247,7 +2247,7 @@ public class MessageListFragment extends Fragment
                 //layout.close(true);
             }
             if(delete.isShown()) {
-                YoYo.with(Techniques.SlideOutLeft).playOn(layout);
+                YoYo.with(Techniques.SlideOutLeft).delay(200).duration(1000).playOn(delete);
                 onDelete(getMessageAtPosition(position));
             }
         }

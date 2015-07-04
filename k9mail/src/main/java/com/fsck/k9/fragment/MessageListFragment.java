@@ -2234,7 +2234,7 @@ public class MessageListFragment extends Fragment
                 return;
             ImageView archive = (ImageView) layout.findViewById(R.id.pull_out_archive);
             ImageView remindMe = (ImageView) layout.findViewById(R.id.pull_out_remind_me);
-            View delete = layout.findViewById(R.id.delete);
+            View delete = layout.findViewById(R.id.trash);
             if(archive.isShown()) {
                 YoYo.with(Techniques.SlideOutRight).delay(200).duration(1000).playOn(archive);
                 onArchive(getMessageAtPosition(position));

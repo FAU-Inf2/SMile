@@ -44,13 +44,10 @@
         android:gravity="left"
         android:tag="Delete"
         android:weightSum="10">
-
             <ImageView
                 android:id="@+id/trash"
                 android:layout_width="50dp"
                 android:layout_height="30dp"
-                android:layout_weight="1"
-                android:layout_alignParentLeft="true"
                 android:layout_centerVertical="true"
                 android:src="@drawable/ic_action_delete_material_light" />
     </RelativeLayout>

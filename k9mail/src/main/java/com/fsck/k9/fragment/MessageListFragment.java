@@ -2213,6 +2213,7 @@ public class MessageListFragment extends Fragment
                         break;
                     case R.id.delete:
                         onDelete(getMessageAtPosition(position));
+                        break;
                     case R.id.flagged_bottom_right:
                     case R.id.flagged_center_right:
                         toggleMessageFlagWithAdapterPosition(position);

@@ -48,7 +48,7 @@ public class LocalMessage extends MimeMessage {
         this.mFolder = folder;
     }
 
-    void populateFromGetMessageCursor(Cursor cursor) throws MessagingException {
+    final void populateFromGetMessageCursor(Cursor cursor) throws MessagingException {
         final String subject = cursor.getString(0);
         this.setSubject(subject == null ? "" : subject);
         Address[] from = Address.unpack(cursor.getString(1));

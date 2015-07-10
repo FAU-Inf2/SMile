@@ -64,10 +64,8 @@ public class K9ActivityCommon {
         void setupGestureDetector(OnSwipeGestureListener listener);
     }
 
-
     private Activity mActivity;
     private GestureDetector mGestureDetector;
-
 
     private K9ActivityCommon(Activity activity) {
         mActivity = activity;

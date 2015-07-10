@@ -6,9 +6,10 @@ import com.fsck.k9.BaseAccount;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import de.fau.cs.mad.smile.android.R;
+
+import com.fsck.k9.activity.Messages;
 import com.fsck.k9.activity.UnreadWidgetConfiguration;
 import com.fsck.k9.activity.FolderList;
-import com.fsck.k9.activity.MessageList;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.search.LocalSearch;
 import com.fsck.k9.search.SearchAccount;
@@ -70,8 +71,8 @@ public class UnreadWidgetProvider extends AppWidgetProvider {
                 account = searchAccount;
                 MessagingController controller = MessagingController.getInstance(context);
                 stats = controller.getSearchAccountStatsSynchronous(searchAccount, null);
-                clickIntent = MessageList.intentDisplaySearch(context,
-                        searchAccount.getRelatedSearch(), false, true, true);
+                clickIntent = Messages.intentDisplaySearch(context,
+                        searchAccount.getRelatedSearch());
             } else {
                 Account realAccount = Preferences.getPreferences(context).getAccount(accountUuid);
                 if (realAccount != null) {
@@ -84,8 +85,7 @@ public class UnreadWidgetProvider extends AppWidgetProvider {
                         LocalSearch search = new LocalSearch(realAccount.getAutoExpandFolderName());
                         search.addAllowedFolder(realAccount.getAutoExpandFolderName());
                         search.addAccountUuid(account.getUuid());
-                        clickIntent = MessageList.intentDisplaySearch(context, search, false, true,
-                                true);
+                        clickIntent = Messages.intentDisplaySearch(context, search);
                     }
                     clickIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 }

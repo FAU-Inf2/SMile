@@ -530,11 +530,11 @@ public class MessageList extends K9Activity
     public void onResume() {
         super.onResume();
 
-        if (!(this instanceof Search)) {
+        /*TODO: if (!(this instanceof Search)) {
             //necessary b/c no guarantee Search.onStop will be called before MessageList.onResume
             //when returning from search results
             Search.setActive(false);
-        }
+        }*/
 
         if (mAccount != null && !mAccount.isAvailable(this)) {
             onAccountUnavailable();
@@ -1046,8 +1046,9 @@ public class MessageList extends K9Activity
                 menu.findItem(R.id.previous_message).setVisible(false);
             } else {
                 MessageReference ref = mMessageViewFragment.getMessageReference();
-                boolean initialized = (mMessageListFragment != null &&
-                        mMessageListFragment.isLoadFinished());
+               /* boolean initialized = (mMessageListFragment != null &&
+                        mMessageListFragment.isLoadFinished());*/
+                boolean initialized = mMessageListFragment != null;
                 boolean canDoPrev = (initialized && !mMessageListFragment.isFirst(ref));
                 boolean canDoNext = (initialized && !mMessageListFragment.isLast(ref));
 

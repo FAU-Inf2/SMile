@@ -54,8 +54,8 @@ import com.fsck.k9.Preferences;
 import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.activity.Accounts;
 import com.fsck.k9.activity.FolderList;
-import com.fsck.k9.activity.MessageList;
 import com.fsck.k9.activity.MessageReference;
+import com.fsck.k9.activity.Messages;
 import com.fsck.k9.activity.NotificationDeleteConfirmation;
 import com.fsck.k9.activity.setup.AccountSetupCheckSettings.CheckDirection;
 import com.fsck.k9.activity.setup.AccountSetupIncoming;
@@ -5178,7 +5178,7 @@ public class MessagingController implements Runnable {
     private TaskStackBuilder buildUnreadBackStack(Context context, final Account account) {
         TaskStackBuilder stack = buildAccountsBackStack(context);
         LocalSearch search = Accounts.createUnreadSearch(context, account);
-        stack.addNextIntent(MessageList.intentDisplaySearch(context, search, true, false, false));
+        stack.addNextIntent(Messages.intentDisplaySearch(context, search));
         return stack;
     }
 
@@ -5191,7 +5191,7 @@ public class MessagingController implements Runnable {
             LocalSearch search = new LocalSearch(folder);
             search.addAllowedFolder(folder);
             search.addAccountUuid(account.getUuid());
-            stack.addNextIntent(MessageList.intentDisplaySearch(context, search, false, true, true));
+            stack.addNextIntent(Messages.intentDisplaySearch(context, search));
         }
         return stack;
     }
@@ -5199,7 +5199,7 @@ public class MessagingController implements Runnable {
     private TaskStackBuilder buildMessageViewBackStack(Context context, MessageReference message) {
         Account account = Preferences.getPreferences(context).getAccount(message.getAccountUuid());
         TaskStackBuilder stack = buildMessageListBackStack(context, account, message.getFolderName());
-        stack.addNextIntent(MessageList.actionDisplayMessageIntent(context, message));
+        stack.addNextIntent(Messages.actionDisplayMessageIntent(context, message));
         return stack;
     }
 

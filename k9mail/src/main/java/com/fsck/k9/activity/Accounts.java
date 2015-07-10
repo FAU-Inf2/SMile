@@ -4,6 +4,7 @@ package com.fsck.k9.activity;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.EnumSet;
@@ -31,6 +32,7 @@ import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -77,6 +79,7 @@ import com.fsck.k9.activity.setup.AccountSetupBasics;
 import com.fsck.k9.activity.setup.Prefs;
 import com.fsck.k9.activity.setup.WelcomeMessage;
 import com.fsck.k9.controller.MessagingController;
+import com.fsck.k9.fragment.MessageListFragment;
 import com.fsck.k9.helper.SizeFormatter;
 import com.fsck.k9.mail.AuthType;
 import com.fsck.k9.mail.ServerSettings;
@@ -127,11 +130,10 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
     private BaseAccount mSelectedContextAccount;
     private int mUnreadMessageCount = 0;
 
-    private AccountsHandler mHandler = new AccountsHandler();
+    private AccountsHandler mHandler = new AccountsHandler(this);
     private AccountsAdapter mAdapter;
     private SearchAccount mAllMessagesAccount = null;
     private SearchAccount mUnifiedInboxAccount = null;
-    private FontSizes mFontSizes = K9.getFontSizes();
 
     private MenuItem mRefreshMenuItem;
     private ActionBar mActionBar;
@@ -150,7 +152,13 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
 
     private static final int ACTIVITY_REQUEST_PICK_SETTINGS_FILE = 1;
 
-    class AccountsHandler extends Handler {
+    public class AccountsHandler extends Handler {
+        private WeakReference<Accounts> mAccounts;
+
+        public AccountsHandler(Accounts accounts) {
+            this.mAccounts = new WeakReference<Accounts>(accounts);
+        }
+
         private void setViewTitle() {
             mActionBarTitle.setText(getString(R.string.accounts_title));
 
@@ -245,6 +253,19 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
                 }
             });
         }
+
+    /*    @Override
+        public void handleMessage(Message msg) {
+            Accounts accounts = mAccounts.get();
+
+            if(accounts == null) {
+                return;
+            }
+
+            switch (msg.what) {
+
+            }
+        }*/
     }
 
     public void setProgress(boolean progress) {
@@ -673,7 +694,7 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
     private boolean onOpenAccount(BaseAccount account) {
         if (account instanceof SearchAccount) {
             SearchAccount searchAccount = (SearchAccount) account;
-            MessageList.actionDisplaySearch(this, searchAccount.getRelatedSearch(), false, false);
+            Messages.actionDisplaySearch(this, searchAccount.getRelatedSearch());
         } else {
             Account realAccount = (Account) account;
             if (!realAccount.isEnabled()) {
@@ -693,7 +714,7 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
                 LocalSearch search = new LocalSearch(realAccount.getAutoExpandFolderName());
                 search.addAllowedFolder(realAccount.getAutoExpandFolderName());
                 search.addAccountUuid(realAccount.getUuid());
-                MessageList.actionDisplaySearch(this, search, false, true);
+                Messages.actionDisplaySearch(this, search);
             }
         }
         return true;
@@ -1909,7 +1930,7 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
 
         @Override
         public void onClick(View v) {
-            MessageList.actionDisplaySearch(Accounts.this, search, true, false);
+            Messages.actionDisplaySearch(Accounts.this, search);
         }
 
     }

@@ -1,4 +1,4 @@
-package com.fsck.k9.activity;
+package com.fsck.k9.adapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -16,7 +16,7 @@ import java.util.List;
 
 import de.fau.cs.mad.smile.android.R;
 
-class AccountsAdapter extends ArrayAdapter<BaseAccount> {
+public class AccountsAdapter extends ArrayAdapter<BaseAccount> {
     public AccountsAdapter(Context context, List<BaseAccount> accounts) {
         super(context, 0, accounts);
     }

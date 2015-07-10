@@ -1,6 +1,5 @@
 package com.fsck.k9.activity;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -39,6 +38,7 @@ import com.fsck.k9.activity.holder.FolderInfoHolder;
 import com.fsck.k9.activity.setup.AccountSettings;
 import com.fsck.k9.activity.setup.FolderSettings;
 import com.fsck.k9.activity.setup.Prefs;
+import com.fsck.k9.adapter.FolderAdapter;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.controller.MessagingListener;
 import com.fsck.k9.helper.SizeFormatter;
@@ -63,7 +63,7 @@ public final class FolderList extends K9ListActivity {
     private static final boolean REFRESH_REMOTE = true;
 
     private ListView mListView;
-    private FolderListAdapter mAdapter;
+    private FolderAdapter mAdapter;
     private FolderListActivityListener mListener;
     private Account mAccount;
     private int mUnreadMessageCount;
@@ -179,7 +179,7 @@ public final class FolderList extends K9ListActivity {
     }
 
     private final void initializeActivityView() {
-        mAdapter = new FolderListAdapter(this, mAccount);
+        mAdapter = new FolderAdapter(this, mAccount);
         // TODO: renable data restoration on configuration change in Fragment restorePreviousData();
         setListAdapter(mAdapter);
         getListView().setTextFilterEnabled(mAdapter.getFilter() != null); // should never be false but better safe then sorry
@@ -479,7 +479,7 @@ public final class FolderList extends K9ListActivity {
     @Override
     public final boolean onSearchRequested() {
         Bundle appData = new Bundle();
-        appData.putString(MessageList.EXTRA_SEARCH_ACCOUNT, mAccount.getUuid());
+        appData.putString(Messages.EXTRA_SEARCH_ACCOUNT, mAccount.getUuid());
         startSearch(null, false, appData, false);
         return true;
     }
@@ -488,7 +488,7 @@ public final class FolderList extends K9ListActivity {
         LocalSearch search = new LocalSearch(folder);
         search.addAccountUuid(mAccount.getUuid());
         search.addAllowedFolder(folder);
-        MessageList.actionDisplaySearch(this, search, false, false);
+        Messages.actionDisplaySearch(this, search);
     }
 
     private final void onCompact(final Account account) {
@@ -598,12 +598,12 @@ public final class FolderList extends K9ListActivity {
     }
 
     public final class FolderListActivityListener extends ActivityListener {
-        private final FolderListAdapter mAdapter;
+        private final FolderAdapter mAdapter;
         private final Account mAccount;
         private final Context mContext;
         private final Handler mHandler;
 
-        public FolderListActivityListener(FolderListAdapter adapter, Account account, Handler handler) {
+        public FolderListActivityListener(FolderAdapter adapter, Account account, Handler handler) {
             this.mAdapter = adapter;
             this.mAccount = account;
             this.mContext = adapter.getContext();

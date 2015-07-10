@@ -1,4 +1,4 @@
-package com.fsck.k9.activity;
+package com.fsck.k9.adapter;
 
 import android.content.Context;
 import android.text.TextUtils;
@@ -16,7 +16,9 @@ import android.widget.Toast;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.K9;
+import com.fsck.k9.activity.FolderClickListener;
 import com.fsck.k9.activity.FolderList.FolderListActivityListener;
+import com.fsck.k9.activity.FolderListFilter;
 import com.fsck.k9.activity.holder.FolderInfoHolder;
 import com.fsck.k9.activity.holder.FolderViewHolder;
 import com.fsck.k9.mail.MessagingException;
@@ -29,11 +31,11 @@ import java.util.List;
 
 import de.fau.cs.mad.smile.android.R;
 
-public class FolderListAdapter extends ArrayAdapter<FolderInfoHolder> {
+public class FolderAdapter extends ArrayAdapter<FolderInfoHolder> {
     private Filter mFilter;
     private Account mAccount;
 
-    public FolderListAdapter(Context context, Account account) {
+    public FolderAdapter(Context context, Account account) {
         super(context, R.layout.folder_list_item);
         setFilter(new FolderListFilter(this));
         this.mAccount = account;

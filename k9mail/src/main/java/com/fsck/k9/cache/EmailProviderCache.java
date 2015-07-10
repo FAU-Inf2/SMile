@@ -40,12 +40,10 @@ public class EmailProviderCache {
         return instance;
     }
 
-
     private String mAccountUuid;
     private final Map<Long, Map<String, String>> mMessageCache = new HashMap<Long, Map<String, String>>();
     private final Map<Long, Map<String, String>> mThreadCache = new HashMap<Long, Map<String, String>>();
     private final Map<Long, Long> mHiddenMessageCache = new HashMap<Long, Long>();
-
 
     private EmailProviderCache(String accountUuid) {
         mAccountUuid = accountUuid;

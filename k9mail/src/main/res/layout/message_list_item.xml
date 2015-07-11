@@ -14,7 +14,7 @@
         android:layout_gravity="left"
         android:layout_toLeftOf="@+id/msg"
         android:id="@+id/pull_out"
-        android:background="@android:color/darker_gray"
+        android:background="@color/background_floating_material_light"
         >
         <ImageView
             android:id="@+id/pull_out_remind_me"

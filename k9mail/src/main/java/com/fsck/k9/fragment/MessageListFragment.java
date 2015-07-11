@@ -63,6 +63,7 @@ import android.widget.CursorAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.QuickContactBadge;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -1942,6 +1943,8 @@ public class MessageListFragment extends Fragment
             view.setTag(holder);
 
             final SwipeLayout swipeLayout = (SwipeLayout) view;
+            swipeLayout.addDrag(SwipeLayout.DragEdge.Left, view.findViewById(R.id.pull_out));
+            swipeLayout.addDrag(SwipeLayout.DragEdge.Right, view.findViewById(R.id.delete));
             /*swipeLayout.addSwipeListener(new SimpleSwipeListener() {
                 @Override
                 public void onOpen(SwipeLayout layout) {
@@ -1950,42 +1953,53 @@ public class MessageListFragment extends Fragment
             });*/
 
             //view.findViewById(R.id.delete).setOnClickListener(holder);
+            swipeLayout.addRevealListener(R.id.delete, new SwipeLayout.OnRevealListener() {
+                @Override
+                public void onReveal(View view, SwipeLayout.DragEdge dragEdge, float v, int i) {
+                    ImageView trash = (ImageView) swipeLayout.findViewById(R.id.trash);
+                    if(v > 0.25) {
+                        view.setBackgroundColor(Color.RED);
+                        trash.setVisibility(View.VISIBLE);
+                    } else {
+                        view.setBackgroundColor(swipeLayout.getSolidColor());
+                        trash.setVisibility(View.INVISIBLE);
+                    }
+                }
+            });
             swipeLayout.addRevealListener(R.id.pull_out, new SwipeLayout.OnRevealListener() {
                 private boolean img_set1 = false;
                 private boolean img_set2 = false;
 
                 @Override
                 public void onReveal(View view, SwipeLayout.DragEdge dragEdge, float v, int i) {
-                    if (dragEdge == SwipeLayout.DragEdge.Left) {
-                        ImageView archive = (ImageView) swipeLayout.findViewById(R.id.pull_out_archive);
-                        ImageView remindMe = (ImageView) swipeLayout.findViewById(R.id.pull_out_remind_me);
-                        if (v <= 0.2) {
-                            img_set1 = img_set2 = false;
-                            archive.setVisibility(View.INVISIBLE);
-                            remindMe.setVisibility(View.INVISIBLE);
-                        }
-                        if (v > 0.2 && !img_set1) {
-                            img_set1 = true;
-                            img_set2 = false;
-                            archive.setVisibility(View.INVISIBLE);
-                            remindMe.setVisibility(View.VISIBLE);
+                    ImageView archive = (ImageView) swipeLayout.findViewById(R.id.pull_out_archive);
+                    ImageView remindMe = (ImageView) swipeLayout.findViewById(R.id.pull_out_remind_me);
+                    if (v <= 0.2) {
+                        img_set1 = img_set2 = false;
+                        archive.setVisibility(View.INVISIBLE);
+                        remindMe.setVisibility(View.INVISIBLE);
+                    }
+                    if (v > 0.2 && !img_set1) {
+                        img_set1 = true;
+                        img_set2 = false;
+                        archive.setVisibility(View.INVISIBLE);
+                        remindMe.setVisibility(View.VISIBLE);
 
 
-                        }
-                        if (v > 0.5 && !img_set2) {
-                            img_set1 = false;
-                            img_set2 = true;
-                            remindMe.setVisibility(View.INVISIBLE);
-                            archive.setVisibility(View.VISIBLE);
-                        }
-                        if (v <= 0.2) {
-                            view.setBackgroundColor(Color.LTGRAY);
+                    }
+                    if (v > 0.5 && !img_set2) {
+                        img_set1 = false;
+                        img_set2 = true;
+                        remindMe.setVisibility(View.INVISIBLE);
+                        archive.setVisibility(View.VISIBLE);
+                    }
+                    if (v <= 0.2) {
+                        view.setBackgroundColor(swipeLayout.getSolidColor());
+                    } else {
+                        if (0.2 < v && v < 0.5) {
+                            view.setBackgroundColor(Color.YELLOW);
                         } else {
-                            if (0.2 < v && v < 0.5) {
-                                view.setBackgroundColor(Color.YELLOW);
-                            } else {
-                                view.setBackgroundColor(Color.GREEN);
-                            }
+                            view.setBackgroundColor(Color.GREEN);
                         }
                     }
                 }
@@ -2232,22 +2246,19 @@ public class MessageListFragment extends Fragment
         public void onHandRelease(SwipeLayout layout, float xvel, float yvel) {
             if(position == -1)
                 return;
+            layout.setDragDistance(0);
             ImageView archive = (ImageView) layout.findViewById(R.id.pull_out_archive);
             ImageView remindMe = (ImageView) layout.findViewById(R.id.pull_out_remind_me);
             View delete = layout.findViewById(R.id.trash);
             if(archive.isShown()) {
-                YoYo.with(Techniques.SlideOutRight).delay(200).duration(1000).playOn(archive);
                 onArchive(getMessageAtPosition(position));
                 archive.setVisibility(View.INVISIBLE);
-                //layout.close(true);
             }
             if(remindMe.isShown()) {
                 onRemindMe(getMessageAtPosition(position));
                 remindMe.setVisibility(View.INVISIBLE);
-                //layout.close(true);
             }
             if(delete.isShown()) {
-                YoYo.with(Techniques.SlideOutLeft).delay(200).duration(1000).playOn(delete);
                 onDelete(getMessageAtPosition(position));
             }
         }

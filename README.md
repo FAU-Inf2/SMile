@@ -17,3 +17,6 @@ Tools and Libraries that we used:
 
 - [K-9 Mail](https://github.com/k9mail/k-9), License: Apache License Version 2.0
 - [Jackson](https://github.com/FasterXML/jackson), License: Apache License Version 2.0
+- [Android-PullToRefresh](https://github.com/FAU-Inf2/SMile/tree/master/plugins/Android-PullToRefresh), License: Apache License Version 2.0
+- [Android Holo ColorPicker](https://github.com/FAU-Inf2/SMile/tree/master/plugins/HoloColorPicker), License: Apache License Version 2.0
+- [OpenPGP API library](https://github.com/FAU-Inf2/SMile/tree/master/plugins/openpgp-api-library), License: Apache License Version 2.0

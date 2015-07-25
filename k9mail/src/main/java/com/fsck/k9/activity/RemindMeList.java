@@ -143,14 +143,14 @@ public class RemindMeList extends K9Activity
     }
 
     private void addDrawerItems() {
-        String[] osArray = { "Android", "iOS", "Windows", "OS X", "Linux" };
+        String[] osArray = { "More features…" };
         mAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, osArray);
         mDrawerList.setAdapter(mAdapter);
 
         mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(RemindMeList.this, "Time for an upgrade!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(RemindMeList.this, "…coming soon!", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -161,7 +161,7 @@ public class RemindMeList extends K9Activity
             /** Called when a drawer has settled in a completely open state. */
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
-                getActionBar().setTitle("Navigation!");
+                getActionBar().setTitle("RemindMe!");
                 invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
             }
 

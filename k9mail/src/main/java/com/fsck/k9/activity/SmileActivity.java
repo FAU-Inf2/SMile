@@ -12,6 +12,11 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.fsck.k9.Account;
+import com.fsck.k9.Preferences;
+
+import java.util.List;
+
 import de.fau.cs.mad.smile.android.R;
 
 public abstract class SmileActivity extends K9Activity {
@@ -19,7 +24,7 @@ public abstract class SmileActivity extends K9Activity {
     private ListView mDrawerList;
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
-    private ArrayAdapter<SmileActivity> mAdapter;
+    private ArrayAdapter<String> mAdapter;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -32,12 +37,9 @@ public abstract class SmileActivity extends K9Activity {
 
         mDrawerList = (ListView)findViewById(R.id.navList);
         mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
-        mAdapter = new ArrayAdapter<SmileActivity>(this, android.R.layout.simple_list_item_1);
+        mAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
         setupDrawer();
-    }
-
-    public void add(SmileActivity activity) {
-        mAdapter.add(activity);
+        addDrawerItems();
     }
 
     private final void setupDrawer() {
@@ -69,6 +71,15 @@ public abstract class SmileActivity extends K9Activity {
 
         mDrawerToggle.setDrawerIndicatorEnabled(true);
         mDrawerLayout.setDrawerListener(mDrawerToggle);
+    }
+
+    private final void addDrawerItems() {
+        // mAdapter.add();
+        List<Account> accounts = Preferences.getPreferences(this).getAccounts();
+
+        for(Account account : accounts) {
+            mAdapter.add(account.getName());
+        }
     }
 
     @Override

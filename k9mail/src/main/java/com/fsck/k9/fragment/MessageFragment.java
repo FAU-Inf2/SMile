@@ -36,8 +36,8 @@ public class MessageFragment extends Fragment {
     private SwipeRefreshLayout mPullToRefreshView;
     private RecyclerView mRecyclerView;
     private MessageListHandler mHandler;
-    private ContactPictureLoader mContactsPictureLoader;
     private LocalSearch search;
+    private String mFolderName;
     private Account mAccount;
 
     public static final MessageFragment newInstance(final LocalSearch search) {
@@ -78,13 +78,13 @@ public class MessageFragment extends Fragment {
             }
         });
 
-        // TODO: real folder
-        messages.addAll(loadMessages(mAccount, mAccount.getInboxFolderName()));
+        messages.addAll(loadMessages(mAccount, mFolderName));
         return rootView;
     }
 
     private final void handleArguments(final Bundle arguments) {
         search = arguments.getParcelable(ARG_SEARCH);
+        mFolderName = search.getFolderNames().get(0);
         String title = search.getName();
         String[] accountUuids = search.getAccountUuids();
         Preferences preferences = Preferences.getPreferences(getActivity().getApplication());

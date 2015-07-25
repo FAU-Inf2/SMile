@@ -73,7 +73,6 @@ public class RemindMeList extends SmileActivity
 
         // Enable gesture detection for RemindMeList
         setupGestureDetector(this);
-        add(this);
 
         try {
             if(mAccount == null) {

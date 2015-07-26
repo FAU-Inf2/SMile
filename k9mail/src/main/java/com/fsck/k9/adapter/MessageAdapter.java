@@ -21,6 +21,7 @@ import android.widget.TextView;
 
 import com.daimajia.androidanimations.library.Techniques;
 import com.daimajia.androidanimations.library.YoYo;
+import com.daimajia.swipe.SimpleSwipeListener;
 import com.daimajia.swipe.SwipeLayout;
 import com.fsck.k9.Account;
 import com.fsck.k9.FontSizes;
@@ -48,17 +49,19 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         private final View chip;
         private final TextView threadCount;
         private final CheckBox flagged;
+        private final SwipeLayout swipeLayout;
         //private final CheckBox selected;
         private final QuickContactBadge contactBadge;
 
         public MessageViewHolder(View itemView) {
             super(itemView);
+            swipeLayout = (SwipeLayout) itemView;
             date = (TextView) itemView.findViewById(R.id.date);
             chip = itemView.findViewById(R.id.chip);
             preview = (TextView) itemView.findViewById(R.id.preview);
             flagged = (CheckBox) itemView.findViewById(R.id.flagged_bottom_right);
             contactBadge = (QuickContactBadge) itemView.findViewById(R.id.contact_badge);
-            subject =  (TextView) itemView.findViewById(R.id.subject);
+            subject = (TextView) itemView.findViewById(R.id.subject);
             threadCount = (TextView) itemView.findViewById(R.id.thread_count);
             itemView.findViewById(R.id.flagged_center_right).setVisibility(View.GONE);
             itemView.findViewById(R.id.sender_compact).setVisibility(View.GONE);
@@ -84,6 +87,10 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
         public final TextView getThreadCount() {
             return threadCount;
+        }
+
+        public final SwipeLayout getSwipeLayout() {
+            return swipeLayout;
         }
 
         public final CheckBox getFlagged() {
@@ -124,49 +131,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     public MessageViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         View view = inflater.inflate(R.layout.message_list_item, parent, false);
-        final SwipeLayout swipeLayout = (SwipeLayout) view;
-        swipeLayout.addRevealListener(R.id.pull_out, new SwipeLayout.OnRevealListener() {
-            private boolean img_set1 = false;
-            private boolean img_set2 = false;
-
-            @Override
-            public void onReveal(View view, SwipeLayout.DragEdge dragEdge, float v, int i) {
-                if (dragEdge == SwipeLayout.DragEdge.Left) {
-                    ImageView archive = (ImageView) swipeLayout.findViewById(R.id.pull_out_archive);
-                    ImageView remindMe = (ImageView) swipeLayout.findViewById(R.id.pull_out_remind_me);
-
-                    if (v <= 0.2) {
-                        img_set1 = img_set2 = false;
-                        archive.setVisibility(View.INVISIBLE);
-                        remindMe.setVisibility(View.INVISIBLE);
-                    }
-
-                    if (v > 0.2 && !img_set1) {
-                        img_set1 = true;
-                        img_set2 = false;
-                        archive.setVisibility(View.INVISIBLE);
-                        remindMe.setVisibility(View.VISIBLE);
-                    }
-
-                    if (v > 0.5 && !img_set2) {
-                        img_set1 = false;
-                        img_set2 = true;
-                        remindMe.setVisibility(View.INVISIBLE);
-                        archive.setVisibility(View.VISIBLE);
-                    }
-
-                    if (v <= 0.2) {
-                        view.setBackgroundColor(Color.LTGRAY);
-                    } else {
-                        if (0.2 < v && v < 0.5) {
-                            view.setBackgroundColor(Color.YELLOW);
-                        } else {
-                            view.setBackgroundColor(Color.GREEN);
-                        }
-                    }
-                }
-            }
-        });
 
         MessageViewHolder holder = new MessageViewHolder(view);
         FontSizes fontSizes = K9.getFontSizes();
@@ -175,15 +139,78 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         fontSizes.setViewTextSize(holder.getDate(), fontSizes.getMessageListDate());
         holder.getPreview().setLines(Math.max(K9.messageListPreviewLines(), 1));
 
+        final SwipeLayout swipeLayout = holder.getSwipeLayout();
+        swipeLayout.addDrag(SwipeLayout.DragEdge.Left, view.findViewById(R.id.pull_out));
+        swipeLayout.addDrag(SwipeLayout.DragEdge.Right, view.findViewById(R.id.delete));
+
+        swipeLayout.addRevealListener(R.id.delete, new SwipeLayout.OnRevealListener() {
+            @Override
+            public void onReveal(View view, SwipeLayout.DragEdge dragEdge, float v, int i) {
+                ImageView trash = (ImageView) swipeLayout.findViewById(R.id.trash);
+                if (v > 0.25) {
+                    view.setBackgroundColor(Color.RED);
+                    trash.setVisibility(View.VISIBLE);
+                } else {
+                    view.setBackgroundColor(swipeLayout.getSolidColor());
+                    trash.setVisibility(View.INVISIBLE);
+                }
+            }
+        });
+
+        swipeLayout.addRevealListener(R.id.pull_out, new SwipeLayout.OnRevealListener() {
+            private boolean img_set1 = false;
+            private boolean img_set2 = false;
+
+            @Override
+            public void onReveal(View view, SwipeLayout.DragEdge dragEdge, float v, int i) {
+                if (dragEdge != SwipeLayout.DragEdge.Left) {
+                    return;
+                }
+
+                ImageView archive = (ImageView) swipeLayout.findViewById(R.id.pull_out_archive);
+                ImageView remindMe = (ImageView) swipeLayout.findViewById(R.id.pull_out_remind_me);
+
+                if (v <= 0.2) {
+                    img_set1 = img_set2 = false;
+                    archive.setVisibility(View.INVISIBLE);
+                    remindMe.setVisibility(View.INVISIBLE);
+                }
+
+                if (v > 0.2 && !img_set1) {
+                    img_set1 = true;
+                    img_set2 = false;
+                    archive.setVisibility(View.INVISIBLE);
+                    remindMe.setVisibility(View.VISIBLE);
+                }
+
+                if (v > 0.5 && !img_set2) {
+                    img_set1 = false;
+                    img_set2 = true;
+                    remindMe.setVisibility(View.INVISIBLE);
+                    archive.setVisibility(View.VISIBLE);
+                }
+
+                if (v <= 0.2) {
+                    view.setBackgroundColor(Color.LTGRAY);
+                } else {
+                    if (0.2 < v && v < 0.5) {
+                        view.setBackgroundColor(Color.YELLOW);
+                    } else {
+                        view.setBackgroundColor(Color.GREEN);
+                    }
+                }
+            }
+        });
+
         return holder;
     }
 
     @Override
-    public void onBindViewHolder(MessageViewHolder holder, int position) {
+    public void onBindViewHolder(MessageViewHolder holder, final int position) {
         LocalMessage message = mMessages.get(position);
         Account account = message.getAccount();
 
-        Address[] fromAddrs =  message.getFrom();
+        Address[] fromAddrs = message.getFrom();
         Address[] toAddrs = new Address[0];
         Address[] ccAddrs = new Address[0];
 
@@ -275,6 +302,34 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         holder.getDate().setText(displayDate);
         holder.getPreview().setText(message.getPreview());
         //holder.getPreview().setVisibility(View.GONE);
+
+        holder.getSwipeLayout().addSwipeListener(
+                new SimpleSwipeListener() {
+                    @Override
+                    public void onHandRelease(SwipeLayout layout, float xvel, float yvel) {
+                        layout.setDragDistance(0);
+                        ImageView archive = (ImageView) layout.findViewById(R.id.pull_out_archive);
+                        ImageView remindMe = (ImageView) layout.findViewById(R.id.pull_out_remind_me);
+                        View delete = layout.findViewById(R.id.trash);
+
+                        if (archive.isShown()) {
+                            mMessages.remove(position);
+                            //onArchive(message);
+                            archive.setVisibility(View.INVISIBLE);
+                        }
+
+                        if (remindMe.isShown()) {
+                            mMessages.remove(position);
+                            //onRemindMe(message);
+                            remindMe.setVisibility(View.INVISIBLE);
+                        }
+
+                        if (delete.isShown()) {
+                            mMessages.remove(position);
+                            //onDelete(message);
+                        }
+                    }
+                });
     }
 
     private Drawable getStatusHolder(boolean answered, boolean forwarded) {

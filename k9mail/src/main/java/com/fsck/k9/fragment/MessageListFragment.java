@@ -1746,6 +1746,7 @@ public class MessageListFragment extends Fragment
                     }
                 }
             });
+
             swipeLayout.addRevealListener(R.id.pull_out, new SwipeLayout.OnRevealListener() {
                 private boolean img_set1 = false;
                 private boolean img_set2 = false;

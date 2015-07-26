@@ -163,7 +163,13 @@ public class RemindMeList extends SmileActivity
         calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
         calendar.set(Calendar.MINUTE, minute);
         Log.d(K9.LOG_TAG, "Selected time: " + calendar.getTime());
-        currentRemindMe.setRemindTime(calendar.getTime());
+        Date minDate = new Date(System.currentTimeMillis() + 15 * 1000l);
+        // do not accept dates in the past -- earliest is 15 seconds in the future
+        if(calendar.getTime().before(minDate)) {
+            Log.d(K9.LOG_TAG, "Selected date was before min date -- new date: " + minDate);
+            currentRemindMe.setRemindTime(minDate);
+        } else
+            currentRemindMe.setRemindTime(calendar.getTime());
         remindMeFragment.add(currentRemindMe);
     }
 

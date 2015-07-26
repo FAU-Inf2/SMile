@@ -7,6 +7,7 @@
     swipe:leftEdgeSwipeOffset="0dp"
     swipe:rightEdgeSwipeOffset="0dp">
 
+
     <RelativeLayout
         android:id="@+id/pull_out"
         android:layout_width="match_parent"
@@ -19,12 +20,11 @@
             android:id="@+id/pull_out_remind_me"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
             android:layout_marginRight="10dip"
             android:layout_weight="1"
-            android:src="@drawable/ic_alarm_add_black_24dp" />
-
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_alarm_add_black_48dp"/>
         <ImageView
             android:id="@+id/pull_out_archive"
             android:layout_width="50dp"

@@ -107,6 +107,10 @@ public class MessageFragment extends Fragment {
             e.printStackTrace();
         }
 
+        if(folder == null) {
+            return null;
+        }
+
         try {
             folder.getMessages(new MessageRetrievalListener() {
                 @Override

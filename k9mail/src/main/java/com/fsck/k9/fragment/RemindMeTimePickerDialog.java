@@ -1,6 +1,5 @@
 package com.fsck.k9.fragment;
 
-import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.TimePickerDialog;
@@ -8,8 +7,6 @@ import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.format.DateFormat;
-import android.widget.DatePicker;
-import android.widget.TimePicker;
 
 import java.util.Calendar;
 
@@ -46,7 +43,8 @@ public class RemindMeTimePickerDialog extends DialogFragment {
                     getActivity().getString(android.R.string.cancel),
                     new DialogInterface.OnClickListener() {
                         @Override
-                        public void onClick(DialogInterface dialog, int which) {}
+                        public void onClick(DialogInterface dialog, int which) {
+                        }
                     });
         }
 

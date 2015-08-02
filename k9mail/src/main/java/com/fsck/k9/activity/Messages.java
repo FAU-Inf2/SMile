@@ -19,7 +19,6 @@ import com.fsck.k9.Account;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.crypto.PgpData;
-import com.fsck.k9.fragment.DatePickerDialogFragment;
 import com.fsck.k9.fragment.MessageFragment;
 import com.fsck.k9.fragment.RemindMeDatePickerDialog;
 import com.fsck.k9.fragment.RemindMeDialog;

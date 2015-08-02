@@ -1,6 +1,8 @@
 package com.fsck.k9.activity;
 
 import android.app.ActionBar;
+import android.app.Fragment;
+import android.app.FragmentManager;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
@@ -40,6 +42,17 @@ public abstract class SmileActivity extends K9Activity {
         mAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
         setupDrawer();
         addDrawerItems();
+    }
+
+    public final void loadFragment(Fragment fragment) {
+        if(fragment == null) {
+            return;
+        }
+
+        FragmentManager fragmentManager = getFragmentManager();
+        fragmentManager.beginTransaction()
+                .replace(R.id.content_frame, fragment)
+                .commit();
     }
 
     private final void setupDrawer() {

@@ -1,12 +1,17 @@
 package com.fsck.k9.fragment;
 
+import android.app.Activity;
 import android.app.Fragment;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -14,7 +19,9 @@ import android.widget.ImageView;
 import com.daimajia.swipe.SimpleSwipeListener;
 import com.daimajia.swipe.SwipeLayout;
 import com.fsck.k9.Account;
+import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
+import com.fsck.k9.activity.MessageReference;
 import com.fsck.k9.activity.misc.ContactPictureLoader;
 import com.fsck.k9.adapter.MessageAdapter;
 import com.fsck.k9.helper.ContactPicture;
@@ -24,6 +31,7 @@ import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.search.LocalSearch;
+import com.fsck.k9.ui.messageview.MessageViewFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +50,7 @@ public class MessageFragment extends Fragment {
     private LocalSearch search;
     private String mFolderName;
     private Account mAccount;
+    private MessageFragmentListener mCallback;
 
     public static final MessageFragment newInstance(final LocalSearch search) {
         MessageFragment fragment = new MessageFragment();
@@ -61,6 +70,20 @@ public class MessageFragment extends Fragment {
         messages = new ArrayList<LocalMessage>();
         adapter = new MessageAdapter(getActivity(), messages);
     }
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+
+        // This makes sure that the container activity has implemented
+        // the callback interface. If not, it throws an exception
+        try {
+            mCallback = (MessageFragmentListener) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                    + " must implement OnHeadlineSelectedListener");
+        }
+    }
+
 
     @Nullable
     @Override
@@ -70,6 +93,17 @@ public class MessageFragment extends Fragment {
         final RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(layoutManager);
         mRecyclerView.setAdapter(adapter);
+        mRecyclerView.addOnItemTouchListener(
+                new RecyclerItemClickListener(getActivity(), new RecyclerItemClickListener.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(View view, int position) {
+                        LocalMessage message = messages.get(position);
+                        Log.d(K9.LOG_TAG, message.toString());
+                        mCallback.openMessage(message.makeMessageReference());
+                    }
+                })
+        );
+
         mPullToRefreshView = (SwipeRefreshLayout) rootView.findViewById(R.id.swipeRefreshLayout);
 
         mPullToRefreshView.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -133,5 +167,40 @@ public class MessageFragment extends Fragment {
         }
 
         return localMessages;
+    }
+
+    public interface MessageFragmentListener {
+        void openMessage(MessageReference messageReference);
+    }
+
+    public static class RecyclerItemClickListener implements RecyclerView.OnItemTouchListener {
+        private final OnItemClickListener mListener;
+        private final GestureDetector mGestureDetector;
+
+        public interface OnItemClickListener {
+            void onItemClick(View view, int position);
+        }
+
+        public RecyclerItemClickListener(Context context, OnItemClickListener listener) {
+            mListener = listener;
+            mGestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
+                @Override public boolean onSingleTapUp(MotionEvent e) {
+                    return true;
+                }
+            });
+        }
+
+        @Override public boolean onInterceptTouchEvent(RecyclerView view, MotionEvent e) {
+            View childView = view.findChildViewUnder(e.getX(), e.getY());
+
+            if (childView != null && mListener != null && mGestureDetector.onTouchEvent(e)) {
+                mListener.onItemClick(childView, view.getChildPosition(childView));
+                return true;
+            }
+
+            return false;
+        }
+
+        @Override public void onTouchEvent(RecyclerView view, MotionEvent motionEvent) { }
     }
 }

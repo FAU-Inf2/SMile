@@ -9,22 +9,32 @@ import android.os.Bundle;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.Preferences;
+import com.fsck.k9.crypto.PgpData;
 import com.fsck.k9.fragment.MessageFragment;
+import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.search.LocalSearch;
 import com.fsck.k9.search.SearchAccount;
 import com.fsck.k9.search.SearchSpecification;
+import com.fsck.k9.ui.messageview.MessageViewFragment;
+import com.fsck.k9.view.MessageHeader;
 
 import java.util.Collection;
 import java.util.List;
 
 import de.fau.cs.mad.smile.android.R;
 
-public class Messages extends SmileActivity {
+public class Messages extends SmileActivity implements MessageFragment.MessageFragmentListener, MessageViewFragment.MessageViewFragmentListener {
     private static final String ACTION_SHORTCUT = "shortcut";
     private static final String EXTRA_SEARCH = "search";
     public static final String EXTRA_MESSAGE_REFERENCE = "message_reference";
     private static final String EXTRA_SPECIAL_FOLDER = "special_folder";
     public static final String EXTRA_SEARCH_ACCOUNT = "com.fsck.k9.search_account";
+
+    @Override
+    public void openMessage(MessageReference messageReference) {
+        loadFragment(MessageViewFragment.newInstance(messageReference));
+    }
+
     public static final String EXTRA_SEARCH_FOLDER = "com.fsck.k9.search_folder";
 
     private LocalSearch mSearch;
@@ -61,7 +71,7 @@ public class Messages extends SmileActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // TODO: according to documentation long running tasks like db upgrade should not be placed inside an activity
+        // TODO: according to android documentation long running tasks like db upgrade should not be placed inside an activity
         if (UpgradeDatabases.actionUpgradeDatabases(this, getIntent())) {
             finish();
             return;
@@ -76,9 +86,7 @@ public class Messages extends SmileActivity {
             messageFragment = MessageFragment.newInstance(mSearch);
         }
 
-        fragmentManager.beginTransaction()
-                .replace(R.id.content_frame, messageFragment)
-                .commit();
+        loadFragment(messageFragment);
     }
 
     private final void handleIntent(final Intent intent) {
@@ -148,5 +156,50 @@ public class Messages extends SmileActivity {
                 break;
             }
         }
+    }
+
+    @Override
+    public void onForward(LocalMessage mMessage, PgpData mPgpData) {
+
+    }
+
+    @Override
+    public void disableDeleteAction() {
+
+    }
+
+    @Override
+    public void onReplyAll(LocalMessage mMessage, PgpData mPgpData) {
+
+    }
+
+    @Override
+    public void onReply(LocalMessage mMessage, PgpData mPgpData) {
+
+    }
+
+    @Override
+    public void displayMessageSubject(String title) {
+
+    }
+
+    @Override
+    public void setProgress(boolean b) {
+
+    }
+
+    @Override
+    public void showNextMessageOrReturn() {
+
+    }
+
+    @Override
+    public void messageHeaderViewAvailable(MessageHeader messageHeaderView) {
+
+    }
+
+    @Override
+    public void updateMenu() {
+
     }
 }

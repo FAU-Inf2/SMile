@@ -51,7 +51,8 @@ public abstract class SmileActivity extends K9Activity {
 
         FragmentManager fragmentManager = getFragmentManager();
         fragmentManager.beginTransaction()
-                .replace(R.id.content_frame, fragment)
+                .add(R.id.content_frame, fragment)
+                .addToBackStack("fragBack")
                 .commit();
     }
 
@@ -115,5 +116,10 @@ public abstract class SmileActivity extends K9Activity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
     }
 }

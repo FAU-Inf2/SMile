@@ -26,7 +26,9 @@ import com.daimajia.swipe.SwipeLayout;
 import com.fsck.k9.Account;
 import com.fsck.k9.FontSizes;
 import com.fsck.k9.K9;
+import com.fsck.k9.activity.RemindMeList;
 import com.fsck.k9.activity.misc.ContactPictureLoader;
+import com.fsck.k9.fragment.MessageFragment;
 import com.fsck.k9.helper.ContactPicture;
 import com.fsck.k9.helper.MessageHelper;
 import com.fsck.k9.helper.Utility;
@@ -34,8 +36,10 @@ import com.fsck.k9.mail.Address;
 import com.fsck.k9.mail.Flag;
 import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.MessagingException;
+import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.mailstore.LocalMessage;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -114,8 +118,9 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     private final Drawable mForwardedIcon;
     private final Drawable mAnsweredIcon;
     private final Drawable mForwardedAnsweredIcon;
+    private final MessageFragment.MessageActions mMessageActionsCallback;
 
-    public MessageAdapter(final Context context, final List<LocalMessage> messages) {
+    public MessageAdapter(final Context context, final List<LocalMessage> messages, final MessageFragment.MessageActions messageActionsCallback) {
         this.mContext = context;
         this.mMessages = messages;
         this.mContactsPictureLoader = ContactPicture.getContactPictureLoader(this.mContext);
@@ -125,6 +130,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         mAnsweredIcon = context.getResources().getDrawable(R.drawable.ic_email_answered_small);
         mForwardedIcon = context.getResources().getDrawable(R.drawable.ic_email_forwarded_small);
         mForwardedAnsweredIcon = context.getResources().getDrawable(R.drawable.ic_email_forwarded_answered_small);
+        mMessageActionsCallback = messageActionsCallback;
     }
 
     @Override
@@ -207,7 +213,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     @Override
     public void onBindViewHolder(MessageViewHolder holder, final int position) {
-        LocalMessage message = mMessages.get(position);
+        final LocalMessage message = mMessages.get(position);
         Account account = message.getAccount();
 
         Address[] fromAddrs = message.getFrom();
@@ -313,20 +319,20 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                         View delete = layout.findViewById(R.id.trash);
 
                         if (archive.isShown()) {
+                            mMessageActionsCallback.archive(message);
                             mMessages.remove(position);
-                            //onArchive(message);
                             archive.setVisibility(View.INVISIBLE);
                         }
 
                         if (remindMe.isShown()) {
+                            mMessageActionsCallback.remindMe(message);
                             mMessages.remove(position);
-                            //onRemindMe(message);
                             remindMe.setVisibility(View.INVISIBLE);
                         }
 
                         if (delete.isShown()) {
+                            mMessageActionsCallback.delete(message);
                             mMessages.remove(position);
-                            //onDelete(message);
                         }
                     }
                 });

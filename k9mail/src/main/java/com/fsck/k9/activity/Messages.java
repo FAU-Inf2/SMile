@@ -1,16 +1,33 @@
 package com.fsck.k9.activity;
 
+import android.app.DatePickerDialog;
+import android.app.DialogFragment;
+import android.app.Fragment;
 import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.app.SearchManager;
+import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.DatePicker;
+import android.widget.TimePicker;
 
 import com.fsck.k9.Account;
+import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.crypto.PgpData;
+import com.fsck.k9.fragment.DatePickerDialogFragment;
 import com.fsck.k9.fragment.MessageFragment;
+import com.fsck.k9.fragment.RemindMeDatePickerDialog;
+import com.fsck.k9.fragment.RemindMeDialog;
+import com.fsck.k9.fragment.RemindMeTimePickerDialog;
+import com.fsck.k9.mail.Flag;
+import com.fsck.k9.mail.MessagingException;
+import com.fsck.k9.mail.RemindMe;
+import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.search.LocalSearch;
 import com.fsck.k9.search.SearchAccount;
@@ -18,27 +35,29 @@ import com.fsck.k9.search.SearchSpecification;
 import com.fsck.k9.ui.messageview.MessageViewFragment;
 import com.fsck.k9.view.MessageHeader;
 
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import de.fau.cs.mad.smile.android.R;
 
-public class Messages extends SmileActivity implements MessageFragment.MessageFragmentListener, MessageViewFragment.MessageViewFragmentListener {
+public class Messages extends SmileActivity
+        implements MessageFragment.MessageActions,
+        MessageViewFragment.MessageViewFragmentListener,RemindMeDialog.NoticeDialogListener,
+        TimePickerDialog.OnTimeSetListener,
+        DatePickerDialog.OnDateSetListener {
     private static final String ACTION_SHORTCUT = "shortcut";
     private static final String EXTRA_SEARCH = "search";
     public static final String EXTRA_MESSAGE_REFERENCE = "message_reference";
     private static final String EXTRA_SPECIAL_FOLDER = "special_folder";
     public static final String EXTRA_SEARCH_ACCOUNT = "com.fsck.k9.search_account";
-
-    @Override
-    public void openMessage(MessageReference messageReference) {
-        loadFragment(MessageViewFragment.newInstance(messageReference));
-    }
-
     public static final String EXTRA_SEARCH_FOLDER = "com.fsck.k9.search_folder";
 
     private LocalSearch mSearch;
     private MessageReference mMessageReference;
+    private MessageFragment messageFragment;
 
     public static void actionDisplaySearch(Context context,
                                            SearchSpecification search) {
@@ -80,7 +99,7 @@ public class Messages extends SmileActivity implements MessageFragment.MessageFr
         handleIntent(getIntent());
 
         FragmentManager fragmentManager = getFragmentManager();
-        MessageFragment messageFragment = (MessageFragment) fragmentManager.findFragmentById(R.layout.message_list_fragment);
+        messageFragment = (MessageFragment) fragmentManager.findFragmentById(R.layout.message_list_fragment);
 
         if(messageFragment == null) {
             messageFragment = MessageFragment.newInstance(mSearch);
@@ -159,22 +178,22 @@ public class Messages extends SmileActivity implements MessageFragment.MessageFr
     }
 
     @Override
-    public void onForward(LocalMessage mMessage, PgpData mPgpData) {
+    public void onForward(LocalMessage message, PgpData mPgpData) {
+        MessageCompose.actionForward(this, message, null);
+    }
 
+    @Override
+    public void onReply(LocalMessage message, PgpData mPgpData) {
+        MessageCompose.actionReply(this, message, false, null);
+    }
+
+    @Override
+    public void onReplyAll(LocalMessage message, PgpData mPgpData) {
+        MessageCompose.actionReply(this, message, true, null);
     }
 
     @Override
     public void disableDeleteAction() {
-
-    }
-
-    @Override
-    public void onReplyAll(LocalMessage mMessage, PgpData mPgpData) {
-
-    }
-
-    @Override
-    public void onReply(LocalMessage mMessage, PgpData mPgpData) {
 
     }
 
@@ -201,5 +220,158 @@ public class Messages extends SmileActivity implements MessageFragment.MessageFr
     @Override
     public void updateMenu() {
 
+    }
+
+    // implement MessageActions
+
+    @Override
+    public void move(LocalMessage message, String destFolder) {
+        LocalFolder localFolder = null;
+
+        try {
+            localFolder = new LocalFolder(message.getAccount().getLocalStore(), destFolder);
+            message.getFolder().moveMessages(Collections.singletonList(message), localFolder);
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void delete(LocalMessage message) {
+        RemindMe remindMe = messageFragment.isRemindMe(message);
+
+        if(remindMe == null) {
+            move(message, message.getAccount().getTrashFolderName());
+            try {
+                message.setFlag(Flag.DELETED, true);
+            } catch (MessagingException e) {
+                e.printStackTrace();
+            }
+        } else {
+            move(message, message.getAccount().getInboxFolderName());
+            messageFragment.delete(remindMe);
+        }
+    }
+
+    @Override
+    public void archive(LocalMessage message) {
+        move(message, message.getAccount().getArchiveFolderName());
+    }
+
+    @Override
+    public void remindMe(LocalMessage message) {
+        RemindMeDialog dialog = RemindMeDialog.newInstance(message);
+        dialog.show(getFragmentManager(), "mTimeValue");
+    }
+
+    @Override
+    public void reply(LocalMessage message) {
+
+    }
+
+    @Override
+    public void replyAll(LocalMessage message) {
+
+    }
+
+    @Override
+    public void openMessage(MessageReference messageReference) {
+        loadFragment(MessageViewFragment.newInstance(messageReference));
+    }
+
+    @Override
+    public void onDialogClick(DialogFragment dialog) {
+        Log.i(K9.LOG_TAG, "RemindMeList.onDialogClick");
+        RemindMeDialog dlg = (RemindMeDialog)dialog;
+        currentRemindMe = dlg.getRemindMe();
+
+        if(currentRemindMe.getRemindInterval() == RemindMe.RemindInterval.CUSTOM) {
+            onDateSetCalled = false;
+            onTimeSetCalled = false;
+
+            final String datePickerTag = "remindMeDatePicker";
+            FragmentTransaction ft = getFragmentManager().beginTransaction();
+            Fragment prev = getFragmentManager().findFragmentByTag(datePickerTag);
+
+            if (prev != null) {
+                ft.remove(prev);
+            }
+
+            ft.addToBackStack(datePickerTag);
+
+            RemindMeDatePickerDialog datePickerDialog = RemindMeDatePickerDialog.newInstance(this);
+            datePickerDialog.show(ft, datePickerTag);
+        } else {
+            switch (currentRemindMe.getRemindInterval()) {
+                case TEN_MINUTES:
+                    currentRemindMe.setRemindTime(addMinute(new Date(System.currentTimeMillis()), 10));
+                    break;
+                case THIRTY_MINUTES:
+                    currentRemindMe.setRemindTime(addMinute(new Date(System.currentTimeMillis()), 30));
+                    break;
+                case TOMORROW:
+                    currentRemindMe.setRemindTime(addMinute(new Date(System.currentTimeMillis()), 24*60));
+                    break;
+            }
+
+            messageFragment.add(currentRemindMe);
+        }
+    }
+
+    private boolean onTimeSetCalled = false;
+    private boolean onDateSetCalled = false;
+    private RemindMe currentRemindMe;
+
+    @Override
+    public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+        if(onDateSetCalled) {
+            return;
+        }
+
+        onDateSetCalled = true;
+
+        final String timePickerTag = "remindMeTimePicker";
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.YEAR, year);
+        calendar.set(Calendar.MONTH, monthOfYear);
+        calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+
+        Log.d(K9.LOG_TAG, "Selected date: " + calendar.getTime());
+        currentRemindMe.setRemindTime(calendar.getTime());
+        RemindMeTimePickerDialog timePickerDialog = RemindMeTimePickerDialog.newInstance(this);
+        timePickerDialog.show(getFragmentManager(), timePickerTag);
+    }
+
+    @Override
+    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+        if(onTimeSetCalled) {
+            return;
+        }
+
+        onTimeSetCalled = true;
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(currentRemindMe.getRemindTime());
+        calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+        calendar.set(Calendar.MINUTE, minute);
+        Log.d(K9.LOG_TAG, "Selected time: " + calendar.getTime());
+        Date minDate = new Date(System.currentTimeMillis() + 15 * 1000l);
+
+        // do not accept dates in the past -- earliest is 15 seconds in the future
+        if(calendar.getTime().before(minDate)) {
+            Log.d(K9.LOG_TAG, "Selected date was before min date -- new date: " + minDate);
+            currentRemindMe.setRemindTime(minDate);
+        } else {
+            currentRemindMe.setRemindTime(calendar.getTime());
+        }
+
+        messageFragment.add(currentRemindMe);
+    }
+
+    private final Date addMinute(final Date date, final int minute) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(Calendar.MINUTE, minute);
+        return calendar.getTime();
     }
 }

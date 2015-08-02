@@ -491,7 +491,7 @@ public class MessageListFragment extends Fragment
         mCheckboxes = K9.messageListCheckboxes();
         mStars = K9.messageListStars();
         mMessages = new ArrayList<LocalMessage>();
-        mAdapter = new MessageAdapter(appContext, mMessages);
+        //mAdapter = new MessageAdapter(appContext, mMessages);
 
         if (K9.showContactPicture()) {
             mContactsPictureLoader = ContactPicture.getContactPictureLoader(getActivity());

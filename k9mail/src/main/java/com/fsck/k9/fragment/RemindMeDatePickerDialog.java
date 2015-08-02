@@ -10,7 +10,7 @@ import android.widget.DatePicker;
 
 import java.util.Calendar;
 
-public class RemindMeDatePickerDialog extends DatePickerDialogFragment {
+public class RemindMeDatePickerDialog extends DialogFragment {
     private DatePickerDialog.OnDateSetListener onDateSetListener;
 
     public static RemindMeDatePickerDialog newInstance(DatePickerDialog.OnDateSetListener onDateSetListener) {

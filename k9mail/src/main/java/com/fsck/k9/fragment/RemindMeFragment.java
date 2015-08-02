@@ -30,6 +30,7 @@ import java.util.List;
 
 import de.fau.cs.mad.smile.android.R;
 
+@Deprecated
 public class RemindMeFragment extends Fragment {
     private static final String ARG_ACCOUNT = "accountUuid";
 

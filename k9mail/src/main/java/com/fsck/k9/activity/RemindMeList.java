@@ -39,6 +39,7 @@ import java.util.List;
 
 import de.fau.cs.mad.smile.android.R;
 
+@Deprecated
 public class RemindMeList extends SmileActivity
         implements RemindMeDialog.NoticeDialogListener,
             TimePickerDialog.OnTimeSetListener,

@@ -35,6 +35,7 @@ public class RemindMeDatePickerDialog extends DialogFragment {
         int month = c.get(Calendar.MONTH);
         int day = c.get(Calendar.DAY_OF_MONTH);
         final DatePickerDialog datePickerDialog = new DatePickerDialog(getActivity(), this.getOnDateSetListener(), year, month, day);
+
         if (hasJellyBeanAndAbove()) {
             datePickerDialog.setButton(DialogInterface.BUTTON_POSITIVE,
                     getActivity().getString(android.R.string.ok),
@@ -53,6 +54,7 @@ public class RemindMeDatePickerDialog extends DialogFragment {
                         public void onClick(DialogInterface dialog, int which) {}
                     });
         }
+
         return datePickerDialog;
     }
 

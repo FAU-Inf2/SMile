@@ -17,7 +17,7 @@ import java.lang.ref.WeakReference;
  * <p><strong>Note:</strong> If you add a method to this class make sure you don't accidentally
  * perform the operation in the calling thread.</p>
  */
-class MessageListHandler extends Handler {
+public class MessageListHandler extends Handler {
     private static final int ACTION_FOLDER_LOADING = 1;
     private static final int ACTION_REFRESH_TITLE = 2;
     private static final int ACTION_PROGRESS = 3;
@@ -70,7 +70,7 @@ class MessageListHandler extends Handler {
         android.os.Message msg = android.os.Message.obtain(this, ACTION_GO_BACK);
         sendMessage(msg);
     }
-/*
+
     public void restoreListPosition() {
         MessageListFragment fragment = mFragment.get();
         if (fragment != null) {
@@ -79,7 +79,7 @@ class MessageListHandler extends Handler {
             fragment.mSavedListState = null;
             sendMessage(msg);
         }
-    }*/
+    }
 
     public void openMessage(MessageReference messageReference) {
         android.os.Message msg = android.os.Message.obtain(this, ACTION_OPEN_MESSAGE,
@@ -128,10 +128,10 @@ class MessageListHandler extends Handler {
                 fragment.mFragmentListener.goBack();
                 break;
             }
-         /*   case ACTION_RESTORE_LIST_POSITION: {
+            case ACTION_RESTORE_LIST_POSITION: {
                 fragment.mListView.onRestoreInstanceState((Parcelable) msg.obj);
                 break;
-            }*/
+            }
             case ACTION_OPEN_MESSAGE: {
                 MessageReference messageReference = (MessageReference) msg.obj;
                 fragment.mFragmentListener.openMessage(messageReference);

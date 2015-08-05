@@ -9,13 +9,13 @@ public class FolderClickListener implements View.OnClickListener {
     final LocalSearch search;
     final Context context;
 
-    public FolderClickListener(Context context, LocalSearch search) {
+    public FolderClickListener(final Context context, final LocalSearch search) {
         this.search = search;
         this.context = context;
     }
 
     @Override
-    public void onClick(View v) {
-        Messages.actionDisplaySearch(context, search);
+    public void onClick(final View v) {
+        MessageList.actionDisplaySearch(context, search, true, false);
     }
 }

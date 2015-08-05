@@ -211,7 +211,7 @@
             android:uiOptions="splitActionBarWhenNarrow"
             android:parentActivityName="com.fsck.k9.activity.MessageList">
         </activity>
-      <!--
+
         <activity
             android:name="com.fsck.k9.activity.MessageList"
             android:configChanges="locale"
@@ -219,25 +219,6 @@
             android:uiOptions="splitActionBarWhenNarrow"
             android:parentActivityName="com.fsck.k9.activity.FolderList">
             <intent-filter>-->
-                <!-- This action is only to allow an entry point for launcher shortcuts -->
-                <!--<action android:name="android.intent.action.MAIN"/>
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
-                <data
-                    android:host="messages"
-                    android:scheme="email"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-        </activity>-->
-
-        <activity
-            android:name="com.fsck.k9.activity.Messages"
-            android:configChanges="locale"
-            android:launchMode="singleTop"
-            android:uiOptions="splitActionBarWhenNarrow"
-            android:parentActivityName="com.fsck.k9.activity.FolderList">
-            <intent-filter>
                 <!-- This action is only to allow an entry point for launcher shortcuts -->
                 <action android:name="android.intent.action.MAIN"/>
             </intent-filter>
@@ -248,6 +229,25 @@
                     android:scheme="email"/>
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
+        </activity>
+
+        <activity
+            android:name="com.fsck.k9.activity.Messages"
+            android:configChanges="locale"
+            android:launchMode="singleTop"
+            android:uiOptions="splitActionBarWhenNarrow"
+            android:parentActivityName="com.fsck.k9.activity.FolderList">
+            <!--<intent-filter>
+                This action is only to allow an entry point for launcher shortcuts
+                <action android:name="android.intent.action.MAIN"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <data
+                    android:host="messages"
+                    android:scheme="email"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>-->
         </activity>
 
         <activity

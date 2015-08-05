@@ -479,7 +479,7 @@ public final class FolderList extends K9ListActivity {
     @Override
     public final boolean onSearchRequested() {
         Bundle appData = new Bundle();
-        appData.putString(Messages.EXTRA_SEARCH_ACCOUNT, mAccount.getUuid());
+        appData.putString(MessageList.EXTRA_SEARCH_ACCOUNT, mAccount.getUuid());
         startSearch(null, false, appData, false);
         return true;
     }
@@ -488,7 +488,7 @@ public final class FolderList extends K9ListActivity {
         LocalSearch search = new LocalSearch(folder);
         search.addAccountUuid(mAccount.getUuid());
         search.addAllowedFolder(folder);
-        Messages.actionDisplaySearch(this, search);
+        MessageList.actionDisplaySearch(this, search, false, false);
     }
 
     private final void onCompact(final Account account) {

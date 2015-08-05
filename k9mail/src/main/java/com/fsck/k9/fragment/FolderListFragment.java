@@ -15,6 +15,7 @@ import android.widget.SearchView;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.Preferences;
+import com.fsck.k9.activity.MessageList;
 import com.fsck.k9.activity.Messages;
 import com.fsck.k9.adapter.FolderAdapter;
 import com.fsck.k9.activity.holder.FolderInfoHolder;
@@ -119,7 +120,7 @@ public final class FolderListFragment extends ListFragment {
         LocalSearch search = new LocalSearch(folder);
         search.addAccountUuid(mAccount.getUuid());
         search.addAllowedFolder(folder);
-        Messages.actionDisplaySearch(getActivity(), search);
+        MessageList.actionDisplaySearch(getActivity(), search, false, false);
     }
 
     private final void setupListView() {

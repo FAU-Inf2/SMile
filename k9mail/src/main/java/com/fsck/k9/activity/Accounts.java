@@ -694,7 +694,7 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
     private boolean onOpenAccount(BaseAccount account) {
         if (account instanceof SearchAccount) {
             SearchAccount searchAccount = (SearchAccount) account;
-            Messages.actionDisplaySearch(this, searchAccount.getRelatedSearch());
+            MessageList.actionDisplaySearch(this, searchAccount.getRelatedSearch(), false, false);
         } else {
             Account realAccount = (Account) account;
             if (!realAccount.isEnabled()) {
@@ -714,7 +714,7 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
                 LocalSearch search = new LocalSearch(realAccount.getAutoExpandFolderName());
                 search.addAllowedFolder(realAccount.getAutoExpandFolderName());
                 search.addAccountUuid(realAccount.getUuid());
-                Messages.actionDisplaySearch(this, search);
+                MessageList.actionDisplaySearch(this, search, false, true);
             }
         }
         return true;
@@ -1930,7 +1930,7 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
 
         @Override
         public void onClick(View v) {
-            Messages.actionDisplaySearch(Accounts.this, search);
+            MessageList.actionDisplaySearch(Accounts.this, search, true, false);
         }
 
     }

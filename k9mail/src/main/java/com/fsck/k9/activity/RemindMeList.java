@@ -5,35 +5,39 @@ import android.app.ActionBar;
 import android.app.DatePickerDialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
+import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Rect;
-import android.os.AsyncTask;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.BaseAdapter;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
 import android.widget.ListView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.activity.misc.SwipeGestureDetector.OnSwipeGestureListener;
-import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.fragment.RemindMeDatePickerDialog;
 import com.fsck.k9.fragment.RemindMeDialog;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
+import com.fsck.k9.fragment.RemindMeFragment;
 import com.fsck.k9.fragment.RemindMeTimePickerDialog;
 import com.fsck.k9.mail.Folder;
 import com.fsck.k9.mail.RemindMe;
-import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.mailstore.LocalRemindMe;
@@ -41,19 +45,18 @@ import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.mailstore.LocalStore;
 import com.fsck.k9.service.RemindMeService;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 import de.fau.cs.mad.smile.android.R;
 
-public class RemindMeList extends K9ListActivity
+public class RemindMeList extends K9Activity
         implements RemindMeDialog.NoticeDialogListener,
             TimePickerDialog.OnTimeSetListener,
             DatePickerDialog.OnDateSetListener,
             OnSwipeGestureListener {
+
     public static final String EXTRA_MESSAGE_REFERENCE = "de.fau.cs.mad.smile.android.MESSAGE_REFERENCE";
     public static final String CREATE_REMINDME = "de.fau.cs.mad.smile.android.CREATE_REMINDME";
     public static final String EDIT_REMINDME = "de.fau.cs.mad.smile.android.EDIT_REMINDME";
@@ -63,8 +66,14 @@ public class RemindMeList extends K9ListActivity
     private LocalRemindMe mLocalRemindMe;
     private RemindMe currentRemindMe;
     private String folderName;
+    private ListView mDrawerList;
+    private DrawerLayout mDrawerLayout;
+    private ActionBarDrawerToggle mDrawerToggle;
     private boolean onTimeSetCalled = false;
     private boolean onDateSetCalled = false;
+
+    private ArrayAdapter<String> mAdapter;
+    private RemindMeFragment remindMeFragment;
 
     public static Intent createRemindMe(Context context,
                                         LocalMessage message) {
@@ -79,19 +88,26 @@ public class RemindMeList extends K9ListActivity
         super.onCreate(savedInstanceState);
         final Intent intent = getIntent();
 
+        setContentView(R.layout.remindme_list);
+
         // TODO: this is ugly, search for better solution to expose onClick result and handling intents
         if(CREATE_REMINDME.equals(intent.getAction())) {
             MessageReference reference = intent.getParcelableExtra(EXTRA_MESSAGE_REFERENCE);
-            Message message = reference.restoreToLocalMessage(this);
-            String accountUuid = ((LocalFolder) message.getFolder()).getAccountUuid();
+            LocalMessage message = reference.restoreToLocalMessage(this);
+            String accountUuid = reference.getAccountUuid();
+
+            remindMeFragment = RemindMeFragment.newInstance(accountUuid);
+            FragmentManager fragmentManager = getFragmentManager();
+            fragmentManager.beginTransaction()
+                    .replace(R.id.content_frame, remindMeFragment)
+                    .commit();
+
             mAccount = Preferences.getPreferences(this).getAccount(accountUuid);
             folderName = message.getFolder().getName();
 
             RemindMeDialog dialog = RemindMeDialog.newInstance(message);
             dialog.show(getFragmentManager(), "mTimeValue");
         }
-
-        setContentView(R.layout.remindme_list);
 
         // Enable gesture detection for RemindMeList
         setupGestureDetector(this);
@@ -100,8 +116,11 @@ public class RemindMeList extends K9ListActivity
         ActionBar actionBar = getActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
 
-        ListView listView = getListView();
-        listView.setItemsCanFocus(false);
+        mDrawerList = (ListView)findViewById(R.id.navList);
+        mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
+
+        addDrawerItems();
+        setupDrawer();
 
         try {
             if(mAccount == null) {
@@ -123,11 +142,68 @@ public class RemindMeList extends K9ListActivity
         }
     }
 
+    private void addDrawerItems() {
+        String[] osArray = { "More features…" };
+        mAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, osArray);
+        mDrawerList.setAdapter(mAdapter);
+
+        mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Toast.makeText(RemindMeList.this, "…coming soon!", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void setupDrawer() {
+        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.drawer_open, R.string.drawer_close) {
+
+            /** Called when a drawer has settled in a completely open state. */
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+                getActionBar().setTitle("RemindMe!");
+                invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+            }
+
+            /** Called when a drawer has settled in a completely closed state. */
+            public void onDrawerClosed(View view) {
+                super.onDrawerClosed(view);
+                getActionBar().setTitle(getTitle());
+                invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+            }
+        };
+
+        mDrawerToggle.setDrawerIndicatorEnabled(true);
+        mDrawerLayout.setDrawerListener(mDrawerToggle);
+    }
+
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        // Sync the toggle state after onRestoreInstanceState has occurred.
+        mDrawerToggle.syncState();
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.remindme_list_actions, menu);
         return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        mDrawerToggle.onConfigurationChanged(newConfig);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (mDrawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Nullable
@@ -172,31 +248,14 @@ public class RemindMeList extends K9ListActivity
         calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
         calendar.set(Calendar.MINUTE, minute);
         Log.d(K9.LOG_TAG, "Selected time: " + calendar.getTime());
-        currentRemindMe.setRemindTime(calendar.getTime());
-        new InsertRemindMe().execute(currentRemindMe);
-        new LoadRemindMe().execute();
-        ((BaseAdapter)getListView().getAdapter()).notifyDataSetChanged();
-    }
-
-    /**
-     * Reload list of RemindMe when this activity is resumed.
-     */
-    @Override
-    public void onResume() {
-        super.onResume();
-        new LoadRemindMe().execute();
-    }
-
-    @Override
-    protected void onListItemClick(ListView listView, View view, int position, long id) {
-        Object obj = listView.getItemAtPosition(position);
-
-        if(obj instanceof RemindMe) {
-            RemindMe remindMe = (RemindMe)obj;
-            Log.d(K9.LOG_TAG, "listItem is instanceof RemindMe: " + remindMe);
-        }
-
-        super.onListItemClick(listView, view, position, id);
+        Date minDate = new Date(System.currentTimeMillis() + 15 * 1000l);
+        // do not accept dates in the past -- earliest is 15 seconds in the future
+        if(calendar.getTime().before(minDate)) {
+            Log.d(K9.LOG_TAG, "Selected date was before min date -- new date: " + minDate);
+            currentRemindMe.setRemindTime(minDate);
+        } else
+            currentRemindMe.setRemindTime(calendar.getTime());
+        remindMeFragment.add(currentRemindMe);
     }
 
     @Override
@@ -234,9 +293,7 @@ public class RemindMeList extends K9ListActivity
                     break;
             }
 
-            new InsertRemindMe().execute(currentRemindMe);
-            new LoadRemindMe().execute();
-            ((BaseAdapter)getListView().getAdapter()).notifyDataSetChanged();
+            remindMeFragment.add(currentRemindMe);
         }
     }
 
@@ -250,131 +307,12 @@ public class RemindMeList extends K9ListActivity
     @Override
     public void onSwipeRightToLeft(MotionEvent e1, MotionEvent e2) {
         // edit
-        RemindMe remindMe = getRemindMeFromListSwipe(e1, e2);
-
-        if(remindMe != null) {
-            Log.d(K9.LOG_TAG, "RightToLeftSwipe, Object: " + remindMe);
-            RemindMeDialog dialog = RemindMeDialog.newInstance(remindMe);
-            dialog.show(getFragmentManager(), "mTimeValue");
-        }
+        remindMeFragment.onSwipeRightToLeft(e1, e2);
     }
 
     @Override
     public void onSwipeLeftToRight(MotionEvent e1, MotionEvent e2) {
         // delete
-        RemindMe remindMe = getRemindMeFromListSwipe(e1, e2);
-
-        if(remindMe != null) {
-            Log.d(K9.LOG_TAG, "LeftToRightSwipe, Object: " + remindMe);
-            new DeleteRemindMe().execute(remindMe);
-            ((RemindMeAdapter)getListView().getAdapter()).remove(remindMe);
-        }
-    }
-
-    private RemindMe getRemindMeFromListSwipe(MotionEvent e1, MotionEvent e2) {
-        int x = (int) e1.getRawX();
-        int y = (int) e1.getRawY();
-
-        ListView listView = getListView();
-        Rect rect = new Rect();
-        listView.getGlobalVisibleRect(rect);
-
-        if (rect.contains(x, y)) {
-            int[] listPosition = new int[2];
-            listView.getLocationOnScreen(listPosition);
-
-            int listX = x - listPosition[0];
-            int listY = y - listPosition[1];
-
-            int listViewPosition = listView.pointToPosition(listX, listY);
-            return (RemindMe) listView.getAdapter().getItem(listViewPosition);
-        }
-
-        return  null;
-    }
-
-    private void populateListView(List<RemindMe> items) {
-        RemindMeAdapter adapter = new RemindMeAdapter(this, items);
-        ListView listView = getListView();
-        listView.setAdapter(adapter);
-        listView.invalidate();
-    }
-
-    class LoadRemindMe extends AsyncTask<Void, Void, List<RemindMe>> {
-
-        @Override
-        protected List<RemindMe> doInBackground(Void... params) {
-            try {
-                return mLocalRemindMe.getAllRemindMes();
-            } catch (MessagingException e) {
-                Log.e(K9.LOG_TAG, "Unable to retrieve RemindMes", e);
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(List<RemindMe> remindMes) {
-            super.onPostExecute(remindMes);
-            populateListView(remindMes);
-        }
-    }
-
-    class InsertRemindMe extends AsyncTask<RemindMe, Void, Void> {
-
-        @Override
-        protected Void doInBackground(RemindMe... params) {
-            for(RemindMe remindMe : params) {
-                try {
-                    LocalStore store = LocalStore.getInstance(mAccount, getApplication());
-                    LocalFolder folder = new LocalFolder(store, mAccount.getRemindMeFolderName());
-                    folder.open(Folder.OPEN_MODE_RW);
-
-                    remindMe.setFolderId(folder.getId());
-
-                    Log.d(K9.LOG_TAG, "Inserting remindMe: " + remindMe);
-                    MessagingController messagingController = MessagingController.getInstance(getApplication());
-                    messagingController.moveMessages(mAccount,
-                            remindMe.getReference().getFolder().getName(),
-                            new ArrayList<LocalMessage>(Arrays.asList((LocalMessage) remindMe.getReference())),
-                            mAccount.getRemindMeFolderName(), null);
-
-                    RemindMeService.startService(getApplication());
-
-                    if(remindMe.getId() > 0) {
-                        mLocalRemindMe.update(remindMe);
-                    } else {
-                        mLocalRemindMe.add(remindMe);
-                    }
-                } catch (Exception e) {
-                    Log.e(K9.LOG_TAG, "Unable to insert RemindMe", e);
-                }
-            }
-            return null;
-        }
-    }
-
-    class DeleteRemindMe extends AsyncTask<RemindMe, Void, Void> {
-
-        @Override
-        protected Void doInBackground(RemindMe... params) {
-            for(RemindMe remindMe : params) {
-                try {
-                    mLocalRemindMe.delete(remindMe);
-                } catch (MessagingException e) {
-                    Log.e(K9.LOG_TAG, "Unable to delete RemindMe", e);
-                }
-                try {
-                    //move back to inbox
-                    MessagingController messagingController = MessagingController.getInstance(getApplication());
-                    messagingController.moveMessages(mAccount,
-                            remindMe.getReference().getFolder().getName(),
-                            new ArrayList<LocalMessage>(Arrays.asList((LocalMessage) remindMe.getReference())),
-                            mAccount.getInboxFolderName(), null);
-                } catch (Exception e) {
-                    Log.e(K9.LOG_TAG, "Moving back deleted RemindMe failed: " + e.getMessage());
-                }
-            }
-            return null;
-        }
+        remindMeFragment.onSwipeLeftToRight(e1, e2);
     }
 }

@@ -9,7 +9,7 @@ import android.preference.ListPreference;
 import android.preference.Preference;
 import android.util.Log;
 import com.fsck.k9.*;
-import com.fsck.k9.activity.FolderInfoHolder;
+import com.fsck.k9.activity.holder.FolderInfoHolder;
 import com.fsck.k9.activity.K9PreferenceActivity;
 import com.fsck.k9.mail.Folder;
 import com.fsck.k9.mail.Folder.FolderClass;

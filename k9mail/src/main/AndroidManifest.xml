@@ -2,8 +2,8 @@
 <manifest
     package="de.fau.cs.mad.smile.android"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:versionCode="1"
-    android:versionName="0.1">
+    android:versionCode="2"
+    android:versionName="1.01">
 
     <uses-feature
         android:name="android.hardware.touchscreen"
@@ -210,10 +210,6 @@
             android:launchMode="singleTop"
             android:uiOptions="splitActionBarWhenNarrow"
             android:parentActivityName="com.fsck.k9.activity.MessageList">
-            <intent-filter>
-                <!-- This action is only to allow an entry point for launcher shortcuts -->
-                <action android:name="android.intent.action.MAIN"/>
-            </intent-filter>
         </activity>
         
         <activity

@@ -14,14 +14,14 @@ import java.util.List;
 
 import de.fau.cs.mad.smile.android.R;
 
-class RemindMeAdapter extends ArrayAdapter<RemindMe> {
+public class RemindMeAdapter extends ArrayAdapter<RemindMe> {
     public RemindMeAdapter(Context context, List<RemindMe> remindMes) {
         super(context, R.layout.remindme_list_item, remindMes);
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        RemindMe item = (RemindMe) getItem(position);
+        RemindMe item = getItem(position);
         LayoutInflater inflater = LayoutInflater.from(getContext());
 
         final View view;

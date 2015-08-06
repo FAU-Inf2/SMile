@@ -33,6 +33,7 @@ public class ActivityListener extends MessagingListener {
     public String getOperation(Context context) {
         String operation;
         String progress = null;
+
         if (mLoadingAccountDescription  != null
                 || mSendingAccountDescription != null
                 || mLoadingHeaderFolderName != null
@@ -42,6 +43,7 @@ public class ActivityListener extends MessagingListener {
 
             if (mLoadingFolderName != null || mLoadingHeaderFolderName != null) {
                 String displayName = mLoadingFolderName;
+
                 if ((mAccount != null) && (mAccount.getInboxFolderName() != null) && mAccount.getInboxFolderName().equalsIgnoreCase(displayName)) {
                     displayName = context.getString(R.string.special_mailbox_name_inbox);
                 } else if ((mAccount != null) && mAccount.getOutboxFolderName().equals(displayName)) {
@@ -49,14 +51,11 @@ public class ActivityListener extends MessagingListener {
                 }
 
                 if (mLoadingHeaderFolderName != null) {
-
                     operation = context.getString(R.string.status_loading_account_folder_headers, mLoadingAccountDescription, displayName, progress);
                 } else {
                     operation = context.getString(R.string.status_loading_account_folder, mLoadingAccountDescription, displayName, progress);
                 }
-            }
-
-            else if (mSendingAccountDescription != null) {
+            } else if (mSendingAccountDescription != null) {
                 operation = context.getString(R.string.status_sending_account, mSendingAccountDescription, progress);
             } else if (mProcessingAccountDescription != null) {
                 operation = context.getString(R.string.status_processing_account, mProcessingAccountDescription,
@@ -67,6 +66,7 @@ public class ActivityListener extends MessagingListener {
             }
         } else {
             long nextPollTime = MailService.getNextPollTime();
+
             if (nextPollTime != -1) {
                 operation = context.getString(R.string.status_next_poll,
                         DateUtils.getRelativeTimeSpanString(nextPollTime, System.currentTimeMillis(),
@@ -209,6 +209,7 @@ public class ActivityListener extends MessagingListener {
     public void systemStatusChanged() {
         informUserOfStatus();
     }
+
     @Override
     public void folderStatusChanged(Account account, String folder, int unreadMessageCount) {
         informUserOfStatus();
@@ -217,7 +218,6 @@ public class ActivityListener extends MessagingListener {
     public int getFolderCompleted() {
         return mFolderCompleted;
     }
-
 
     public int getFolderTotal() {
         return mFolderTotal;

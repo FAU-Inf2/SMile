@@ -5773,6 +5773,7 @@ public class MessagingController implements Runnable {
             memory.syncingState = MemorizingState.FAILED;
             memory.failureMessage = message;
         }
+
         synchronized void refreshOther(MessagingListener other) {
             if (other != null) {
 

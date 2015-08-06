@@ -60,8 +60,10 @@ import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.CheckBox;
 import android.widget.CursorAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.QuickContactBadge;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -73,7 +75,7 @@ import com.fsck.k9.Preferences;
 import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.activity.ActivityListener;
 import com.fsck.k9.activity.ChooseFolder;
-import com.fsck.k9.activity.FolderInfoHolder;
+import com.fsck.k9.activity.holder.FolderInfoHolder;
 import com.fsck.k9.activity.RemindMeList;
 import com.fsck.k9.activity.MessageReference;
 import com.fsck.k9.activity.misc.ContactPictureLoader;
@@ -106,6 +108,11 @@ import com.fsck.k9.search.SqlQueryBuilder;
 import com.handmark.pulltorefresh.library.ILoadingLayout;
 import com.handmark.pulltorefresh.library.PullToRefreshBase;
 import com.handmark.pulltorefresh.library.PullToRefreshListView;
+
+import com.daimajia.androidanimations.library.Techniques;
+import com.daimajia.androidanimations.library.YoYo;
+import com.daimajia.swipe.SimpleSwipeListener;
+import com.daimajia.swipe.SwipeLayout;
 
 
 public class MessageListFragment extends Fragment
@@ -822,11 +829,9 @@ public class MessageListFragment extends Fragment
             Bundle savedInstanceState) {
 
         mInflater = inflater;
-
         View view = inflater.inflate(R.layout.message_list_fragment, container, false);
 
         initializePullToRefresh(inflater, view);
-
         initializeLayout();
         mListView.setVerticalFadingEdgeEnabled(false);
 
@@ -1881,11 +1886,11 @@ public class MessageListFragment extends Fragment
         }
 
         @Override
-        public View newView(Context context, Cursor cursor, ViewGroup parent) {
+        public View newView(final Context context, Cursor cursor, ViewGroup parent) {
             View view = mInflater.inflate(R.layout.message_list_item, parent, false);
             view.setId(R.layout.message_list_item);
 
-            MessageViewHolder holder = new MessageViewHolder();
+            final MessageViewHolder holder = new MessageViewHolder();
             holder.date = (TextView) view.findViewById(R.id.date);
             holder.chip = view.findViewById(R.id.chip);
 
@@ -1923,7 +1928,7 @@ public class MessageListFragment extends Fragment
 
 
             // 1 preview line is needed even if it is set to 0, because subject is part of the same text view
-            holder.preview.setLines(Math.max(mPreviewLines,1));
+            holder.preview.setLines(Math.max(mPreviewLines, 1));
             mFontSizes.setViewTextSize(holder.preview, mFontSizes.getMessageListPreview());
             holder.threadCount = (TextView) view.findViewById(R.id.thread_count);
             mFontSizes.setViewTextSize(holder.threadCount, mFontSizes.getMessageListSubject()); // thread count is next to subject
@@ -1937,11 +1942,75 @@ public class MessageListFragment extends Fragment
 
             view.setTag(holder);
 
+            final SwipeLayout swipeLayout = (SwipeLayout) view;
+            swipeLayout.addDrag(SwipeLayout.DragEdge.Left, view.findViewById(R.id.pull_out));
+            swipeLayout.addDrag(SwipeLayout.DragEdge.Right, view.findViewById(R.id.delete));
+            /*swipeLayout.addSwipeListener(new SimpleSwipeListener() {
+                @Override
+                public void onOpen(SwipeLayout layout) {
+                    YoYo.with(Techniques.Tada).duration(500).delay(100).playOn(layout.findViewById(R.id.trash));
+                }
+            });*/
+
+            //view.findViewById(R.id.delete).setOnClickListener(holder);
+            swipeLayout.addRevealListener(R.id.delete, new SwipeLayout.OnRevealListener() {
+                @Override
+                public void onReveal(View view, SwipeLayout.DragEdge dragEdge, float v, int i) {
+                    ImageView trash = (ImageView) swipeLayout.findViewById(R.id.trash);
+                    if(v > 0.25) {
+                        view.setBackgroundColor(Color.RED);
+                        trash.setVisibility(View.VISIBLE);
+                    } else {
+                        view.setBackgroundColor(swipeLayout.getSolidColor());
+                        trash.setVisibility(View.INVISIBLE);
+                    }
+                }
+            });
+            swipeLayout.addRevealListener(R.id.pull_out, new SwipeLayout.OnRevealListener() {
+                private boolean img_set1 = false;
+                private boolean img_set2 = false;
+
+                @Override
+                public void onReveal(View view, SwipeLayout.DragEdge dragEdge, float v, int i) {
+                    ImageView archive = (ImageView) swipeLayout.findViewById(R.id.pull_out_archive);
+                    ImageView remindMe = (ImageView) swipeLayout.findViewById(R.id.pull_out_remind_me);
+                    if (v <= 0.2) {
+                        img_set1 = img_set2 = false;
+                        archive.setVisibility(View.INVISIBLE);
+                        remindMe.setVisibility(View.INVISIBLE);
+                    }
+                    if (v > 0.2 && !img_set1) {
+                        img_set1 = true;
+                        img_set2 = false;
+                        archive.setVisibility(View.INVISIBLE);
+                        remindMe.setVisibility(View.VISIBLE);
+
+
+                    }
+                    if (v > 0.5 && !img_set2) {
+                        img_set1 = false;
+                        img_set2 = true;
+                        remindMe.setVisibility(View.INVISIBLE);
+                        archive.setVisibility(View.VISIBLE);
+                    }
+                    if (v <= 0.2) {
+                        view.setBackgroundColor(swipeLayout.getSolidColor());
+                    } else {
+                        if (0.2 < v && v < 0.5) {
+                            view.setBackgroundColor(Color.YELLOW);
+                        } else {
+                            view.setBackgroundColor(Color.GREEN);
+                        }
+                    }
+                }
+            });
+            swipeLayout.addSwipeListener(holder);
             return view;
         }
 
+
         @Override
-        public void bindView(View view, Context context, Cursor cursor) {
+        public void bindView(View view, final Context context, Cursor cursor) {
             Account account = getAccountFromCursor(cursor);
 
             String fromList = cursor.getString(SENDER_LIST_COLUMN);
@@ -2137,10 +2206,11 @@ public class MessageListFragment extends Fragment
             }
 
             holder.date.setText(displayDate);
+
         }
     }
 
-    class MessageViewHolder implements View.OnClickListener {
+    class MessageViewHolder extends SimpleSwipeListener implements View.OnClickListener {
         public TextView subject;
         public TextView preview;
         public TextView from;
@@ -2152,6 +2222,8 @@ public class MessageListFragment extends Fragment
         public CheckBox selected;
         public int position = -1;
         public QuickContactBadge contactBadge;
+        public float fraction;
+
         @Override
         public void onClick(View view) {
             if (position != -1) {
@@ -2160,11 +2232,34 @@ public class MessageListFragment extends Fragment
                     case R.id.selected_checkbox:
                         toggleMessageSelectWithAdapterPosition(position);
                         break;
+                    /*case R.id.delete:
+                        onDelete(getMessageAtPosition(position));
+                        break;*/
                     case R.id.flagged_bottom_right:
                     case R.id.flagged_center_right:
                         toggleMessageFlagWithAdapterPosition(position);
                         break;
                 }
+            }
+        }
+        @Override
+        public void onHandRelease(SwipeLayout layout, float xvel, float yvel) {
+            if(position == -1)
+                return;
+            layout.setDragDistance(0);
+            ImageView archive = (ImageView) layout.findViewById(R.id.pull_out_archive);
+            ImageView remindMe = (ImageView) layout.findViewById(R.id.pull_out_remind_me);
+            View delete = layout.findViewById(R.id.trash);
+            if(archive.isShown()) {
+                onArchive(getMessageAtPosition(position));
+                archive.setVisibility(View.INVISIBLE);
+            }
+            if(remindMe.isShown()) {
+                onRemindMe(getMessageAtPosition(position));
+                remindMe.setVisibility(View.INVISIBLE);
+            }
+            if(delete.isShown()) {
+                onDelete(getMessageAtPosition(position));
             }
         }
     }

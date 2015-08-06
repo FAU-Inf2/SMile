@@ -1,4 +1,4 @@
-package com.fsck.k9.activity;
+package com.fsck.k9.activity.holder;
 
 import android.content.Context;
 
@@ -28,6 +28,7 @@ public class FolderInfoHolder implements Comparable<FolderInfoHolder> {
         return name.hashCode();
     }
 
+    @Override
     public int compareTo(FolderInfoHolder o) {
         String s1 = this.name;
         String s2 = o.name;
@@ -39,6 +40,11 @@ public class FolderInfoHolder implements Comparable<FolderInfoHolder> {
             return s1.compareTo(s2);
         }
 
+    }
+
+    @Override
+    public String toString() {
+        return this.name;
     }
 
     private String truncateStatus(String mess) {
@@ -67,17 +73,13 @@ public class FolderInfoHolder implements Comparable<FolderInfoHolder> {
         populate(context, folder, account);
         this.unreadMessageCount = unreadCount;
         folder.close();
-
     }
-
 
     public void populate(Context context, Folder folder, Account account) {
         this.folder = folder;
         this.name = folder.getName();
         this.lastChecked = folder.getLastUpdate();
-
         this.status = truncateStatus(folder.getStatus());
-
         this.displayName = getDisplayName(context, account, name);
     }
 

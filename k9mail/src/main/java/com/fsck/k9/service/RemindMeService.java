@@ -13,7 +13,6 @@ import com.fsck.k9.activity.ActivityListener;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.mail.FetchProfile;
 import com.fsck.k9.mail.Flag;
-import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.RemindMe;
 import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mailstore.LocalFolder;
@@ -23,8 +22,6 @@ import com.fsck.k9.mailstore.LocalMessage;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 public class RemindMeService extends CoreService {
     private static final String START_SERVICE = "com.fsck.k9.intent.action.startService";
@@ -75,6 +72,7 @@ public class RemindMeService extends CoreService {
         NotificationManager notifyMgr =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
+        Log.d(K9.LOG_TAG, "RemindMeService.handleAccount(): Get all remindMeItems.");
         List<RemindMe> remindMes = getRemindMeItems(acc);
         Date now = new Date();
         Date minDate = null;
@@ -87,9 +85,10 @@ public class RemindMeService extends CoreService {
         try {
             localRemindMe = new LocalRemindMe(acc.getLocalStore());
         } catch (MessagingException e) {
-            Log.e(K9.LOG_TAG, "Exception thrown while calling acquiring LocalRemindMe", e);
+            Log.e(K9.LOG_TAG, "Exception thrown while calling acquiring LocalRemindMe.", e);
         }
 
+        Log.d(K9.LOG_TAG, "RemindMeService.handleAccount(): Iterate over " + remindMes.size() + " items.");
         for(RemindMe item : remindMes) {
             if(item.getRemindTime().after(now) && item.getSeen() == null) {
                 if(minDate == null || item.getRemindTime().compareTo(minDate) == -1) {
@@ -135,6 +134,7 @@ public class RemindMeService extends CoreService {
             */
         }
 
+        Log.d(K9.LOG_TAG, "RemindMeService.handleAccount(): Messages to handle: " + messages.size());
         if(messages.size() == 0) {
             Log.e(K9.LOG_TAG, "No messages to handle.");
             return minDate;

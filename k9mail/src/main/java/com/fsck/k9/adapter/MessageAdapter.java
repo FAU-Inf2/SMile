@@ -136,15 +136,25 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     @Override
     public MessageViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        View view = inflater.inflate(R.layout.message_list_item, parent, false);
+        View view = inflater.inflate(R.layout.messages_item, parent, false);
 
         MessageViewHolder holder = new MessageViewHolder(view);
-        FontSizes fontSizes = K9.getFontSizes();
+
+        setupFontSize(holder);
+        setupSwipe(view, holder);
+
+        return holder;
+    }
+
+    private final void setupFontSize(final MessageViewHolder holder) {
+        final FontSizes fontSizes = K9.getFontSizes();
         fontSizes.setViewTextSize(holder.getPreview(), fontSizes.getMessageListPreview());
         fontSizes.setViewTextSize(holder.getSubject(), fontSizes.getMessageListSubject());
         fontSizes.setViewTextSize(holder.getDate(), fontSizes.getMessageListDate());
         holder.getPreview().setLines(Math.max(K9.messageListPreviewLines(), 1));
+    }
 
+    private final void setupSwipe(final View view, final MessageViewHolder holder) {
         final SwipeLayout swipeLayout = holder.getSwipeLayout();
         swipeLayout.addDrag(SwipeLayout.DragEdge.Left, view.findViewById(R.id.pull_out));
         swipeLayout.addDrag(SwipeLayout.DragEdge.Right, view.findViewById(R.id.delete));
@@ -207,8 +217,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 }
             }
         });
-
-        return holder;
     }
 
     @Override

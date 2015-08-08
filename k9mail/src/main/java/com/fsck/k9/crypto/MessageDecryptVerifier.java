@@ -19,6 +19,8 @@ import org.openintents.openpgp.util.OpenPgpUtils;
 public class MessageDecryptVerifier {
     private static final String MULTIPART_ENCRYPTED = "multipart/encrypted";
     private static final String MULTIPART_SIGNED = "multipart/signed";
+    private static final String SMIME_ENCRYPTED = "application/pkcs7-mime";
+    private static final String SMIME_SIGNED = "application/pkcs7-mime";
     private static final String PROTOCOL_PARAMETER = "protocol";
     private static final String APPLICATION_PGP_ENCRYPTED = "application/pgp-encrypted";
     private static final String APPLICATION_PGP_SIGNATURE = "application/pgp-signature";

@@ -19,11 +19,8 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.fsck.k9.Account;
-import com.fsck.k9.Identity;
 import com.fsck.k9.K9;
 import com.fsck.k9.crypto.MessageDecryptVerifier;
-import com.fsck.k9.crypto.OpenPgpApiHelper;
-import com.fsck.k9.helper.IdentityHelper;
 import com.fsck.k9.mail.Body;
 import com.fsck.k9.mail.BodyPart;
 import com.fsck.k9.mail.MessagingException;
@@ -45,6 +42,10 @@ import org.openintents.openpgp.util.OpenPgpApi.IOpenPgpCallback;
 import org.openintents.openpgp.util.OpenPgpServiceConnection;
 import org.openintents.openpgp.util.OpenPgpServiceConnection.OnBound;
 
+import de.fau.cs.mad.smime_api.ISMimeService;
+import de.fau.cs.mad.smime_api.SMimeApi;
+import de.fau.cs.mad.smime_api.SMimeServiceConnection;
+
 
 public class MessageCryptoHelper {
     private static final int REQUEST_CODE_CRYPTO = 1000;
@@ -60,6 +61,7 @@ public class MessageCryptoHelper {
 
     private Deque<CryptoPart> partsToDecryptOrVerify = new ArrayDeque<CryptoPart>();
     private OpenPgpApi openPgpApi;
+    private SMimeApi sMimeApi;
     private CryptoPart currentCryptoPart;
     private Intent currentCryptoResult;
 
@@ -133,18 +135,18 @@ public class MessageCryptoHelper {
     }
 
     private void startDecryptingOrVerifyingPart(CryptoPart cryptoPart) {
-        if (!isBoundToCryptoProviderService()) {
-            connectToCryptoProviderService();
+        if (!isBoundToPgpProviderService()) {
+            connectToPgpProviderService();
         } else {
             decryptOrVerifyPart(cryptoPart);
         }
     }
 
-    private boolean isBoundToCryptoProviderService() {
+    private final boolean isBoundToPgpProviderService() {
         return openPgpApi != null;
     }
 
-    private void connectToCryptoProviderService() {
+    private final void connectToPgpProviderService() {
         String openPgpProvider = account.getOpenPgpProvider();
         new OpenPgpServiceConnection(context, openPgpProvider,
                 new OnBound() {
@@ -153,6 +155,28 @@ public class MessageCryptoHelper {
                         openPgpApi = new OpenPgpApi(context, service);
 
                         decryptOrVerifyNextPart();
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        Log.e(K9.LOG_TAG, "Couldn't connect to OpenPgpService", e);
+                    }
+                }).bindToService();
+    }
+
+    private final boolean isBoundToSMimeProviderService() {
+        return sMimeApi != null;
+    }
+
+    private final void connectToSMimeProviderService() {
+        String sMimeProvider = "de.fau.cs.mad.smile_crypto";
+        new SMimeServiceConnection(context, sMimeProvider,
+                new SMimeServiceConnection.OnBound() {
+                    @Override
+                    public void onBound(ISMimeService service) {
+                        sMimeApi = new SMimeApi(context, service);
+
+                        //decryptOrVerifyNextPart();
                     }
 
                     @Override

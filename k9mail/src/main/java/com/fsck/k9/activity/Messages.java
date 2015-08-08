@@ -98,7 +98,7 @@ public class Messages extends SmileActivity
         handleIntent(getIntent());
 
         FragmentManager fragmentManager = getFragmentManager();
-        messageFragment = (MessageFragment) fragmentManager.findFragmentById(R.layout.message_list_fragment);
+        messageFragment = (MessageFragment) fragmentManager.findFragmentById(R.layout.messages_fragment);
 
         if(messageFragment == null) {
             messageFragment = MessageFragment.newInstance(mSearch);

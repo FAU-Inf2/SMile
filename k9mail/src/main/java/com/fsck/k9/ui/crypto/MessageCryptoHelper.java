@@ -273,11 +273,10 @@ public class MessageCryptoHelper {
         PipedInputStream pipedInputStream = getPipedInputStreamForEncryptedOrInlineData();
         PipedOutputStream decryptedOutputStream = getPipedOutputStreamForDecryptedData(latch);
 
-        sMimeApi.executeApiAsync(intent, pipedInputStream, decryptedOutputStream, new IOpenPgpCallback() {
+        sMimeApi.executeApiAsync(intent, pipedInputStream, decryptedOutputStream, new SMimeApi.ISMimeCallback() {
             @Override
             public void onReturn(Intent result) {
-                currentCryptoResult = result;
-                latch.countDown();
+
             }
         });
     }

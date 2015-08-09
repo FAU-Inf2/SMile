@@ -803,6 +803,12 @@ public class MessageList extends K9Activity
                 goBack();
                 return true;
             }
+            case R.id.newui: {
+                Intent intent = Messages.intentDisplaySearch(this, mSearch);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                return true;
+            }
             case R.id.compose: {
                 mMessageListFragment.onCompose();
                 return true;

@@ -290,6 +290,7 @@ public class MessageCryptoHelper {
         openPgpApi.executeApiAsync(intent, pipedInputStream, null, new IOpenPgpCallback() {
             @Override
             public void onReturn(Intent result) {
+                // TODO: call smimeApi
                 currentCryptoResult = result;
                 onCryptoOperationReturned(null);
             }

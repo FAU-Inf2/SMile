@@ -1164,5 +1164,6 @@ Please submit bug reports, contribute new features and ask questions at
     
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
+    <string name="material">Material Design</string>
 
 </resources>

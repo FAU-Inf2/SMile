@@ -101,7 +101,7 @@ public class MessageFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.message_list_fragment, container, false);
+        View rootView = inflater.inflate(R.layout.messages_fragment, container, false);
         mRecyclerView = (RecyclerView) rootView.findViewById(R.id.message_list);
         final RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(layoutManager);

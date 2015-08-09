@@ -86,7 +86,11 @@ public class MessageCryptoHelper {
         }
 
         List<Part> encryptedParts = MessageDecryptVerifier.findEncryptedParts(message);
-        processFoundParts(encryptedParts, CryptoPartType.ENCRYPTED, CryptoError.ENCRYPTED_BUT_INCOMPLETE,
+        processFoundParts(encryptedParts, CryptoPartType.ENCRYPTED_PGP, CryptoError.ENCRYPTED_BUT_INCOMPLETE,
+                MessageHelper.createEmptyPart());
+
+        List<Part> smimeParts = MessageDecryptVerifier.findSmimeParts(message);
+        processFoundParts(smimeParts, CryptoPartType.ENCRYPTED_SMIME, CryptoError.ENCRYPTED_BUT_INCOMPLETE,
                 MessageHelper.createEmptyPart());
 
         List<Part> signedParts = MessageDecryptVerifier.findSignedParts(message);
@@ -137,7 +141,13 @@ public class MessageCryptoHelper {
     private void startDecryptingOrVerifyingPart(CryptoPart cryptoPart) {
         if (!isBoundToPgpProviderService()) {
             connectToPgpProviderService();
-        } else {
+        }
+
+        if(!isBoundToSMimeProviderService()) {
+            connectToSMimeProviderService();
+        }
+
+        if (isBoundToPgpProviderService() && isBoundToSMimeProviderService()){
             decryptOrVerifyPart(cryptoPart);
         }
     }
@@ -176,7 +186,7 @@ public class MessageCryptoHelper {
                     public void onBound(ISMimeService service) {
                         sMimeApi = new SMimeApi(context, service);
 
-                        //decryptOrVerifyNextPart();
+                        decryptOrVerifyNextPart();
                     }
 
                     @Override
@@ -201,9 +211,12 @@ public class MessageCryptoHelper {
                     callAsyncDetachedVerify(intent);
                     return;
                 }
-                case ENCRYPTED: {
+                case ENCRYPTED_PGP: {
                     callAsyncDecrypt(intent);
                     return;
+                }
+                case ENCRYPTED_SMIME: {
+                    callAsyncDecryptSmime(intent);
                 }
                 case INLINE_PGP: {
                     callAsyncInlineOperation(intent);
@@ -247,6 +260,20 @@ public class MessageCryptoHelper {
         PipedOutputStream decryptedOutputStream = getPipedOutputStreamForDecryptedData(latch);
 
         openPgpApi.executeApiAsync(intent, pipedInputStream, decryptedOutputStream, new IOpenPgpCallback() {
+            @Override
+            public void onReturn(Intent result) {
+                currentCryptoResult = result;
+                latch.countDown();
+            }
+        });
+    }
+
+    private void callAsyncDecryptSmime(Intent intent) throws IOException {
+        final CountDownLatch latch = new CountDownLatch(1);
+        PipedInputStream pipedInputStream = getPipedInputStreamForEncryptedOrInlineData();
+        PipedOutputStream decryptedOutputStream = getPipedOutputStreamForDecryptedData(latch);
+
+        sMimeApi.executeApiAsync(intent, pipedInputStream, decryptedOutputStream, new IOpenPgpCallback() {
             @Override
             public void onReturn(Intent result) {
                 currentCryptoResult = result;
@@ -307,7 +334,7 @@ public class MessageCryptoHelper {
                 try {
                     Part part = currentCryptoPart.part;
                     CryptoPartType cryptoPartType = currentCryptoPart.type;
-                    if (cryptoPartType == CryptoPartType.ENCRYPTED) {
+                    if (cryptoPartType == CryptoPartType.ENCRYPTED_PGP) {
                         Multipart multipartEncryptedMultipart = (Multipart) part.getBody();
                         BodyPart encryptionPayloadPart = multipartEncryptedMultipart.getBodyPart(1);
                         Body encryptionPayloadBody = encryptionPayloadPart.getBody();
@@ -498,7 +525,8 @@ public class MessageCryptoHelper {
 
     private enum CryptoPartType {
         INLINE_PGP,
-        ENCRYPTED,
+        ENCRYPTED_PGP,
+        ENCRYPTED_SMIME,
         SIGNED
     }
 }

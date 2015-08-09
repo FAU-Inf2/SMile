@@ -20,25 +20,23 @@ public class MessageDecryptVerifier {
     private static final String MULTIPART_ENCRYPTED = "multipart/encrypted";
     private static final String MULTIPART_SIGNED = "multipart/signed";
     private static final String SMIME_ENCRYPTED = "application/pkcs7-mime";
-    private static final String SMIME_SIGNED = "application/pkcs7-mime";
     private static final String PROTOCOL_PARAMETER = "protocol";
     private static final String APPLICATION_PGP_ENCRYPTED = "application/pgp-encrypted";
     private static final String APPLICATION_PGP_SIGNATURE = "application/pgp-signature";
     private static final String TEXT_PLAIN = "text/plain";
 
-
-    public static List<Part> findEncryptedParts(Part startPart) {
-        List<Part> encryptedParts = new ArrayList<Part>();
+    private static List<Part> findParts(final Part startPart, final String mimeType) {
+        List<Part> parts = new ArrayList<Part>();
         Stack<Part> partsToCheck = new Stack<Part>();
         partsToCheck.push(startPart);
 
         while (!partsToCheck.isEmpty()) {
             Part part = partsToCheck.pop();
-            String mimeType = part.getMimeType();
+            String partMimeType = part.getMimeType();
             Body body = part.getBody();
 
-            if (MULTIPART_ENCRYPTED.equals(mimeType)) {
-                encryptedParts.add(part);
+            if (mimeType.equals(partMimeType)) {
+                parts.add(part);
             } else if (body instanceof Multipart) {
                 Multipart multipart = (Multipart) body;
                 for (int i = multipart.getCount() - 1; i >= 0; i--) {
@@ -47,32 +45,19 @@ public class MessageDecryptVerifier {
                 }
             }
         }
-
-        return encryptedParts;
+        return parts;
     }
 
-    public static List<Part> findSignedParts(Part startPart) {
-        List<Part> signedParts = new ArrayList<Part>();
-        Stack<Part> partsToCheck = new Stack<Part>();
-        partsToCheck.push(startPart);
+    public static List<Part> findEncryptedParts(final Part startPart) {
+        return findParts(startPart, MULTIPART_ENCRYPTED);
+    }
 
-        while (!partsToCheck.isEmpty()) {
-            Part part = partsToCheck.pop();
-            String mimeType = part.getMimeType();
-            Body body = part.getBody();
+    public static List<Part> findSignedParts(final Part startPart) {
+        return findParts(startPart, MULTIPART_SIGNED);
+    }
 
-            if (MULTIPART_SIGNED.equals(mimeType)) {
-                signedParts.add(part);
-            } else if (body instanceof Multipart) {
-                Multipart multipart = (Multipart) body;
-                for (int i = multipart.getCount() - 1; i >= 0; i--) {
-                    BodyPart bodyPart = multipart.getBodyPart(i);
-                    partsToCheck.push(bodyPart);
-                }
-            }
-        }
-
-        return signedParts;
+    public static List<Part> findSmimeParts(final Part startPart) {
+        return findParts(startPart, SMIME_ENCRYPTED);
     }
 
     public static List<Part> findPgpInlineParts(Part startPart) {
@@ -108,9 +93,11 @@ public class MessageDecryptVerifier {
 
         if (MULTIPART_SIGNED.equals(part.getMimeType())) {
             Body body = part.getBody();
+
             if (body instanceof Multipart) {
                 Multipart multi = (Multipart) body;
                 BodyPart signatureBody = multi.getBodyPart(1);
+
                 if (APPLICATION_PGP_SIGNATURE.equals(signatureBody.getMimeType())) {
                     ByteArrayOutputStream bos = new ByteArrayOutputStream();
                     signatureBody.getBody().writeTo(bos);

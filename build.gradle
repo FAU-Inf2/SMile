@@ -7,13 +7,15 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:1.2.3'
         classpath 'com.jakewharton.sdkmanager:gradle-plugin:0.12.0'
-
+        classpath 'org.ajoberstar:gradle-git:1.1.0'
     }
 
 }
+
 plugins {
     id 'java'
 }
+
 plugins {
     id "com.github.hierynomus.license" version "0.11.0"
 }
@@ -22,12 +24,16 @@ license {
     header rootProject.file('LICENSE.txt')
     useDefaultMappings true
     strictCheck true
-
 }
-
 
 project.ext.preDexLibs = !project.hasProperty('disablePreDex')
 project.ext.testCoverage = project.hasProperty('testCoverage')
+
+project(':k9mail') {
+    dependencies {
+        project(':smime-api')
+    }
+}
 
 subprojects {
     project.plugins.whenPluginAdded { plugin ->

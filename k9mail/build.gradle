@@ -16,7 +16,7 @@ dependencies {
     compile project(':plugins:Android-PullToRefresh:library')
     compile project(':plugins:HoloColorPicker')
     compile project(':plugins:openpgp-api-library')
-    compile project(':plugins:smime-api:app')
+    compile project(':smime-api')
     compile 'commons-io:commons-io:2.4'
     compile 'com.android.support:support-v4:22.2.0'
     compile 'com.android.support:appcompat-v7:22.2.0'
@@ -48,12 +48,12 @@ dependencies {
 }
 
 android {
-    compileSdkVersion 21
+    compileSdkVersion 22
     buildToolsVersion '21.1.2'
 
     defaultConfig {
         minSdkVersion 17
-        targetSdkVersion 21
+        targetSdkVersion 22
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }

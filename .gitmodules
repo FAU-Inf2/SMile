@@ -1,3 +1,0 @@
-[submodule "plugins/smime-api"]
-	path = plugins/smime-api
-	url = https://github.com/sonork/smime-api.git

@@ -179,7 +179,7 @@ public class MessageCryptoHelper {
     }
 
     private final void connectToSMimeProviderService() {
-        String sMimeProvider = "de.fau.cs.mad.smile_crypto";
+        final String sMimeProvider = "de.fau.cs.mad.smile_crypto";
         new SMimeServiceConnection(context, sMimeProvider,
                 new SMimeServiceConnection.OnBound() {
                     @Override
@@ -276,7 +276,7 @@ public class MessageCryptoHelper {
         sMimeApi.executeApiAsync(intent, pipedInputStream, decryptedOutputStream, new SMimeApi.ISMimeCallback() {
             @Override
             public void onReturn(Intent result) {
-
+                Log.d(K9.LOG_TAG, "smimedecrypt returned");
             }
         });
     }

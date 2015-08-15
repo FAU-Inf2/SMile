@@ -12,7 +12,8 @@ import android.util.Log;
 
 import com.fsck.k9.K9;
 
-public class ConfirmationDialogFragment extends DialogFragment implements OnClickListener,
+public class ConfirmationDialogFragment extends DialogFragment
+        implements OnClickListener,
         OnCancelListener {
     private ConfirmationDialogFragmentListener mListener;
 
@@ -21,7 +22,6 @@ public class ConfirmationDialogFragment extends DialogFragment implements OnClic
     private static final String ARG_MESSAGE = "message";
     private static final String ARG_CONFIRM_TEXT = "confirm";
     private static final String ARG_CANCEL_TEXT = "cancel";
-
 
     public static ConfirmationDialogFragment newInstance(int dialogId, String title, String message,
             String confirmText, String cancelText) {
@@ -43,13 +43,23 @@ public class ConfirmationDialogFragment extends DialogFragment implements OnClic
         return newInstance(dialogId, title, message, null, cancelText);
     }
 
-
     public interface ConfirmationDialogFragmentListener {
         void doPositiveClick(int dialogId);
         void doNegativeClick(int dialogId);
         void dialogCancelled(int dialogId);
     }
 
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        try {
+            mListener = (ConfirmationDialogFragmentListener) activity;
+        } catch (ClassCastException e) {
+            if (K9.DEBUG) {
+                Log.d(K9.LOG_TAG, activity.toString() + " did not implement ConfirmationDialogFragmentListener");
+            }
+        }
+    }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -100,17 +110,6 @@ public class ConfirmationDialogFragment extends DialogFragment implements OnClic
 
     private int getDialogId() {
         return getArguments().getInt(ARG_DIALOG_ID);
-    }
-
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        try {
-            mListener = (ConfirmationDialogFragmentListener) activity;
-        } catch (ClassCastException e) {
-            if (K9.DEBUG)
-                Log.d(K9.LOG_TAG, activity.toString() + " did not implement ConfirmationDialogFragmentListener");
-        }
     }
 
     private ConfirmationDialogFragmentListener getListener() {

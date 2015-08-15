@@ -44,7 +44,8 @@ import com.fsck.k9.view.MessageHeader.OnLayoutChangedListener;
 import com.fsck.k9.view.MessageWebView;
 
 
-public class MessageContainerView extends LinearLayout implements OnClickListener,
+public class MessageContainerView extends LinearLayout
+        implements OnClickListener,
         OnLayoutChangedListener, OnCreateContextMenuListener {
     private static final int MENU_ITEM_LINK_VIEW = Menu.FIRST;
     private static final int MENU_ITEM_LINK_SHARE = Menu.FIRST + 1;
@@ -77,6 +78,10 @@ public class MessageContainerView extends LinearLayout implements OnClickListene
     private Map<AttachmentViewInfo, AttachmentView> attachments = new HashMap<AttachmentViewInfo, AttachmentView>();
 
 
+    public MessageContainerView(final Context context, final AttributeSet attrs) {
+        super(context, attrs);
+    }
+
     @Override
     public void onFinishInflate() {
         mSidebar = findViewById(R.id.message_sidebar);
@@ -99,6 +104,7 @@ public class MessageContainerView extends LinearLayout implements OnClickListene
         Context context = getContext();
         mInflater = LayoutInflater.from(context);
         mClipboardManager = ClipboardManager.getInstance(context);
+        super.onFinishInflate();
     }
 
     @Override
@@ -332,16 +338,11 @@ public class MessageContainerView extends LinearLayout implements OnClickListene
         mHiddenAttachments.setVisibility(View.VISIBLE);
     }
 
-    public MessageContainerView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-    }
-
-
     private boolean isShowingPictures() {
         return showingPictures;
     }
 
-    private void setLoadPictures(boolean enable) {
+    private void setLoadPictures(final boolean enable) {
         mMessageContentView.blockNetworkData(!enable);
         showingPictures = enable;
     }
@@ -363,10 +364,12 @@ public class MessageContainerView extends LinearLayout implements OnClickListene
         }
     }
 
-    public void displayMessageViewContainer(MessageViewContainer messageViewContainer,
-            boolean automaticallyLoadPictures, ShowPicturesController showPicturesController,
-            AttachmentViewCallback attachmentCallback, OpenPgpHeaderViewCallback openPgpHeaderViewCallback,
-            boolean displayPgpHeader) throws MessagingException {
+    public void displayMessageViewContainer(final MessageViewContainer messageViewContainer,
+                                            final boolean automaticallyLoadPictures,
+                                            final ShowPicturesController showPicturesController,
+                                            final AttachmentViewCallback attachmentCallback,
+                                            final OpenPgpHeaderViewCallback openPgpHeaderViewCallback,
+                                            final boolean displayPgpHeader) throws MessagingException {
 
         this.attachmentCallback = attachmentCallback;
 

@@ -1,8 +1,5 @@
 package com.fsck.k9.ui.messageview;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.content.Context;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -14,7 +11,6 @@ import android.widget.LinearLayout;
 import com.fsck.k9.Account;
 import com.fsck.k9.Account.ShowPictures;
 import com.fsck.k9.K9;
-import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.helper.Contacts;
 import com.fsck.k9.mail.Address;
 import com.fsck.k9.mail.Flag;
@@ -23,6 +19,11 @@ import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mailstore.MessageViewInfo;
 import com.fsck.k9.mailstore.MessageViewInfo.MessageViewContainer;
 import com.fsck.k9.view.MessageHeader;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import de.fau.cs.mad.smile.android.R;
 
 
 public class MessageTopView extends LinearLayout implements ShowPicturesController {
@@ -54,6 +55,7 @@ public class MessageTopView extends LinearLayout implements ShowPicturesControll
         setShowPicturesButtonListener();
 
         containerViews = (LinearLayout) findViewById(R.id.message_containers);
+        super.onFinishInflate();
     }
 
     private void setShowPicturesButtonListener() {

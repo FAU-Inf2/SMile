@@ -47,6 +47,7 @@ import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mailstore.AttachmentViewInfo;
 import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.mailstore.MessageViewInfo;
+import com.fsck.k9.mailstore.OpenPgpResultAnnotation;
 import com.fsck.k9.ui.crypto.MessageCryptoCallback;
 import com.fsck.k9.ui.crypto.MessageCryptoHelper;
 import com.fsck.k9.ui.message.DecodeMessageLoader;
@@ -87,7 +88,7 @@ public class MessageViewFragment extends Fragment
     private Account mAccount;
     private MessageReference mMessageReference;
     private LocalMessage mMessage;
-    private MessageCryptoAnnotations messageAnnotations;
+    private MessageCryptoAnnotations<OpenPgpResultAnnotation> messageAnnotations;
     private MessagingController mController;
     private Handler handler = new Handler();
     private DownloadMessageListener downloadMessageListener = new DownloadMessageListener();
@@ -110,8 +111,8 @@ public class MessageViewFragment extends Fragment
 
     private Context mContext;
 
-    private LoaderCallbacks<LocalMessage> localMessageLoaderCallback = new LocalMessageLoaderCallback();
-    private LoaderCallbacks<MessageViewInfo> decodeMessageLoaderCallback = new DecodeMessageLoaderCallback();
+    private final LoaderCallbacks<LocalMessage> localMessageLoaderCallback = new LocalMessageLoaderCallback();
+    private final LoaderCallbacks<MessageViewInfo> decodeMessageLoaderCallback = new DecodeMessageLoaderCallback();
     private MessageViewInfo messageViewInfo;
     private AttachmentViewInfo currentAttachmentViewInfo;
 
@@ -171,6 +172,7 @@ public class MessageViewFragment extends Fragment
         return view;
     }
 
+    // restore state
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
@@ -187,6 +189,7 @@ public class MessageViewFragment extends Fragment
         displayMessage(messageReference, (mPgpData == null));
     }
 
+    // save state
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -194,14 +197,13 @@ public class MessageViewFragment extends Fragment
         outState.putSerializable(STATE_PGP_DATA, mPgpData);
     }
 
-    private void displayMessage(MessageReference ref, boolean resetPgpData) {
+    private final void displayMessage(final MessageReference ref, final boolean resetPgpData) {
         mMessageReference = ref;
         if (K9.DEBUG) {
             Log.d(K9.LOG_TAG, "MessageView displaying message " + mMessageReference);
         }
 
-        Context appContext = getActivity().getApplicationContext();
-        mAccount = Preferences.getPreferences(appContext).getAccount(mMessageReference.getAccountUuid());
+        mAccount = Preferences.getPreferences(mContext).getAccount(mMessageReference.getAccountUuid());
         messageCryptoHelper = new MessageCryptoHelper(getActivity(), mAccount, this);
         if (resetPgpData) {
             // start with fresh, empty PGP data
@@ -215,12 +217,6 @@ public class MessageViewFragment extends Fragment
         startLoadingMessageFromDatabase();
 
         mFragmentListener.updateMenu();
-    }
-
-    public void handleCryptoResult(int requestCode, int resultCode, Intent data) {
-        if (messageCryptoHelper != null) {
-            messageCryptoHelper.handleCryptoResult(requestCode, resultCode, data);
-        }
     }
 
     private void startLoadingMessageFromDatabase() {
@@ -239,6 +235,12 @@ public class MessageViewFragment extends Fragment
 
     private void onLoadMessageFromDatabaseFailed() {
         // mMessageView.showStatusMessage(mContext.getString(R.string.status_invalid_id_error));
+    }
+
+    public void handleCryptoResult(int requestCode, int resultCode, Intent data) {
+        if (messageCryptoHelper != null) {
+            messageCryptoHelper.handleCryptoResult(requestCode, resultCode, data);
+        }
     }
 
     private void startDownloadingMessageBody(LocalMessage message) {
@@ -267,11 +269,11 @@ public class MessageViewFragment extends Fragment
     }
 
     @Override
-    public void onCryptoOperationsFinished(MessageCryptoAnnotations annotations) {
+    public void onCryptoOperationsFinished(MessageCryptoAnnotations<OpenPgpResultAnnotation> annotations) {
         startExtractingTextAndAttachments(annotations);
     }
 
-    private void startExtractingTextAndAttachments(MessageCryptoAnnotations annotations) {
+    private void startExtractingTextAndAttachments(MessageCryptoAnnotations<OpenPgpResultAnnotation> annotations) {
         this.messageAnnotations = annotations;
         getLoaderManager().initLoader(DECODE_MESSAGE_LOADER_ID, null, decodeMessageLoaderCallback);
     }
@@ -579,18 +581,18 @@ public class MessageViewFragment extends Fragment
     }
 
     private void removeDialog(int dialogId) {
-        FragmentManager fm = getFragmentManager();
+        FragmentManager fragmentManager = getFragmentManager();
 
-        if (fm == null || isRemoving() || isDetached()) {
+        if (fragmentManager == null || isRemoving() || isDetached()) {
             return;
         }
 
         // Make sure the "show dialog" transaction has been processed when we call
         // findFragmentByTag() below. Otherwise the fragment won't be found and the dialog will
         // never be dismissed.
-        fm.executePendingTransactions();
+        fragmentManager.executePendingTransactions();
 
-        DialogFragment fragment = (DialogFragment) fm.findFragmentByTag(getDialogTag(dialogId));
+        DialogFragment fragment = (DialogFragment) fragmentManager.findFragmentByTag(getDialogTag(dialogId));
 
         if (fragment != null) {
             fragment.dismiss();

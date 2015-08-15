@@ -37,14 +37,15 @@ import com.fsck.k9.mailstore.LocalPart;
 import org.apache.commons.io.IOUtils;
 
 
-public class AttachmentController {
+public final class AttachmentController {
     private final Context context;
     private final MessagingController controller;
     private final MessageViewFragment messageViewFragment;
     private final AttachmentViewInfo attachment;
 
-    AttachmentController(MessagingController controller, MessageViewFragment messageViewFragment,
-            AttachmentViewInfo attachment) {
+    public AttachmentController(final MessagingController controller,
+                         final MessageViewFragment messageViewFragment, // FIXME: pass Handler instead of Fragment
+                         final AttachmentViewInfo attachment) {
         this.context = messageViewFragment.getContext();
         this.controller = controller;
         this.messageViewFragment = messageViewFragment;
@@ -59,27 +60,28 @@ public class AttachmentController {
         }
     }
 
-    public void saveAttachment() {
+    public final void saveAttachment() {
         saveAttachmentTo(K9.getAttachmentDefaultPath());
     }
 
-    public void saveAttachmentTo(String directory) {
+    public final void saveAttachmentTo(final String directory) {
         saveAttachmentTo(new File(directory));
     }
 
-    private boolean needsDownloading() {
+    private final boolean needsDownloading() {
         return isPartMissing() && isLocalPart();
     }
 
-    private boolean isPartMissing() {
+    private final boolean isPartMissing() {
         return attachment.part.getBody() == null;
     }
 
-    private boolean isLocalPart() {
+    private final boolean isLocalPart() {
+        // FIXME: fugly?
         return attachment.part instanceof LocalPart;
     }
 
-    private void downloadAndViewAttachment(LocalPart localPart) {
+    private final void downloadAndViewAttachment(final LocalPart localPart) {
         downloadAttachment(localPart, new Runnable() {
             @Override
             public void run() {
@@ -88,7 +90,7 @@ public class AttachmentController {
         });
     }
 
-    private void downloadAndSaveAttachmentTo(LocalPart localPart, final File directory) {
+    private final void downloadAndSaveAttachmentTo(final LocalPart localPart, final File directory) {
         downloadAttachment(localPart, new Runnable() {
             @Override
             public void run() {
@@ -98,32 +100,32 @@ public class AttachmentController {
         });
     }
 
-    private void downloadAttachment(LocalPart localPart, final Runnable attachmentDownloadedCallback) {
-        String accountUuid = localPart.getAccountUuid();
-        Account account = Preferences.getPreferences(context).getAccount(accountUuid);
-        LocalMessage message = localPart.getMessage();
+    private void downloadAttachment(final LocalPart localPart, final Runnable attachmentDownloadedCallback) {
+        final String accountUuid = localPart.getAccountUuid();
+        final Account account = Preferences.getPreferences(context).getAccount(accountUuid);
+        final LocalMessage message = localPart.getMessage();
 
         messageViewFragment.showAttachmentLoadingDialog();
         controller.loadAttachment(account, message, attachment.part, new MessagingListener() {
             @Override
-            public void loadAttachmentFinished(Account account, Message message, Part part) {
+            public void loadAttachmentFinished(final Account account, final Message message, final Part part) {
                 messageViewFragment.hideAttachmentLoadingDialogOnMainThread();
                 messageViewFragment.runOnMainThread(attachmentDownloadedCallback);
             }
 
             @Override
-            public void loadAttachmentFailed(Account account, Message message, Part part, String reason) {
+            public void loadAttachmentFailed(final Account account, final Message message, final Part part, final String reason) {
                 messageViewFragment.hideAttachmentLoadingDialogOnMainThread();
             }
         });
     }
 
-    private void viewLocalAttachment() {
+    private final void viewLocalAttachment() {
         new ViewAttachmentAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
-    private void saveAttachmentTo(File directory) {
-        boolean isExternalStorageMounted = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
+    private final void saveAttachmentTo(final File directory) {
+        final boolean isExternalStorageMounted = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
         if (!isExternalStorageMounted) {
             String message = context.getString(R.string.message_view_status_attachment_not_saved);
             displayMessageToUser(message);
@@ -137,21 +139,21 @@ public class AttachmentController {
         }
     }
 
-    private void saveLocalAttachmentTo(File directory) {
+    private final void saveLocalAttachmentTo(final File directory) {
         new SaveAttachmentAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, directory);
     }
 
-    private File saveAttachmentWithUniqueFileName(File directory) throws IOException {
-        String filename = FileHelper.sanitizeFilename(attachment.displayName);
-        File file = FileHelper.createUniqueFile(directory, filename);
+    private final File saveAttachmentWithUniqueFileName(final File directory) throws IOException {
+        final String filename = FileHelper.sanitizeFilename(attachment.displayName);
+        final File file = FileHelper.createUniqueFile(directory, filename);
 
         writeAttachmentToStorage(file);
 
         return file;
     }
 
-    private void writeAttachmentToStorage(File file) throws IOException {
-        InputStream in = context.getContentResolver().openInputStream(attachment.uri);
+    private final void writeAttachmentToStorage(final File file) throws IOException {
+        final InputStream in = context.getContentResolver().openInputStream(attachment.uri);
         try {
             OutputStream out = new FileOutputStream(file);
             try {
@@ -165,12 +167,12 @@ public class AttachmentController {
         }
     }
 
-    private Intent getBestViewIntentAndSaveFileIfNecessary() {
-        String displayName = attachment.displayName;
-        String inferredMimeType = MimeUtility.getMimeTypeByExtension(displayName);
+    private final Intent getBestViewIntentAndSaveFileIfNecessary() {
+        final String displayName = attachment.displayName;
+        final String mimeType = attachment.mimeType;
+        final String inferredMimeType = MimeUtility.getMimeTypeByExtension(displayName);
 
         IntentAndResolvedActivitiesCount resolvedIntentInfo;
-        String mimeType = attachment.mimeType;
         if (MimeUtility.isDefaultMimeType(mimeType)) {
             resolvedIntentInfo = getBestViewIntentForMimeType(inferredMimeType);
         } else {
@@ -203,18 +205,18 @@ public class AttachmentController {
         return viewIntent;
     }
 
-    private IntentAndResolvedActivitiesCount getBestViewIntentForMimeType(String mimeType) {
-        Intent contentUriIntent = createViewIntentForAttachmentProviderUri(mimeType);
-        int contentUriActivitiesCount = getResolvedIntentActivitiesCount(contentUriIntent);
+    private final IntentAndResolvedActivitiesCount getBestViewIntentForMimeType(final String mimeType) {
+        final Intent contentUriIntent = createViewIntentForAttachmentProviderUri(mimeType);
+        final int contentUriActivitiesCount = getResolvedIntentActivitiesCount(contentUriIntent);
 
         if (contentUriActivitiesCount > 0) {
             return new IntentAndResolvedActivitiesCount(contentUriIntent, contentUriActivitiesCount);
         }
 
-        File tempFile = TemporaryAttachmentStore.getFile(context, attachment.displayName);
-        Uri tempFileUri = Uri.fromFile(tempFile);
-        Intent fileUriIntent = createViewIntentForFileUri(mimeType, tempFileUri);
-        int fileUriActivitiesCount = getResolvedIntentActivitiesCount(fileUriIntent);
+        final File tempFile = TemporaryAttachmentStore.getFile(context, attachment.displayName);
+        final Uri tempFileUri = Uri.fromFile(tempFile);
+        final Intent fileUriIntent = createViewIntentForFileUri(mimeType, tempFileUri);
+        final int fileUriActivitiesCount = getResolvedIntentActivitiesCount(fileUriIntent);
 
         if (fileUriActivitiesCount > 0) {
             return new IntentAndResolvedActivitiesCount(fileUriIntent, fileUriActivitiesCount);
@@ -223,10 +225,10 @@ public class AttachmentController {
         return new IntentAndResolvedActivitiesCount(contentUriIntent, contentUriActivitiesCount);
     }
 
-    private Intent createViewIntentForAttachmentProviderUri(String mimeType) {
-        Uri uri = getAttachmentUriForMimeType(attachment, mimeType);
+    private final Intent createViewIntentForAttachmentProviderUri(final String mimeType) {
+        final Uri uri = getAttachmentUriForMimeType(attachment, mimeType);
 
-        Intent intent = new Intent(Intent.ACTION_VIEW);
+        final Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setDataAndType(uri, mimeType);
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         addUiIntentFlags(intent);
@@ -234,7 +236,7 @@ public class AttachmentController {
         return intent;
     }
 
-    private Uri getAttachmentUriForMimeType(AttachmentViewInfo attachment, String mimeType) {
+    private final Uri getAttachmentUriForMimeType(final AttachmentViewInfo attachment, final String mimeType) {
         if (attachment.mimeType.equals(mimeType)) {
             return attachment.uri;
         }
@@ -244,46 +246,46 @@ public class AttachmentController {
                 .build();
     }
 
-    private Intent createViewIntentForFileUri(String mimeType, Uri uri) {
-        Intent intent = new Intent(Intent.ACTION_VIEW);
+    private final Intent createViewIntentForFileUri(final String mimeType, final Uri uri) {
+        final Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setDataAndType(uri, mimeType);
         addUiIntentFlags(intent);
 
         return intent;
     }
 
-    private void addUiIntentFlags(Intent intent) {
+    private final void addUiIntentFlags(final Intent intent) {
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
     }
 
-    private int getResolvedIntentActivitiesCount(Intent intent) {
-        PackageManager packageManager = context.getPackageManager();
+    private final int getResolvedIntentActivitiesCount(final Intent intent) {
+        final PackageManager packageManager = context.getPackageManager();
 
-        List<ResolveInfo> resolveInfos =
+        final List<ResolveInfo> resolveInfos =
                 packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
 
         return resolveInfos.size();
     }
 
-    private void displayAttachmentSavedMessage(final String filename) {
-        String message = context.getString(R.string.message_view_status_attachment_saved, filename);
+    private final void displayAttachmentSavedMessage(final String filename) {
+        final String message = context.getString(R.string.message_view_status_attachment_saved, filename);
         displayMessageToUser(message);
     }
 
-    private void displayAttachmentNotSavedMessage() {
-        String message = context.getString(R.string.message_view_status_attachment_not_saved);
+    private final void displayAttachmentNotSavedMessage() {
+        final String message = context.getString(R.string.message_view_status_attachment_not_saved);
         displayMessageToUser(message);
     }
 
-    private void displayMessageToUser(String message) {
+    private final void displayMessageToUser(final String message) {
         Toast.makeText(context, message, Toast.LENGTH_LONG).show();
     }
 
     private static class IntentAndResolvedActivitiesCount {
-        private Intent intent;
-        private int activitiesCount;
+        private final Intent intent;
+        private final int activitiesCount;
 
-        IntentAndResolvedActivitiesCount(Intent intent, int activitiesCount) {
+        IntentAndResolvedActivitiesCount(final Intent intent, final int activitiesCount) {
             this.intent = intent;
             this.activitiesCount = activitiesCount;
         }
@@ -305,7 +307,8 @@ public class AttachmentController {
         }
     }
 
-    private class ViewAttachmentAsyncTask extends AsyncTask<Void, Void, Intent> {
+    // FIXME: use callbacks or handler
+    private final class ViewAttachmentAsyncTask extends AsyncTask<Void, Void, Intent> {
 
         @Override
         protected void onPreExecute() {
@@ -335,7 +338,8 @@ public class AttachmentController {
         }
     }
 
-    private class SaveAttachmentAsyncTask extends AsyncTask<File, Void, File> {
+    // FIXME: use callbacks or handler
+    private final class SaveAttachmentAsyncTask extends AsyncTask<File, Void, File> {
 
         @Override
         protected void onPreExecute() {

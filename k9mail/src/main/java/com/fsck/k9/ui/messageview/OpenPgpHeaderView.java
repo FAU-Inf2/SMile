@@ -24,10 +24,10 @@ import org.openintents.openpgp.OpenPgpSignatureResult;
 import org.openintents.openpgp.util.OpenPgpUtils;
 
 
-public class OpenPgpHeaderView extends LinearLayout {
+public final class OpenPgpHeaderView extends LinearLayout {
     private Context context;
-    private OpenPgpHeaderViewCallback callback;
 
+    private OpenPgpHeaderViewCallback callback;
     private OpenPgpResultAnnotation cryptoAnnotation;
 
     private ImageView resultEncryptionIcon;
@@ -40,7 +40,7 @@ public class OpenPgpHeaderView extends LinearLayout {
     private Button resultSignatureButton;
 
 
-    public OpenPgpHeaderView(Context context, AttributeSet attrs) {
+    public OpenPgpHeaderView(final Context context, final AttributeSet attrs) {
         super(context, attrs);
         this.context = context;
     }
@@ -55,20 +55,21 @@ public class OpenPgpHeaderView extends LinearLayout {
         resultSignatureName = (TextView) findViewById(R.id.result_signature_name);
         resultSignatureEmail = (TextView) findViewById(R.id.result_signature_email);
         resultSignatureButton = (Button) findViewById(R.id.result_signature_button);
+        super.onFinishInflate();
     }
 
-    public void setCallback(OpenPgpHeaderViewCallback callback) {
+    public void setCallback(final OpenPgpHeaderViewCallback callback) {
         this.callback = callback;
     }
 
-    public void setOpenPgpData(OpenPgpResultAnnotation cryptoAnnotation) {
+    public void setOpenPgpData(final OpenPgpResultAnnotation cryptoAnnotation) {
         this.cryptoAnnotation = cryptoAnnotation;
 
         initializeEncryptionHeader();
         initializeSignatureHeader();
     }
 
-    private void initializeEncryptionHeader() {
+    private final void initializeEncryptionHeader() {
         if (noCryptoAnnotationFound()) {
             displayNotEncrypted();
             return;
@@ -98,21 +99,21 @@ public class OpenPgpHeaderView extends LinearLayout {
         }
     }
 
-    private boolean noCryptoAnnotationFound() {
+    private final boolean noCryptoAnnotationFound() {
         return cryptoAnnotation == null;
     }
 
-    private void displayEncrypted() {
+    private final void displayEncrypted() {
         setEncryptionImageAndTextColor(CryptoState.ENCRYPTED);
         resultEncryptionText.setText(R.string.openpgp_result_encrypted);
     }
 
-    private void displayNotEncrypted() {
+    private final void displayNotEncrypted() {
         setEncryptionImageAndTextColor(CryptoState.NOT_ENCRYPTED);
         resultEncryptionText.setText(R.string.openpgp_result_not_encrypted);
     }
 
-    private void displayEncryptionError() {
+    private final void displayEncryptionError() {
         setEncryptionImageAndTextColor(CryptoState.INVALID);
 
         OpenPgpError error = cryptoAnnotation.getError();
@@ -125,12 +126,12 @@ public class OpenPgpHeaderView extends LinearLayout {
         resultEncryptionText.setText(text);
     }
 
-    private void displayIncompleteEncryptedPart() {
+    private final void displayIncompleteEncryptedPart() {
         setEncryptionImageAndTextColor(CryptoState.UNAVAILABLE);
         resultEncryptionText.setText(R.string.crypto_incomplete_message);
     }
 
-    private void initializeSignatureHeader() {
+    private final void initializeSignatureHeader() {
         initializeSignatureButton();
 
         if (noCryptoAnnotationFound()) {
@@ -152,13 +153,13 @@ public class OpenPgpHeaderView extends LinearLayout {
         }
     }
 
-    private void displayIncompleteSignedPart() {
+    private final void displayIncompleteSignedPart() {
         setSignatureImageAndTextColor(CryptoState.UNAVAILABLE);
         resultSignatureText.setText(R.string.crypto_incomplete_message);
         hideSignatureLayout();
     }
 
-    private void displayVerificationResult() {
+    private final void displayVerificationResult() {
         OpenPgpSignatureResult signatureResult = cryptoAnnotation.getSignatureResult();
         if (signatureResult == null) {
             displayNotSigned();
@@ -193,7 +194,7 @@ public class OpenPgpHeaderView extends LinearLayout {
         }
     }
 
-    private void initializeSignatureButton() {
+    private final void initializeSignatureButton() {
         if (noCryptoAnnotationFound()) {
             hideSignatureButton();
         } else if (isSignatureButtonUsed()) {
@@ -203,11 +204,11 @@ public class OpenPgpHeaderView extends LinearLayout {
         }
     }
 
-    private boolean isSignatureButtonUsed() {
+    private final boolean isSignatureButtonUsed() {
         return cryptoAnnotation.getPendingIntent() != null;
     }
 
-    private void setSignatureButtonClickListener() {
+    private final void setSignatureButtonClickListener() {
         final PendingIntent pendingIntent = cryptoAnnotation.getPendingIntent();
         resultSignatureButton.setOnClickListener(new OnClickListener() {
             @Override
@@ -217,38 +218,38 @@ public class OpenPgpHeaderView extends LinearLayout {
         });
     }
 
-    private void hideSignatureButton() {
+    private final void hideSignatureButton() {
         resultSignatureButton.setVisibility(View.GONE);
         resultSignatureButton.setOnClickListener(null);
     }
 
-    private void showSignatureButtonWithTextIfNecessary(@StringRes int stringId) {
+    private final void showSignatureButtonWithTextIfNecessary(@StringRes int stringId) {
         if (isSignatureButtonUsed()) {
             resultSignatureButton.setVisibility(View.VISIBLE);
             resultSignatureButton.setText(stringId);
         }
     }
 
-    private void displayNotSigned() {
+    private final void displayNotSigned() {
         setSignatureImageAndTextColor(CryptoState.NOT_SIGNED);
         resultSignatureText.setText(R.string.openpgp_result_no_signature);
         hideSignatureLayout();
     }
 
-    private void displaySignatureError() {
+    private final void displaySignatureError() {
         setSignatureImageAndTextColor(CryptoState.INVALID);
         resultSignatureText.setText(R.string.openpgp_result_invalid_signature);
         hideSignatureLayout();
     }
 
-    private void displaySignatureSuccessCertified() {
+    private final void displaySignatureSuccessCertified() {
         setSignatureImageAndTextColor(CryptoState.VERIFIED);
         resultSignatureText.setText(R.string.openpgp_result_signature_certified);
 
         displayUserIdAndSignatureButton();
     }
 
-    private void displaySignatureKeyMissing() {
+    private final void displaySignatureKeyMissing() {
         setSignatureImageAndTextColor(CryptoState.UNKNOWN_KEY);
         resultSignatureText.setText(R.string.openpgp_result_signature_missing_key);
 
@@ -257,34 +258,34 @@ public class OpenPgpHeaderView extends LinearLayout {
         showSignatureLayout();
     }
 
-    private void displaySignatureSuccessUncertified() {
+    private final void displaySignatureSuccessUncertified() {
         setSignatureImageAndTextColor(CryptoState.UNVERIFIED);
         resultSignatureText.setText(R.string.openpgp_result_signature_uncertified);
 
         displayUserIdAndSignatureButton();
     }
 
-    private void displaySignatureKeyExpired() {
+    private final void displaySignatureKeyExpired() {
         setSignatureImageAndTextColor(CryptoState.EXPIRED);
         resultSignatureText.setText(R.string.openpgp_result_signature_expired_key);
 
         displayUserIdAndSignatureButton();
     }
 
-    private void displaySignatureKeyRevoked() {
+    private final void displaySignatureKeyRevoked() {
         setSignatureImageAndTextColor(CryptoState.REVOKED);
         resultSignatureText.setText(R.string.openpgp_result_signature_revoked_key);
 
         displayUserIdAndSignatureButton();
     }
 
-    private void displayUserIdAndSignatureButton() {
+    private final void displayUserIdAndSignatureButton() {
         setUserId(cryptoAnnotation.getSignatureResult());
         showSignatureButtonWithTextIfNecessary(R.string.openpgp_result_action_show);
         showSignatureLayout();
     }
 
-    private void setUserId(OpenPgpSignatureResult signatureResult) {
+    private final void setUserId(final OpenPgpSignatureResult signatureResult) {
         final OpenPgpUtils.UserId userInfo = OpenPgpUtils.splitUserId(signatureResult.getPrimaryUserId());
         if (userInfo.name != null) {
             resultSignatureName.setText(userInfo.name);
@@ -299,27 +300,27 @@ public class OpenPgpHeaderView extends LinearLayout {
         }
     }
 
-    private void hideSignatureLayout() {
+    private final void hideSignatureLayout() {
         resultSignatureLayout.setVisibility(View.GONE);
     }
 
-    private void showSignatureLayout() {
+    private final void showSignatureLayout() {
         resultSignatureLayout.setVisibility(View.VISIBLE);
     }
 
-    private void setEncryptionImageAndTextColor(CryptoState state) {
+    private final void setEncryptionImageAndTextColor(final CryptoState state) {
         setStatusImageAndTextColor(resultEncryptionIcon, resultEncryptionText, state);
     }
 
-    private void setSignatureImageAndTextColor(CryptoState state) {
+    private final void setSignatureImageAndTextColor(final CryptoState state) {
         setStatusImageAndTextColor(resultSignatureIcon, resultSignatureText, state);
     }
 
-    private void setStatusImageAndTextColor(ImageView statusIcon, TextView statusText, CryptoState state) {
-        Drawable statusImageDrawable = context.getResources().getDrawable(state.getDrawableId());
+    private final void setStatusImageAndTextColor(final ImageView statusIcon, final TextView statusText, final CryptoState state) {
+        final Drawable statusImageDrawable = context.getResources().getDrawable(state.getDrawableId());
         statusIcon.setImageDrawable(statusImageDrawable);
 
-        int color = context.getResources().getColor(state.getColorId());
+        final int color = context.getResources().getColor(state.getColorId());
         statusIcon.setColorFilter(color, PorterDuff.Mode.SRC_IN);
         if (statusText != null) {
             statusText.setTextColor(color);

@@ -23,6 +23,7 @@ import com.fsck.k9.K9;
 import com.fsck.k9.crypto.MessageDecryptVerifier;
 import com.fsck.k9.mail.Body;
 import com.fsck.k9.mail.BodyPart;
+import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mail.Multipart;
 import com.fsck.k9.mail.Part;
@@ -47,11 +48,10 @@ import de.fau.cs.mad.smime_api.SMimeApi;
 import de.fau.cs.mad.smime_api.SMimeServiceConnection;
 
 
-public class MessageCryptoHelper {
+public final class MessageCryptoHelper {
     private static final int REQUEST_CODE_CRYPTO = 1000;
     private static final int INVALID_OPENPGP_RESULT_CODE = -1;
     private static final MimeBodyPart NO_REPLACEMENT_PART = null;
-
 
     private final Context context;
     private final Activity activity;
@@ -59,22 +59,23 @@ public class MessageCryptoHelper {
     private final Account account;
     private LocalMessage message;
 
-    private Deque<CryptoPart> partsToDecryptOrVerify = new ArrayDeque<CryptoPart>();
+    private final Deque<CryptoPart> partsToDecryptOrVerify = new ArrayDeque<CryptoPart>();
     private OpenPgpApi openPgpApi;
     private SMimeApi sMimeApi;
     private CryptoPart currentCryptoPart;
     private Intent currentCryptoResult;
 
-    private MessageCryptoAnnotations messageAnnotations;
+    private MessageCryptoAnnotations<OpenPgpResultAnnotation> messageAnnotations;
 
-
-    public MessageCryptoHelper(Activity activity, Account account, MessageCryptoCallback callback) {
+    public MessageCryptoHelper(final Activity activity,
+                               final Account account,
+                               final MessageCryptoCallback callback) {
         this.context = activity.getApplicationContext();
         this.activity = activity;
         this.callback = callback;
         this.account = account;
 
-        this.messageAnnotations = new MessageCryptoAnnotations();
+        this.messageAnnotations = new MessageCryptoAnnotations<OpenPgpResultAnnotation>();
     }
 
     public void decryptOrVerifyMessagePartsIfNecessary(LocalMessage message) {
@@ -102,7 +103,7 @@ public class MessageCryptoHelper {
         decryptOrVerifyNextPart();
     }
 
-    private void processFoundParts(List<Part> foundParts, CryptoPartType cryptoPartType, CryptoError errorIfIncomplete,
+    private final void processFoundParts(List<Part> foundParts, CryptoPartType cryptoPartType, CryptoError errorIfIncomplete,
             MimeBodyPart replacementPart) {
         for (Part part : foundParts) {
             if (MessageHelper.isCompletePartAvailable(part)) {
@@ -114,21 +115,21 @@ public class MessageCryptoHelper {
         }
     }
 
-    private void addErrorAnnotation(Part part, CryptoError error, MimeBodyPart outputData) {
+    private final void addErrorAnnotation(Part part, CryptoError error, MimeBodyPart outputData) {
         OpenPgpResultAnnotation annotation = new OpenPgpResultAnnotation();
         annotation.setErrorType(error);
         annotation.setOutputData(outputData);
         messageAnnotations.put(part, annotation);
     }
 
-    private void addFoundInlinePgpParts(List<Part> foundParts) {
+    private final void addFoundInlinePgpParts(List<Part> foundParts) {
         for (Part part : foundParts) {
             CryptoPart cryptoPart = new CryptoPart(CryptoPartType.INLINE_PGP, part);
             partsToDecryptOrVerify.add(cryptoPart);
         }
     }
 
-    private void decryptOrVerifyNextPart() {
+    private final void decryptOrVerifyNextPart() {
         if (partsToDecryptOrVerify.isEmpty()) {
             returnResultToFragment();
             return;
@@ -185,13 +186,12 @@ public class MessageCryptoHelper {
                     @Override
                     public void onBound(ISMimeService service) {
                         sMimeApi = new SMimeApi(context, service);
-
                         decryptOrVerifyNextPart();
                     }
 
                     @Override
                     public void onError(Exception e) {
-                        Log.e(K9.LOG_TAG, "Couldn't connect to OpenPgpService", e);
+                        Log.e(K9.LOG_TAG, "Couldn't connect to SMimeService", e);
                     }
                 }).bindToService();
     }
@@ -216,7 +216,9 @@ public class MessageCryptoHelper {
                     return;
                 }
                 case ENCRYPTED_SMIME: {
+                    // Note the actual intent is set in callAsyncDecryptSmime
                     callAsyncDecryptSmime(intent);
+                    return;
                 }
                 case INLINE_PGP: {
                     callAsyncInlineOperation(intent);
@@ -256,6 +258,7 @@ public class MessageCryptoHelper {
 
     private void callAsyncDecrypt(Intent intent) throws IOException {
         final CountDownLatch latch = new CountDownLatch(1);
+
         PipedInputStream pipedInputStream = getPipedInputStreamForEncryptedOrInlineData();
         PipedOutputStream decryptedOutputStream = getPipedOutputStreamForDecryptedData(latch);
 
@@ -270,13 +273,25 @@ public class MessageCryptoHelper {
 
     private void callAsyncDecryptSmime(Intent intent) throws IOException {
         final CountDownLatch latch = new CountDownLatch(1);
+        final String sender = this.message.getFrom()[0].getAddress();
+        String recipient;
+
+        try {
+            recipient = this.message.getRecipients(Message.RecipientType.TO)[0].getAddress();
+        } catch (MessagingException e) {
+            recipient = null;
+        }
+
         PipedInputStream pipedInputStream = getPipedInputStreamForEncryptedOrInlineData();
         PipedOutputStream decryptedOutputStream = getPipedOutputStreamForDecryptedData(latch);
+        Intent data = SMimeApi.decryptAndVerifyMessage(sender, recipient);
 
-        sMimeApi.executeApiAsync(intent, pipedInputStream, decryptedOutputStream, new SMimeApi.ISMimeCallback() {
+        sMimeApi.executeApiAsync(data, pipedInputStream, decryptedOutputStream, new SMimeApi.ISMimeCallback() {
             @Override
             public void onReturn(Intent result) {
-                Log.d(K9.LOG_TAG, "smimedecrypt returned");
+                currentCryptoResult = result;
+                latch.countDown();
+                Log.d(K9.LOG_TAG, "smimedecrypt returned: " + result);
             }
         });
     }
@@ -360,7 +375,7 @@ public class MessageCryptoHelper {
         return pipedInputStream;
     }
 
-    private PipedOutputStream getPipedOutputStreamForDecryptedData(final CountDownLatch latch) throws IOException {
+    private PipedOutputStream  getPipedOutputStreamForDecryptedData(final CountDownLatch latch) throws IOException {
         PipedOutputStream decryptedOutputStream = new PipedOutputStream();
         final PipedInputStream decryptedInputStream = new PipedInputStream(decryptedOutputStream);
         new AsyncTask<Void, Void, MimeBodyPart>() {
@@ -368,6 +383,7 @@ public class MessageCryptoHelper {
             protected MimeBodyPart doInBackground(Void... params) {
                 MimeBodyPart decryptedPart = null;
                 try {
+                    // DecryptTempFileBody is created through this call
                     decryptedPart = DecryptStreamParser.parse(context, decryptedInputStream);
 
                     latch.await();
@@ -377,6 +393,7 @@ public class MessageCryptoHelper {
                     Log.e(K9.LOG_TAG, "Something went wrong while parsing the decrypted MIME part", e);
                     //TODO: pass error to main thread and display error message to user
                 }
+
                 return decryptedPart;
             }
 
@@ -461,6 +478,7 @@ public class MessageCryptoHelper {
         } else {
             resultAnnotation.setWasEncrypted(false);
         }
+
         if ((resultType & OpenPgpApi.RESULT_TYPE_SIGNED) == OpenPgpApi.RESULT_TYPE_SIGNED) {
             OpenPgpSignatureResult signatureResult =
                     currentCryptoResult.getParcelableExtra(OpenPgpApi.RESULT_SIGNATURE);
@@ -511,7 +529,6 @@ public class MessageCryptoHelper {
     private void returnResultToFragment() {
         callback.onCryptoOperationsFinished(messageAnnotations);
     }
-
 
     private static class CryptoPart {
         public final CryptoPartType type;

@@ -7,18 +7,18 @@ import com.fsck.k9.mail.Part;
 import com.fsck.k9.mailstore.OpenPgpResultAnnotation;
 
 
-public class MessageCryptoAnnotations {
-    private HashMap<Part, OpenPgpResultAnnotation> annotations = new HashMap<Part, OpenPgpResultAnnotation>();
+public class MessageCryptoAnnotations<T> {
+    private HashMap<Part, T> annotations = new HashMap<Part, T>();
 
     MessageCryptoAnnotations() {
         // Package-private constructor
     }
 
-    void put(Part part, OpenPgpResultAnnotation annotation) {
+    void put(Part part, T annotation) {
         annotations.put(part, annotation);
     }
 
-    public OpenPgpResultAnnotation get(Part part) {
+    public T get(Part part) {
         return annotations.get(part);
     }
 

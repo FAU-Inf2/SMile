@@ -422,7 +422,7 @@ public class LocalMessageExtractor {
     }
 
     public static MessageViewInfo decodeMessageForView(Context context,
-            Message message, MessageCryptoAnnotations annotations) throws MessagingException {
+            Message message, MessageCryptoAnnotations<OpenPgpResultAnnotation> annotations) throws MessagingException {
 
         // 1. break mime structure on encryption/signature boundaries
         List<Part> parts = getCryptPieces(message, annotations);
@@ -454,7 +454,7 @@ public class LocalMessageExtractor {
         return new MessageViewInfo(containers, message);
     }
 
-    public static List<Part> getCryptPieces(Message message, MessageCryptoAnnotations annotations) throws MessagingException {
+    public static List<Part> getCryptPieces(Message message, MessageCryptoAnnotations<OpenPgpResultAnnotation> annotations) throws MessagingException {
 
         // TODO make sure this method does what it is supposed to
         /* This method returns a list of mime parts which are to be parsed into
@@ -474,16 +474,19 @@ public class LocalMessageExtractor {
     }
 
     public static boolean getCryptSubPieces(Part part, ArrayList<Part> parts,
-            MessageCryptoAnnotations annotations) throws MessagingException {
+            MessageCryptoAnnotations<OpenPgpResultAnnotation> annotations) throws MessagingException {
 
         Body body = part.getBody();
         if (body instanceof Multipart) {
             Multipart multi = (Multipart) body;
+
             if ("multipart/mixed".equals(part.getMimeType())) {
                 boolean foundSome = false;
+
                 for (BodyPart sub : multi.getBodyParts()) {
                     foundSome |= getCryptSubPieces(sub, parts, annotations);
                 }
+
                 if (!foundSome) {
                     parts.add(part);
                     return true;
@@ -493,6 +496,7 @@ public class LocalMessageExtractor {
                 return true;
             }
         }
+
         return false;
     }
 

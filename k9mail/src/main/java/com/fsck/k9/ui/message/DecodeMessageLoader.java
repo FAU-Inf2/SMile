@@ -15,8 +15,8 @@ import com.fsck.k9.ui.crypto.MessageCryptoAnnotations;
 
 public class DecodeMessageLoader extends AsyncTaskLoader<MessageViewInfo> {
     private final Message message;
+    private final MessageCryptoAnnotations<OpenPgpResultAnnotation> annotations;
     private MessageViewInfo messageViewInfo;
-    private MessageCryptoAnnotations<OpenPgpResultAnnotation> annotations;
 
     public DecodeMessageLoader(Context context, Message message, MessageCryptoAnnotations<OpenPgpResultAnnotation> annotations) {
         super(context);

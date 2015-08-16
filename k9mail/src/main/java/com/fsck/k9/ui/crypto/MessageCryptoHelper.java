@@ -378,8 +378,9 @@ public final class MessageCryptoHelper {
     }
 
     private PipedOutputStream  getPipedOutputStreamForDecryptedData(final CountDownLatch latch) throws IOException {
-        PipedOutputStream decryptedOutputStream = new PipedOutputStream();
+        final PipedOutputStream decryptedOutputStream = new PipedOutputStream();
         final PipedInputStream decryptedInputStream = new PipedInputStream(decryptedOutputStream);
+
         new AsyncTask<Void, Void, MimeBodyPart>() {
             @Override
             protected MimeBodyPart doInBackground(Void... params) {
@@ -404,10 +405,11 @@ public final class MessageCryptoHelper {
                 onCryptoOperationReturned(decryptedPart);
             }
         }.execute();
+
         return decryptedOutputStream;
     }
 
-    private void onCryptoOperationReturned(MimeBodyPart outputPart) {
+    private final void onCryptoOperationReturned(final MimeBodyPart outputPart) {
         if (currentCryptoResult == null) {
             Log.e(K9.LOG_TAG, "Internal error: we should have a result here!");
             return;
@@ -420,7 +422,7 @@ public final class MessageCryptoHelper {
         }
     }
 
-    private void handleCryptoOperationResult(MimeBodyPart outputPart) {
+    private final void handleCryptoOperationResult(final MimeBodyPart outputPart) {
         int resultCode = currentCryptoResult.getIntExtra(OpenPgpApi.RESULT_CODE, INVALID_OPENPGP_RESULT_CODE);
         if (K9.DEBUG) {
             Log.d(K9.LOG_TAG, "OpenPGP API decryptVerify result code: " + resultCode);
@@ -472,13 +474,14 @@ public final class MessageCryptoHelper {
         onCryptoFailed(error);
     }
 
-    private void handleCryptoOperationSuccess(MimeBodyPart outputPart) {
-        OpenPgpResultAnnotation resultAnnotation = new OpenPgpResultAnnotation();
+    private final void handleCryptoOperationSuccess(final MimeBodyPart outputPart) {
+        final OpenPgpResultAnnotation resultAnnotation = new OpenPgpResultAnnotation();
 
         resultAnnotation.setOutputData(outputPart);
 
         int resultType = currentCryptoResult.getIntExtra(OpenPgpApi.RESULT_TYPE,
                 OpenPgpApi.RESULT_TYPE_UNENCRYPTED_UNSIGNED);
+
         if ((resultType & OpenPgpApi.RESULT_TYPE_ENCRYPTED) == OpenPgpApi.RESULT_TYPE_ENCRYPTED) {
             resultAnnotation.setWasEncrypted(true);
         } else {

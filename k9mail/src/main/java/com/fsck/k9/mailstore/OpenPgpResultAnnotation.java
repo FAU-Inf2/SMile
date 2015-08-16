@@ -69,7 +69,6 @@ public final class OpenPgpResultAnnotation {
         this.wasEncrypted = wasEncrypted;
     }
 
-
     public static enum CryptoError {
         NONE,
         CRYPTO_API_RETURNED_ERROR,

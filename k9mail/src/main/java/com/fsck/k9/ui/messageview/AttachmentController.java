@@ -52,7 +52,7 @@ public final class AttachmentController {
         this.attachment = attachment;
     }
 
-    public void viewAttachment() {
+    public final void viewAttachment() {
         if (needsDownloading()) {
             downloadAndViewAttachment((LocalPart) attachment.part);
         } else {
@@ -326,7 +326,7 @@ public final class AttachmentController {
             messageViewFragment.enableAttachmentButtons(attachment);
         }
 
-        private void viewAttachment(Intent intent) {
+        private final void viewAttachment(final Intent intent) {
             try {
                 context.startActivity(intent);
             } catch (ActivityNotFoundException e) {

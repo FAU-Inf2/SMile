@@ -354,6 +354,8 @@ public final class MessageCryptoHelper {
                         BodyPart encryptionPayloadPart = multipartEncryptedMultipart.getBodyPart(1);
                         Body encryptionPayloadBody = encryptionPayloadPart.getBody();
                         encryptionPayloadBody.writeTo(out);
+                    } else if(cryptoPartType == CryptoPartType.ENCRYPTED_SMIME) {
+                        part.getBody().writeTo(out);
                     } else if (cryptoPartType == CryptoPartType.INLINE_PGP) {
                         String text = MessageExtractor.getTextFromPart(part);
                         out.write(text.getBytes());

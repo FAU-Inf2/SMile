@@ -355,7 +355,7 @@ public final class MessageCryptoHelper {
                         Body encryptionPayloadBody = encryptionPayloadPart.getBody();
                         encryptionPayloadBody.writeTo(out);
                     } else if(cryptoPartType == CryptoPartType.ENCRYPTED_SMIME) {
-                        part.getBody().writeTo(out);
+                        part.writeTo(out);
                     } else if (cryptoPartType == CryptoPartType.INLINE_PGP) {
                         String text = MessageExtractor.getTextFromPart(part);
                         out.write(text.getBytes());
@@ -424,6 +424,10 @@ public final class MessageCryptoHelper {
         int resultCode = currentCryptoResult.getIntExtra(OpenPgpApi.RESULT_CODE, INVALID_OPENPGP_RESULT_CODE);
         if (K9.DEBUG) {
             Log.d(K9.LOG_TAG, "OpenPGP API decryptVerify result code: " + resultCode);
+        }
+
+        if(resultCode == INVALID_OPENPGP_RESULT_CODE) {
+            resultCode = currentCryptoResult.getIntExtra(SMimeApi.EXTRA_RESULT_CODE, INVALID_OPENPGP_RESULT_CODE);
         }
 
         switch (resultCode) {

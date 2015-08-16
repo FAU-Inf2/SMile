@@ -51,9 +51,9 @@ public class RemindMeService extends CoreService {
         long delay = (10 * (60 * 1000)); // wait 10 min
         long minNextTime = System.currentTimeMillis() + delay;
 
-        for(Account acc : prefs.getAccounts()) {
+        for (Account acc : prefs.getAccounts()) {
             Date ret = handleAccount(acc);
-            if(ret != null && ret.getTime() < minNextTime) {
+            if (ret != null && ret.getTime() < minNextTime) {
                 minNextTime = ret.getTime();
             }
         }
@@ -89,9 +89,9 @@ public class RemindMeService extends CoreService {
         }
 
         Log.d(K9.LOG_TAG, "RemindMeService.handleAccount(): Iterate over " + remindMes.size() + " items.");
-        for(RemindMe item : remindMes) {
-            if(item.getRemindTime().after(now) && item.getSeen() == null) {
-                if(minDate == null || item.getRemindTime().compareTo(minDate) == -1) {
+        for (RemindMe item : remindMes) {
+            if (item.getRemindTime().after(now) && item.getSeen() == null) {
+                if (minDate == null || item.getRemindTime().compareTo(minDate) == -1) {
                     minDate = item.getRemindTime();
                 }
 
@@ -103,7 +103,7 @@ public class RemindMeService extends CoreService {
             messageIds.add(message.getId());
             item.setSeen(new Date(System.currentTimeMillis()));
 
-            if(localRemindMe != null) {
+            if (localRemindMe != null) {
                 try {
                     localRemindMe.update(item);
                     localRemindMe.delete(item);
@@ -135,7 +135,7 @@ public class RemindMeService extends CoreService {
         }
 
         Log.d(K9.LOG_TAG, "RemindMeService.handleAccount(): Messages to handle: " + messages.size());
-        if(messages.size() == 0) {
+        if (messages.size() == 0) {
             Log.e(K9.LOG_TAG, "No messages to handle.");
             return minDate;
         }
@@ -187,16 +187,16 @@ public class RemindMeService extends CoreService {
                         LocalFolder inbox;
                         try {
                             inbox = acc.getLocalStore().getFolder(acc.getInboxFolderName());
-                            for(long id: messageIds)
+                            for (long id : messageIds)
                                 messages2.add(inbox.getMessage(inbox.getMessageUidById(id)));
-                        }catch (Exception e) {
+                        } catch (Exception e) {
                             Log.e(K9.LOG_TAG, "Error getting inbox." + e.getMessage());
                             return;
                         }
                         //set notification
                         Log.d(K9.LOG_TAG, "Set notification for remindMes.");
                         int i = 0;
-                        for(LocalMessage m : messages2)
+                        for (LocalMessage m : messages2)
                             messagingController.notifyAccount(getApplication(), acc, m, i++);
                     }
                 }, null);

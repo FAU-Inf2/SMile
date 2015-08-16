@@ -896,7 +896,7 @@ public class MessageListFragment extends Fragment
         }
     }
 
-    private String getFolderNameById(Account account, long folderId) {
+    protected String getFolderNameById(Account account, long folderId) {
         Folder folder = getFolderById(account, folderId);
         if (folder != null) {
             return folder.getName();

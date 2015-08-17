@@ -21,7 +21,6 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
@@ -39,7 +38,6 @@ import com.fsck.k9.Preferences;
 
 import de.fau.cs.mad.smile.android.R;
 
-import com.fsck.k9.activity.misc.SwipeGestureDetector.OnSwipeGestureListener;
 import com.fsck.k9.activity.setup.AccountSettings;
 import com.fsck.k9.activity.setup.FolderSettings;
 import com.fsck.k9.activity.setup.Prefs;
@@ -50,7 +48,7 @@ import com.fsck.k9.fragment.SmsListFragment;
 import com.fsck.k9.mail.Address;
 import com.fsck.k9.search.ConditionsTreeNode;
 import com.fsck.k9.ui.messageview.MessageViewFragment;
-import com.fsck.k9.ui.messageview.MessageViewFragment.MessageViewFragmentListener;
+import com.fsck.k9.ui.messageview.MessageViewFragmentListener;
 import com.fsck.k9.mailstore.StorageManager;
 import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.search.LocalSearch;

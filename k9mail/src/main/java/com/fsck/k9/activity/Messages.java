@@ -32,6 +32,7 @@ import com.fsck.k9.search.LocalSearch;
 import com.fsck.k9.search.SearchAccount;
 import com.fsck.k9.search.SearchSpecification;
 import com.fsck.k9.ui.messageview.MessageViewFragment;
+import com.fsck.k9.ui.messageview.MessageViewFragmentListener;
 import com.fsck.k9.view.MessageHeader;
 
 import java.util.Calendar;
@@ -44,7 +45,7 @@ import de.fau.cs.mad.smile.android.R;
 
 public class Messages extends SmileActivity
         implements MessageFragment.MessageActions,
-        MessageViewFragment.MessageViewFragmentListener,RemindMeDialog.NoticeDialogListener,
+        MessageViewFragmentListener,RemindMeDialog.NoticeDialogListener,
         TimePickerDialog.OnTimeSetListener,
         DatePickerDialog.OnDateSetListener {
     private static final String ACTION_SHORTCUT = "shortcut";

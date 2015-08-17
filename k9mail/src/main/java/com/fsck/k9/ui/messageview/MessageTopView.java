@@ -112,8 +112,6 @@ public class MessageTopView extends LinearLayout implements ShowPicturesControll
         try {
             mHeaderContainer.populate(message, account);
             mHeaderContainer.setVisibility(View.VISIBLE);
-
-
         } catch (Exception me) {
             Log.e(K9.LOG_TAG, "setHeaders - error", me);
         }

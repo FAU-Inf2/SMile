@@ -1,5 +1,6 @@
 package com.fsck.k9.ui.messageview;
 
+import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.Locale;
 
@@ -17,6 +18,7 @@ import android.content.Loader;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
@@ -53,7 +55,6 @@ import com.fsck.k9.ui.crypto.MessageCryptoHelper;
 import com.fsck.k9.ui.message.DecodeMessageLoader;
 import com.fsck.k9.ui.message.LocalMessageLoader;
 import com.fsck.k9.ui.crypto.MessageCryptoAnnotations;
-import com.fsck.k9.view.MessageHeader;
 
 public class MessageViewFragment extends Fragment
         implements ConfirmationDialogFragmentListener,
@@ -90,9 +91,78 @@ public class MessageViewFragment extends Fragment
     private LocalMessage mMessage;
     private MessageCryptoAnnotations<OpenPgpResultAnnotation> messageAnnotations;
     private MessagingController mController;
-    private Handler handler = new Handler();
-    private DownloadMessageListener downloadMessageListener = new DownloadMessageListener();
+    private MessageViewHandler handler = new MessageViewHandler(this);
+    private DownloadMessageListener downloadMessageListener = new DownloadMessageListener(handler);
     private MessageCryptoHelper messageCryptoHelper;
+
+    static class MessageViewHandler extends Handler {
+        private final WeakReference<MessageViewFragment> messageViewFragmentWeakReference;
+
+        public MessageViewHandler(final MessageViewFragment messageViewFragment) {
+            messageViewFragmentWeakReference = new WeakReference<MessageViewFragment>(messageViewFragment);
+        }
+
+        public void hideAttachmentLoadingDialogOnMainThread() {
+            this.post(new Runnable() {
+                @Override
+                public void run() {
+                    MessageViewFragment fragment = messageViewFragmentWeakReference.get();
+                    if(fragment != null) {
+                        fragment.removeDialog(R.id.dialog_attachment_progress);
+                    }
+                }
+            });
+        }
+
+        public void showAttachmentLoadingDialog() {
+            this.post(new Runnable() {
+                @Override
+                public void run() {
+                    MessageViewFragment fragment = messageViewFragmentWeakReference.get();
+                    if (fragment != null) {
+                        fragment.showDialog(R.id.dialog_attachment_progress);
+                    }
+                }
+            });
+        }
+
+        public void loadMessageFinished(final LocalMessage message) {
+            this.post(new Runnable() {
+                @Override
+                public void run() {
+                    MessageViewFragment fragment = messageViewFragmentWeakReference.get();
+                    if (fragment != null) {
+                        fragment.onMessageDownloadFinished(message);
+                    }
+                }
+            });
+        }
+
+        public void loadMessageFailed(final Throwable t) {
+            this.post(new Runnable() {
+                @Override
+                public void run() {
+                    MessageViewFragment fragment = messageViewFragmentWeakReference.get();
+                    if (fragment != null) {
+                        fragment.onDownloadMessageFailed(t);
+                    }
+                }
+            });
+        }
+
+        // FIXME: remove them?
+        public void disableAttachmentButtons(AttachmentViewInfo attachment) {
+            // mMessageView.disableAttachmentButtons(attachment);
+        }
+
+        public void enableAttachmentButtons(AttachmentViewInfo attachment) {
+            // mMessageView.enableAttachmentButtons(attachment);
+        }
+
+        public void refreshAttachmentThumbnail(AttachmentViewInfo attachment) {
+            // mMessageView.refreshAttachmentThumbnail(attachment);
+        }
+    }
 
     /**
      * Used to temporarily store the destination folder for refile operations if a confirmation
@@ -247,7 +317,7 @@ public class MessageViewFragment extends Fragment
         throw new RuntimeException("Not implemented yet");
     }
 
-    private void onMessageDownloadFinished(LocalMessage message) {
+    public void onMessageDownloadFinished(LocalMessage message) {
         mMessage = message;
 
         LoaderManager loaderManager = getLoaderManager();
@@ -269,7 +339,7 @@ public class MessageViewFragment extends Fragment
     }
 
     @Override
-    public void onCryptoOperationsFinished(MessageCryptoAnnotations<OpenPgpResultAnnotation> annotations) {
+    public void onCryptoOperationsFinished(final MessageCryptoAnnotations<OpenPgpResultAnnotation> annotations) {
         startExtractingTextAndAttachments(annotations);
     }
 
@@ -671,37 +741,6 @@ public class MessageViewFragment extends Fragment
         return mContext;
     }
 
-    public void disableAttachmentButtons(AttachmentViewInfo attachment) {
-        // mMessageView.disableAttachmentButtons(attachment);
-    }
-
-    public void enableAttachmentButtons(AttachmentViewInfo attachment) {
-        // mMessageView.enableAttachmentButtons(attachment);
-    }
-
-    public void runOnMainThread(Runnable runnable) {
-        handler.post(runnable);
-    }
-
-    public void showAttachmentLoadingDialog() {
-        // mMessageView.disableAttachmentButtons();
-        showDialog(R.id.dialog_attachment_progress);
-    }
-
-    public void hideAttachmentLoadingDialogOnMainThread() {
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                removeDialog(R.id.dialog_attachment_progress);
-                // mMessageView.enableAttachmentButtons();
-            }
-        });
-    }
-
-    public void refreshAttachmentThumbnail(AttachmentViewInfo attachment) {
-        // mMessageView.refreshAttachmentThumbnail(attachment);
-    }
-
     @Override
     public void onPgpSignatureButtonClick(PendingIntent pendingIntent) {
         try {
@@ -711,18 +750,6 @@ public class MessageViewFragment extends Fragment
         } catch (IntentSender.SendIntentException e) {
             Log.e(K9.LOG_TAG, "SendIntentException", e);
         }
-    }
-
-    public interface MessageViewFragmentListener {
-        public void onForward(LocalMessage mMessage, PgpData mPgpData);
-        public void disableDeleteAction();
-        public void onReplyAll(LocalMessage mMessage, PgpData mPgpData);
-        public void onReply(LocalMessage mMessage, PgpData mPgpData);
-        public void displayMessageSubject(String title);
-        public void setProgress(boolean b);
-        public void showNextMessageOrReturn();
-        public void messageHeaderViewAvailable(MessageHeader messageHeaderView);
-        public void updateMenu();
     }
 
     public boolean isInitialized() {
@@ -806,28 +833,24 @@ public class MessageViewFragment extends Fragment
     }
 
     private AttachmentController getAttachmentController(AttachmentViewInfo attachment) {
-        return new AttachmentController(mController, this, attachment);
+        return new AttachmentController(getContext(), mController, attachment, handler);
     }
 
-    private class DownloadMessageListener extends MessagingListener {
+    private static class DownloadMessageListener extends MessagingListener {
+        private final MessageViewHandler handler;
+
+        public DownloadMessageListener(final MessageViewHandler handler) {
+            this.handler = handler;
+        }
+
         @Override
         public void loadMessageForViewFinished(Account account, String folder, String uid, final LocalMessage message) {
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    onMessageDownloadFinished(message);
-                }
-            });
+            this.handler.loadMessageFinished(message);
         }
 
         @Override
         public void loadMessageForViewFailed(Account account, String folder, String uid, final Throwable t) {
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    onDownloadMessageFailed(t);
-                }
-            });
+            this.handler.loadMessageFailed(t);
         }
     }
 }

@@ -634,6 +634,8 @@ public class MessageListFragment extends Fragment
             return;
         }
 
+        Log.d(K9.LOG_TAG, "showing message at position: " + position);
+
         if (mSelectedCount > 0) {
             toggleMessageSelect(position);
         } else {

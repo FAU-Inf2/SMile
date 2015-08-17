@@ -421,6 +421,9 @@ public class LocalMessageExtractor {
         html.append("</td></tr>");
     }
 
+    /**
+     * Gets called by {@link com.fsck.k9.ui.message.DecodeMessageLoader}
+     */
     public static MessageViewInfo decodeMessageForView(Context context,
             Message message, MessageCryptoAnnotations<OpenPgpResultAnnotation> annotations) throws MessagingException {
 

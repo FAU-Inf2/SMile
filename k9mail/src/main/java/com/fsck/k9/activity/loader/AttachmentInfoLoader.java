@@ -1,7 +1,5 @@
 package com.fsck.k9.activity.loader;
 
-import java.io.File;
-
 import android.content.AsyncTaskLoader;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -13,6 +11,8 @@ import android.util.Log;
 import com.fsck.k9.K9;
 import com.fsck.k9.activity.misc.Attachment;
 import com.fsck.k9.mail.internet.MimeUtility;
+
+import java.io.File;
 
 /**
  * Loader to fetch metadata of an attachment.

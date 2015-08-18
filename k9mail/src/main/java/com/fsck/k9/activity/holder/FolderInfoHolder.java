@@ -3,8 +3,9 @@ package com.fsck.k9.activity.holder;
 import android.content.Context;
 
 import com.fsck.k9.Account;
-import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.mail.Folder;
+
+import de.fau.cs.mad.smile.android.R;
 
 public class FolderInfoHolder implements Comparable<FolderInfoHolder> {
     public String name;

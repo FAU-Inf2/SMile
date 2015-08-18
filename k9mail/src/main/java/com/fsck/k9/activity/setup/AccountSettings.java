@@ -1,11 +1,6 @@
 
 package com.fsck.k9.activity.setup;
 
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
@@ -33,7 +28,6 @@ import com.fsck.k9.Account.ShowPictures;
 import com.fsck.k9.K9;
 import com.fsck.k9.NotificationSetting;
 import com.fsck.k9.Preferences;
-import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.activity.ChooseFolder;
 import com.fsck.k9.activity.ChooseIdentity;
 import com.fsck.k9.activity.ColorPickerDialog;
@@ -49,6 +43,13 @@ import com.fsck.k9.service.MailService;
 import org.openintents.openpgp.util.OpenPgpAppPreference;
 import org.openintents.openpgp.util.OpenPgpKeyPreference;
 import org.openintents.openpgp.util.OpenPgpUtils;
+
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import de.fau.cs.mad.smile.android.R;
 
 
 public class AccountSettings extends K9PreferenceActivity {

@@ -1,13 +1,6 @@
 package com.fsck.k9.ui.messageview;
 
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
-
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
@@ -17,12 +10,21 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.fsck.k9.K9;
-import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.helper.FileHelper;
 import com.fsck.k9.helper.UrlEncodingHelper;
 import com.fsck.k9.mail.internet.MimeUtility;
 import com.fsck.k9.provider.AttachmentProvider.AttachmentProviderColumns;
+
 import org.apache.commons.io.IOUtils;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
+
+import de.fau.cs.mad.smile.android.R;
 
 
 @Deprecated

@@ -13,10 +13,11 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.fsck.k9.K9;
-import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.helper.SizeFormatter;
 import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mailstore.AttachmentViewInfo;
+
+import de.fau.cs.mad.smile.android.R;
 
 
 public class AttachmentView extends FrameLayout implements OnClickListener, OnLongClickListener {

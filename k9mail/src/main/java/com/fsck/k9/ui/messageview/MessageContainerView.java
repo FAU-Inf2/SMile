@@ -1,8 +1,5 @@
 package com.fsck.k9.ui.messageview;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
@@ -28,7 +25,6 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.helper.ClipboardManager;
 import com.fsck.k9.helper.Contacts;
 import com.fsck.k9.helper.Utility;
@@ -36,12 +32,16 @@ import com.fsck.k9.mail.Address;
 import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mailstore.AttachmentViewInfo;
 import com.fsck.k9.mailstore.MessageViewInfo.MessageViewContainer;
-
 import com.fsck.k9.mailstore.OpenPgpResultAnnotation;
 import com.fsck.k9.mailstore.OpenPgpResultAnnotation.CryptoError;
 import com.fsck.k9.view.K9WebViewClient;
 import com.fsck.k9.view.MessageHeader.OnLayoutChangedListener;
 import com.fsck.k9.view.MessageWebView;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import de.fau.cs.mad.smile.android.R;
 
 
 public class MessageContainerView extends LinearLayout

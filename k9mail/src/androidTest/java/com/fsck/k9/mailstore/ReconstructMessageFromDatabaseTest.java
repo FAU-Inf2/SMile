@@ -1,12 +1,6 @@
 package com.fsck.k9.mailstore;
 
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collections;
-
 import android.content.Context;
 import android.test.ApplicationTestCase;
 import android.test.RenamingDelegatingContext;
@@ -18,7 +12,14 @@ import com.fsck.k9.mail.FetchProfile;
 import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mail.internet.BinaryTempFileBody;
 import com.fsck.k9.mail.internet.MimeMessage;
+
 import org.apache.james.mime4j.util.MimeUtil;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
 
 
 public class ReconstructMessageFromDatabaseTest extends ApplicationTestCase<K9> {

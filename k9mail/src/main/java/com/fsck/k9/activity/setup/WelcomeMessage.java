@@ -8,10 +8,11 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.TextView;
 
-import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.activity.Accounts;
 import com.fsck.k9.activity.K9Activity;
 import com.fsck.k9.helper.HtmlConverter;
+
+import de.fau.cs.mad.smile.android.R;
 
 /**
  * Displays a welcome message when no accounts have been created yet.

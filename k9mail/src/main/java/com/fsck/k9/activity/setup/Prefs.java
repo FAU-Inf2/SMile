@@ -1,12 +1,5 @@
 package com.fsck.k9.activity.setup;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -26,7 +19,6 @@ import com.fsck.k9.K9.NotificationHideSubject;
 import com.fsck.k9.K9.NotificationQuickDelete;
 import com.fsck.k9.K9.SplitViewMode;
 import com.fsck.k9.Preferences;
-import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.activity.ColorPickerDialog;
 import com.fsck.k9.activity.K9PreferenceActivity;
 import com.fsck.k9.controller.MessagingController;
@@ -34,8 +26,16 @@ import com.fsck.k9.helper.FileBrowserHelper;
 import com.fsck.k9.helper.FileBrowserHelper.FileBrowserFailOverCallback;
 import com.fsck.k9.preferences.CheckBoxListPreference;
 import com.fsck.k9.preferences.TimePickerPreference;
-
 import com.fsck.k9.service.MailService;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import de.fau.cs.mad.smile.android.R;
 
 
 public class Prefs extends K9PreferenceActivity {

@@ -8,17 +8,20 @@ import android.support.test.runner.AndroidJUnit4;
 import android.test.ActivityInstrumentationTestCase2;
 import android.util.Log;
 
-import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.endtoend.framework.ApplicationState;
 import com.fsck.k9.endtoend.framework.StubMailServer;
 import com.fsck.k9.endtoend.pages.WelcomeMessagePage;
-import de.cketti.library.changelog.ChangeLog;
+
 import junit.framework.AssertionFailedError;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
+
+import de.cketti.library.changelog.ChangeLog;
+import de.fau.cs.mad.smile.android.R;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;

@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.text.SpannableString;
 
 import com.fsck.k9.mail.Address;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

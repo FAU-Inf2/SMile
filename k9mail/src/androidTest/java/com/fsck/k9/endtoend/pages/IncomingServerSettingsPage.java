@@ -1,9 +1,9 @@
 package com.fsck.k9.endtoend.pages;
 
-import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.mail.ConnectionSecurity;
 
-import static com.fsck.k9.activity.setup.ConnectionSecurityHolderMatcher.is;
+import de.fau.cs.mad.smile.android.R;
+
 import static android.support.test.espresso.Espresso.onData;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.clearText;
@@ -14,6 +14,7 @@ import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isClickable;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static com.fsck.k9.activity.setup.ConnectionSecurityHolderMatcher.is;
 
 public class IncomingServerSettingsPage extends AbstractPage {
 

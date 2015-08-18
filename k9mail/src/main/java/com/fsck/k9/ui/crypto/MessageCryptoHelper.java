@@ -1,15 +1,6 @@
 package com.fsck.k9.ui.crypto;
 
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -35,6 +26,7 @@ import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.mailstore.MessageHelper;
 import com.fsck.k9.mailstore.OpenPgpResultAnnotation;
 import com.fsck.k9.mailstore.OpenPgpResultAnnotation.CryptoError;
+
 import org.openintents.openpgp.IOpenPgpService;
 import org.openintents.openpgp.OpenPgpError;
 import org.openintents.openpgp.OpenPgpSignatureResult;
@@ -42,6 +34,15 @@ import org.openintents.openpgp.util.OpenPgpApi;
 import org.openintents.openpgp.util.OpenPgpApi.IOpenPgpCallback;
 import org.openintents.openpgp.util.OpenPgpServiceConnection;
 import org.openintents.openpgp.util.OpenPgpServiceConnection.OnBound;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import de.fau.cs.mad.smime_api.ISMimeService;
 import de.fau.cs.mad.smime_api.SMimeApi;

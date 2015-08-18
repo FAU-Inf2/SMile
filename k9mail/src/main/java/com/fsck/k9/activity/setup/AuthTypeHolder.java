@@ -2,8 +2,9 @@ package com.fsck.k9.activity.setup;
 
 import android.content.res.Resources;
 
-import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.mail.AuthType;
+
+import de.fau.cs.mad.smile.android.R;
 
 class AuthTypeHolder {
     final AuthType authType;

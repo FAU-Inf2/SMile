@@ -1,8 +1,5 @@
 package com.fsck.k9.ui.messageview;
 
-import java.util.Collections;
-import java.util.Locale;
-
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.Fragment;
@@ -29,12 +26,9 @@ import android.widget.Toast;
 import com.fsck.k9.Account;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
-
-import de.fau.cs.mad.smile.android.R;
-
 import com.fsck.k9.activity.ChooseFolder;
-import com.fsck.k9.activity.RemindMeList;
 import com.fsck.k9.activity.MessageReference;
+import com.fsck.k9.activity.RemindMeList;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.crypto.PgpData;
 import com.fsck.k9.fragment.ConfirmationDialogFragment;
@@ -48,10 +42,15 @@ import com.fsck.k9.mailstore.AttachmentViewInfo;
 import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.mailstore.MessageViewInfo;
 import com.fsck.k9.mailstore.OpenPgpResultAnnotation;
+import com.fsck.k9.ui.crypto.MessageCryptoAnnotations;
 import com.fsck.k9.ui.crypto.MessageCryptoCallback;
 import com.fsck.k9.ui.crypto.MessageCryptoHelper;
 import com.fsck.k9.ui.message.LocalMessageLoader;
-import com.fsck.k9.ui.crypto.MessageCryptoAnnotations;
+
+import java.util.Collections;
+import java.util.Locale;
+
+import de.fau.cs.mad.smile.android.R;
 
 public class MessageViewFragment extends Fragment
         implements ConfirmationDialogFragmentListener,

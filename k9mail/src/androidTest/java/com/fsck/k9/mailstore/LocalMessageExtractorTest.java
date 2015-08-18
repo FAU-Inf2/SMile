@@ -1,11 +1,5 @@
 package com.fsck.k9.mailstore;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.TimeZone;
-
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
@@ -21,8 +15,15 @@ import com.fsck.k9.mail.internet.MimeMessageHelper;
 import com.fsck.k9.mail.internet.MimeMultipart;
 import com.fsck.k9.mail.internet.TextBody;
 import com.fsck.k9.mail.internet.Viewable;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import static com.fsck.k9.mailstore.LocalMessageExtractor.extractTextAndAttachments;
 import static junit.framework.Assert.assertEquals;

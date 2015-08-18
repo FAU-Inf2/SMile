@@ -1,8 +1,8 @@
 package com.fsck.k9.activity.holder;
 
-import java.util.Date;
-
 import com.fsck.k9.mailstore.LocalMessage;
+
+import java.util.Date;
 
 public class MessageInfoHolder {
     public String date;

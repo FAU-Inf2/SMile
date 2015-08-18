@@ -1,8 +1,6 @@
 package com.fsck.k9.ui.messageview;
 
 
-import java.io.File;
-
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Environment;
@@ -11,8 +9,6 @@ import android.widget.Toast;
 import com.fsck.k9.Account;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
-import de.fau.cs.mad.smile.android.R;
-
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.controller.MessagingListener;
 import com.fsck.k9.mail.Message;
@@ -20,6 +16,10 @@ import com.fsck.k9.mail.Part;
 import com.fsck.k9.mailstore.AttachmentViewInfo;
 import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.mailstore.LocalPart;
+
+import java.io.File;
+
+import de.fau.cs.mad.smile.android.R;
 
 
 public final class AttachmentController {

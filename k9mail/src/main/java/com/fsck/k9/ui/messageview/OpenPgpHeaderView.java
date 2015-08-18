@@ -16,12 +16,13 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import de.fau.cs.mad.smile.android.R;
-
 import com.fsck.k9.mailstore.OpenPgpResultAnnotation;
+
 import org.openintents.openpgp.OpenPgpError;
 import org.openintents.openpgp.OpenPgpSignatureResult;
 import org.openintents.openpgp.util.OpenPgpUtils;
+
+import de.fau.cs.mad.smile.android.R;
 
 
 public final class OpenPgpHeaderView extends LinearLayout {

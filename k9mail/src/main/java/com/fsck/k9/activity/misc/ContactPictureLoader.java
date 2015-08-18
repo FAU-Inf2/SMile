@@ -1,14 +1,5 @@
 package com.fsck.k9.activity.misc;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.ref.WeakReference;
-import java.util.Locale;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import android.app.ActivityManager;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -28,6 +19,15 @@ import android.widget.QuickContactBadge;
 
 import com.fsck.k9.helper.Contacts;
 import com.fsck.k9.mail.Address;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.ref.WeakReference;
+import java.util.Locale;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ContactPictureLoader {
     /**

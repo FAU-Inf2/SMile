@@ -10,6 +10,7 @@ import com.fsck.k9.mail.internet.MimeBodyPart;
 import com.fsck.k9.mail.internet.MimeMessage;
 import com.fsck.k9.mail.internet.MimeMultipart;
 import com.fsck.k9.mail.internet.TextBody;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

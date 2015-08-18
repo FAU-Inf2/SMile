@@ -1,8 +1,10 @@
 package com.fsck.k9.activity.setup;
 
 
-import com.fsck.k9.mail.ConnectionSecurity;
 import android.support.test.espresso.matcher.BoundedMatcher;
+
+import com.fsck.k9.mail.ConnectionSecurity;
+
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 

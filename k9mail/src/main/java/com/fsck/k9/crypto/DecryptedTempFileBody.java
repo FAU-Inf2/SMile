@@ -1,17 +1,18 @@
 package com.fsck.k9.crypto;
 
 
+import com.fsck.k9.mail.MessagingException;
+import com.fsck.k9.mail.internet.RawDataBody;
+import com.fsck.k9.mail.internet.SizeAware;
+
+import org.apache.commons.io.IOUtils;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import com.fsck.k9.mail.MessagingException;
-import com.fsck.k9.mail.internet.RawDataBody;
-import com.fsck.k9.mail.internet.SizeAware;
-import org.apache.commons.io.IOUtils;
 
 
 public class DecryptedTempFileBody implements RawDataBody, SizeAware {

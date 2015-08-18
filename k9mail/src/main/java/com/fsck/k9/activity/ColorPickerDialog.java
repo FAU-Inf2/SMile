@@ -1,12 +1,14 @@
 package com.fsck.k9.activity;
 
-import de.fau.cs.mad.smile.android.R;
 import android.app.AlertDialog;
-import android.content.*;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.view.LayoutInflater;
 import android.view.View;
 
 import com.larswerkman.colorpicker.ColorPicker;
+
+import de.fau.cs.mad.smile.android.R;
 
 
 /**

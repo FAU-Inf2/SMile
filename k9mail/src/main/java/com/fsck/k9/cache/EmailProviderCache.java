@@ -1,9 +1,5 @@
 package com.fsck.k9.cache;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -14,6 +10,10 @@ import com.fsck.k9.mail.Message;
 import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.provider.EmailProvider;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Cache to bridge the time needed to write (user-initiated) changes to the database.

@@ -17,17 +17,12 @@ import android.widget.Toast;
 import com.fsck.k9.Account;
 import com.fsck.k9.K9;
 import com.fsck.k9.activity.FolderClickListener;
-import com.fsck.k9.activity.FolderList.FolderListActivityListener;
 import com.fsck.k9.activity.FolderListFilter;
 import com.fsck.k9.activity.holder.FolderInfoHolder;
 import com.fsck.k9.activity.holder.FolderViewHolder;
 import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.search.LocalSearch;
 import com.fsck.k9.search.SearchSpecification;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 import de.fau.cs.mad.smile.android.R;
 

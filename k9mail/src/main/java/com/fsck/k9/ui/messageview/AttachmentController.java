@@ -2,10 +2,6 @@ package com.fsck.k9.ui.messageview;
 
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 import android.content.Context;
 import android.os.AsyncTask;
@@ -19,25 +15,23 @@ import de.fau.cs.mad.smile.android.R;
 
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.controller.MessagingListener;
-import com.fsck.k9.helper.FileHelper;
 import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.Part;
 import com.fsck.k9.mailstore.AttachmentViewInfo;
 import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.mailstore.LocalPart;
-import org.apache.commons.io.IOUtils;
 
 
 public final class AttachmentController {
     private final Context context;
     private final MessagingController controller;
     private final AttachmentViewInfo attachment;
-    private final MessageViewFragment.MessageViewHandler handler;
+    private final MessageViewHandler handler;
 
     public AttachmentController(final Context context,
                                 final MessagingController controller,
                                 final AttachmentViewInfo attachment,
-                                final MessageViewFragment.MessageViewHandler handler) {
+                                final MessageViewHandler handler) {
         this.context = context;
         this.controller = controller;
         this.attachment = attachment;

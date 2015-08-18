@@ -16,10 +16,9 @@ import android.widget.SearchView;
 import com.fsck.k9.Account;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.activity.MessageList;
-import com.fsck.k9.activity.Messages;
-import com.fsck.k9.adapter.FolderAdapter;
 import com.fsck.k9.activity.holder.FolderInfoHolder;
 import com.fsck.k9.activity.setup.FolderSettings;
+import com.fsck.k9.adapter.FolderAdapter;
 import com.fsck.k9.search.LocalSearch;
 
 import de.fau.cs.mad.smile.android.R;

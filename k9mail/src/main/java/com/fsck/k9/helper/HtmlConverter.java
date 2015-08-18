@@ -1,7 +1,13 @@
 package com.fsck.k9.helper;
 
-import android.text.*;
+import android.text.Annotation;
+import android.text.Editable;
+import android.text.Html;
 import android.text.Html.TagHandler;
+import android.text.Spannable;
+import android.text.Spanned;
+import android.text.TextUtils;
+
 import com.fsck.k9.K9;
 
 import org.xml.sax.XMLReader;

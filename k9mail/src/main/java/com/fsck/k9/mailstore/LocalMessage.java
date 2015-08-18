@@ -1,10 +1,5 @@
 package com.fsck.k9.mailstore;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Date;
-import java.util.Set;
-
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -21,7 +16,13 @@ import com.fsck.k9.mail.internet.MimeMessage;
 import com.fsck.k9.mailstore.LockableDatabase.DbCallback;
 import com.fsck.k9.mailstore.LockableDatabase.WrappedException;
 
-public class LocalMessage extends MimeMessage {
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.util.Date;
+import java.util.Set;
+
+public class LocalMessage extends MimeMessage implements Serializable {
     protected MessageReference mReference;
     private final LocalStore localStore;
 

@@ -21,7 +21,6 @@ import android.util.Log;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.AccountStats;
-import de.fau.cs.mad.smile.android.BuildConfig;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.activity.holder.FolderInfoHolder;
@@ -51,6 +50,8 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import de.fau.cs.mad.smile.android.BuildConfig;
 
 public class MessageProvider extends ContentProvider {
 

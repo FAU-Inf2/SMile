@@ -1,15 +1,15 @@
 package com.fsck.k9.message;
 
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.StringTokenizer;
-
 import android.net.Uri;
 import android.util.Log;
 
 import com.fsck.k9.K9;
 import com.fsck.k9.mail.filter.Base64;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 
 public class IdentityHeaderParser {

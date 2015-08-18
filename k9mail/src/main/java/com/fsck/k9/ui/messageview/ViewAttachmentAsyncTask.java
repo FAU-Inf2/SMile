@@ -28,10 +28,10 @@ import de.fau.cs.mad.smile.android.R;
 
 final class ViewAttachmentAsyncTask extends AsyncTask<Void, Void, Intent> {
     private final Context context;
-    private final MessageViewFragment.MessageViewHandler messageViewHandler;
+    private final MessageViewHandler messageViewHandler;
     private final AttachmentViewInfo attachment;
 
-    public ViewAttachmentAsyncTask(final Context context, final MessageViewFragment.MessageViewHandler handler, final AttachmentViewInfo attachment) {
+    public ViewAttachmentAsyncTask(final Context context, final MessageViewHandler handler, final AttachmentViewInfo attachment) {
         this.context = context;
         this.messageViewHandler = handler;
         this.attachment = attachment;

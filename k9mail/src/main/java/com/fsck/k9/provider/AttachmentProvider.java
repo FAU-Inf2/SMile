@@ -1,11 +1,6 @@
 package com.fsck.k9.provider;
 
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-
 import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -15,14 +10,21 @@ import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
 import com.fsck.k9.Account;
-import de.fau.cs.mad.smile.android.BuildConfig;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mail.internet.MimeUtility;
 import com.fsck.k9.mailstore.LocalStore;
 import com.fsck.k9.mailstore.LocalStore.AttachmentInfo;
+
 import org.openintents.openpgp.util.ParcelFileDescriptorUtil;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+
+import de.fau.cs.mad.smile.android.BuildConfig;
 
 
 /**

@@ -101,17 +101,17 @@ public class MessageContainerView extends LinearLayout
 
         showingPictures = false;
 
-        Context context = getContext();
+        final Context context = getContext();
         mInflater = LayoutInflater.from(context);
         mClipboardManager = ClipboardManager.getInstance(context);
         super.onFinishInflate();
     }
 
     @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
+    public void onCreateContextMenu(ContextMenu menu, View view, ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu);
 
-        WebView webview = (WebView) v;
+        WebView webview = (WebView) view;
         WebView.HitTestResult result = webview.getHitTestResult();
 
         if (result == null) {
@@ -119,7 +119,7 @@ public class MessageContainerView extends LinearLayout
         }
 
         int type = result.getType();
-        Context context = getContext();
+        final Context context = getContext();
 
         switch (type) {
             case HitTestResult.SRC_ANCHOR_TYPE: {

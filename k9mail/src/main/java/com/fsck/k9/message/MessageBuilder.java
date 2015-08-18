@@ -1,16 +1,11 @@
 package com.fsck.k9.message;
 
 
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-
 import android.content.Context;
 
 import com.fsck.k9.Account.QuoteStyle;
 import com.fsck.k9.Identity;
 import com.fsck.k9.K9;
-import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.activity.MessageReference;
 import com.fsck.k9.activity.misc.Attachment;
 import com.fsck.k9.crypto.PgpData;
@@ -27,8 +22,15 @@ import com.fsck.k9.mail.internet.MimeUtility;
 import com.fsck.k9.mail.internet.TextBody;
 import com.fsck.k9.mailstore.TempFileBody;
 import com.fsck.k9.mailstore.TempFileMessageBody;
+
 import org.apache.james.mime4j.codec.EncoderUtil;
 import org.apache.james.mime4j.util.MimeUtil;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+
+import de.fau.cs.mad.smile.android.R;
 
 
 public class MessageBuilder {

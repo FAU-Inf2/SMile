@@ -1,9 +1,6 @@
 package com.fsck.k9.view;
 
 
-import java.io.InputStream;
-import java.util.Stack;
-
 import android.annotation.TargetApi;
 import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
@@ -26,6 +23,9 @@ import com.fsck.k9.mail.Multipart;
 import com.fsck.k9.mail.Part;
 import com.fsck.k9.mailstore.AttachmentViewInfo;
 import com.fsck.k9.mailstore.LocalMessageExtractor;
+
+import java.io.InputStream;
+import java.util.Stack;
 
 
 /**

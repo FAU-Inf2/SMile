@@ -1,23 +1,5 @@
 package com.fsck.k9.provider;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import com.fsck.k9.Account;
-import de.fau.cs.mad.smile.android.BuildConfig;
-import com.fsck.k9.Preferences;
-import com.fsck.k9.cache.EmailProviderCacheCursor;
-import com.fsck.k9.helper.Utility;
-import com.fsck.k9.mail.MessagingException;
-import com.fsck.k9.mailstore.LockableDatabase;
-import com.fsck.k9.mailstore.LockableDatabase.DbCallback;
-import com.fsck.k9.mailstore.LockableDatabase.WrappedException;
-import com.fsck.k9.mailstore.UnavailableStorageException;
-import com.fsck.k9.mailstore.LocalStore;
-import com.fsck.k9.search.SqlQueryBuilder;
-
 import android.content.ContentProvider;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -28,6 +10,25 @@ import android.database.CursorWrapper;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.text.TextUtils;
+
+import com.fsck.k9.Account;
+import com.fsck.k9.Preferences;
+import com.fsck.k9.cache.EmailProviderCacheCursor;
+import com.fsck.k9.helper.Utility;
+import com.fsck.k9.mail.MessagingException;
+import com.fsck.k9.mailstore.LocalStore;
+import com.fsck.k9.mailstore.LockableDatabase;
+import com.fsck.k9.mailstore.LockableDatabase.DbCallback;
+import com.fsck.k9.mailstore.LockableDatabase.WrappedException;
+import com.fsck.k9.mailstore.UnavailableStorageException;
+import com.fsck.k9.search.SqlQueryBuilder;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import de.fau.cs.mad.smile.android.BuildConfig;
 
 /**
  * Content Provider used to display the message list etc.

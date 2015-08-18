@@ -10,14 +10,15 @@ import android.util.Log;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.K9;
-import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.activity.holder.FolderInfoHolder;
 import com.fsck.k9.activity.holder.MessageInfoHolder;
 import com.fsck.k9.mail.Address;
 import com.fsck.k9.mail.Flag;
-import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mail.Message.RecipientType;
+import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mailstore.LocalMessage;
+
+import de.fau.cs.mad.smile.android.R;
 
 public class MessageHelper {
     /**

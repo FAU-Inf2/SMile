@@ -23,9 +23,9 @@ import de.fau.cs.mad.smile.android.R;
 final class SaveAttachmentAsyncTask extends AsyncTask<File, Void, File> {
     private final Context context;
     private final AttachmentViewInfo attachment;
-    private final MessageViewFragment.MessageViewHandler messageViewHandler;
+    private final MessageViewHandler messageViewHandler;
 
-    public SaveAttachmentAsyncTask(final Context context, final AttachmentViewInfo attachment, final MessageViewFragment.MessageViewHandler handler) {
+    public SaveAttachmentAsyncTask(final Context context, final AttachmentViewInfo attachment, final MessageViewHandler handler) {
         this.messageViewHandler = handler;
         this.context = context;
         this.attachment = attachment;

@@ -1,8 +1,8 @@
 package com.fsck.k9.helper;
 
-import java.util.Comparator;
-
 import android.database.Cursor;
+
+import java.util.Comparator;
 
 
 public class MergeCursorWithUniqueId extends MergeCursor {

@@ -3,6 +3,7 @@ package com.fsck.k9.service;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
+
 import com.fsck.k9.K9;
 import com.fsck.k9.mail.power.TracingPowerManager.TracingWakeLock;
 

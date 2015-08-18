@@ -7,9 +7,9 @@ import android.util.Log;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.K9;
-import com.fsck.k9.mail.RemindMe;
 import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.MessagingException;
+import com.fsck.k9.mail.RemindMe;
 
 import java.util.ArrayList;
 import java.util.Date;

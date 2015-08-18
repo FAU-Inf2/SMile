@@ -1,12 +1,5 @@
 package com.fsck.k9.activity;
 
-import com.fsck.k9.Account;
-import com.fsck.k9.K9;
-import com.fsck.k9.Preferences;
-import de.fau.cs.mad.smile.android.R;
-import com.fsck.k9.mail.Store;
-import com.fsck.k9.service.DatabaseUpgradeService;
-
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -16,6 +9,14 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.widget.TextView;
+
+import com.fsck.k9.Account;
+import com.fsck.k9.K9;
+import com.fsck.k9.Preferences;
+import com.fsck.k9.mail.Store;
+import com.fsck.k9.service.DatabaseUpgradeService;
+
+import de.fau.cs.mad.smile.android.R;
 
 
 /**

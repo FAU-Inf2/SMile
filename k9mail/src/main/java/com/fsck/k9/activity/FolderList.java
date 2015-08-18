@@ -1,9 +1,5 @@
 package com.fsck.k9.activity;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-
 import android.app.ActionBar;
 import android.content.Context;
 import android.content.Intent;
@@ -31,9 +27,6 @@ import com.fsck.k9.AccountStats;
 import com.fsck.k9.BaseAccount;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
-
-import de.fau.cs.mad.smile.android.R;
-
 import com.fsck.k9.activity.holder.FolderInfoHolder;
 import com.fsck.k9.activity.setup.AccountSettings;
 import com.fsck.k9.activity.setup.FolderSettings;
@@ -42,15 +35,20 @@ import com.fsck.k9.adapter.FolderAdapter;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.controller.MessagingListener;
 import com.fsck.k9.helper.SizeFormatter;
-import com.fsck.k9.mail.power.TracingPowerManager;
-import com.fsck.k9.mail.power.TracingPowerManager.TracingWakeLock;
 import com.fsck.k9.mail.Folder;
 import com.fsck.k9.mail.Message;
+import com.fsck.k9.mail.power.TracingPowerManager;
+import com.fsck.k9.mail.power.TracingPowerManager.TracingWakeLock;
 import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.search.LocalSearch;
 import com.fsck.k9.service.MailService;
 
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+
 import de.cketti.library.changelog.ChangeLog;
+import de.fau.cs.mad.smile.android.R;
 
 /**
  * FolderList is the primary user interface for the program. This

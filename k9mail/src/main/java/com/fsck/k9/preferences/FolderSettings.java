@@ -1,16 +1,20 @@
 package com.fsck.k9.preferences;
 
+import android.content.SharedPreferences;
+
+import com.fsck.k9.mail.Folder.FolderClass;
+import com.fsck.k9.preferences.Settings.BooleanSetting;
+import com.fsck.k9.preferences.Settings.EnumSetting;
+import com.fsck.k9.preferences.Settings.SettingsDescription;
+import com.fsck.k9.preferences.Settings.SettingsUpgrader;
+import com.fsck.k9.preferences.Settings.V;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-
-import android.content.SharedPreferences;
-
-import com.fsck.k9.mail.Folder.FolderClass;
-import com.fsck.k9.preferences.Settings.*;
 
 public class FolderSettings {
     public static final Map<String, TreeMap<Integer, SettingsDescription>> SETTINGS;

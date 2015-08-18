@@ -1,23 +1,21 @@
 package com.fsck.k9.service;
 
-import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import com.fsck.k9.Account;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
-import com.fsck.k9.Account;
 import com.fsck.k9.activity.ActivityListener;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.mail.FetchProfile;
 import com.fsck.k9.mail.Flag;
-import com.fsck.k9.mail.RemindMe;
 import com.fsck.k9.mail.MessagingException;
+import com.fsck.k9.mail.RemindMe;
 import com.fsck.k9.mailstore.LocalFolder;
-import com.fsck.k9.mailstore.LocalRemindMe;
 import com.fsck.k9.mailstore.LocalMessage;
+import com.fsck.k9.mailstore.LocalRemindMe;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -66,12 +64,6 @@ public class RemindMeService extends CoreService {
     }
 
     private Date handleAccount(final Account acc) {
-        Context context = getApplication();
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
-        NotificationManager notifyMgr =
-                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-
         Log.d(K9.LOG_TAG, "RemindMeService.handleAccount(): Get all remindMeItems.");
         List<RemindMe> remindMes = getRemindMeItems(acc);
         Date now = new Date();
@@ -111,27 +103,6 @@ public class RemindMeService extends CoreService {
                     e.printStackTrace();
                 }
             }
-
-/*
-            builder.setSmallIcon(R.drawable.ic_notify_new_mail);
-            builder.setContentTitle(item.getTitle());
-            builder.setContentText(item.getTitle());
-            builder.setWhen(System.currentTimeMillis());
-            builder.setAutoCancel(true);
-
-            builder.addAction(
-                    R.drawable.ic_action_mark_as_read_dark,
-                    context.getString(R.string.notification_action_mark_as_read),
-                    NotificationActionService.getReadAllMessagesIntent(context, acc, allRefs));
-
-            Intent resultIntent = new Intent(context, RemindMeList.class);
-            TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
-            stackBuilder.addParentStack(RemindMeList.class);
-            stackBuilder.addNextIntent(resultIntent);
-            PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-            builder.setContentIntent(resultPendingIntent);
-            notifyMgr.notify(item.getId(), builder.build());
-            */
         }
 
         Log.d(K9.LOG_TAG, "RemindMeService.handleAccount(): Messages to handle: " + messages.size());

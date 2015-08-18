@@ -7,8 +7,8 @@ import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
 
-import com.fsck.k9.mail.RemindMe;
 import com.fsck.k9.mail.Message;
+import com.fsck.k9.mail.RemindMe;
 
 import de.fau.cs.mad.smile.android.R;
 

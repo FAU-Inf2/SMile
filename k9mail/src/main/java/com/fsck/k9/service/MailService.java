@@ -1,9 +1,6 @@
 
 package com.fsck.k9.service;
 
-import java.util.Collection;
-import java.util.Date;
-
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -12,14 +9,17 @@ import android.os.IBinder;
 import android.util.Log;
 
 import com.fsck.k9.Account;
+import com.fsck.k9.Account.FolderMode;
 import com.fsck.k9.FeatureStorage;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
-import com.fsck.k9.Account.FolderMode;
 import com.fsck.k9.activity.MessageReference;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.helper.Utility;
 import com.fsck.k9.mail.Pusher;
+
+import java.util.Collection;
+import java.util.Date;
 
 public class MailService extends CoreService {
     private static final String ACTION_CHECK_MAIL = "com.fsck.k9.intent.action.MAIL_SERVICE_WAKEUP";
@@ -140,7 +140,6 @@ public class MailService extends CoreService {
         } else if (CANCEL_CONNECTIVITY_NOTICE.equals(intent.getAction())) {
             /* do nothing */
         }
-
         if (isSyncDisabled() != oldIsSyncDisabled) {
             MessagingController.getInstance(getApplication()).systemStatusChanged();
         }

@@ -1,14 +1,14 @@
 package com.fsck.k9.mailstore;
 
 
-import java.util.Stack;
-
 import com.fsck.k9.mail.Body;
 import com.fsck.k9.mail.BodyPart;
 import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mail.Multipart;
 import com.fsck.k9.mail.Part;
 import com.fsck.k9.mail.internet.MimeBodyPart;
+
+import java.util.Stack;
 
 
 public class MessageHelper {

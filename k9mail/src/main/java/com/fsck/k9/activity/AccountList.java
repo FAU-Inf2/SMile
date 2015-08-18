@@ -1,8 +1,5 @@
 package com.fsck.k9.activity;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
@@ -14,10 +11,13 @@ import com.fsck.k9.Account;
 import com.fsck.k9.BaseAccount;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
-import de.fau.cs.mad.smile.android.R;
-
 import com.fsck.k9.adapter.AccountsAdapter;
 import com.fsck.k9.search.SearchAccount;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import de.fau.cs.mad.smile.android.R;
 
 
 /**

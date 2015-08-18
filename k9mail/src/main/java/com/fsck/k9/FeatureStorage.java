@@ -4,13 +4,13 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fsck.k9.activity.IMAPAppendText;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.controller.MessagingListener;
-import com.fsck.k9.mail.RemindMe;
 import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.MessagingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fsck.k9.mail.RemindMe;
 import com.fsck.k9.mailstore.LocalRemindMe;
 
 import java.io.File;

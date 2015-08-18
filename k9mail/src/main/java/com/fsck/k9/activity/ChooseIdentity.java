@@ -9,11 +9,14 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
+
 import com.fsck.k9.Account;
 import com.fsck.k9.Identity;
 import com.fsck.k9.Preferences;
-import de.fau.cs.mad.smile.android.R;
+
 import java.util.List;
+
+import de.fau.cs.mad.smile.android.R;
 
 public class ChooseIdentity extends K9ListActivity {
     Account mAccount;

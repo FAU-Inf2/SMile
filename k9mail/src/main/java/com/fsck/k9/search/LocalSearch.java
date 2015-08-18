@@ -1,12 +1,12 @@
 package com.fsck.k9.search;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import android.os.Parcel;
-import android.os.Parcelable;
 
 /**
  * This class represents a local search.

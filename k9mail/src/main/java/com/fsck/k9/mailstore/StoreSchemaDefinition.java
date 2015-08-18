@@ -1,9 +1,5 @@
 package com.fsck.k9.mailstore;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-
 import android.content.ContentValues;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -13,11 +9,16 @@ import android.util.Log;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.K9;
-import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.helper.Utility;
 import com.fsck.k9.mail.Flag;
 import com.fsck.k9.mail.Folder;
 import com.fsck.k9.mail.Message;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
+import de.fau.cs.mad.smile.android.R;
 
 class StoreSchemaDefinition implements LockableDatabase.SchemaDefinition {
     /**

@@ -3,9 +3,9 @@ package com.fsck.k9.helper;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
-import android.content.Intent;
 import android.provider.ContactsContract;
 import android.util.Log;
 

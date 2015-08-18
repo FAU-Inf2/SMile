@@ -1,5 +1,12 @@
 package com.fsck.k9.mailstore;
 
+import android.content.Context;
+import android.os.Build;
+import android.os.Environment;
+import android.util.Log;
+
+import com.fsck.k9.K9;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -12,12 +19,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import android.content.Context;
-import android.os.Build;
-import android.os.Environment;
-import android.util.Log;
-
-import com.fsck.k9.K9;
 import de.fau.cs.mad.smile.android.R;
 
 /**

@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 import com.fsck.k9.Identity;
 import com.fsck.k9.Preferences;
+
 import de.fau.cs.mad.smile.android.R;
 
 public class ManageIdentities extends ChooseIdentity {

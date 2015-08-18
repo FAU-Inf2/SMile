@@ -1,13 +1,14 @@
 package com.fsck.k9.ui.crypto;
 
 
+import java.io.Serializable;
 import java.util.HashMap;
 
 import com.fsck.k9.mail.Part;
 import com.fsck.k9.mailstore.OpenPgpResultAnnotation;
 
 
-public class MessageCryptoAnnotations<T> {
+public class MessageCryptoAnnotations<T> implements Serializable {
     private HashMap<Part, T> annotations = new HashMap<Part, T>();
 
     MessageCryptoAnnotations() {

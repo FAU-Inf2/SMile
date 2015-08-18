@@ -19,27 +19,21 @@ import android.widget.ImageView;
 import android.widget.QuickContactBadge;
 import android.widget.TextView;
 
-import com.daimajia.androidanimations.library.Techniques;
-import com.daimajia.androidanimations.library.YoYo;
 import com.daimajia.swipe.SimpleSwipeListener;
 import com.daimajia.swipe.SwipeLayout;
 import com.fsck.k9.Account;
 import com.fsck.k9.FontSizes;
 import com.fsck.k9.K9;
-import com.fsck.k9.activity.RemindMeList;
 import com.fsck.k9.activity.misc.ContactPictureLoader;
 import com.fsck.k9.fragment.MessageFragment;
 import com.fsck.k9.helper.ContactPicture;
 import com.fsck.k9.helper.MessageHelper;
-import com.fsck.k9.helper.Utility;
 import com.fsck.k9.mail.Address;
 import com.fsck.k9.mail.Flag;
 import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.MessagingException;
-import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.mailstore.LocalMessage;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 

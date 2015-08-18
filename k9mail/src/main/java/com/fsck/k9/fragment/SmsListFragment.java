@@ -6,20 +6,9 @@ import android.view.View;
 import android.widget.AdapterView;
 
 import com.fsck.k9.Account;
-import com.fsck.k9.activity.MessageReference;
-import com.fsck.k9.mail.Address;
-import com.fsck.k9.mail.Body;
 import com.fsck.k9.mail.Message;
-import com.fsck.k9.mail.MessagingException;
-import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.search.LocalSearch;
 
-import org.apache.commons.io.IOUtils;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.util.Date;
 import java.util.List;
 
 public class SmsListFragment extends MessageListFragment {

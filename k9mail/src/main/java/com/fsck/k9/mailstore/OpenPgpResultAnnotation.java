@@ -4,6 +4,7 @@ package com.fsck.k9.mailstore;
 import android.app.PendingIntent;
 
 import com.fsck.k9.mail.internet.MimeBodyPart;
+
 import org.openintents.openpgp.OpenPgpError;
 import org.openintents.openpgp.OpenPgpSignatureResult;
 

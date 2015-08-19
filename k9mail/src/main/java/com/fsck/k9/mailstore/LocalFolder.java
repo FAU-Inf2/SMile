@@ -684,7 +684,6 @@ public class LocalFolder extends Folder<LocalMessage> implements Serializable {
         final Part part;
         if (id == message.getMessagePartId()) {
             part = message;
-            parseHeaderBytes(part, header);
         } else {
             Part parentPart = partById.get(parentId);
             if (parentPart == null) {
@@ -704,9 +703,9 @@ public class LocalFolder extends Folder<LocalMessage> implements Serializable {
             } else {
                 throw new IllegalStateException("Parent is neither a multipart nor a message");
             }
-
-            parseHeaderBytes(part, header);
         }
+        
+        parseHeaderBytes(part, header);
         partById.put(id, part);
         part.setServerExtra(serverExtra);
 

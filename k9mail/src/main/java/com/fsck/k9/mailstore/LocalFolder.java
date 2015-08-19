@@ -684,6 +684,7 @@ public class LocalFolder extends Folder<LocalMessage> implements Serializable {
         final Part part;
         if (id == message.getMessagePartId()) {
             part = message;
+            parseHeaderBytes(part, header);
         } else {
             Part parentPart = partById.get(parentId);
             if (parentPart == null) {

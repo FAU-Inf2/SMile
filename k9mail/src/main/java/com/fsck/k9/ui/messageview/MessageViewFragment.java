@@ -54,7 +54,6 @@ import de.fau.cs.mad.smile.android.R;
 
 public class MessageViewFragment extends Fragment
         implements ConfirmationDialogFragmentListener,
-        AttachmentViewCallback,
         OpenPgpHeaderViewCallback,
         MessageCryptoCallback {
 
@@ -64,7 +63,7 @@ public class MessageViewFragment extends Fragment
 
     private static final int ACTIVITY_CHOOSE_FOLDER_MOVE = 1;
     private static final int ACTIVITY_CHOOSE_FOLDER_COPY = 2;
-    private static final int ACTIVITY_CHOOSE_DIRECTORY = 3;
+    static final int ACTIVITY_CHOOSE_DIRECTORY = 3;
 
     private static final int LOCAL_MESSAGE_LOADER_ID = 1;
     private static final int DECODE_MESSAGE_LOADER_ID = 2;
@@ -147,7 +146,7 @@ public class MessageViewFragment extends Fragment
         View view = layoutInflater.inflate(R.layout.message, container, false);
 
         mMessageView = (MessageTopView) view.findViewById(R.id.message_view);
-        mMessageView.setAttachmentCallback(this);
+        mMessageView.setAttachmentCallback(new AttachmentCallback(mContext, mController, handler, this));
         mMessageView.setOpenPgpHeaderViewCallback(this);
 
         mMessageView.setOnToggleFlagClickListener(new OnClickListener() {
@@ -700,91 +699,6 @@ public class MessageViewFragment extends Fragment
     }
 
     private AttachmentController getAttachmentController(AttachmentViewInfo attachment) {
-        return new AttachmentController(getContext(), mController, attachment, handler);
+        return new AttachmentController(mContext, mController, attachment, handler);
     }
-
-    @Override
-    public void onViewAttachment(AttachmentViewInfo attachment) {
-        //TODO: check if we have to download the attachment first
-
-        getAttachmentController(attachment).viewAttachment();
-    }
-
-    @Override
-    public void onSaveAttachment(AttachmentViewInfo attachment) {
-        //TODO: check if we have to download the attachment first
-
-        getAttachmentController(attachment).saveAttachment();
-    }
-
-    @Override
-    public void onSaveAttachmentToUserProvidedDirectory(final AttachmentViewInfo attachment) {
-        //TODO: check if we have to download the attachment first
-
-        currentAttachmentViewInfo = attachment;
-        FileBrowserHelper.getInstance().showFileBrowserActivity(MessageViewFragment.this, null,
-                ACTIVITY_CHOOSE_DIRECTORY, new FileBrowserFailOverCallback() {
-                    @Override
-                    public void onPathEntered(String path) {
-                        getAttachmentController(attachment).saveAttachmentTo(path);
-                    }
-
-                    @Override
-                    public void onCancel() {
-                        // Do nothing
-                    }
-                });
-    }
-
-    /*
-    private static class AttachmentCallback implements AttachmentViewCallback {
-        private final Context context;
-        private final MessagingController controller;
-        private final MessageViewHandler handler;
-
-        public AttachmentCallback(final Context context, final MessagingController controller, final MessageViewHandler handler) {
-            this.context = context;
-            this.controller = controller;
-            this.handler = handler;
-        }
-
-        private AttachmentController getAttachmentController(AttachmentViewInfo attachment) {
-            return new AttachmentController(context, controller, attachment, handler);
-        }
-
-        @Override
-        public void onViewAttachment(AttachmentViewInfo attachment) {
-            //TODO: check if we have to download the attachment first
-
-            getAttachmentController(attachment).viewAttachment();
-        }
-
-        @Override
-        public void onSaveAttachment(AttachmentViewInfo attachment) {
-            //TODO: check if we have to download the attachment first
-
-            getAttachmentController(attachment).saveAttachment();
-        }
-
-        @Override
-        public void onSaveAttachmentToUserProvidedDirectory(final AttachmentViewInfo attachment) {
-            //TODO: check if we have to download the attachment first
-
-            //currentAttachmentViewInfo = attachment;
-            FileBrowserHelper.getInstance().showFileBrowserActivity(MessageViewFragment.this, null,
-                    ACTIVITY_CHOOSE_DIRECTORY, new FileBrowserFailOverCallback() {
-                        @Override
-                        public void onPathEntered(String path) {
-                            getAttachmentController(attachment).saveAttachmentTo(path);
-                        }
-
-                        @Override
-                        public void onCancel() {
-                            // Do nothing
-                        }
-                    });
-        }
-
-    }
-*/
 }

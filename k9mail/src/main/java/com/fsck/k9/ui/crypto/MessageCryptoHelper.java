@@ -532,7 +532,10 @@ public final class MessageCryptoHelper {
     }
 
     private void onCryptoFinished() {
-        partsToDecryptOrVerify.removeFirst();
+        if(partsToDecryptOrVerify.size() > 0) {
+            partsToDecryptOrVerify.removeFirst();
+        }
+
         decryptOrVerifyNextPart();
     }
 

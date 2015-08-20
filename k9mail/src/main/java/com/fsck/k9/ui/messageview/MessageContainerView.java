@@ -32,8 +32,7 @@ import com.fsck.k9.mail.Address;
 import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mailstore.AttachmentViewInfo;
 import com.fsck.k9.mailstore.MessageViewInfo.MessageViewContainer;
-import com.fsck.k9.mailstore.OpenPgpResultAnnotation;
-import com.fsck.k9.mailstore.OpenPgpResultAnnotation.CryptoError;
+import com.fsck.k9.mailstore.CryptoResultAnnotation;
 import com.fsck.k9.view.K9WebViewClient;
 import com.fsck.k9.view.MessageHeader.OnLayoutChangedListener;
 import com.fsck.k9.view.MessageWebView;
@@ -43,7 +42,9 @@ import java.util.Map;
 
 import de.fau.cs.mad.smile.android.R;
 
-
+/**
+ *
+ */
 public class MessageContainerView extends LinearLayout
         implements OnClickListener,
         OnLayoutChangedListener, OnCreateContextMenuListener {
@@ -124,7 +125,7 @@ public class MessageContainerView extends LinearLayout
         switch (type) {
             case HitTestResult.SRC_ANCHOR_TYPE: {
                 final String url = result.getExtra();
-                OnMenuItemClickListener listener = new OnMenuItemClickListener() {
+                final OnMenuItemClickListener listener = new OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
                         switch (item.getItemId()) {
@@ -368,7 +369,7 @@ public class MessageContainerView extends LinearLayout
                                             final boolean automaticallyLoadPictures,
                                             final ShowPicturesController showPicturesController,
                                             final AttachmentViewCallback attachmentCallback,
-                                            final OpenPgpHeaderViewCallback openPgpHeaderViewCallback,
+                                            final CryptoHeaderViewCallback cryptoHeaderViewCallback,
                                             final boolean displayPgpHeader) throws MessagingException {
 
         this.attachmentCallback = attachmentCallback;
@@ -411,12 +412,12 @@ public class MessageContainerView extends LinearLayout
         }
 
         if (displayPgpHeader) {
-            ViewStub openPgpHeaderStub = (ViewStub) findViewById(R.id.openpgp_header_stub);
-            OpenPgpHeaderView openPgpHeaderView = (OpenPgpHeaderView) openPgpHeaderStub.inflate();
+            ViewStub cryptoHeaderStub = (ViewStub) findViewById(R.id.crypto_header_stub);
+            CryptoHeaderView cryptoHeaderView = (CryptoHeaderView) cryptoHeaderStub.inflate();
 
-            OpenPgpResultAnnotation cryptoAnnotation = messageViewContainer.cryptoAnnotation;
-            openPgpHeaderView.setOpenPgpData(cryptoAnnotation);
-            openPgpHeaderView.setCallback(openPgpHeaderViewCallback);
+            CryptoResultAnnotation cryptoAnnotation = messageViewContainer.cryptoAnnotation;
+            cryptoHeaderView.setCryptoAnnotation(cryptoAnnotation);
+            cryptoHeaderView.setCallback(cryptoHeaderViewCallback);
             mSidebar.setVisibility(View.VISIBLE);
         } else {
             mSidebar.setVisibility(View.GONE);
@@ -433,12 +434,12 @@ public class MessageContainerView extends LinearLayout
     }
 
     private String getTextToDisplay(MessageViewContainer messageViewContainer) {
-        OpenPgpResultAnnotation cryptoAnnotation = messageViewContainer.cryptoAnnotation;
+        CryptoResultAnnotation cryptoAnnotation = messageViewContainer.cryptoAnnotation;
         if (cryptoAnnotation == null) {
             return messageViewContainer.text;
         }
 
-        CryptoError errorType = cryptoAnnotation.getErrorType();
+        CryptoResultAnnotation.CryptoErrorType errorType = cryptoAnnotation.getErrorType();
         switch (errorType) {
             case CRYPTO_API_RETURNED_ERROR: {
                 // TODO make a nice view for this

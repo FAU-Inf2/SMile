@@ -1,6 +1,7 @@
 package com.fsck.k9.ui.messageview;
 
 import android.content.Context;
+import android.content.Intent;
 
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.helper.FileBrowserHelper;
@@ -46,6 +47,8 @@ class AttachmentCallback implements AttachmentViewCallback {
         //TODO: check if we have to download the attachment first
         MessageViewFragment fragment = messageViewFragmentWeakReference.get();
         if (fragment != null) {
+            Intent intent = new Intent();
+            intent.putExtra("attachmentInfo", attachment);
             FileBrowserHelper.getInstance().showFileBrowserActivity(fragment, null,
                     MessageViewFragment.ACTIVITY_CHOOSE_DIRECTORY, new FileBrowserHelper.FileBrowserFailOverCallback() {
                         @Override
@@ -57,7 +60,7 @@ class AttachmentCallback implements AttachmentViewCallback {
                         public void onCancel() {
                             // Do nothing
                         }
-                    });
+                    }, intent);
         }
     }
 

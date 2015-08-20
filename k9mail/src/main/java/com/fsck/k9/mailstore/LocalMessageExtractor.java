@@ -43,7 +43,7 @@ public class LocalMessageExtractor {
     private static final int FILENAME_PREFIX_LENGTH = FILENAME_PREFIX.length();
     private static final String FILENAME_SUFFIX = " ";
     private static final int FILENAME_SUFFIX_LENGTH = FILENAME_SUFFIX.length();
-    private static final OpenPgpResultAnnotation NO_ANNOTATIONS = null;
+    private static final CryptoResultAnnotation NO_ANNOTATIONS = null;
 
     private LocalMessageExtractor() {}
     /**
@@ -426,7 +426,7 @@ public class LocalMessageExtractor {
      * Gets called by {@link com.fsck.k9.ui.message.DecodeMessageLoader}
      */
     public static MessageViewInfo decodeMessageForView(Context context,
-            Message message, MessageCryptoAnnotations<OpenPgpResultAnnotation> annotations) throws MessagingException {
+            Message message, MessageCryptoAnnotations<CryptoResultAnnotation> annotations) throws MessagingException {
 
         // 1. break mime structure on encryption/signature boundaries
         List<Part> parts = getCryptPieces(message, annotations);
@@ -434,7 +434,7 @@ public class LocalMessageExtractor {
         // 2. extract viewables/attachments of parts
         ArrayList<MessageViewContainer> containers = new ArrayList<MessageViewContainer>();
         for (Part part : parts) {
-            OpenPgpResultAnnotation pgpAnnotation = annotations.get(part);
+            CryptoResultAnnotation pgpAnnotation = annotations.get(part);
 
             // TODO properly handle decrypted data part - this just replaces the part
             if (pgpAnnotation != NO_ANNOTATIONS && pgpAnnotation.hasOutputData()) {
@@ -458,7 +458,7 @@ public class LocalMessageExtractor {
         return new MessageViewInfo(containers, message);
     }
 
-    public static List<Part> getCryptPieces(Message message, MessageCryptoAnnotations<OpenPgpResultAnnotation> annotations) throws MessagingException {
+    public static List<Part> getCryptPieces(Message message, MessageCryptoAnnotations<CryptoResultAnnotation> annotations) throws MessagingException {
 
         // TODO make sure this method does what it is supposed to
         /* This method returns a list of mime parts which are to be parsed into
@@ -478,7 +478,7 @@ public class LocalMessageExtractor {
     }
 
     public static boolean getCryptSubPieces(Part part, ArrayList<Part> parts,
-            MessageCryptoAnnotations<OpenPgpResultAnnotation> annotations) throws MessagingException {
+            MessageCryptoAnnotations<CryptoResultAnnotation> annotations) throws MessagingException {
 
         Body body = part.getBody();
         if (body instanceof Multipart) {

@@ -1043,8 +1043,6 @@ public class K9 extends Application {
         return false;
     }
 
-
-
     public static boolean startIntegratedInbox() {
         return mStartIntegratedInbox;
     }

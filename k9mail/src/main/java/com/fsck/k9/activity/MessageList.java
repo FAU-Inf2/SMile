@@ -979,7 +979,7 @@ public class MessageList extends K9Activity
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(final Menu menu) {
         getMenuInflater().inflate(R.menu.message_list_option, menu);
         mMenu = menu;
         mMenuButtonCheckMail = menu.findItem(R.id.check_mail);
@@ -987,7 +987,7 @@ public class MessageList extends K9Activity
     }
 
     @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
+    public boolean onPrepareOptionsMenu(final Menu menu) {
         configureMenu(menu);
         return true;
     }
@@ -1003,7 +1003,7 @@ public class MessageList extends K9Activity
      * @param menu The {@link Menu} instance that should be modified. May be {@code null}; in that case
      *             the method does nothing and immediately returns.
      */
-    private void configureMenu(Menu menu) {
+    private void configureMenu(final Menu menu) {
         if (menu == null) {
             return;
         }
@@ -1574,7 +1574,7 @@ public class MessageList extends K9Activity
         configureMenu(mMenu);
     }
 
-    private void fillContacts(MessageListFragment fragment) {
+    private void fillContacts(final MessageListFragment fragment) {
 
         leftLinearLayoutContacts = (LinearLayout) findViewById(R.id.smsLikeView_leftlinear_contacts);
         leftLinearLayoutContacts.removeAllViews();
@@ -1584,8 +1584,9 @@ public class MessageList extends K9Activity
         TreeSet<Address> addressSet = new TreeSet<Address>(new Comparator<Address>() {
             @Override
             public int compare(Address lhs, Address rhs) {
-                if (lhs.equals(rhs))
+                if (lhs.equals(rhs)) {
                     return 0;
+                }
 
                 return lhs.getAddress().compareTo(rhs.getAddress());
             }

@@ -34,14 +34,12 @@ import com.fsck.k9.crypto.PgpData;
 import com.fsck.k9.fragment.ConfirmationDialogFragment;
 import com.fsck.k9.fragment.ConfirmationDialogFragment.ConfirmationDialogFragmentListener;
 import com.fsck.k9.fragment.ProgressDialogFragment;
-import com.fsck.k9.helper.FileBrowserHelper;
-import com.fsck.k9.helper.FileBrowserHelper.FileBrowserFailOverCallback;
 import com.fsck.k9.mail.Flag;
 import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mailstore.AttachmentViewInfo;
 import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.mailstore.MessageViewInfo;
-import com.fsck.k9.mailstore.OpenPgpResultAnnotation;
+import com.fsck.k9.mailstore.CryptoResultAnnotation;
 import com.fsck.k9.ui.crypto.MessageCryptoAnnotations;
 import com.fsck.k9.ui.crypto.MessageCryptoCallback;
 import com.fsck.k9.ui.crypto.MessageCryptoHelper;
@@ -54,7 +52,7 @@ import de.fau.cs.mad.smile.android.R;
 
 public class MessageViewFragment extends Fragment
         implements ConfirmationDialogFragmentListener,
-        OpenPgpHeaderViewCallback,
+        CryptoHeaderViewCallback,
         MessageCryptoCallback {
 
     public static final String ARG_REFERENCE = "reference";
@@ -109,7 +107,6 @@ public class MessageViewFragment extends Fragment
 
     private final LoaderCallbacks<LocalMessage> localMessageLoaderCallback = new LocalMessageLoaderCallback();
     private LoaderCallbacks<MessageViewInfo> decodeMessageLoaderCallback;
-    private AttachmentViewInfo currentAttachmentViewInfo;
 
     @Override
     public void onAttach(Activity activity) {
@@ -117,6 +114,7 @@ public class MessageViewFragment extends Fragment
 
         mContext = activity.getApplicationContext();
         decodeMessageLoaderCallback = new DecodeMessageLoaderCallback(mContext, handler);
+        mController = MessagingController.getInstance(activity.getApplication());
 
         try {
             mFragmentListener = (MessageViewFragmentListener) activity;
@@ -132,8 +130,6 @@ public class MessageViewFragment extends Fragment
 
         // This fragments adds options to the action bar
         setHasOptionsMenu(true);
-
-        mController = MessagingController.getInstance(getActivity().getApplication());
         mInitialized = true;
     }
 
@@ -142,12 +138,12 @@ public class MessageViewFragment extends Fragment
                              Bundle savedInstanceState) {
         Context context = new ContextThemeWrapper(inflater.getContext(),
                 K9.getK9ThemeResourceId(K9.getK9MessageViewTheme()));
-        LayoutInflater layoutInflater = LayoutInflater.from(context);
+        final LayoutInflater layoutInflater = LayoutInflater.from(context);
         View view = layoutInflater.inflate(R.layout.message, container, false);
 
         mMessageView = (MessageTopView) view.findViewById(R.id.message_view);
         mMessageView.setAttachmentCallback(new AttachmentCallback(mContext, mController, handler, this));
-        mMessageView.setOpenPgpHeaderViewCallback(this);
+        mMessageView.setCryptoHeaderViewCallback(this);
 
         mMessageView.setOnToggleFlagClickListener(new OnClickListener() {
             @Override
@@ -260,18 +256,18 @@ public class MessageViewFragment extends Fragment
     }
 
     @Override
-    public void onCryptoOperationsFinished(final MessageCryptoAnnotations<OpenPgpResultAnnotation> annotations) {
+    public void onCryptoOperationsFinished(final MessageCryptoAnnotations<CryptoResultAnnotation> annotations) {
         startExtractingTextAndAttachments(annotations);
     }
 
-    private void startExtractingTextAndAttachments(MessageCryptoAnnotations<OpenPgpResultAnnotation> annotations) {
+    private void startExtractingTextAndAttachments(MessageCryptoAnnotations<CryptoResultAnnotation> annotations) {
         Bundle args = new Bundle();
         args.putSerializable(ARG_MESSAGE, mMessage);
         args.putSerializable(ARG_ANNOTATIONS, annotations);
         getLoaderManager().initLoader(DECODE_MESSAGE_LOADER_ID, args, decodeMessageLoaderCallback);
     }
 
-    void showMessage(MessageViewInfo messageContainer) {
+    void showMessage(final MessageViewInfo messageContainer) {
         try {
             mMessageView.setMessage(mAccount, messageContainer);
             mMessageView.setShowDownloadButton(mMessage);
@@ -280,7 +276,7 @@ public class MessageViewFragment extends Fragment
         }
     }
 
-    private void displayMessageHeader(LocalMessage message) {
+    private void displayMessageHeader(final LocalMessage message) {
         mMessageView.setHeaders(message, mAccount);
         displayMessageSubject(getSubjectForMessage(message));
         mFragmentListener.updateMenu();
@@ -440,8 +436,9 @@ public class MessageViewFragment extends Fragment
                     Uri fileUri = data.getData();
                     if (fileUri != null) {
                         String filePath = fileUri.getPath();
+                        AttachmentViewInfo attachmentViewInfo = (AttachmentViewInfo) data.getSerializableExtra("attachmentInfo");
                         if (filePath != null) {
-                            getAttachmentController(currentAttachmentViewInfo).saveAttachmentTo(filePath);
+                            getAttachmentController(attachmentViewInfo).saveAttachmentTo(filePath);
                         }
                     }
                 }
@@ -495,6 +492,7 @@ public class MessageViewFragment extends Fragment
         if (mMessage.isSet(Flag.X_DOWNLOADED_FULL)) {
             return;
         }
+
         mMessageView.disableDownloadButton();
         mController.loadMessageForViewRemote(mAccount, mMessageReference.getFolderName(), mMessageReference.getUid(),
                 downloadMessageListener);
@@ -628,7 +626,7 @@ public class MessageViewFragment extends Fragment
     }
 
     public boolean isMessageRead() {
-        return (mMessage != null) ? mMessage.isSet(Flag.SEEN) : false;
+        return (mMessage != null) && mMessage.isSet(Flag.SEEN);
     }
 
     public boolean isCopyCapable() {
@@ -655,12 +653,8 @@ public class MessageViewFragment extends Fragment
         }
     }
 
-    public Context getContext() {
-        return mContext;
-    }
-
     @Override
-    public void onPgpSignatureButtonClick(PendingIntent pendingIntent) {
+    public void onSignatureButtonClick(PendingIntent pendingIntent) {
         try {
             getActivity().startIntentSenderForResult(
                     pendingIntent.getIntentSender(),

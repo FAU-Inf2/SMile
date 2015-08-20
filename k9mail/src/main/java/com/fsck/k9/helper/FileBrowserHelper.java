@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.text.InputType;
 import android.widget.EditText;
 
@@ -107,7 +108,7 @@ public class FileBrowserHelper {
         return success;
     }
 
-    public boolean showFileBrowserActivity(Fragment fragment, File startPath, int requestCode, FileBrowserFailOverCallback callback) {
+    public boolean showFileBrowserActivity(Fragment fragment, File startPath, int requestCode, FileBrowserFailOverCallback callback, @NonNull Intent data) {
         boolean success = false;
 
         if (startPath == null) {
@@ -118,11 +119,11 @@ public class FileBrowserHelper {
         do {
             String intentAction = PICK_DIRECTORY_INTENTS[listIndex][0];
             String uriPrefix = PICK_DIRECTORY_INTENTS[listIndex][1];
-            Intent intent = new Intent(intentAction);
-            intent.setData(Uri.parse(uriPrefix + startPath.getPath()));
+            data.setAction(intentAction);
+            data.setData(Uri.parse(uriPrefix + startPath.getPath()));
 
             try {
-                fragment.startActivityForResult(intent, requestCode);
+                fragment.startActivityForResult(data, requestCode);
                 success = true;
             } catch (ActivityNotFoundException e) {
                 // Try the next intent in the list
@@ -137,6 +138,7 @@ public class FileBrowserHelper {
         }
 
         return success;
+
     }
 
     private void showPathTextInput(final Context context, final File startPath, final FileBrowserFailOverCallback callback) {

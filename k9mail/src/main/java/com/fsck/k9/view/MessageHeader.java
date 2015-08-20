@@ -41,7 +41,6 @@ import java.util.Set;
 import de.fau.cs.mad.smile.android.R;
 
 public class MessageHeader extends LinearLayout implements OnClickListener {
-    private Context mContext;
     private TextView mFromView;
     private TextView mDateView;
     private TextView mToView;
@@ -58,15 +57,15 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
     private View mForwardedIcon;
     private Message mMessage;
     private Account mAccount;
-    private FontSizes mFontSizes = K9.getFontSizes();
-    private Contacts mContacts;
+    private final FontSizes mFontSizes;
+    private final Contacts mContacts;
     private SavedState mSavedState;
 
     private MessageHelper mMessageHelper;
     private ContactPictureLoader mContactsPictureLoader;
     private QuickContactBadge mContactBadge;
 
-    private OnLayoutChangedListener mOnLayoutChangedListener;
+    private OnLayoutChangedListener mOnLayoutChangedListener; // TODO: is never set, remove?
 
     /**
      * Pair class is only available since API Level 5, so we need
@@ -84,8 +83,8 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
 
     public MessageHeader(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mContext = context;
-        mContacts = Contacts.getInstance(mContext);
+        mContacts = Contacts.getInstance(getContext());
+        mFontSizes = K9.getFontSizes();
     }
 
     @Override
@@ -121,10 +120,11 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
         mToView.setOnClickListener(this);
         mCcView.setOnClickListener(this);
 
-        mMessageHelper = MessageHelper.getInstance(mContext);
+        mMessageHelper = MessageHelper.getInstance(getContext());
 
         mSubjectView.setVisibility(VISIBLE);
         hideAdditionalHeaders();
+        super.onFinishInflate();
     }
 
     @Override
@@ -136,7 +136,7 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
             }
             case R.id.to:
             case R.id.cc: {
-                expand((TextView)view, ((TextView)view).getEllipsize() != null);
+                expand((TextView) view, ((TextView) view).getEllipsize() != null);
                 layoutChanged();
             }
         }
@@ -172,7 +172,6 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
         mAdditionalHeadersView.setText("");
     }
 
-
     /**
      * Set up and then show the additional headers view. Called by
      * {@link #onShowAdditionalHeaders()}
@@ -189,6 +188,7 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
                 populateAdditionalHeadersView(additionalHeaders);
                 mAdditionalHeadersView.setVisibility(View.VISIBLE);
             }
+
             if (!allHeadersDownloaded) {
                 /*
                 * Tell the user about the "save all headers" setting
@@ -207,7 +207,7 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
         }
         // Show a message to the user, if any
         if (messageToShow != null) {
-            Toast toast = Toast.makeText(mContext, messageToShow, Toast.LENGTH_LONG);
+            Toast toast = Toast.makeText(getContext(), messageToShow, Toast.LENGTH_LONG);
             toast.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL, 0, 0);
             toast.show();
         }
@@ -252,25 +252,26 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
 
         if (K9.showContactPicture()) {
             mContactBadge.setVisibility(View.VISIBLE);
-            mContactsPictureLoader = ContactPicture.getContactPictureLoader(mContext);
-        }  else {
+            mContactsPictureLoader = ContactPicture.getContactPictureLoader(getContext());
+        } else {
             mContactBadge.setVisibility(View.GONE);
         }
 
         final String subject = message.getSubject();
         if (TextUtils.isEmpty(subject)) {
-            mSubjectView.setText(mContext.getText(R.string.general_no_subject));
+            mSubjectView.setText(getContext().getText(R.string.general_no_subject));
         } else {
             mSubjectView.setText(subject);
         }
+
         mSubjectView.setTextColor(0xff000000 | defaultSubjectColor);
 
-        String dateTime = DateUtils.formatDateTime(mContext,
+        String dateTime = DateUtils.formatDateTime(getContext(),
                 message.getSentDate().getTime(),
                 DateUtils.FORMAT_SHOW_DATE
-                | DateUtils.FORMAT_ABBREV_ALL
-                | DateUtils.FORMAT_SHOW_TIME
-                | DateUtils.FORMAT_SHOW_YEAR);
+                        | DateUtils.FORMAT_ABBREV_ALL
+                        | DateUtils.FORMAT_SHOW_TIME
+                        | DateUtils.FORMAT_SHOW_YEAR);
         mDateView.setText(dateTime);
 
         if (K9.showContactPicture()) {
@@ -315,9 +316,9 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
             expand(mToView, true);
             expand(mCcView, true);
         }
+
         layoutChanged();
     }
-
 
     private void updateAddressField(TextView v, CharSequence text, View label) {
         boolean hasText = !TextUtils.isEmpty(text);
@@ -331,17 +332,17 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
      * Expand or collapse a TextView by removing or adding the 2 lines limitation
      */
     private void expand(TextView v, boolean expand) {
-       if (expand) {
-           v.setMaxLines(Integer.MAX_VALUE);
-           v.setEllipsize(null);
-       } else {
-           v.setMaxLines(2);
-           v.setEllipsize(android.text.TextUtils.TruncateAt.END);
-       }
+        if (expand) {
+            v.setMaxLines(Integer.MAX_VALUE);
+            v.setEllipsize(null);
+        } else {
+            v.setMaxLines(2);
+            v.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        }
     }
 
     private List<HeaderEntry> getAdditionalHeaders(final Message message)
-    throws MessagingException {
+            throws MessagingException {
         List<HeaderEntry> additionalHeaders = new LinkedList<HeaderEntry>();
 
         Set<String> headerNames = new LinkedHashSet<String>(message.getHeaderNames());
@@ -351,6 +352,7 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
                 additionalHeaders.add(new HeaderEntry(headerName, headerValue));
             }
         }
+
         return additionalHeaders;
     }
 
@@ -360,7 +362,7 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
      * @param additionalHeaders List of header entries. Each entry consists of a header
      *                          name and a header value. Header names may appear multiple
      *                          times.
-     *                          <p/>
+     *                          <p>
      *                          This method is always called from within the UI thread by
      *                          {@link #showAdditionalHeaders()}.
      */
@@ -373,34 +375,33 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
             } else {
                 first = false;
             }
+
             StyleSpan boldSpan = new StyleSpan(Typeface.BOLD);
             SpannableString label = new SpannableString(additionalHeader.label + ": ");
             label.setSpan(boldSpan, 0, label.length(), 0);
             sb.append(label);
             sb.append(MimeUtility.unfoldAndDecode(additionalHeader.value));
         }
+
         mAdditionalHeadersView.setText(sb);
     }
 
     @Override
     public Parcelable onSaveInstanceState() {
         Parcelable superState = super.onSaveInstanceState();
-
         SavedState savedState = new SavedState(superState);
-
         savedState.additionalHeadersVisible = additionalHeadersVisible();
-
         return savedState;
     }
 
     @Override
     public void onRestoreInstanceState(Parcelable state) {
-        if(!(state instanceof SavedState)) {
+        if (!(state instanceof SavedState)) {
             super.onRestoreInstanceState(state);
             return;
         }
 
-        SavedState savedState = (SavedState)state;
+        SavedState savedState = (SavedState) state;
         super.onRestoreInstanceState(savedState.getSuperState());
 
         mSavedState = savedState;
@@ -411,16 +412,16 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
 
         public static final Parcelable.Creator<SavedState> CREATOR =
                 new Parcelable.Creator<SavedState>() {
-            @Override
-            public SavedState createFromParcel(Parcel in) {
-                return new SavedState(in);
-            }
+                    @Override
+                    public SavedState createFromParcel(Parcel in) {
+                        return new SavedState(in);
+                    }
 
-            @Override
-            public SavedState[] newArray(int size) {
-                return new SavedState[size];
-            }
-        };
+                    @Override
+                    public SavedState[] newArray(int size) {
+                        return new SavedState[size];
+                    }
+                };
 
 
         SavedState(Parcelable superState) {

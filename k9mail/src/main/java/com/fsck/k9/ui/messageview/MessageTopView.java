@@ -33,7 +33,7 @@ public class MessageTopView extends LinearLayout implements ShowPicturesControll
     private LinearLayout containerViews;
     private Button mDownloadRemainder;
     private AttachmentViewCallback attachmentCallback;
-    private OpenPgpHeaderViewCallback openPgpHeaderViewCallback;
+    private CryptoHeaderViewCallback cryptoHeaderViewCallback;
     private Button showPicturesButton;
     private List<MessageContainerView> messageContainerViewsWithPictures = new ArrayList<MessageContainerView>();
 
@@ -92,7 +92,7 @@ public class MessageTopView extends LinearLayout implements ShowPicturesControll
             MessageContainerView view = (MessageContainerView) mInflater.inflate(R.layout.message_container, null);
             boolean displayPgpHeader = account.isOpenPgpProviderConfigured();
             view.displayMessageViewContainer(container, automaticallyLoadPictures, this, attachmentCallback,
-                    openPgpHeaderViewCallback, displayPgpHeader);
+                    cryptoHeaderViewCallback, displayPgpHeader);
 
             containerViews.addView(view);
         }
@@ -141,8 +141,8 @@ public class MessageTopView extends LinearLayout implements ShowPicturesControll
         attachmentCallback = callback;
     }
 
-    public void setOpenPgpHeaderViewCallback(OpenPgpHeaderViewCallback callback) {
-        openPgpHeaderViewCallback = callback;
+    public void setCryptoHeaderViewCallback(CryptoHeaderViewCallback callback) {
+        cryptoHeaderViewCallback = callback;
     }
 
     public void enableDownloadButton() {

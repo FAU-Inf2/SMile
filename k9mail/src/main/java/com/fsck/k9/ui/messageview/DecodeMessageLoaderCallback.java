@@ -7,7 +7,7 @@ import android.os.Bundle;
 
 import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.mailstore.MessageViewInfo;
-import com.fsck.k9.mailstore.OpenPgpResultAnnotation;
+import com.fsck.k9.mailstore.CryptoResultAnnotation;
 import com.fsck.k9.ui.crypto.MessageCryptoAnnotations;
 import com.fsck.k9.ui.message.DecodeMessageLoader;
 
@@ -23,7 +23,7 @@ class DecodeMessageLoaderCallback implements LoaderManager.LoaderCallbacks<Messa
     @Override
     public Loader<MessageViewInfo> onCreateLoader(int id, Bundle args) {
         final LocalMessage message = (LocalMessage) args.getSerializable(MessageViewFragment.ARG_MESSAGE);
-        final MessageCryptoAnnotations<OpenPgpResultAnnotation> annotations = (MessageCryptoAnnotations<OpenPgpResultAnnotation>) args.getSerializable(MessageViewFragment.ARG_ANNOTATIONS);
+        final MessageCryptoAnnotations<CryptoResultAnnotation> annotations = (MessageCryptoAnnotations<CryptoResultAnnotation>) args.getSerializable(MessageViewFragment.ARG_ANNOTATIONS);
         handler.setProgress(true);
         return new DecodeMessageLoader(context, message, annotations); //FIXME: messageAnnotations are not parcelable :-(
     }

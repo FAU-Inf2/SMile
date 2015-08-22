@@ -1298,11 +1298,11 @@ public class MessageCompose extends K9Activity implements OnClickListener,
                 if (mEncryptCheckbox.isChecked() && mCryptoSignatureCheckbox.isChecked()) {
                     Intent intent = new Intent(OpenPgpApi.ACTION_SIGN_AND_ENCRYPT);
                     intent.putExtra(OpenPgpApi.EXTRA_USER_IDS, emailsArray);
-                    intent.putExtra(OpenPgpApi.EXTRA_SIGN_KEY_ID, mAccount.getCryptoKey());
+                    intent.putExtra(OpenPgpApi.EXTRA_SIGN_KEY_ID, mAccount.getPgpKey());
                     executeOpenPgpMethod(intent);
                 } else if (mCryptoSignatureCheckbox.isChecked()) {
                     Intent intent = new Intent(OpenPgpApi.ACTION_SIGN);
-                    intent.putExtra(OpenPgpApi.EXTRA_SIGN_KEY_ID, mAccount.getCryptoKey());
+                    intent.putExtra(OpenPgpApi.EXTRA_SIGN_KEY_ID, mAccount.getPgpKey());
                     executeOpenPgpMethod(intent);
                 } else if (mEncryptCheckbox.isChecked()) {
                     Intent intent = new Intent(OpenPgpApi.ACTION_ENCRYPT);

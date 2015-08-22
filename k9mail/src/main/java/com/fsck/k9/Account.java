@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
+import android.support.annotation.StringRes;
 import android.util.Log;
 
 import com.fsck.k9.activity.setup.AccountSetupCheckSettings.CheckDirection;
@@ -141,7 +142,7 @@ public class Account implements BaseAccount, StoreConfig {
         private int descendingToast;
         private boolean defaultAscending;
 
-        SortType(int ascending, int descending, boolean ndefaultAscending) {
+        SortType(@StringRes int ascending, @StringRes int descending, boolean ndefaultAscending) {
             ascendingToast = ascending;
             descendingToast = descending;
             defaultAscending = ndefaultAscending;
@@ -222,8 +223,9 @@ public class Account implements BaseAccount, StoreConfig {
     private boolean mReplyAfterQuote;
     private boolean mStripSignature;
     private boolean mSyncRemoteDeletions;
-    private String mCryptoApp;
-    private long mCryptoKey;
+    private String mPgpApp;
+    private long mPgpKey;
+    private String mSmimeApp;
     private boolean mMarkMessageAsReadOnView;
     private boolean mAlwaysShowCcBcc;
     private boolean mAllowRemoteSearch;
@@ -317,8 +319,8 @@ public class Account implements BaseAccount, StoreConfig {
         mReplyAfterQuote = DEFAULT_REPLY_AFTER_QUOTE;
         mStripSignature = DEFAULT_STRIP_SIGNATURE;
         mSyncRemoteDeletions = true;
-        mCryptoApp = NO_OPENPGP_PROVIDER;
-        mCryptoKey = 0;
+        mPgpApp = NO_OPENPGP_PROVIDER;
+        mPgpKey = 0;
         mAllowRemoteSearch = false;
         mRemoteSearchFullText = false;
         mRemoteSearchNumResults = DEFAULT_REMOTE_SEARCH_NUM_RESULTS;
@@ -469,7 +471,7 @@ public class Account implements BaseAccount, StoreConfig {
         identities = loadIdentities(prefs);
 
         String cryptoApp = prefs.getString(mUuid + ".cryptoApp", NO_OPENPGP_PROVIDER);
-        setCryptoApp(cryptoApp);
+        setPgpApp(cryptoApp);
         mAllowRemoteSearch = prefs.getBoolean(mUuid + ".allowRemoteSearch", false);
         mRemoteSearchFullText = prefs.getBoolean(mUuid + ".remoteSearchFullText", false);
         mRemoteSearchNumResults = prefs.getInt(mUuid + ".remoteSearchNumResults", DEFAULT_REMOTE_SEARCH_NUM_RESULTS);
@@ -734,8 +736,8 @@ public class Account implements BaseAccount, StoreConfig {
         editor.putBoolean(mUuid + ".defaultQuotedTextShown", mDefaultQuotedTextShown);
         editor.putBoolean(mUuid + ".replyAfterQuote", mReplyAfterQuote);
         editor.putBoolean(mUuid + ".stripSignature", mStripSignature);
-        editor.putString(mUuid + ".cryptoApp", mCryptoApp);
-        editor.putLong(mUuid + ".cryptoKey", mCryptoKey);
+        editor.putString(mUuid + ".cryptoApp", mPgpApp);
+        editor.putLong(mUuid + ".cryptoKey", mPgpKey);
         editor.putBoolean(mUuid + ".allowRemoteSearch", mAllowRemoteSearch);
         editor.putBoolean(mUuid + ".remoteSearchFullText", mRemoteSearchFullText);
         editor.putInt(mUuid + ".remoteSearchNumResults", mRemoteSearchNumResults);
@@ -1632,24 +1634,36 @@ public class Account implements BaseAccount, StoreConfig {
         mStripSignature = stripSignature;
     }
 
-    public String getCryptoApp() {
-        return mCryptoApp;
+    public String getPgpApp() {
+        return mPgpApp;
     }
 
-    public void setCryptoApp(String cryptoApp) {
-        if (cryptoApp == null || cryptoApp.equals("apg")) {
-            mCryptoApp = NO_OPENPGP_PROVIDER;
+    public void setPgpApp(String pgpApp) {
+        if (pgpApp == null || pgpApp.equals("apg")) {
+            mPgpApp = NO_OPENPGP_PROVIDER;
         } else {
-            mCryptoApp = cryptoApp;
+            mPgpApp = pgpApp;
         }
     }
 
-    public long getCryptoKey() {
-        return mCryptoKey;
+    public long getPgpKey() {
+        return mPgpKey;
     }
 
-    public void setCryptoKey(long keyId) {
-        mCryptoKey = keyId;
+    public void setPgpKey(long keyId) {
+        mPgpKey = keyId;
+    }
+
+    public String getSmimeApp() {
+        if(mSmimeApp == null) {
+            setSmimeApp("de.fau.cs.mad.smile_crypto");
+        }
+
+        return mSmimeApp;
+    }
+
+    public void setSmimeApp(String smimeApp) {
+        mSmimeApp = smimeApp;
     }
 
     public boolean allowRemoteSearch() {
@@ -1696,11 +1710,12 @@ public class Account implements BaseAccount, StoreConfig {
         if (!isOpenPgpProviderConfigured()) {
             return null;
         }
-        return getCryptoApp();
+
+        return getPgpApp();
     }
 
     public synchronized boolean isOpenPgpProviderConfigured() {
-        return !NO_OPENPGP_PROVIDER.equals(getCryptoApp());
+        return !NO_OPENPGP_PROVIDER.equals(getPgpApp());
     }
 
     public synchronized NotificationSetting getNotificationSetting() {

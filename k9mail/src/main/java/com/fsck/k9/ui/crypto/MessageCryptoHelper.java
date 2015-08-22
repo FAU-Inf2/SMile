@@ -180,7 +180,7 @@ public final class MessageCryptoHelper {
     }
 
     private final void connectToSMimeProviderService() {
-        final String sMimeProvider = "de.fau.cs.mad.smile_crypto";
+        final String sMimeProvider = account.getSmimeApp();
         new SMimeServiceConnection(context, sMimeProvider,
                 new SMimeServiceConnection.OnBound() {
                     @Override

@@ -695,7 +695,7 @@ public class AccountSettings extends K9PreferenceActivity {
             mCryptoApp = (OpenPgpAppPreference) findPreference(PREFERENCE_CRYPTO_APP);
             mCryptoKey = (OpenPgpKeyPreference) findPreference(PREFERENCE_CRYPTO_KEY);
 
-            mCryptoApp.setValue(String.valueOf(mAccount.getCryptoApp()));
+            mCryptoApp.setValue(String.valueOf(mAccount.getPgpApp()));
             mCryptoApp.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
                     String value = newValue.toString();
@@ -706,7 +706,7 @@ public class AccountSettings extends K9PreferenceActivity {
                 }
             });
 
-            mCryptoKey.setValue(mAccount.getCryptoKey());
+            mCryptoKey.setValue(mAccount.getPgpKey());
             mCryptoKey.setOpenPgpProvider(mCryptoApp.getValue());
             // TODO: other identities?
             mCryptoKey.setDefaultUserId(OpenPgpApiHelper.buildUserId(mAccount.getIdentity(0)));
@@ -782,8 +782,8 @@ public class AccountSettings extends K9PreferenceActivity {
         mAccount.setStripSignature(mStripSignature.isChecked());
         mAccount.setLocalStorageProviderId(mLocalStorageProvider.getValue());
         if (mHasCrypto) {
-            mAccount.setCryptoApp(mCryptoApp.getValue());
-            mAccount.setCryptoKey(mCryptoKey.getValue());
+            mAccount.setPgpApp(mCryptoApp.getValue());
+            mAccount.setPgpKey(mCryptoKey.getValue());
         }
 
         // In webdav account we use the exact folder name also for inbox,

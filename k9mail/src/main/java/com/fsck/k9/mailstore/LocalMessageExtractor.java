@@ -426,7 +426,7 @@ public class LocalMessageExtractor {
      * Gets called by {@link com.fsck.k9.ui.message.DecodeMessageLoader}
      */
     public static MessageViewInfo decodeMessageForView(Context context,
-            Message message, MessageCryptoAnnotations<CryptoResultAnnotation> annotations) throws MessagingException {
+            Message message, MessageCryptoAnnotations annotations) throws MessagingException {
 
         // 1. break mime structure on encryption/signature boundaries
         List<Part> parts = getCryptPieces(message, annotations);
@@ -458,7 +458,7 @@ public class LocalMessageExtractor {
         return new MessageViewInfo(containers, message);
     }
 
-    public static List<Part> getCryptPieces(Message message, MessageCryptoAnnotations<CryptoResultAnnotation> annotations) throws MessagingException {
+    public static List<Part> getCryptPieces(Message message, MessageCryptoAnnotations annotations) throws MessagingException {
 
         // TODO make sure this method does what it is supposed to
         /* This method returns a list of mime parts which are to be parsed into
@@ -478,7 +478,7 @@ public class LocalMessageExtractor {
     }
 
     public static boolean getCryptSubPieces(Part part, ArrayList<Part> parts,
-            MessageCryptoAnnotations<CryptoResultAnnotation> annotations) throws MessagingException {
+            MessageCryptoAnnotations annotations) throws MessagingException {
 
         Body body = part.getBody();
         if (body instanceof Multipart) {

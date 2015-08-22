@@ -23,9 +23,9 @@ class DecodeMessageLoaderCallback implements LoaderManager.LoaderCallbacks<Messa
     @Override
     public Loader<MessageViewInfo> onCreateLoader(int id, Bundle args) {
         final LocalMessage message = (LocalMessage) args.getSerializable(MessageViewFragment.ARG_MESSAGE);
-        final MessageCryptoAnnotations<CryptoResultAnnotation> annotations = (MessageCryptoAnnotations<CryptoResultAnnotation>) args.getSerializable(MessageViewFragment.ARG_ANNOTATIONS);
+        final MessageCryptoAnnotations annotations = (MessageCryptoAnnotations) args.getSerializable(MessageViewFragment.ARG_ANNOTATIONS);
         handler.setProgress(true);
-        return new DecodeMessageLoader(context, message, annotations); //FIXME: messageAnnotations are not parcelable :-(
+        return new DecodeMessageLoader(context, message, annotations);
     }
 
     @Override

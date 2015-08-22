@@ -256,11 +256,11 @@ public class MessageViewFragment extends Fragment
     }
 
     @Override
-    public void onCryptoOperationsFinished(final MessageCryptoAnnotations<CryptoResultAnnotation> annotations) {
+    public void onCryptoOperationsFinished(final MessageCryptoAnnotations annotations) {
         startExtractingTextAndAttachments(annotations);
     }
 
-    private void startExtractingTextAndAttachments(MessageCryptoAnnotations<CryptoResultAnnotation> annotations) {
+    private void startExtractingTextAndAttachments(MessageCryptoAnnotations annotations) {
         Bundle args = new Bundle();
         args.putSerializable(ARG_MESSAGE, mMessage);
         args.putSerializable(ARG_ANNOTATIONS, annotations);

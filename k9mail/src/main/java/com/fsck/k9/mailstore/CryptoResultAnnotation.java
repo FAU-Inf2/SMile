@@ -14,6 +14,10 @@ public final class CryptoResultAnnotation {
     private PendingIntent pendingIntent;
     private MimeBodyPart outputData;
 
+    public CryptoResultAnnotation() {
+        this.error = new CryptoError();
+    }
+
     public SignatureResult getSignatureResult() {
         return signatureResult;
     }

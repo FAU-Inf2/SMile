@@ -15,10 +15,10 @@ import com.fsck.k9.ui.crypto.MessageCryptoAnnotations;
 
 public class DecodeMessageLoader extends AsyncTaskLoader<MessageViewInfo> {
     private final Message message;
-    private final MessageCryptoAnnotations<CryptoResultAnnotation> annotations;
+    private final MessageCryptoAnnotations annotations;
     private MessageViewInfo messageViewInfo;
 
-    public DecodeMessageLoader(Context context, Message message, MessageCryptoAnnotations<CryptoResultAnnotation> annotations) {
+    public DecodeMessageLoader(Context context, Message message, MessageCryptoAnnotations annotations) {
         super(context);
         this.message = message;
         this.annotations = annotations;

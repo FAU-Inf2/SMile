@@ -1656,7 +1656,7 @@ public class Account implements BaseAccount, StoreConfig {
 
     public String getSmimeApp() {
         if(mSmimeApp == null) {
-            setSmimeApp("de.fau.cs.mad.smile_crypto");
+            setSmimeApp("de.fau.cs.mad.smile.android.encryption");
         }
 
         return mSmimeApp;

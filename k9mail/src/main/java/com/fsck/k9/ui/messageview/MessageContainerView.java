@@ -31,6 +31,7 @@ import com.fsck.k9.helper.Utility;
 import com.fsck.k9.mail.Address;
 import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mailstore.AttachmentViewInfo;
+import com.fsck.k9.mailstore.CryptoErrorType;
 import com.fsck.k9.mailstore.MessageViewInfo.MessageViewContainer;
 import com.fsck.k9.mailstore.CryptoResultAnnotation;
 import com.fsck.k9.view.K9WebViewClient;
@@ -439,7 +440,7 @@ public class MessageContainerView extends LinearLayout
             return messageViewContainer.text;
         }
 
-        CryptoResultAnnotation.CryptoErrorType errorType = cryptoAnnotation.getErrorType();
+        CryptoErrorType errorType = cryptoAnnotation.getErrorType();
         switch (errorType) {
             case CRYPTO_API_RETURNED_ERROR: {
                 // TODO make a nice view for this

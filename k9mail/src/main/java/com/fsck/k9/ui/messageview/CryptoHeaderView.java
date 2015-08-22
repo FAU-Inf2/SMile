@@ -16,7 +16,9 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.fsck.k9.mailstore.CryptoError;
 import com.fsck.k9.mailstore.CryptoResultAnnotation;
+import com.fsck.k9.mailstore.SignatureResult;
 
 import org.openintents.openpgp.util.OpenPgpUtils;
 
@@ -113,7 +115,7 @@ public final class CryptoHeaderView extends LinearLayout {
     private final void displayEncryptionError() {
         setEncryptionImageAndTextColor(CryptoState.INVALID);
 
-        CryptoResultAnnotation.CryptoError error = cryptoAnnotation.getError();
+        CryptoError error = cryptoAnnotation.getError();
         String text;
         if (error == null) {
             text = getContext().getString(R.string.openpgp_unknown_error);
@@ -157,7 +159,7 @@ public final class CryptoHeaderView extends LinearLayout {
     }
 
     private final void displayVerificationResult() {
-        CryptoResultAnnotation.SignatureResult signatureResult = cryptoAnnotation.getSignatureResult();
+        SignatureResult signatureResult = cryptoAnnotation.getSignatureResult();
         if (signatureResult == null) {
             displayNotSigned();
             return;
@@ -282,7 +284,7 @@ public final class CryptoHeaderView extends LinearLayout {
         showSignatureLayout();
     }
 
-    private final void setUserId(final CryptoResultAnnotation.SignatureResult signatureResult) {
+    private final void setUserId(final SignatureResult signatureResult) {
         final OpenPgpUtils.UserId userInfo = OpenPgpUtils.splitUserId(signatureResult.getPrimaryUserId());
         if (userInfo.name != null) {
             resultSignatureName.setText(userInfo.name);

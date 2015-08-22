@@ -483,8 +483,7 @@ public class LocalMessageExtractor {
         Body body = part.getBody();
         if (body instanceof Multipart) {
             Multipart multi = (Multipart) body;
-
-            if ("multipart/mixed".equals(part.getMimeType())) {
+            if (MimeUtility.isSameMimeType(part.getMimeType(), "multipart/mixed")) {
                 boolean foundSome = false;
 
                 for (BodyPart sub : multi.getBodyParts()) {

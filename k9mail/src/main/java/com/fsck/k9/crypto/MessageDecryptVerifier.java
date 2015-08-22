@@ -10,6 +10,7 @@ import com.fsck.k9.mail.internet.MessageExtractor;
 
 import org.openintents.openpgp.util.OpenPgpUtils;
 
+import static com.fsck.k9.mail.internet.MimeUtility.isSameMimeType;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,7 +37,7 @@ public class MessageDecryptVerifier {
             String partMimeType = part.getMimeType();
             Body body = part.getBody();
 
-            if (mimeType.equals(partMimeType)) {
+            if (isSameMimeType(partMimeType, mimeType)) {
                 parts.add(part);
             } else if (body instanceof Multipart) {
                 Multipart multipart = (Multipart) body;
@@ -71,7 +72,7 @@ public class MessageDecryptVerifier {
             String mimeType = part.getMimeType();
             Body body = part.getBody();
 
-            if (TEXT_PLAIN.equalsIgnoreCase(mimeType)) {
+            if (isSameMimeType(mimeType, TEXT_PLAIN)) {
                 String text = MessageExtractor.getTextFromPart(part);
                 switch (OpenPgpUtils.parseMessage(text)) {
                     case OpenPgpUtils.PARSE_RESULT_MESSAGE:
@@ -92,14 +93,13 @@ public class MessageDecryptVerifier {
 
     public static byte[] getSignatureData(Part part) throws IOException, MessagingException {
 
-        if (MULTIPART_SIGNED.equals(part.getMimeType())) {
+        if (isSameMimeType(part.getMimeType(), MULTIPART_SIGNED)) {
             Body body = part.getBody();
 
             if (body instanceof Multipart) {
                 Multipart multi = (Multipart) body;
                 BodyPart signatureBody = multi.getBodyPart(1);
-
-                if (APPLICATION_PGP_SIGNATURE.equals(signatureBody.getMimeType())) {
+                if (isSameMimeType(signatureBody.getMimeType(), APPLICATION_PGP_SIGNATURE)) {
                     ByteArrayOutputStream bos = new ByteArrayOutputStream();
                     signatureBody.getBody().writeTo(bos);
                     return bos.toByteArray();
@@ -111,7 +111,7 @@ public class MessageDecryptVerifier {
     }
 
     public static boolean isPgpMimeSignedPart(Part part) {
-        return MULTIPART_SIGNED.equals(part.getMimeType());
+        return isSameMimeType(part.getMimeType(), MULTIPART_SIGNED);
     }
 
     public static boolean isPgpMimeEncryptedPart(Part part) {
@@ -119,6 +119,6 @@ public class MessageDecryptVerifier {
 //        String contentType = part.getContentType();
 //        String protocol = MimeUtility.getHeaderParameter(contentType, PROTOCOL_PARAMETER);
 //        return APPLICATION_PGP_ENCRYPTED.equals(protocol);
-        return MULTIPART_ENCRYPTED.equals(part.getMimeType());
+        return isSameMimeType(part.getMimeType(), MULTIPART_ENCRYPTED);
     }
 }

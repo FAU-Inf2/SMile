@@ -171,6 +171,7 @@ public class K9 extends Application {
     private static boolean mAnimations = true;
 
     private static boolean mConfirmDelete = false;
+    private static boolean mConfirmDiscardMessage = true;
     private static boolean mConfirmDeleteStarred = false;
     private static boolean mConfirmSpam = false;
     private static boolean mConfirmDeleteFromNotification = true;
@@ -509,6 +510,7 @@ public class K9 extends Application {
         editor.putBoolean("fixedMessageViewTheme", useFixedMessageTheme);
 
         editor.putBoolean("confirmDelete", mConfirmDelete);
+        editor.putBoolean("confirmDiscardMessage", mConfirmDiscardMessage);
         editor.putBoolean("confirmDeleteStarred", mConfirmDeleteStarred);
         editor.putBoolean("confirmSpam", mConfirmSpam);
         editor.putBoolean("confirmDeleteFromNotification", mConfirmDeleteFromNotification);
@@ -730,6 +732,7 @@ public class K9 extends Application {
         mHideTimeZone = sprefs.getBoolean("hideTimeZone", false);
 
         mConfirmDelete = sprefs.getBoolean("confirmDelete", false);
+        mConfirmDiscardMessage = sprefs.getBoolean("confirmDiscardMessage", true);
         mConfirmDeleteStarred = sprefs.getBoolean("confirmDeleteStarred", false);
         mConfirmSpam = sprefs.getBoolean("confirmSpam", false);
         mConfirmDeleteFromNotification = sprefs.getBoolean("confirmDeleteFromNotification", true);
@@ -1194,8 +1197,16 @@ public class K9 extends Application {
         return mConfirmSpam;
     }
 
+    public static boolean confirmDiscardMessage() {
+        return mConfirmDiscardMessage;
+    }
+
     public static void setConfirmSpam(final boolean confirm) {
         mConfirmSpam = confirm;
+    }
+
+    public static void setConfirmDiscardMessage(final boolean confirm) {
+        mConfirmDiscardMessage = confirm;
     }
 
     public static boolean confirmDeleteFromNotification() {

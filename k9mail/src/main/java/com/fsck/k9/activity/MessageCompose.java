@@ -173,12 +173,15 @@ public class MessageCompose extends K9Activity implements OnClickListener,
 
     private static final String FRAGMENT_WAITING_FOR_ATTACHMENT = "waitingForAttachment";
 
-    private static final int MSG_PROGRESS_ON = 1;
-    private static final int MSG_PROGRESS_OFF = 2;
-    private static final int MSG_SKIPPED_ATTACHMENTS = 3;
-    private static final int MSG_SAVED_DRAFT = 4;
-    private static final int MSG_DISCARDED_DRAFT = 5;
-    private static final int MSG_PERFORM_STALLED_ACTION = 6;
+    /**
+     * package accessible so handler can use the following constants
+     */
+    static final int MSG_PROGRESS_ON = 1;
+    static final int MSG_PROGRESS_OFF = 2;
+    static final int MSG_SKIPPED_ATTACHMENTS = 3;
+    static final int MSG_SAVED_DRAFT = 4;
+    static final int MSG_DISCARDED_DRAFT = 5;
+    static final int MSG_PERFORM_STALLED_ACTION = 6;
 
     private static final int ACTIVITY_REQUEST_PICK_ATTACHMENT = 1;
     private static final int CONTACT_PICKER_TO = 4;
@@ -298,7 +301,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
 
     private PgpData mPgpData = null;
     private String mOpenPgpProvider;
-    private OpenPgpServiceConnection mOpenPgpServiceConnection;
+    private OpenPgpServiceConnection mOpenPgpServiceConnection; // TODO: make use of {@link com.fsck.k9.ui.crypto.MessageCryptoHelper}
 
     private String mReferences;
     private String mInReplyTo;
@@ -350,43 +353,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
     private WaitingAction mWaitingForAttachments = WaitingAction.NONE;
 
 
-    private Handler mHandler = new Handler() {
-        @Override
-        public void handleMessage(android.os.Message msg) {
-            switch (msg.what) {
-                case MSG_PROGRESS_ON:
-                    setProgressBarIndeterminateVisibility(true);
-                    break;
-                case MSG_PROGRESS_OFF:
-                    setProgressBarIndeterminateVisibility(false);
-                    break;
-                case MSG_SKIPPED_ATTACHMENTS:
-                    Toast.makeText(
-                        MessageCompose.this,
-                        getString(R.string.message_compose_attachments_skipped_toast),
-                        Toast.LENGTH_LONG).show();
-                    break;
-                case MSG_SAVED_DRAFT:
-                    Toast.makeText(
-                        MessageCompose.this,
-                        getString(R.string.message_saved_toast),
-                        Toast.LENGTH_LONG).show();
-                    break;
-                case MSG_DISCARDED_DRAFT:
-                    Toast.makeText(
-                        MessageCompose.this,
-                        getString(R.string.message_discarded_toast),
-                        Toast.LENGTH_LONG).show();
-                    break;
-                case MSG_PERFORM_STALLED_ACTION:
-                    performStalledAction();
-                    break;
-                default:
-                    super.handleMessage(msg);
-                    break;
-            }
-        }
-    };
+    private Handler mHandler = new MessageComposeHandler(this);
 
     private Listener mListener = new Listener();
 
@@ -1645,7 +1612,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
         mHandler.sendEmptyMessage(MSG_PERFORM_STALLED_ACTION);
     }
 
-    private void performStalledAction() {
+    void performStalledAction() {
         mNumAttachmentsLoading -= 1;
 
         WaitingAction waitingFor = mWaitingForAttachments;
@@ -3544,4 +3511,5 @@ public class MessageCompose extends K9Activity implements OnClickListener,
             startActivityForResult(mContacts.contactPickerIntent(), resultId);
         }
     }
+
 }

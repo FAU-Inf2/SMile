@@ -453,10 +453,15 @@ public final class MessageCryptoHelper {
         resultAnnotation.setOutputData(outputPart);
         int resultType = currentCryptoResult.getIntExtra(SMimeApi.RESULT_TYPE, SMimeApi.RESULT_TYPE_UNENCRYPTED_UNSIGNED);
 
-        if ((resultType & OpenPgpApi.RESULT_TYPE_ENCRYPTED) == OpenPgpApi.RESULT_TYPE_ENCRYPTED) {
+        if ((resultType & SMimeApi.RESULT_TYPE_ENCRYPTED) == SMimeApi.RESULT_TYPE_ENCRYPTED) {
             resultAnnotation.setWasEncrypted(true);
         } else {
             resultAnnotation.setWasEncrypted(false);
+        }
+
+        if ((resultType & SMimeApi.RESULT_TYPE_SIGNED) == SMimeApi.RESULT_TYPE_SIGNED) {
+            SignatureResult signatureResult = new SignatureResult(SignatureStatus.SUCCESS, null, null);
+            resultAnnotation.setSignatureResult(signatureResult);
         }
 
         onCryptoSuccess(resultAnnotation);

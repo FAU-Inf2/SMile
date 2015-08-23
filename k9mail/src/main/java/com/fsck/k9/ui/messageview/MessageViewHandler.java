@@ -5,6 +5,7 @@ import android.os.Handler;
 import com.fsck.k9.mailstore.AttachmentViewInfo;
 import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.mailstore.MessageViewInfo;
+import com.fsck.k9.ui.crypto.MessageCryptoAnnotations;
 
 import java.lang.ref.WeakReference;
 
@@ -98,6 +99,19 @@ class MessageViewHandler extends Handler {
                 MessageViewFragment fragment = messageViewFragmentWeakReference.get();
                 if (fragment != null) {
                     fragment.setProgress(enable);
+                }
+            }
+        });
+
+    }
+
+    public void startExtractingTextAndAttachments(final MessageCryptoAnnotations annotations) {
+        this.post(new Runnable() {
+            @Override
+            public void run() {
+                MessageViewFragment fragment = messageViewFragmentWeakReference.get();
+                if (fragment != null) {
+                    fragment.startExtractingTextAndAttachments(annotations);
                 }
             }
         });

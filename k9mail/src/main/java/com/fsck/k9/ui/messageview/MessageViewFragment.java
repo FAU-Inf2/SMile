@@ -112,7 +112,7 @@ public class MessageViewFragment extends Fragment
     public void onAttach(Activity activity) {
         super.onAttach(activity);
 
-        mContext = activity.getApplicationContext();
+        mContext = activity.getBaseContext();
         decodeMessageLoaderCallback = new DecodeMessageLoaderCallback(mContext, handler);
         mController = MessagingController.getInstance(activity.getApplication());
 
@@ -257,10 +257,10 @@ public class MessageViewFragment extends Fragment
 
     @Override
     public void onCryptoOperationsFinished(final MessageCryptoAnnotations annotations) {
-        startExtractingTextAndAttachments(annotations);
+        handler.startExtractingTextAndAttachments(annotations);
     }
 
-    private void startExtractingTextAndAttachments(MessageCryptoAnnotations annotations) {
+    void startExtractingTextAndAttachments(MessageCryptoAnnotations annotations) {
         Bundle args = new Bundle();
         args.putSerializable(ARG_MESSAGE, mMessage);
         args.putSerializable(ARG_ANNOTATIONS, annotations);

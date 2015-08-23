@@ -32,12 +32,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup;
 import android.view.Window;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.AutoCompleteTextView.Validator;
-import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -61,6 +59,7 @@ import com.fsck.k9.Preferences;
 import com.fsck.k9.activity.loader.AttachmentContentLoader;
 import com.fsck.k9.activity.loader.AttachmentInfoLoader;
 import com.fsck.k9.activity.misc.Attachment;
+import com.fsck.k9.adapter.IdentityAdapter;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.controller.MessagingListener;
 import com.fsck.k9.crypto.PgpData;
@@ -108,7 +107,6 @@ import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -191,7 +189,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
     private static final int CONTACT_PICKER_CC2 = 8;
     private static final int CONTACT_PICKER_BCC2 = 9;
 
-    private static final int REQUEST_CODE_SIGN_ENCRYPT = 12;
+    private static final int REQUEST_CODE_SIGN_ENCRYPT_OPENPGP = 12;
 
     /**
      * Regular expression to remove the first localized "Re:" prefix in subjects.
@@ -352,9 +350,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
      */
     private WaitingAction mWaitingForAttachments = WaitingAction.NONE;
 
-
     private Handler mHandler = new MessageComposeHandler(this);
-
     private Listener mListener = new Listener();
 
     private FontSizes mFontSizes = K9.getFontSizes();
@@ -459,163 +455,26 @@ public class MessageCompose extends K9Activity implements OnClickListener,
             finish();
             return;
         }
-        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 
-        if (K9.getK9ComposerThemeSetting() != K9.Theme.USE_GLOBAL) {
-            // theme the whole content according to the theme (except the action bar)
-            mThemeContext = new ContextThemeWrapper(this,
-                    K9.getK9ThemeResourceId(K9.getK9ComposerTheme()));
-            View v = LayoutInflater.from(mThemeContext).inflate(R.layout.message_compose, null);
-            TypedValue outValue = new TypedValue();
-            // background color needs to be forced
-            mThemeContext.getTheme().resolveAttribute(R.attr.messageViewBackgroundColor, outValue, true);
-            v.setBackgroundColor(outValue.data);
-            setContentView(v);
-        } else {
-            setContentView(R.layout.message_compose);
-            mThemeContext = this;
-        }
+        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+        setupTheme();
 
         final Intent intent = getIntent();
+        final String accountUuid = acquireExtras(intent);
 
-        mMessageReference = intent.getParcelableExtra(EXTRA_MESSAGE_REFERENCE);
-        mSourceMessageBody = intent.getStringExtra(EXTRA_MESSAGE_BODY);
-
-        if (K9.DEBUG && mSourceMessageBody != null) {
-            Log.d(K9.LOG_TAG, "Composing message with explicitly specified message body.");
-        }
-
-        final String accountUuid = (mMessageReference != null) ?
-                                   mMessageReference.getAccountUuid() :
-                                   intent.getStringExtra(EXTRA_ACCOUNT);
-
-        mAccount = Preferences.getPreferences(this).getAccount(accountUuid);
-
-        if (mAccount == null) {
-            mAccount = Preferences.getPreferences(this).getDefaultAccount();
-        }
-
-        if (mAccount == null) {
-            /*
-             * There are no accounts set up. This should not have happened. Prompt the
-             * user to set up an account as an acceptable bailout.
-             */
-            startActivity(new Intent(this, Accounts.class));
-            mDraftNeedsSaving = false;
-            finish();
+        if (!ensureAccount(accountUuid)) {
             return;
         }
 
-        mContacts = Contacts.getInstance(MessageCompose.this);
-
-        EmailAddressAdapter mAddressAdapter = new EmailAddressAdapter(mThemeContext);
-        Validator mAddressValidator = new EmailAddressValidator();
-
-        mChooseIdentityButton = (Button) findViewById(R.id.identity);
-        mChooseIdentityButton.setOnClickListener(this);
-
-        if (mAccount.getIdentities().size() == 1 &&
-                Preferences.getPreferences(this).getAvailableAccounts().size() == 1) {
-            mChooseIdentityButton.setVisibility(View.GONE);
+        if (mIdentity == null) {
+            mIdentity = mAccount.getIdentity(0);
         }
 
-        mToView = (MultiAutoCompleteTextView) findViewById(R.id.to);
-        mCcView = (MultiAutoCompleteTextView) findViewById(R.id.cc);
-        mBccView = (MultiAutoCompleteTextView) findViewById(R.id.bcc);
-        mSubjectView = (EditText) findViewById(R.id.subject);
-        mSubjectView.getInputExtras(true).putBoolean("allowEmoji", true);
+        mReadReceipt = mAccount.isMessageReadReceiptAlways();
+        mQuoteStyle = mAccount.getQuoteStyle();
 
-        ImageButton mAddToFromContacts = (ImageButton) findViewById(R.id.add_to);
-        ImageButton mAddCcFromContacts = (ImageButton) findViewById(R.id.add_cc);
-        ImageButton mAddBccFromContacts = (ImageButton) findViewById(R.id.add_bcc);
-
-        mCcWrapper = (LinearLayout) findViewById(R.id.cc_wrapper);
-        mBccWrapper = (LinearLayout) findViewById(R.id.bcc_wrapper);
-
-        if (mAccount.isAlwaysShowCcBcc()) {
-            onAddCcBcc();
-        }
-
-        EolConvertingEditText upperSignature = (EolConvertingEditText)findViewById(R.id.upper_signature);
-        EolConvertingEditText lowerSignature = (EolConvertingEditText)findViewById(R.id.lower_signature);
-
-        mMessageContentView = (EolConvertingEditText)findViewById(R.id.message_content);
-        mMessageContentView.getInputExtras(true).putBoolean("allowEmoji", true);
-
-        mAttachments = (LinearLayout)findViewById(R.id.attachments);
-        mQuotedTextShow = (Button)findViewById(R.id.quoted_text_show);
-        mQuotedTextBar = findViewById(R.id.quoted_text_bar);
-        mQuotedTextEdit = (ImageButton)findViewById(R.id.quoted_text_edit);
-        ImageButton mQuotedTextDelete = (ImageButton) findViewById(R.id.quoted_text_delete);
-        mQuotedText = (EolConvertingEditText)findViewById(R.id.quoted_text);
-        mQuotedText.getInputExtras(true).putBoolean("allowEmoji", true);
-
-        mQuotedHTML = (MessageWebView) findViewById(R.id.quoted_html);
-        mQuotedHTML.configure();
-        // Disable the ability to click links in the quoted HTML page. I think this is a nice feature, but if someone
-        // feels this should be a preference (or should go away all together), I'm ok with that too. -achen 20101130
-        mQuotedHTML.setWebViewClient(new WebViewClient() {
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                return true;
-            }
-        });
-
-        TextWatcher draftNeedsChangingTextWatcher = new SimpleTextWatcher() {
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                mDraftNeedsSaving = true;
-            }
-        };
-
-        TextWatcher signTextWatcher = new SimpleTextWatcher() {
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                mDraftNeedsSaving = true;
-                mSignatureChanged = true;
-            }
-        };
-
-        mToView.addTextChangedListener(draftNeedsChangingTextWatcher);
-        mCcView.addTextChangedListener(draftNeedsChangingTextWatcher);
-        mBccView.addTextChangedListener(draftNeedsChangingTextWatcher);
-        mSubjectView.addTextChangedListener(draftNeedsChangingTextWatcher);
-
-        mMessageContentView.addTextChangedListener(draftNeedsChangingTextWatcher);
-        mQuotedText.addTextChangedListener(draftNeedsChangingTextWatcher);
-
-        /* Yes, there really are people who ship versions of android without a contact picker */
-        if (mContacts.hasContactPicker()) {
-            mAddToFromContacts.setOnClickListener(new DoLaunchOnClickListener(CONTACT_PICKER_TO));
-            mAddCcFromContacts.setOnClickListener(new DoLaunchOnClickListener(CONTACT_PICKER_CC));
-            mAddBccFromContacts.setOnClickListener(new DoLaunchOnClickListener(CONTACT_PICKER_BCC));
-        } else {
-            mAddToFromContacts.setVisibility(View.GONE);
-            mAddCcFromContacts.setVisibility(View.GONE);
-            mAddBccFromContacts.setVisibility(View.GONE);
-        }
-        /*
-         * We set this to invisible by default. Other methods will turn it back on if it's
-         * needed.
-         */
-
-        showOrHideQuotedText(QuotedTextMode.NONE);
-
-        mQuotedTextShow.setOnClickListener(this);
-        mQuotedTextEdit.setOnClickListener(this);
-        mQuotedTextDelete.setOnClickListener(this);
-
-        mToView.setAdapter(mAddressAdapter);
-        mToView.setTokenizer(new Rfc822Tokenizer());
-        mToView.setValidator(mAddressValidator);
-
-        mCcView.setAdapter(mAddressAdapter);
-        mCcView.setTokenizer(new Rfc822Tokenizer());
-        mCcView.setValidator(mAddressValidator);
-
-        mBccView.setAdapter(mAddressAdapter);
-        mBccView.setTokenizer(new Rfc822Tokenizer());
-        mBccView.setValidator(mAddressValidator);
+        acquireLayout();
+        setupLayout();
 
         if (savedInstanceState != null) {
             /*
@@ -623,7 +482,6 @@ public class MessageCompose extends K9Activity implements OnClickListener,
              */
             mSourceMessageProcessed = savedInstanceState.getBoolean(STATE_KEY_SOURCE_MESSAGE_PROCED, false);
         }
-
 
         if (initFromIntent(intent)) {
             mAction = Action.COMPOSE;
@@ -646,26 +504,6 @@ public class MessageCompose extends K9Activity implements OnClickListener,
                 mAction = Action.COMPOSE;
             }
         }
-
-        if (mIdentity == null) {
-            mIdentity = mAccount.getIdentity(0);
-        }
-
-        if (mAccount.isSignatureBeforeQuotedText()) {
-            mSignatureView = upperSignature;
-            lowerSignature.setVisibility(View.GONE);
-        } else {
-            mSignatureView = lowerSignature;
-            upperSignature.setVisibility(View.GONE);
-        }
-        mSignatureView.addTextChangedListener(signTextWatcher);
-
-        if (!mIdentity.getSignatureUse()) {
-            mSignatureView.setVisibility(View.GONE);
-        }
-
-        mReadReceipt = mAccount.isMessageReadReceiptAlways();
-        mQuoteStyle = mAccount.getQuoteStyle();
 
         updateFrom();
 
@@ -757,6 +595,93 @@ public class MessageCompose extends K9Activity implements OnClickListener,
             mEncryptLayout.setVisibility(View.GONE);
         }
 
+        updateMessageFormat();
+        setTitle();
+    }
+
+    private void setupLayout() {
+        ImageButton mAddToFromContacts = (ImageButton) findViewById(R.id.add_to);
+        ImageButton mAddCcFromContacts = (ImageButton) findViewById(R.id.add_cc);
+        ImageButton mAddBccFromContacts = (ImageButton) findViewById(R.id.add_bcc);
+
+        ImageButton mQuotedTextDelete = (ImageButton) findViewById(R.id.quoted_text_delete);
+
+        TextWatcher draftNeedsChangingTextWatcher = new SimpleTextWatcher() {
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                mDraftNeedsSaving = true;
+            }
+        };
+
+        EmailAddressAdapter mAddressAdapter = new EmailAddressAdapter(mThemeContext);
+        Validator mAddressValidator = new EmailAddressValidator();
+
+        mToView.addTextChangedListener(draftNeedsChangingTextWatcher);
+        mCcView.addTextChangedListener(draftNeedsChangingTextWatcher);
+        mBccView.addTextChangedListener(draftNeedsChangingTextWatcher);
+        mSubjectView.addTextChangedListener(draftNeedsChangingTextWatcher);
+
+        mMessageContentView.addTextChangedListener(draftNeedsChangingTextWatcher);
+        mQuotedText.addTextChangedListener(draftNeedsChangingTextWatcher);
+
+        /* Yes, there really are people who ship versions of android without a contact picker */
+        if (mContacts.hasContactPicker()) {
+            mAddToFromContacts.setOnClickListener(new DoLaunchOnClickListener(CONTACT_PICKER_TO));
+            mAddCcFromContacts.setOnClickListener(new DoLaunchOnClickListener(CONTACT_PICKER_CC));
+            mAddBccFromContacts.setOnClickListener(new DoLaunchOnClickListener(CONTACT_PICKER_BCC));
+        } else {
+            mAddToFromContacts.setVisibility(View.GONE);
+            mAddCcFromContacts.setVisibility(View.GONE);
+            mAddBccFromContacts.setVisibility(View.GONE);
+        }
+        /*
+         * We set this to invisible by default. Other methods will turn it back on if it's
+         * needed.
+         */
+
+        showOrHideQuotedText(QuotedTextMode.NONE);
+
+        mQuotedTextShow.setOnClickListener(this);
+        mQuotedTextEdit.setOnClickListener(this);
+        mQuotedTextDelete.setOnClickListener(this);
+
+        mToView.setAdapter(mAddressAdapter);
+        mToView.setTokenizer(new Rfc822Tokenizer());
+        mToView.setValidator(mAddressValidator);
+
+        mCcView.setAdapter(mAddressAdapter);
+        mCcView.setTokenizer(new Rfc822Tokenizer());
+        mCcView.setValidator(mAddressValidator);
+
+        mBccView.setAdapter(mAddressAdapter);
+        mBccView.setTokenizer(new Rfc822Tokenizer());
+        mBccView.setValidator(mAddressValidator);
+
+        EolConvertingEditText upperSignature = (EolConvertingEditText)findViewById(R.id.upper_signature);
+        EolConvertingEditText lowerSignature = (EolConvertingEditText)findViewById(R.id.lower_signature);
+
+        TextWatcher signTextWatcher = new SimpleTextWatcher() {
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                mDraftNeedsSaving = true;
+                mSignatureChanged = true;
+            }
+        };
+
+        if (mAccount.isSignatureBeforeQuotedText()) {
+            mSignatureView = upperSignature;
+            lowerSignature.setVisibility(View.GONE);
+        } else {
+            mSignatureView = lowerSignature;
+            upperSignature.setVisibility(View.GONE);
+        }
+
+        mSignatureView.addTextChangedListener(signTextWatcher);
+
+        if (!mIdentity.getSignatureUse()) {
+            mSignatureView.setVisibility(View.GONE);
+        }
+
         // Set font size of input controls
         int fontSize = mFontSizes.getMessageComposeInput();
         mFontSizes.setViewTextSize(mToView, fontSize);
@@ -766,11 +691,103 @@ public class MessageCompose extends K9Activity implements OnClickListener,
         mFontSizes.setViewTextSize(mMessageContentView, fontSize);
         mFontSizes.setViewTextSize(mQuotedText, fontSize);
         mFontSizes.setViewTextSize(mSignatureView, fontSize);
+    }
 
+    private void acquireLayout() {
+        mContacts = Contacts.getInstance(MessageCompose.this);
 
-        updateMessageFormat();
+        mChooseIdentityButton = (Button) findViewById(R.id.identity);
+        mChooseIdentityButton.setOnClickListener(this);
 
-        setTitle();
+        if (mAccount.getIdentities().size() == 1 &&
+                Preferences.getPreferences(this).getAvailableAccounts().size() == 1) {
+            mChooseIdentityButton.setVisibility(View.GONE);
+        }
+
+        mToView = (MultiAutoCompleteTextView) findViewById(R.id.to);
+        mCcView = (MultiAutoCompleteTextView) findViewById(R.id.cc);
+        mBccView = (MultiAutoCompleteTextView) findViewById(R.id.bcc);
+        mSubjectView = (EditText) findViewById(R.id.subject);
+        mSubjectView.getInputExtras(true).putBoolean("allowEmoji", true);
+        mCcWrapper = (LinearLayout) findViewById(R.id.cc_wrapper);
+        mBccWrapper = (LinearLayout) findViewById(R.id.bcc_wrapper);
+
+        if (mAccount.isAlwaysShowCcBcc()) {
+            onAddCcBcc();
+        }
+
+        mMessageContentView = (EolConvertingEditText)findViewById(R.id.message_content);
+        mMessageContentView.getInputExtras(true).putBoolean("allowEmoji", true);
+
+        mAttachments = (LinearLayout)findViewById(R.id.attachments);
+        mQuotedTextShow = (Button)findViewById(R.id.quoted_text_show);
+        mQuotedTextBar = findViewById(R.id.quoted_text_bar);
+        mQuotedTextEdit = (ImageButton)findViewById(R.id.quoted_text_edit);
+
+        mQuotedText = (EolConvertingEditText)findViewById(R.id.quoted_text);
+        mQuotedText.getInputExtras(true).putBoolean("allowEmoji", true);
+
+        mQuotedHTML = (MessageWebView) findViewById(R.id.quoted_html);
+        mQuotedHTML.configure();
+        // Disable the ability to click links in the quoted HTML page. I think this is a nice feature, but if someone
+        // feels this should be a preference (or should go away all together), I'm ok with that too. -achen 20101130
+        mQuotedHTML.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                return true;
+            }
+        });
+    }
+
+    private boolean ensureAccount(final String accountUuid) {
+        mAccount = Preferences.getPreferences(this).getAccount(accountUuid);
+
+        if (mAccount == null) {
+            mAccount = Preferences.getPreferences(this).getDefaultAccount();
+        }
+
+        if (mAccount == null) {
+            /*
+             * There are no accounts set up. This should not have happened. Prompt the
+             * user to set up an account as an acceptable bailout.
+             */
+            startActivity(new Intent(this, Accounts.class));
+            mDraftNeedsSaving = false;
+            finish();
+            return false;
+        }
+
+        return true;
+    }
+
+    private String acquireExtras(Intent intent) {
+        mMessageReference = intent.getParcelableExtra(EXTRA_MESSAGE_REFERENCE);
+        mSourceMessageBody = intent.getStringExtra(EXTRA_MESSAGE_BODY);
+
+        if (K9.DEBUG && mSourceMessageBody != null) {
+            Log.d(K9.LOG_TAG, "Composing message with explicitly specified message body.");
+        }
+
+        return (mMessageReference != null) ?
+                                   mMessageReference.getAccountUuid() :
+                                   intent.getStringExtra(EXTRA_ACCOUNT);
+    }
+
+    private void setupTheme() {
+        if (K9.getK9ComposerThemeSetting() != K9.Theme.USE_GLOBAL) {
+            // theme the whole content according to the theme (except the action bar)
+            mThemeContext = new ContextThemeWrapper(this,
+                    K9.getK9ThemeResourceId(K9.getK9ComposerTheme()));
+            View v = LayoutInflater.from(mThemeContext).inflate(R.layout.message_compose, null);
+            TypedValue outValue = new TypedValue();
+            // background color needs to be forced
+            mThemeContext.getTheme().resolveAttribute(R.attr.messageViewBackgroundColor, outValue, true);
+            v.setBackgroundColor(outValue.data);
+            setContentView(v);
+        } else {
+            setContentView(R.layout.message_compose);
+            mThemeContext = this;
+        }
     }
 
     @Override
@@ -1126,7 +1143,6 @@ public class MessageCompose extends K9Activity implements OnClickListener,
     }
 
     private Address[] getAddresses(MultiAutoCompleteTextView view) {
-
         return Address.parseUnencoded(view.getText().toString().trim());
     }
 
@@ -1152,7 +1168,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
         return createMessageBuilder(false).build();
     }
 
-    private MessageBuilder createMessageBuilder(boolean isDraft) {
+    private MessageBuilder createMessageBuilder(final boolean isDraft) {
         return new MessageBuilder(getApplicationContext())
                 .setSubject(mSubjectView.getText().toString())
                 .setTo(getAddresses(mToView))
@@ -1262,6 +1278,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
                     }
                     emailsArray = emails.toArray(new String[emails.size()]);
                 }
+
                 if (mEncryptCheckbox.isChecked() && mCryptoSignatureCheckbox.isChecked()) {
                     Intent intent = new Intent(OpenPgpApi.ACTION_SIGN_AND_ENCRYPT);
                     intent.putExtra(OpenPgpApi.EXTRA_USER_IDS, emailsArray);
@@ -1282,6 +1299,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
                 return;
             }
         }
+
         sendMessage();
 
         if (mMessageReference != null && mMessageReference.getFlag() != null) {
@@ -1311,7 +1329,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
         final InputStream is = getOpenPgpInputStream();
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
 
-        SignEncryptCallback callback = new SignEncryptCallback(os, REQUEST_CODE_SIGN_ENCRYPT);
+        SignEncryptCallback callback = new SignEncryptCallback(os, REQUEST_CODE_SIGN_ENCRYPT_OPENPGP);
 
         OpenPgpApi api = new OpenPgpApi(this, mOpenPgpServiceConnection.getService());
         api.executeApiAsync(intent, is, os, callback);
@@ -1642,7 +1660,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
         mPreventDraftSaving = false;
 
         // OpenPGP: try again after user interaction
-        if (resultCode == RESULT_OK && requestCode == REQUEST_CODE_SIGN_ENCRYPT) {
+        if (resultCode == RESULT_OK && requestCode == REQUEST_CODE_SIGN_ENCRYPT_OPENPGP) {
             /*
              * The data originally given to the pgp method are are again
              * returned here to be used when calling again after user
@@ -1657,9 +1675,11 @@ public class MessageCompose extends K9Activity implements OnClickListener,
         if (resultCode != RESULT_OK) {
             return;
         }
+
         if (data == null) {
             return;
         }
+
         switch (requestCode) {
             case ACTIVITY_REQUEST_PICK_ATTACHMENT:
                 addAttachmentsFromResultIntent(data);
@@ -3288,140 +3308,6 @@ public class MessageCompose extends K9Activity implements OnClickListener,
         return insertable;
     }
 
-    /**
-     * Used to store an {@link Identity} instance together with the {@link Account} it belongs to.
-     *
-     * @see IdentityAdapter
-     */
-    static class IdentityContainer {
-        public final Identity identity;
-        public final Account account;
-
-        IdentityContainer(Identity identity, Account account) {
-            this.identity = identity;
-            this.account = account;
-        }
-    }
-
-    /**
-     * Adapter for the <em>Choose identity</em> list view.
-     *
-     * <p>
-     * Account names are displayed as section headers, identities as selectable list items.
-     * </p>
-     */
-    static class IdentityAdapter extends BaseAdapter {
-        private LayoutInflater mLayoutInflater;
-        private List<Object> mItems;
-
-        public IdentityAdapter(Context context) {
-            mLayoutInflater = (LayoutInflater) context.getSystemService(
-                    Context.LAYOUT_INFLATER_SERVICE);
-
-            List<Object> items = new ArrayList<Object>();
-            Preferences prefs = Preferences.getPreferences(context.getApplicationContext());
-            Collection<Account> accounts = prefs.getAvailableAccounts();
-            for (Account account : accounts) {
-                items.add(account);
-                List<Identity> identities = account.getIdentities();
-                for (Identity identity : identities) {
-                    items.add(new IdentityContainer(identity, account));
-                }
-            }
-            mItems = items;
-        }
-
-        @Override
-        public int getCount() {
-            return mItems.size();
-        }
-
-        @Override
-        public int getViewTypeCount() {
-            return 2;
-        }
-
-        @Override
-        public int getItemViewType(int position) {
-            return (mItems.get(position) instanceof Account) ? 0 : 1;
-        }
-
-        @Override
-        public boolean isEnabled(int position) {
-            return (mItems.get(position) instanceof IdentityContainer);
-        }
-
-        @Override
-        public Object getItem(int position) {
-            return mItems.get(position);
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return position;
-        }
-
-        @Override
-        public boolean hasStableIds() {
-            return false;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            Object item = mItems.get(position);
-
-            View view = null;
-            if (item instanceof Account) {
-                if (convertView != null && convertView.getTag() instanceof AccountHolder) {
-                    view = convertView;
-                } else {
-                    view = mLayoutInflater.inflate(R.layout.choose_account_item, parent, false);
-                    AccountHolder holder = new AccountHolder();
-                    holder.name = (TextView) view.findViewById(R.id.name);
-                    holder.chip = view.findViewById(R.id.chip);
-                    view.setTag(holder);
-                }
-
-                Account account = (Account) item;
-                AccountHolder holder = (AccountHolder) view.getTag();
-                holder.name.setText(account.getDescription());
-                holder.chip.setBackgroundColor(account.getChipColor());
-            } else if (item instanceof IdentityContainer) {
-                if (convertView != null && convertView.getTag() instanceof IdentityHolder) {
-                    view = convertView;
-                } else {
-                    view = mLayoutInflater.inflate(R.layout.choose_identity_item, parent, false);
-                    IdentityHolder holder = new IdentityHolder();
-                    holder.name = (TextView) view.findViewById(R.id.name);
-                    holder.description = (TextView) view.findViewById(R.id.description);
-                    view.setTag(holder);
-                }
-
-                IdentityContainer identityContainer = (IdentityContainer) item;
-                Identity identity = identityContainer.identity;
-                IdentityHolder holder = (IdentityHolder) view.getTag();
-                holder.name.setText(identity.getDescription());
-                holder.description.setText(getIdentityDescription(identity));
-            }
-
-            return view;
-        }
-
-        static class AccountHolder {
-            public TextView name;
-            public View chip;
-        }
-
-        static class IdentityHolder {
-            public TextView name;
-            public TextView description;
-        }
-    }
-
-    private static String getIdentityDescription(Identity identity) {
-        return String.format("%s <%s>", identity.getName(), identity.getEmail());
-    }
-
     private void setMessageFormat(SimpleMessageFormat format) {
         // This method will later be used to enable/disable the rich text editing mode.
 
@@ -3431,6 +3317,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
     private void updateMessageFormat() {
         MessageFormat origMessageFormat = mAccount.getMessageFormat();
         SimpleMessageFormat messageFormat;
+
         if (origMessageFormat == MessageFormat.TEXT) {
             // The user wants to send text/plain messages. We don't override that choice under
             // any circumstances.

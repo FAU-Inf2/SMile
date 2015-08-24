@@ -72,6 +72,10 @@ public final class MessageCryptoHelper {
     private Intent currentCryptoResult;
 
     private MessageCryptoAnnotations messageAnnotations;
+    private OpenPgpServiceConnection openPgpServiceConnection;
+    private SMimeServiceConnection sMimeServiceConnection;
+    private final String sMimeProvider;
+    private final String openPgpProvider;
 
     public MessageCryptoHelper(final Activity activity,
                                final Account account,
@@ -82,9 +86,24 @@ public final class MessageCryptoHelper {
         this.account = account;
 
         this.messageAnnotations = new MessageCryptoAnnotations();
+        this.sMimeProvider = account.getSmimeProvider();
+        this.openPgpProvider = account.getOpenPgpProvider();
     }
 
-    public void decryptOrVerifyMessagePartsIfNecessary(LocalMessage message) {
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+
+        if (this.openPgpServiceConnection != null) {
+            this.openPgpServiceConnection.unbindFromService();
+        }
+
+        if (this.sMimeServiceConnection != null) {
+            this.sMimeServiceConnection.unbindFromService();
+        }
+    }
+
+    public void decryptOrVerifyMessagePartsIfNecessary(final LocalMessage message) {
         this.message = message;
 
         if (!account.isOpenPgpProviderConfigured()) {
@@ -109,8 +128,8 @@ public final class MessageCryptoHelper {
         decryptOrVerifyNextPart();
     }
 
-    private final void processFoundParts(List<Part> foundParts, CryptoPartType cryptoPartType, CryptoErrorType errorIfIncomplete,
-                                         MimeBodyPart replacementPart) {
+    private void processFoundParts(final List<Part> foundParts, final CryptoPartType cryptoPartType,
+                                   final CryptoErrorType errorIfIncomplete, final MimeBodyPart replacementPart) {
         for (Part part : foundParts) {
             if (MessageHelper.isCompletePartAvailable(part)) {
                 CryptoPart cryptoPart = new CryptoPart(cryptoPartType, part);
@@ -121,87 +140,118 @@ public final class MessageCryptoHelper {
         }
     }
 
-    private final void addErrorAnnotation(Part part, CryptoErrorType error, MimeBodyPart outputData) {
+    private void addErrorAnnotation(final Part part, final CryptoErrorType error,
+                                          final MimeBodyPart outputData) {
         CryptoResultAnnotation annotation = new CryptoResultAnnotation();
         annotation.setErrorType(error);
         annotation.setOutputData(outputData);
         messageAnnotations.put(part, annotation);
     }
 
-    private final void addFoundInlinePgpParts(List<Part> foundParts) {
+    private void addFoundInlinePgpParts(final List<Part> foundParts) {
         for (Part part : foundParts) {
-            CryptoPart cryptoPart = new CryptoPart(CryptoPartType.INLINE_PGP, part);
+            final CryptoPart cryptoPart = new CryptoPart(CryptoPartType.INLINE_PGP, part);
             partsToDecryptOrVerify.add(cryptoPart);
         }
     }
 
-    private final void decryptOrVerifyNextPart() {
+    private void decryptOrVerifyNextPart() {
         if (partsToDecryptOrVerify.isEmpty()) {
             returnResultToFragment();
             return;
         }
 
-        CryptoPart cryptoPart = partsToDecryptOrVerify.peekFirst();
+        final CryptoPart cryptoPart = partsToDecryptOrVerify.peekFirst();
         startDecryptingOrVerifyingPart(cryptoPart);
     }
 
-    private void startDecryptingOrVerifyingPart(CryptoPart cryptoPart) {
-        if (!isBoundToPgpProviderService()) {
-            connectToPgpProviderService();
+    private void startDecryptingOrVerifyingPart(final CryptoPart cryptoPart) {
+        int latchCount = 0;
+        if(openPgpProvider != null) {
+            latchCount++;
         }
 
-        if(!isBoundToSMimeProviderService()) {
-            connectToSMimeProviderService();
+        if (sMimeProvider != null) {
+            latchCount++;
         }
 
-        if (isBoundToSMimeProviderService() && isBoundToPgpProviderService()) {
-            decryptOrVerifyPart(cryptoPart);
-        }
+        final CountDownLatch latch = new CountDownLatch(latchCount);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if (!isBoundToPgpProviderService()) {
+                    connectToPgpProviderService(latch);
+                }
+
+                if(!isBoundToSMimeProviderService()) {
+                    connectToSMimeProviderService(latch);
+                }
+            }
+        }).start();
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    latch.await();
+
+                    if (isBoundToSMimeProviderService() && isBoundToPgpProviderService()) {
+                        decryptOrVerifyPart(cryptoPart);
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 
-    private final boolean isBoundToPgpProviderService() {
-        return openPgpApi != null;
+    private boolean isBoundToPgpProviderService() {
+        return openPgpApi != null || openPgpProvider == null;
     }
 
-    private final void connectToPgpProviderService() {
-        String openPgpProvider = account.getOpenPgpProvider();
-        new OpenPgpServiceConnection(context, openPgpProvider,
+    private void connectToPgpProviderService(final CountDownLatch latch) {
+        openPgpServiceConnection = new OpenPgpServiceConnection(context, openPgpProvider,
                 new OnBound() {
                     @Override
                     public void onBound(IOpenPgpService service) {
                         openPgpApi = new OpenPgpApi(context, service);
-                        decryptOrVerifyNextPart();
+                        latch.countDown();
+                        //decryptOrVerifyNextPart();
                     }
 
                     @Override
                     public void onError(Exception e) {
                         Log.e(K9.LOG_TAG, "Couldn't connect to OpenPgpService", e);
+                        latch.countDown();
                     }
-                }).bindToService();
+                });
+        openPgpServiceConnection.bindToService();
     }
 
-    private final boolean isBoundToSMimeProviderService() {
-        return sMimeApi != null;
+    private boolean isBoundToSMimeProviderService() {
+        return sMimeApi != null || sMimeProvider == null;
     }
 
-    private final void connectToSMimeProviderService() {
-        final String sMimeProvider = account.getSmimeApp();
-        new SMimeServiceConnection(context, sMimeProvider,
+    private void connectToSMimeProviderService(final CountDownLatch latch) {
+        sMimeServiceConnection = new SMimeServiceConnection(context, sMimeProvider,
                 new SMimeServiceConnection.OnBound() {
                     @Override
                     public void onBound(ISMimeService service) {
                         sMimeApi = new SMimeApi(context, service);
-                        decryptOrVerifyNextPart();
+                        latch.countDown();
+                        //decryptOrVerifyNextPart();
                     }
 
                     @Override
                     public void onError(Exception e) {
                         Log.e(K9.LOG_TAG, "Couldn't connect to SMimeService", e);
+                        latch.countDown();
                     }
-                }).bindToService();
+                });
+        sMimeServiceConnection.bindToService();
     }
 
-    private void decryptOrVerifyPart(CryptoPart cryptoPart) {
+    private void decryptOrVerifyPart(final CryptoPart cryptoPart) {
         currentCryptoPart = cryptoPart;
         decryptVerify(new Intent());
     }

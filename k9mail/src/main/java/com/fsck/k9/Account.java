@@ -1654,7 +1654,7 @@ public class Account implements BaseAccount, StoreConfig {
         mPgpKey = keyId;
     }
 
-    public String getSmimeApp() {
+    public String getSmimeProvider() {
         if(mSmimeApp == null) {
             setSmimeApp("de.fau.cs.mad.smile.android.encryption");
         }

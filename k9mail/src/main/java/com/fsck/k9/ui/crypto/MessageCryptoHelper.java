@@ -42,6 +42,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.lang.ref.WeakReference;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
@@ -60,7 +61,7 @@ public final class MessageCryptoHelper {
 
     private final Context context;
     private final Activity activity;
-    private final MessageCryptoCallback callback;
+    private final WeakReference<MessageCryptoCallback> callback;
     private final Account account;
     private LocalMessage message;
 
@@ -77,7 +78,7 @@ public final class MessageCryptoHelper {
                                final MessageCryptoCallback callback) {
         this.context = activity.getApplicationContext();
         this.activity = activity;
-        this.callback = callback;
+        this.callback = new WeakReference<MessageCryptoCallback>(callback);
         this.account = account;
 
         this.messageAnnotations = new MessageCryptoAnnotations();
@@ -598,7 +599,10 @@ public final class MessageCryptoHelper {
     }
 
     private void returnResultToFragment() {
-        callback.onCryptoOperationsFinished(messageAnnotations);
+        MessageCryptoCallback realCallback = callback.get();
+        if(realCallback != null) {
+            realCallback.onCryptoOperationsFinished(messageAnnotations);
+        }
     }
 
     private class DecryptedDataAsyncTask extends AsyncTask<Void, Void, MimeBodyPart> {

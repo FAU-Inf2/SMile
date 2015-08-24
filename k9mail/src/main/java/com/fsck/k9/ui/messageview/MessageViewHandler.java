@@ -104,17 +104,4 @@ class MessageViewHandler extends Handler {
         });
 
     }
-
-    public void startExtractingTextAndAttachments(final MessageCryptoAnnotations annotations) {
-        this.post(new Runnable() {
-            @Override
-            public void run() {
-                MessageViewFragment fragment = messageViewFragmentWeakReference.get();
-                if (fragment != null) {
-                    fragment.startExtractingTextAndAttachments(annotations);
-                }
-            }
-        });
-
-    }
 }

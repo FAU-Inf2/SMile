@@ -257,14 +257,17 @@ public class MessageViewFragment extends Fragment
 
     @Override
     public void onCryptoOperationsFinished(final MessageCryptoAnnotations annotations) {
-        handler.startExtractingTextAndAttachments(annotations);
+        startExtractingTextAndAttachments(annotations);
     }
 
-    void startExtractingTextAndAttachments(MessageCryptoAnnotations annotations) {
-        Bundle args = new Bundle();
+    private void startExtractingTextAndAttachments(final MessageCryptoAnnotations annotations) {
+        final Bundle args = new Bundle();
         args.putSerializable(ARG_MESSAGE, mMessage);
         args.putSerializable(ARG_ANNOTATIONS, annotations);
-        getLoaderManager().initLoader(DECODE_MESSAGE_LOADER_ID, args, decodeMessageLoaderCallback);
+
+        if (getActivity() != null) {
+            getLoaderManager().initLoader(DECODE_MESSAGE_LOADER_ID, args, decodeMessageLoaderCallback);
+        }
     }
 
     void showMessage(final MessageViewInfo messageContainer) {
@@ -312,7 +315,7 @@ public class MessageViewFragment extends Fragment
         }
     }
 
-    public void onRefile(String dstFolder) {
+    public void onRefile(final String dstFolder) {
         if (!mController.isMoveCapable(mAccount)) {
             return;
         }
@@ -335,7 +338,7 @@ public class MessageViewFragment extends Fragment
         }
     }
 
-    private void refileMessage(String dstFolder) {
+    private void refileMessage(final String dstFolder) {
         String srcFolder = mMessageReference.getFolderName();
         LocalMessage messageToMove = mMessage;
         mFragmentListener.showNextMessageOrReturn();
@@ -414,7 +417,7 @@ public class MessageViewFragment extends Fragment
         // mMessageView.beginSelectingText();
     }
 
-    private void startRefileActivity(int activity) {
+    private void startRefileActivity(final int activity) {
         Intent intent = new Intent(getActivity(), ChooseFolder.class);
         intent.putExtra(ChooseFolder.EXTRA_ACCOUNT, mAccount.getUuid());
         intent.putExtra(ChooseFolder.EXTRA_CUR_FOLDER, mMessageReference.getFolderName());
@@ -424,7 +427,7 @@ public class MessageViewFragment extends Fragment
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
         if (resultCode != Activity.RESULT_OK) {
             return;
         }

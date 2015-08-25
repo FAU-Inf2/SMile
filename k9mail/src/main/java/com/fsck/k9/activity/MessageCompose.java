@@ -23,7 +23,6 @@ import android.os.Handler;
 import android.os.Parcelable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.text.util.Rfc822Tokenizer;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.ContextThemeWrapper;
@@ -90,6 +89,7 @@ import com.fsck.k9.message.MessageBuilder;
 import com.fsck.k9.message.QuotedTextMode;
 import com.fsck.k9.message.SimpleMessageFormat;
 import com.fsck.k9.ui.EolConvertingEditText;
+import com.fsck.k9.view.MessageComposeRecipient;
 import com.fsck.k9.view.MessageWebView;
 import org.htmlcleaner.CleanerProperties;
 import org.htmlcleaner.HtmlCleaner;
@@ -277,11 +277,10 @@ public class MessageCompose extends K9Activity implements OnClickListener,
     private boolean mForcePlainText = false;
 
     private Button mChooseIdentityButton;
-    private LinearLayout mCcWrapper;
     private LinearLayout mBccWrapper;
-    private MultiAutoCompleteTextView mToView;
-    private MultiAutoCompleteTextView mCcView;
-    private MultiAutoCompleteTextView mBccView;
+    private MessageComposeRecipient mToView;
+    private MessageComposeRecipient mCcView;
+    private MessageComposeRecipient mBccView;
     private EditText mSubjectView;
     private EolConvertingEditText mSignatureView;
     private EolConvertingEditText mMessageContentView;
@@ -448,7 +447,6 @@ public class MessageCompose extends K9Activity implements OnClickListener,
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
 
         if (UpgradeDatabases.actionUpgradeDatabases(this, getIntent())) {
@@ -527,7 +525,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
             }
 
             if (mAction != Action.EDIT_DRAFT) {
-                addAddresses(mBccView, mAccount.getAlwaysBcc());
+                mBccView.addRecipients(Address.parseUnencoded(mAccount.getAlwaysBcc()));
             }
         }
 
@@ -540,6 +538,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
             //change focus to message body.
             mMessageContentView.requestFocus();
         } else {
+            // TODO: check if recipient box receives focus
             // Explicitly set focus to "To:" input field (see issue 2998)
             mToView.requestFocus();
         }
@@ -600,10 +599,6 @@ public class MessageCompose extends K9Activity implements OnClickListener,
     }
 
     private void setupLayout() {
-        ImageButton mAddToFromContacts = (ImageButton) findViewById(R.id.add_to);
-        ImageButton mAddCcFromContacts = (ImageButton) findViewById(R.id.add_cc);
-        ImageButton mAddBccFromContacts = (ImageButton) findViewById(R.id.add_bcc);
-
         ImageButton mQuotedTextDelete = (ImageButton) findViewById(R.id.quoted_text_delete);
 
         TextWatcher draftNeedsChangingTextWatcher = new SimpleTextWatcher() {
@@ -626,13 +621,9 @@ public class MessageCompose extends K9Activity implements OnClickListener,
 
         /* Yes, there really are people who ship versions of android without a contact picker */
         if (mContacts.hasContactPicker()) {
-            mAddToFromContacts.setOnClickListener(new DoLaunchOnClickListener(CONTACT_PICKER_TO));
-            mAddCcFromContacts.setOnClickListener(new DoLaunchOnClickListener(CONTACT_PICKER_CC));
-            mAddBccFromContacts.setOnClickListener(new DoLaunchOnClickListener(CONTACT_PICKER_BCC));
-        } else {
-            mAddToFromContacts.setVisibility(View.GONE);
-            mAddCcFromContacts.setVisibility(View.GONE);
-            mAddBccFromContacts.setVisibility(View.GONE);
+            mToView.setAddContactListener(new DoLaunchOnClickListener(CONTACT_PICKER_TO));
+            mCcView.setAddContactListener(new DoLaunchOnClickListener(CONTACT_PICKER_CC));
+            mBccView.setAddContactListener(new DoLaunchOnClickListener(CONTACT_PICKER_BCC));
         }
         /*
          * We set this to invisible by default. Other methods will turn it back on if it's
@@ -644,18 +635,6 @@ public class MessageCompose extends K9Activity implements OnClickListener,
         mQuotedTextShow.setOnClickListener(this);
         mQuotedTextEdit.setOnClickListener(this);
         mQuotedTextDelete.setOnClickListener(this);
-
-        mToView.setAdapter(mAddressAdapter);
-        mToView.setTokenizer(new Rfc822Tokenizer());
-        mToView.setValidator(mAddressValidator);
-
-        mCcView.setAdapter(mAddressAdapter);
-        mCcView.setTokenizer(new Rfc822Tokenizer());
-        mCcView.setValidator(mAddressValidator);
-
-        mBccView.setAdapter(mAddressAdapter);
-        mBccView.setTokenizer(new Rfc822Tokenizer());
-        mBccView.setValidator(mAddressValidator);
 
         EolConvertingEditText upperSignature = (EolConvertingEditText)findViewById(R.id.upper_signature);
         EolConvertingEditText lowerSignature = (EolConvertingEditText)findViewById(R.id.lower_signature);
@@ -684,9 +663,10 @@ public class MessageCompose extends K9Activity implements OnClickListener,
 
         // Set font size of input controls
         int fontSize = mFontSizes.getMessageComposeInput();
-        mFontSizes.setViewTextSize(mToView, fontSize);
-        mFontSizes.setViewTextSize(mCcView, fontSize);
-        mFontSizes.setViewTextSize(mBccView, fontSize);
+        // TODO: check if this needs to be applied
+        //mFontSizes.setViewTextSize(mToView, fontSize);
+        //mFontSizes.setViewTextSize(mCcView, fontSize);
+        //mFontSizes.setViewTextSize(mBccView, fontSize);
         mFontSizes.setViewTextSize(mSubjectView, fontSize);
         mFontSizes.setViewTextSize(mMessageContentView, fontSize);
         mFontSizes.setViewTextSize(mQuotedText, fontSize);
@@ -704,12 +684,11 @@ public class MessageCompose extends K9Activity implements OnClickListener,
             mChooseIdentityButton.setVisibility(View.GONE);
         }
 
-        mToView = (MultiAutoCompleteTextView) findViewById(R.id.to);
-        mCcView = (MultiAutoCompleteTextView) findViewById(R.id.cc);
-        mBccView = (MultiAutoCompleteTextView) findViewById(R.id.bcc);
+        mToView = (MessageComposeRecipient) findViewById(R.id.to_wrapper);
+        mCcView = (MessageComposeRecipient) findViewById(R.id.cc_wrapper);
+        mBccView = (MessageComposeRecipient) findViewById(R.id.bcc_wrapper);
         mSubjectView = (EditText) findViewById(R.id.subject);
         mSubjectView.getInputExtras(true).putBoolean("allowEmoji", true);
-        mCcWrapper = (LinearLayout) findViewById(R.id.cc_wrapper);
         mBccWrapper = (LinearLayout) findViewById(R.id.bcc_wrapper);
 
         if (mAccount.isAlwaysShowCcBcc()) {
@@ -778,12 +757,12 @@ public class MessageCompose extends K9Activity implements OnClickListener,
             // theme the whole content according to the theme (except the action bar)
             mThemeContext = new ContextThemeWrapper(this,
                     K9.getK9ThemeResourceId(K9.getK9ComposerTheme()));
-            View v = LayoutInflater.from(mThemeContext).inflate(R.layout.message_compose, null);
+            View view = LayoutInflater.from(mThemeContext).inflate(R.layout.message_compose, null);
             TypedValue outValue = new TypedValue();
             // background color needs to be forced
             mThemeContext.getTheme().resolveAttribute(R.attr.messageViewBackgroundColor, outValue, true);
-            v.setBackgroundColor(outValue.data);
-            setContentView(v);
+            view.setBackgroundColor(outValue.data);
+            setContentView(view);
         } else {
             setContentView(R.layout.message_compose);
             mThemeContext = this;
@@ -888,16 +867,16 @@ public class MessageCompose extends K9Activity implements OnClickListener,
             String[] extraBcc = intent.getStringArrayExtra(Intent.EXTRA_BCC);
 
             if (extraEmail != null) {
-                addRecipients(mToView, Arrays.asList(extraEmail));
+                mToView.addRecipients(Arrays.asList(extraEmail));
             }
 
             boolean ccOrBcc = false;
             if (extraCc != null) {
-                ccOrBcc |= addRecipients(mCcView, Arrays.asList(extraCc));
+                ccOrBcc |= mCcView.addRecipients(Arrays.asList(extraCc));
             }
 
             if (extraBcc != null) {
-                ccOrBcc |= addRecipients(mBccView, Arrays.asList(extraBcc));
+                ccOrBcc |= mBccView.addRecipients(Arrays.asList(extraBcc));
             }
 
             if (ccOrBcc) {
@@ -1011,7 +990,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
         outState.putInt(STATE_KEY_NUM_ATTACHMENTS_LOADING, mNumAttachmentsLoading);
         outState.putString(STATE_KEY_WAITING_FOR_ATTACHMENTS, mWaitingForAttachments.name());
         outState.putParcelableArrayList(STATE_KEY_ATTACHMENTS, createAttachmentList());
-        outState.putBoolean(STATE_KEY_CC_SHOWN, mCcWrapper.getVisibility() == View.VISIBLE);
+        outState.putBoolean(STATE_KEY_CC_SHOWN, mCcView.getVisibility() == View.VISIBLE);
         outState.putBoolean(STATE_KEY_BCC_SHOWN, mBccWrapper.getVisibility() == View.VISIBLE);
         outState.putSerializable(STATE_KEY_QUOTED_TEXT_MODE, mQuotedTextMode);
         outState.putBoolean(STATE_KEY_SOURCE_MESSAGE_PROCED, mSourceMessageProcessed);
@@ -1061,7 +1040,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
 
         mReadReceipt = savedInstanceState
                        .getBoolean(STATE_KEY_READ_RECEIPT);
-        mCcWrapper.setVisibility(savedInstanceState.getBoolean(STATE_KEY_CC_SHOWN) ? View.VISIBLE
+        mCcView.setVisibility(savedInstanceState.getBoolean(STATE_KEY_CC_SHOWN) ? View.VISIBLE
                                  : View.GONE);
         mBccWrapper.setVisibility(savedInstanceState
                                   .getBoolean(STATE_KEY_BCC_SHOWN) ? View.VISIBLE : View.GONE);
@@ -1129,15 +1108,6 @@ public class MessageCompose extends K9Activity implements OnClickListener,
         }
     }
 
-    private void addAddresses(MultiAutoCompleteTextView view, Address[] addresses) {
-        if (addresses == null) {
-            return;
-        }
-        for (Address address : addresses) {
-            addAddress(view, address);
-        }
-    }
-
     private void addAddress(MultiAutoCompleteTextView view, Address address) {
         view.append(address + ", ");
     }
@@ -1150,10 +1120,15 @@ public class MessageCompose extends K9Activity implements OnClickListener,
      * Returns an Address array of recipients this email will be sent to.
      * @return Address array of recipients this email will be sent to.
      */
-    private Address[] getRecipientAddresses() {
-        String addresses = mToView.getText().toString() + mCcView.getText().toString()
-                + mBccView.getText().toString();
-        return Address.parseUnencoded(addresses.trim());
+    private List<Address> getRecipientAddresses() {
+        Address[] toAddresses = mToView.getRecipients();
+        Address[] ccAddresses = mCcView.getRecipients();
+        Address[] bccAddresses = mCcView.getRecipients();
+        ArrayList<Address> recipients = new ArrayList<Address>();
+        recipients.addAll(Arrays.asList(toAddresses));
+        recipients.addAll(Arrays.asList(ccAddresses));
+        recipients.addAll(Arrays.asList(bccAddresses));
+        return recipients;
     }
 
     private TextBody buildText(boolean isDraft) {
@@ -1171,9 +1146,9 @@ public class MessageCompose extends K9Activity implements OnClickListener,
     private MessageBuilder createMessageBuilder(final boolean isDraft) {
         return new MessageBuilder(getApplicationContext())
                 .setSubject(mSubjectView.getText().toString())
-                .setTo(getAddresses(mToView))
-                .setCc(getAddresses(mCcView))
-                .setBcc(getAddresses(mBccView))
+                .setTo(mToView.getRecipients())
+                .setCc(mCcView.getRecipients())
+                .setBcc(mBccView.getRecipients())
                 .setInReplyTo(mInReplyTo)
                 .setReferences(mReferences)
                 .setRequestReadReceipt(mReadReceipt)
@@ -1242,7 +1217,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
     }
 
     private void onSend() {
-        if (getAddresses(mToView).length == 0 && getAddresses(mCcView).length == 0 && getAddresses(mBccView).length == 0) {
+        if (mToView.getRecipients().length == 0 && mCcView.getRecipients().length == 0 && mBccView.getRecipients().length == 0) {
             mToView.setError(getString(R.string.message_compose_error_no_recipients));
             Toast.makeText(this, getString(R.string.message_compose_error_no_recipients), Toast.LENGTH_LONG).show();
             return;
@@ -1429,7 +1404,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
     }
 
     private void onAddCcBcc() {
-        mCcWrapper.setVisibility(View.VISIBLE);
+        mCcView.setVisibility(View.VISIBLE);
         mBccWrapper.setVisibility(View.VISIBLE);
         computeAddCcBccVisibility();
     }
@@ -1438,7 +1413,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
      * Hide the 'Add Cc/Bcc' menu item when both fields are visible.
      */
     private void computeAddCcBccVisibility() {
-        if (mMenu != null && mCcWrapper.getVisibility() == View.VISIBLE &&
+        if (mMenu != null && mCcView.getVisibility() == View.VISIBLE &&
                 mBccWrapper.getVisibility() == View.VISIBLE) {
             mMenu.findItem(R.id.add_cc_bcc).setVisible(false);
         }
@@ -1716,11 +1691,11 @@ public class MessageCompose extends K9Activity implements OnClickListener,
 
                 String email = contact.emailAddresses.get(0);
                 if (requestCode == CONTACT_PICKER_TO) {
-                    addAddress(mToView, new Address(email, ""));
+                    mToView.addRecipient(new Address(email, ""));
                 } else if (requestCode == CONTACT_PICKER_CC) {
-                    addAddress(mCcView, new Address(email, ""));
+                    mCcView.addRecipient(new Address(email, ""));
                 } else if (requestCode == CONTACT_PICKER_BCC) {
-                    addAddress(mBccView, new Address(email, ""));
+                    mBccView.addRecipient(new Address(email, ""));
                 } else {
                     return;
                 }
@@ -1733,11 +1708,11 @@ public class MessageCompose extends K9Activity implements OnClickListener,
             case CONTACT_PICKER_BCC2:
                 String emailAddr = data.getStringExtra(EmailAddressList.EXTRA_EMAIL_ADDRESS);
                 if (requestCode == CONTACT_PICKER_TO2) {
-                    addAddress(mToView, new Address(emailAddr, ""));
+                    mToView.addRecipient(new Address(emailAddr, ""));
                 } else if (requestCode == CONTACT_PICKER_CC2) {
-                    addAddress(mCcView, new Address(emailAddr, ""));
+                    mCcView.addRecipient(new Address(emailAddr, ""));
                 } else if (requestCode == CONTACT_PICKER_BCC2) {
-                    addAddress(mBccView, new Address(emailAddr, ""));
+                    mBccView.addRecipient(new Address(emailAddr, ""));
                 }
                 break;
         }
@@ -1835,8 +1810,8 @@ public class MessageCompose extends K9Activity implements OnClickListener,
         if (mIdentityChanged) {
             mBccWrapper.setVisibility(View.VISIBLE);
         }
-        mBccView.setText("");
-        addAddresses(mBccView, mAccount.getAlwaysBcc());
+        mBccView.clearRecipients();
+        mBccView.addRecipients(Address.parseUnencoded(mAccount.getAlwaysBcc()));
     }
 
     private void updateSignature() {
@@ -2260,7 +2235,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
             replyToAddresses = message.getRecipients(RecipientType.TO);
         }
 
-        addAddresses(mToView, replyToAddresses);
+        mToView.addRecipients(replyToAddresses);
 
 
 
@@ -2295,24 +2270,24 @@ public class MessageCompose extends K9Activity implements OnClickListener,
             if (message.getReplyTo().length > 0) {
                 for (Address address : message.getFrom()) {
                     if (!mAccount.isAnIdentity(address) && !Utility.arrayContains(replyToAddresses, address)) {
-                        addAddress(mToView, address);
+                        mToView.addRecipient(address);
                     }
                 }
             }
             for (Address address : message.getRecipients(RecipientType.TO)) {
                 if (!mAccount.isAnIdentity(address) && !Utility.arrayContains(replyToAddresses, address)) {
-                    addAddress(mToView, address);
+                    mToView.addRecipient(address);
                 }
 
             }
             if (message.getRecipients(RecipientType.CC).length > 0) {
                 for (Address address : message.getRecipients(RecipientType.CC)) {
                     if (!mAccount.isAnIdentity(address) && !Utility.arrayContains(replyToAddresses, address)) {
-                        addAddress(mCcView, address);
+                        mCcView.addRecipient(address);
                     }
 
                 }
-                mCcWrapper.setVisibility(View.VISIBLE);
+                mCcView.setVisibility(View.VISIBLE);
             }
         }
     }
@@ -2354,15 +2329,15 @@ public class MessageCompose extends K9Activity implements OnClickListener,
 
         mDraftId = MessagingController.getInstance(getApplication()).getId(message);
         mSubjectView.setText(message.getSubject());
-        addAddresses(mToView, message.getRecipients(RecipientType.TO));
+        mToView.addRecipients(message.getRecipients(RecipientType.TO));
         if (message.getRecipients(RecipientType.CC).length > 0) {
-            addAddresses(mCcView, message.getRecipients(RecipientType.CC));
-            mCcWrapper.setVisibility(View.VISIBLE);
+            mCcView.addRecipients(message.getRecipients(RecipientType.CC));
+            mCcView.setVisibility(View.VISIBLE);
         }
 
         Address[] bccRecipients = message.getRecipients(RecipientType.BCC);
         if (bccRecipients.length > 0) {
-            addAddresses(mBccView, bccRecipients);
+            mBccView.addRecipients(bccRecipients);
             String bccAddress = mAccount.getAlwaysBcc();
             if (bccRecipients.length == 1 && bccAddress != null && bccAddress.equals(bccRecipients[0].toString())) {
                 // If the auto-bcc is the only entry in the BCC list, don't show the Bcc fields.
@@ -3053,13 +3028,13 @@ public class MessageCompose extends K9Activity implements OnClickListener,
             to = new ArrayList<String>(to);
             to.add(0, recipient);
         }
-        addRecipients(mToView, to);
+        mToView.addRecipients(to);
 
         // Read carbon copy recipients from the "cc" parameter.
-        boolean ccOrBcc = addRecipients(mCcView, uri.getQueryParameters("cc"));
+        boolean ccOrBcc = mCcView.addRecipients(uri.getQueryParameters("cc"));
 
         // Read blind carbon copy recipients from the "bcc" parameter.
-        ccOrBcc |= addRecipients(mBccView, uri.getQueryParameters("bcc"));
+        ccOrBcc |= mBccView.addRecipients(uri.getQueryParameters("bcc"));
 
         if (ccOrBcc) {
             // Display CC and BCC text fields if CC or BCC recipients were set by the intent.

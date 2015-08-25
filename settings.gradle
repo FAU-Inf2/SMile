@@ -8,7 +8,7 @@ import org.ajoberstar.grgit.*
 File dir = new File('../smime-api')
 if (!dir.exists()) {
     println 'Cloning smime-api repository...'
-    def grgit = Grgit.clone(dir: dir, uri: 'https://github.com/sonork/smime-api')
+    def grgit = Grgit.clone(dir: dir, uri: 'https://github.com/FAU-Inf2/smime-api')
 } else {
     println 'Pulling changes from smime-api repository...'
     def grgit = Grgit.open(dir)

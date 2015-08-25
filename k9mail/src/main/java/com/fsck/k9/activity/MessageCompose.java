@@ -1380,7 +1380,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
                     }
                 }
             }).start();
-            
+
             sMimeApi.executeApiAsync(intent, pipedInputStream, outputStream, new SMimeApi.ISMimeCallback() {
                 @Override
                 public void onReturn(Intent result) {

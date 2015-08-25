@@ -277,7 +277,6 @@ public class MessageCompose extends K9Activity implements OnClickListener,
     private boolean mForcePlainText = false;
 
     private Button mChooseIdentityButton;
-    private LinearLayout mBccWrapper;
     private MessageComposeRecipient mToView;
     private MessageComposeRecipient mCcView;
     private MessageComposeRecipient mBccView;
@@ -689,7 +688,6 @@ public class MessageCompose extends K9Activity implements OnClickListener,
         mBccView = (MessageComposeRecipient) findViewById(R.id.bcc_wrapper);
         mSubjectView = (EditText) findViewById(R.id.subject);
         mSubjectView.getInputExtras(true).putBoolean("allowEmoji", true);
-        mBccWrapper = (LinearLayout) findViewById(R.id.bcc_wrapper);
 
         if (mAccount.isAlwaysShowCcBcc()) {
             onAddCcBcc();
@@ -991,7 +989,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
         outState.putString(STATE_KEY_WAITING_FOR_ATTACHMENTS, mWaitingForAttachments.name());
         outState.putParcelableArrayList(STATE_KEY_ATTACHMENTS, createAttachmentList());
         outState.putBoolean(STATE_KEY_CC_SHOWN, mCcView.getVisibility() == View.VISIBLE);
-        outState.putBoolean(STATE_KEY_BCC_SHOWN, mBccWrapper.getVisibility() == View.VISIBLE);
+        outState.putBoolean(STATE_KEY_BCC_SHOWN, mBccView.getVisibility() == View.VISIBLE);
         outState.putSerializable(STATE_KEY_QUOTED_TEXT_MODE, mQuotedTextMode);
         outState.putBoolean(STATE_KEY_SOURCE_MESSAGE_PROCED, mSourceMessageProcessed);
         outState.putLong(STATE_KEY_DRAFT_ID, mDraftId);
@@ -1042,7 +1040,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
                        .getBoolean(STATE_KEY_READ_RECEIPT);
         mCcView.setVisibility(savedInstanceState.getBoolean(STATE_KEY_CC_SHOWN) ? View.VISIBLE
                                  : View.GONE);
-        mBccWrapper.setVisibility(savedInstanceState
+        mBccView.setVisibility(savedInstanceState
                                   .getBoolean(STATE_KEY_BCC_SHOWN) ? View.VISIBLE : View.GONE);
 
         // This method is called after the action bar menu has already been created and prepared.
@@ -1405,7 +1403,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
 
     private void onAddCcBcc() {
         mCcView.setVisibility(View.VISIBLE);
-        mBccWrapper.setVisibility(View.VISIBLE);
+        mBccView.setVisibility(View.VISIBLE);
         computeAddCcBccVisibility();
     }
 
@@ -1414,7 +1412,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
      */
     private void computeAddCcBccVisibility() {
         if (mMenu != null && mCcView.getVisibility() == View.VISIBLE &&
-                mBccWrapper.getVisibility() == View.VISIBLE) {
+                mBccView.getVisibility() == View.VISIBLE) {
             mMenu.findItem(R.id.add_cc_bcc).setVisible(false);
         }
     }
@@ -1808,7 +1806,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
 
     private void updateBcc() {
         if (mIdentityChanged) {
-            mBccWrapper.setVisibility(View.VISIBLE);
+            mBccView.setVisibility(View.VISIBLE);
         }
         mBccView.clearRecipients();
         mBccView.addRecipients(Address.parseUnencoded(mAccount.getAlwaysBcc()));
@@ -2341,9 +2339,9 @@ public class MessageCompose extends K9Activity implements OnClickListener,
             String bccAddress = mAccount.getAlwaysBcc();
             if (bccRecipients.length == 1 && bccAddress != null && bccAddress.equals(bccRecipients[0].toString())) {
                 // If the auto-bcc is the only entry in the BCC list, don't show the Bcc fields.
-                mBccWrapper.setVisibility(View.GONE);
+                mBccView.setVisibility(View.GONE);
             } else {
-                mBccWrapper.setVisibility(View.VISIBLE);
+                mBccView.setVisibility(View.VISIBLE);
             }
         }
 

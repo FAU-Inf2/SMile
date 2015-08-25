@@ -124,6 +124,13 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"/>
 
+                    <Spinner
+                        android:id="@+id/crypto_provider"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="right"
+                        android:layout_weight="1"/>
+
                 </LinearLayout>
 
                 <EditText

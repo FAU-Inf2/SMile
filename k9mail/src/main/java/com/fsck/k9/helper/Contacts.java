@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract;
 import android.util.Log;
+import android.widget.FilterQueryProvider;
 
 import com.fsck.k9.K9;
 import com.fsck.k9.mail.Address;
@@ -18,7 +19,7 @@ import java.util.List;
 /**
  * Helper class to access the contacts stored on the device.
  */
-public class Contacts {
+public class Contacts implements FilterQueryProvider {
     /**
      * The order in which the search results are returned by
      * {@link #searchContacts(CharSequence)}.
@@ -408,4 +409,8 @@ public class Contacts {
         return c;
     }
 
+    @Override
+    public Cursor runQuery(CharSequence constraint) {
+        return searchContacts(constraint);
+    }
 }

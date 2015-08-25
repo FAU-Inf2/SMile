@@ -16,6 +16,7 @@ import com.fsck.k9.EmailAddressAdapter;
 import com.fsck.k9.EmailAddressValidator;
 import com.fsck.k9.mail.Address;
 
+import java.util.Arrays;
 import java.util.List;
 
 import de.fau.cs.mad.smile.android.R;
@@ -84,8 +85,8 @@ public class MessageComposeRecipient extends LinearLayout {
         mRecipient.addTextChangedListener(watcher);
     }
 
-    public Address[] getRecipients() {
-        return Address.parseUnencoded(mRecipient.getText().toString().trim());
+    public List<Address> getRecipients() {
+        return Arrays.asList(Address.parseUnencoded(mRecipient.getText().toString().trim()));
     }
 
     public boolean addRecipients(List<String> recipients) {
@@ -94,7 +95,7 @@ public class MessageComposeRecipient extends LinearLayout {
         }
 
         StringBuilder addressList = new StringBuilder();
-
+/*
         // Read current contents of the TextView
         String text = mRecipient.getText().toString();
         addressList.append(text);
@@ -103,14 +104,16 @@ public class MessageComposeRecipient extends LinearLayout {
         if (text.length() != 0 && !(text.endsWith(", ") || text.endsWith(","))) {
             addressList.append(", ");
         }
-
+*/
         // Add recipients
         for (String recipient : recipients) {
             addressList.append(recipient);
             addressList.append(", ");
         }
 
-        mRecipient.setText(addressList);
+        addRecipients(Address.parseUnencoded(addressList.toString()));
+
+        //mRecipient.setText(addressList);
 
         return true;
     }

@@ -256,7 +256,7 @@ public final class MessageCryptoHelper {
         decryptVerify(new Intent());
     }
 
-    private void decryptVerify(Intent intent) {
+    private void decryptVerify(final Intent intent) {
         intent.setAction(OpenPgpApi.ACTION_DECRYPT_VERIFY);
 
         try {
@@ -289,7 +289,7 @@ public final class MessageCryptoHelper {
         }
     }
 
-    private void callAsyncInlineOperation(Intent intent) throws IOException {
+    private void callAsyncInlineOperation(final Intent intent) throws IOException {
         PipedInputStream pipedInputStream = getPipedInputStreamForEncryptedOrInlineData();
         final ByteArrayOutputStream decryptedOutputStream = new ByteArrayOutputStream();
 
@@ -311,7 +311,7 @@ public final class MessageCryptoHelper {
         });
     }
 
-    private void callAsyncDecrypt(Intent intent) throws IOException {
+    private void callAsyncDecrypt(final Intent intent) throws IOException {
         final CountDownLatch latch = new CountDownLatch(1);
 
         PipedInputStream pipedInputStream = getPipedInputStreamForEncryptedOrInlineData();

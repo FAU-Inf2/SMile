@@ -335,18 +335,18 @@ public class MessageBuilder {
         return this;
     }
 
-    public MessageBuilder setTo(Address[] to) {
-        this.to = to;
+    public MessageBuilder setTo(List<Address> to) {
+        this.to = to.toArray(new Address[0]);
         return this;
     }
 
-    public MessageBuilder setCc(Address[] cc) {
-        this.cc = cc;
+    public MessageBuilder setCc(List<Address> cc) {
+        this.cc = cc.toArray(new Address[0]);
         return this;
     }
 
-    public MessageBuilder setBcc(Address[] bcc) {
-        this.bcc = bcc;
+    public MessageBuilder setBcc(List<Address> bcc) {
+        this.bcc = bcc.toArray(new Address[0]);
         return this;
     }
 

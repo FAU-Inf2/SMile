@@ -1349,7 +1349,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
                         final PipedOutputStream out = new PipedOutputStream(pipedInputStream);
                         currentMessage = createMessage();
                         if(currentMessage != null) {
-                            currentMessage.getBody().writeTo(out);
+                            currentMessage.writeTo(out); // TODO: only send body part
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -1365,10 +1365,10 @@ public class MessageCompose extends K9Activity implements OnClickListener,
                 public void run() {
                     try {
                         PipedInputStream inputStream = new PipedInputStream(outputStream);
-                        Body body = MimeUtility.createBody(inputStream, MimeUtil.ENC_BASE64, "multipart/signed");
+                        MimeMessage resultMessage = new MimeMessage(inputStream, true);
                         latch.await();
-                        if (currentMessage != null) {
-                            currentMessage.setBody(body);
+                        if (resultMessage != null) {
+                            currentMessage = resultMessage;
                             onSend();
                         }
                     } catch (IOException e) {

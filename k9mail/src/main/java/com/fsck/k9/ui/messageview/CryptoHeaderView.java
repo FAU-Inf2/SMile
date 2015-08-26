@@ -20,6 +20,7 @@ import com.fsck.k9.mailstore.CryptoError;
 import com.fsck.k9.mailstore.CryptoResultAnnotation;
 import com.fsck.k9.mailstore.SignatureResult;
 
+import org.openintents.openpgp.OpenPgpDecryptionResult;
 import org.openintents.openpgp.util.OpenPgpUtils;
 
 import de.fau.cs.mad.smile.android.R;
@@ -76,10 +77,22 @@ public final class CryptoHeaderView extends LinearLayout {
 
         switch (cryptoAnnotation.getErrorType()) {
             case NONE: {
-                if (cryptoAnnotation.wasEncrypted()) {
-                    displayEncrypted();
-                } else {
-                    displayNotEncrypted();
+                OpenPgpDecryptionResult decryptionResult = cryptoAnnotation.getDecryptionResult();
+                switch (decryptionResult.getResult()) {
+                    case OpenPgpDecryptionResult.RESULT_NOT_ENCRYPTED: {
+                        displayNotEncrypted();
+                        break;
+                    }
+                    case OpenPgpDecryptionResult.RESULT_ENCRYPTED: {
+                        displayEncrypted();
+                        break;
+                    }
+                    case OpenPgpDecryptionResult.RESULT_INSECURE: {
+                        displayInsecure();
+                        break;
+                    }
+                    default:
+                        throw new RuntimeException("OpenPgpDecryptionResult result not handled!");
                 }
                 break;
             }
@@ -112,7 +125,13 @@ public final class CryptoHeaderView extends LinearLayout {
         resultEncryptionText.setText(R.string.openpgp_result_not_encrypted);
     }
 
-    private final void displayEncryptionError() {
+    private void displayInsecure() {
+        setEncryptionImageAndTextColor(CryptoState.INVALID);
+        resultEncryptionText.setText(R.string.openpgp_result_decryption_insecure);
+    }
+
+
+    private void displayEncryptionError() {
         setEncryptionImageAndTextColor(CryptoState.INVALID);
 
         CryptoError error = cryptoAnnotation.getError();
@@ -158,15 +177,15 @@ public final class CryptoHeaderView extends LinearLayout {
         hideSignatureLayout();
     }
 
-    private final void displayVerificationResult() {
+    private void displayVerificationResult() {
         SignatureResult signatureResult = cryptoAnnotation.getSignatureResult();
-        if (signatureResult == null) {
-            displayNotSigned();
-            return;
-        }
 
         switch (signatureResult.getStatus()) {
-            case ERROR: {
+            case UNSIGNED: {
+                displayNotSigned();
+                break;
+            }
+            case INVALID_SIGNATURE: {
                 displaySignatureError();
                 break;
             }
@@ -190,6 +209,12 @@ public final class CryptoHeaderView extends LinearLayout {
                 displaySignatureKeyRevoked();
                 break;
             }
+            case ERROR: {
+                displaySignatureInsecure();
+                break;
+            }
+            default:
+                throw new RuntimeException("OpenPgpSignatureResult result not handled!");
         }
     }
 
@@ -274,6 +299,13 @@ public final class CryptoHeaderView extends LinearLayout {
     private final void displaySignatureKeyRevoked() {
         setSignatureImageAndTextColor(CryptoState.REVOKED);
         resultSignatureText.setText(R.string.openpgp_result_signature_revoked_key);
+
+        displayUserIdAndSignatureButton();
+    }
+
+    private void displaySignatureInsecure() {
+        setSignatureImageAndTextColor(CryptoState.INVALID);
+        resultSignatureText.setText(R.string.openpgp_result_signature_insecure);
 
         displayUserIdAndSignatureButton();
     }

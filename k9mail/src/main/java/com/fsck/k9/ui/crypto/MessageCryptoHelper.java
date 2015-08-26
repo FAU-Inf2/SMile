@@ -31,6 +31,7 @@ import com.fsck.k9.mailstore.SignatureResult;
 import com.fsck.k9.mailstore.SignatureStatus;
 
 import org.openintents.openpgp.IOpenPgpService;
+import org.openintents.openpgp.OpenPgpDecryptionResult;
 import org.openintents.openpgp.OpenPgpError;
 import org.openintents.openpgp.OpenPgpSignatureResult;
 import org.openintents.openpgp.util.OpenPgpApi;
@@ -505,9 +506,9 @@ public final class MessageCryptoHelper {
         int resultType = currentCryptoResult.getIntExtra(SMimeApi.RESULT_TYPE, SMimeApi.RESULT_TYPE_UNENCRYPTED_UNSIGNED);
 
         if ((resultType & SMimeApi.RESULT_TYPE_ENCRYPTED) == SMimeApi.RESULT_TYPE_ENCRYPTED) {
-            resultAnnotation.setWasEncrypted(true);
+            //resultAnnotation.setWasEncrypted(true);
         } else {
-            resultAnnotation.setWasEncrypted(false);
+            //resultAnnotation.setWasEncrypted(false);
         }
 
         if ((resultType & SMimeApi.RESULT_TYPE_SIGNED) == SMimeApi.RESULT_TYPE_SIGNED) {
@@ -563,50 +564,46 @@ public final class MessageCryptoHelper {
 
     private void handleOpenPgpCryptoOperationSuccess(final MimeBodyPart outputPart) {
         final CryptoResultAnnotation resultAnnotation = new CryptoResultAnnotation();
-        resultAnnotation.setOutputData(outputPart);
+        OpenPgpDecryptionResult decryptionResult =
+                currentCryptoResult.getParcelableExtra(OpenPgpApi.RESULT_DECRYPTION);
+        OpenPgpSignatureResult signatureResult =
+                currentCryptoResult.getParcelableExtra(OpenPgpApi.RESULT_SIGNATURE);
 
-        int resultType = currentCryptoResult.getIntExtra(OpenPgpApi.RESULT_TYPE,
-                OpenPgpApi.RESULT_TYPE_UNENCRYPTED_UNSIGNED);
+        SignatureStatus signatureStatus = SignatureStatus.ERROR;
 
-        if ((resultType & OpenPgpApi.RESULT_TYPE_ENCRYPTED) == OpenPgpApi.RESULT_TYPE_ENCRYPTED) {
-            resultAnnotation.setWasEncrypted(true);
-        } else {
-            resultAnnotation.setWasEncrypted(false);
+        switch (signatureResult.getResult()) {
+            case OpenPgpSignatureResult.RESULT_INVALID_SIGNATURE:
+                signatureStatus = SignatureStatus.INVALID_SIGNATURE;
+                break;
+            case OpenPgpSignatureResult.RESULT_VALID_CONFIRMED:
+                signatureStatus = SignatureStatus.SUCCESS;
+                break;
+            case OpenPgpSignatureResult.RESULT_KEY_MISSING:
+                signatureStatus = SignatureStatus.KEY_MISSING;
+                break;
+            case OpenPgpSignatureResult.RESULT_VALID_UNCONFIRMED:
+                signatureStatus = SignatureStatus.SUCCESS_UNCERTIFIED;
+                break;
+            case OpenPgpSignatureResult.RESULT_INVALID_KEY_REVOKED:
+                signatureStatus = SignatureStatus.KEY_REVOKED;
+                break;
+            case OpenPgpSignatureResult.RESULT_INVALID_KEY_EXPIRED:
+                signatureStatus = SignatureStatus.KEY_EXPIRED;
+                break;
+            case OpenPgpSignatureResult.RESULT_NO_SIGNATURE:
+                signatureStatus = SignatureStatus.UNSIGNED;
+                break;
+            case OpenPgpSignatureResult.RESULT_INVALID_INSECURE:
+                signatureStatus = SignatureStatus.ERROR;
+                break;
         }
 
-        if ((resultType & OpenPgpApi.RESULT_TYPE_SIGNED) == OpenPgpApi.RESULT_TYPE_SIGNED) {
-            OpenPgpSignatureResult signatureResult =
-                    currentCryptoResult.getParcelableExtra(OpenPgpApi.RESULT_SIGNATURE);
-            SignatureStatus signatureStatus = SignatureStatus.ERROR;
-
-            switch (signatureResult.getStatus()) {
-                case OpenPgpSignatureResult.SIGNATURE_ERROR:
-                    signatureStatus = SignatureStatus.ERROR;
-                    break;
-                case OpenPgpSignatureResult.SIGNATURE_KEY_EXPIRED:
-                    signatureStatus = SignatureStatus.KEY_EXPIRED;
-                    break;
-                case OpenPgpSignatureResult.SIGNATURE_KEY_MISSING:
-                    signatureStatus = SignatureStatus.KEY_MISSING;
-                    break;
-                case OpenPgpSignatureResult.SIGNATURE_KEY_REVOKED:
-                    signatureStatus = SignatureStatus.KEY_REVOKED;
-                    break;
-                case OpenPgpSignatureResult.SIGNATURE_SUCCESS_CERTIFIED:
-                    signatureStatus = SignatureStatus.SUCCESS;
-                    break;
-                case OpenPgpSignatureResult.SIGNATURE_SUCCESS_UNCERTIFIED:
-                    signatureStatus = SignatureStatus.SUCCESS_UNCERTIFIED;
-                    break;
-            }
-
-            SignatureResult signatureRes = new SignatureResult(signatureStatus, signatureResult.getPrimaryUserId(), signatureResult.getUserIds());
-
-            resultAnnotation.setSignatureResult(signatureRes);
-        }
-
+        SignatureResult signatureRes = new SignatureResult(signatureStatus, signatureResult.getPrimaryUserId(), signatureResult.getUserIds());
         PendingIntent pendingIntent = currentCryptoResult.getParcelableExtra(OpenPgpApi.RESULT_INTENT);
         resultAnnotation.setPendingIntent(pendingIntent);
+        resultAnnotation.setDecryptionResult(decryptionResult);
+        resultAnnotation.setSignatureResult(signatureRes);
+        resultAnnotation.setOutputData(outputPart);
 
         onCryptoSuccess(resultAnnotation);
     }

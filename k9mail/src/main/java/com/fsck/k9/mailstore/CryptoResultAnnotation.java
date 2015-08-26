@@ -5,11 +5,12 @@ import android.app.PendingIntent;
 
 import com.fsck.k9.mail.internet.MimeBodyPart;
 
+import org.openintents.openpgp.OpenPgpDecryptionResult;
+
 
 public final class CryptoResultAnnotation {
-
-    private boolean wasEncrypted;
     private SignatureResult signatureResult;
+    private OpenPgpDecryptionResult decryptionResult;
     private CryptoError error;
     private PendingIntent pendingIntent;
     private MimeBodyPart outputData;
@@ -18,20 +19,28 @@ public final class CryptoResultAnnotation {
         this.error = new CryptoError();
     }
 
-    public SignatureResult getSignatureResult() {
-        return signatureResult;
+    public void setDecryptionResult(OpenPgpDecryptionResult decryptionResult) {
+        this.decryptionResult = decryptionResult;
     }
 
-    public PendingIntent getPendingIntent() {
-        return pendingIntent;
+    public OpenPgpDecryptionResult getDecryptionResult() {
+        return decryptionResult;
     }
 
     public void setSignatureResult(SignatureResult signatureResult) {
         this.signatureResult = signatureResult;
     }
 
+    public SignatureResult getSignatureResult() {
+        return signatureResult;
+    }
+
     public void setPendingIntent(PendingIntent pendingIntent) {
         this.pendingIntent = pendingIntent;
+    }
+
+    public PendingIntent getPendingIntent() {
+        return pendingIntent;
     }
 
     public CryptoError getError() {
@@ -61,13 +70,5 @@ public final class CryptoResultAnnotation {
 
     public MimeBodyPart getOutputData() {
         return outputData;
-    }
-
-    public boolean wasEncrypted() {
-        return wasEncrypted;
-    }
-
-    public void setWasEncrypted(boolean wasEncrypted) {
-        this.wasEncrypted = wasEncrypted;
     }
 }

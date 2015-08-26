@@ -1413,12 +1413,12 @@ public class MessageCompose extends K9Activity implements OnClickListener,
             public void run() {
                 try {
                     PipedInputStream inputStream = new PipedInputStream(pipedOutputStream);
-                    File outputFile = new File(getApplicationContext().getDir("messages", Context.MODE_PRIVATE), "encrypted.tmp");
-                    FileUtils.copyInputStreamToFile(inputStream, outputFile);
-                    MimeMessage resultMessage = new MimeMessage(new FileInputStream(outputFile), true);
+                    MimeMessage resultMessage = new MimeMessage(inputStream, true);
                     latch.await();
-                    currentMessage = resultMessage;
-                    onSend();
+                    if(currentMessage != null) {
+                        currentMessage = resultMessage;
+                        onSend();
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (MessagingException e) {
@@ -1450,7 +1450,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
         api.executeApiAsync(intent, inputStream, outputStream, callback);
     }
 
-    private static class SmimeSignEncryptCallback implements SMimeApi.ISMimeCallback {
+    private class SmimeSignEncryptCallback implements SMimeApi.ISMimeCallback {
         private final CountDownLatch latch;
 
         public SmimeSignEncryptCallback(CountDownLatch latch) {
@@ -1463,6 +1463,10 @@ public class MessageCompose extends K9Activity implements OnClickListener,
             final int resultCode = result.getIntExtra(SMimeApi.EXTRA_RESULT_CODE, SMimeApi.RESULT_CODE_ERROR);
             switch (resultCode) {
                 case SMimeApi.RESULT_CODE_SUCCESS:
+                    latch.countDown();
+                    break;
+                case SMimeApi.RESULT_CODE_ERROR:
+                    currentMessage = null;
                     latch.countDown();
                     break;
             }

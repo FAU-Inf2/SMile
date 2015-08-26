@@ -77,10 +77,11 @@ import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mail.Multipart;
 import com.fsck.k9.mail.Part;
 import com.fsck.k9.mail.internet.MessageExtractor;
+import com.fsck.k9.mail.internet.MimeBodyPart;
 import com.fsck.k9.mail.internet.MimeMessage;
-import com.fsck.k9.mail.internet.MimeMultipart;
 import com.fsck.k9.mail.internet.MimeUtility;
 import com.fsck.k9.mail.internet.TextBody;
+import com.fsck.k9.mailstore.DecryptStreamParser;
 import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.message.IdentityField;
 import com.fsck.k9.message.IdentityHeaderParser;
@@ -92,8 +93,9 @@ import com.fsck.k9.ui.EolConvertingEditText;
 import com.fsck.k9.view.MessageComposeRecipient;
 import com.fsck.k9.view.MessageWebView;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.james.mime4j.util.MimeUtil;
 import org.htmlcleaner.CleanerProperties;
 import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.SimpleHtmlSerializer;
@@ -102,9 +104,11 @@ import org.openintents.openpgp.OpenPgpError;
 import org.openintents.openpgp.util.OpenPgpApi;
 import org.openintents.openpgp.util.OpenPgpServiceConnection;
 
-import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
@@ -1302,7 +1306,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
                 return false;
         }
 
-        // onSend() is called again in SignEncryptCallback and with
+        // onSend() is called again in OpenPgpSignEncryptCallback and with
         // encryptedData set in pgpData!
         return true;
     }
@@ -1340,60 +1344,92 @@ public class MessageCompose extends K9Activity implements OnClickListener,
     }
 
     private void handleSmime() {
-        if (mCryptoSignatureCheckbox.isChecked()) {
-            final PipedInputStream pipedInputStream = new PipedInputStream();
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        final PipedOutputStream out = new PipedOutputStream(pipedInputStream);
-                        currentMessage = createMessage();
-                        if(currentMessage != null) {
-                            currentMessage.writeTo(out); // TODO: only send body part
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }).start();
-
-            final PipedOutputStream outputStream = new PipedOutputStream();
-            final Intent intent = SMimeApi.signMessage(this.mIdentity.getEmail());
-            final CountDownLatch latch = new CountDownLatch(1);
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        PipedInputStream inputStream = new PipedInputStream(outputStream);
-                        MimeMessage resultMessage = new MimeMessage(inputStream, true);
-                        latch.await();
-                        if (resultMessage != null) {
-                            currentMessage = resultMessage;
-                            onSend();
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    } catch (MessagingException e) {
-                        e.printStackTrace();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }).start();
-
-            sMimeApi.executeApiAsync(intent, pipedInputStream, outputStream, new SMimeApi.ISMimeCallback() {
-                @Override
-                public void onReturn(Intent result) {
-                    Log.d(K9.LOG_TAG, "SMime api returned: " + result);
-                    final int resultCode = result.getIntExtra(SMimeApi.EXTRA_RESULT_CODE, SMimeApi.RESULT_CODE_ERROR);
-                    switch (resultCode) {
-                        case SMimeApi.RESULT_CODE_SUCCESS:
-                            latch.countDown();
-                            break;
-                    }
-                }
-            });
+        if (mCryptoSignatureCheckbox.isChecked() && mEncryptCheckbox.isChecked()) {
+            handleSmimeSignAndEncrypt();
+            return;
         }
+
+        if (mCryptoSignatureCheckbox.isChecked()) {
+            handleSmimeSign();
+            return;
+        }
+
+        if (mEncryptCheckbox.isChecked()) {
+            handleSmimeEncrypt();
+        }
+    }
+
+    private void handleSmimeEncrypt() {
+        List<Address> recipients = this.mToView.getRecipients();
+
+        for (Address recipient : recipients) {
+            // TODO: modify recipient list in message builder
+            final Intent intent = SMimeApi.encryptMessage(recipient.getAddress());
+            executeSmimeMethod(intent);
+        }
+    }
+
+    private void handleSmimeSignAndEncrypt() {
+        List<Address> recipients = this.mToView.getRecipients();
+
+        for (Address recipient : recipients) {
+            final Intent intent = SMimeApi.signAndEncryptMessage(this.mIdentity.getEmail(), recipient.getAddress());
+            executeSmimeMethod(intent);
+        }
+    }
+
+    private void handleSmimeSign() {
+        final Intent intent = SMimeApi.signMessage(this.mIdentity.getEmail());
+        executeSmimeMethod(intent);
+    }
+
+    private PipedInputStream getSmimeInputStream() {
+        final PipedInputStream pipedInputStream = new PipedInputStream();
+        // TODO: async task/runnable class?
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final PipedOutputStream out = new PipedOutputStream(pipedInputStream);
+                    currentMessage = createMessage();
+                    if(currentMessage != null) {
+                        currentMessage.writeTo(out); // TODO: only send body part
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+
+        return pipedInputStream;
+    }
+
+    private void executeSmimeMethod(final Intent intent) {
+        final PipedInputStream pipedInputStream = getSmimeInputStream();
+        final PipedOutputStream pipedOutputStream = new PipedOutputStream();
+        final CountDownLatch latch = new CountDownLatch(1);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    PipedInputStream inputStream = new PipedInputStream(pipedOutputStream);
+                    File outputFile = new File(getApplicationContext().getDir("messages", Context.MODE_PRIVATE), "encrypted.tmp");
+                    FileUtils.copyInputStreamToFile(inputStream, outputFile);
+                    MimeMessage resultMessage = new MimeMessage(new FileInputStream(outputFile), true);
+                    latch.await();
+                    currentMessage = resultMessage;
+                    onSend();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (MessagingException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+
+        sMimeApi.executeApiAsync(intent, pipedInputStream, pipedOutputStream, new SmimeSignEncryptCallback(latch));
     }
 
     private InputStream getOpenPgpInputStream() {
@@ -1408,20 +1444,39 @@ public class MessageCompose extends K9Activity implements OnClickListener,
         final InputStream inputStream = getOpenPgpInputStream();
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
-        SignEncryptCallback callback = new SignEncryptCallback(outputStream, REQUEST_CODE_SIGN_ENCRYPT_OPENPGP);
+        OpenPgpSignEncryptCallback callback = new OpenPgpSignEncryptCallback(outputStream, REQUEST_CODE_SIGN_ENCRYPT_OPENPGP);
 
         OpenPgpApi api = new OpenPgpApi(this, mOpenPgpServiceConnection.getService());
         api.executeApiAsync(intent, inputStream, outputStream, callback);
     }
 
+    private static class SmimeSignEncryptCallback implements SMimeApi.ISMimeCallback {
+        private final CountDownLatch latch;
+
+        public SmimeSignEncryptCallback(CountDownLatch latch) {
+            this.latch = latch;
+        }
+
+        @Override
+        public void onReturn(Intent result) {
+            Log.d(K9.LOG_TAG, "SMime api returned: " + result);
+            final int resultCode = result.getIntExtra(SMimeApi.EXTRA_RESULT_CODE, SMimeApi.RESULT_CODE_ERROR);
+            switch (resultCode) {
+                case SMimeApi.RESULT_CODE_SUCCESS:
+                    latch.countDown();
+                    break;
+            }
+        }
+    }
+
     /**
      * Called on successful encrypt/verify
      */
-    private final class SignEncryptCallback implements OpenPgpApi.IOpenPgpCallback {
+    private final class OpenPgpSignEncryptCallback implements OpenPgpApi.IOpenPgpCallback {
         final ByteArrayOutputStream os;
         final int requestCode;
 
-        private SignEncryptCallback(final ByteArrayOutputStream os, final int requestCode) {
+        private OpenPgpSignEncryptCallback(final ByteArrayOutputStream os, final int requestCode) {
             this.os = os;
             this.requestCode = requestCode;
         }
@@ -3197,6 +3252,15 @@ public class MessageCompose extends K9Activity implements OnClickListener,
                 Log.e(K9.LOG_TAG, "Failed to create new message for send or save.", me);
                 throw new RuntimeException("Failed to create a new message for send or save.", me);
             }
+
+            /*File outputFile = new File(getApplicationContext().getDir("messages", Context.MODE_PRIVATE), "encrypted2.tmp");
+            try {
+                message.writeTo(new FileOutputStream(outputFile));
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (MessagingException e) {
+                e.printStackTrace();
+            }*/
 
             try {
                 mContacts.markAsContacted(message.getRecipients(RecipientType.TO));

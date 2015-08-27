@@ -12,6 +12,7 @@ import android.util.Log;
 import com.fsck.k9.Account;
 import com.fsck.k9.K9;
 import com.fsck.k9.crypto.MessageDecryptVerifier;
+import com.fsck.k9.mail.Address;
 import com.fsck.k9.mail.Body;
 import com.fsck.k9.mail.BodyPart;
 import com.fsck.k9.mail.Message;
@@ -20,6 +21,7 @@ import com.fsck.k9.mail.Multipart;
 import com.fsck.k9.mail.Part;
 import com.fsck.k9.mail.internet.MessageExtractor;
 import com.fsck.k9.mail.internet.MimeBodyPart;
+import com.fsck.k9.mail.internet.MimeUtility;
 import com.fsck.k9.mail.internet.TextBody;
 import com.fsck.k9.mailstore.CryptoError;
 import com.fsck.k9.mailstore.CryptoErrorType;
@@ -112,16 +114,19 @@ public final class MessageCryptoHelper {
             return;
         }
 
-        List<Part> encryptedParts = MessageDecryptVerifier.findEncryptedParts(message);
+        List<Part> encryptedParts = MessageDecryptVerifier.findPgpEncryptedParts(message);
         processFoundParts(encryptedParts, CryptoPartType.ENCRYPTED_PGP, CryptoErrorType.ENCRYPTED_BUT_INCOMPLETE,
                 MessageHelper.createEmptyPart());
 
-        List<Part> smimeParts = MessageDecryptVerifier.findSmimeParts(message);
+        List<Part> smimeParts = MessageDecryptVerifier.findSmimeEncryptedParts(message);
         processFoundParts(smimeParts, CryptoPartType.ENCRYPTED_SMIME, CryptoErrorType.ENCRYPTED_BUT_INCOMPLETE,
                 MessageHelper.createEmptyPart());
 
-        List<Part> signedParts = MessageDecryptVerifier.findSignedParts(message);
-        processFoundParts(signedParts, CryptoPartType.SIGNED, CryptoErrorType.SIGNED_BUT_INCOMPLETE, NO_REPLACEMENT_PART);
+        List<Part> pgpSignedParts = MessageDecryptVerifier.findPgpSignedParts(message);
+        processFoundParts(pgpSignedParts, CryptoPartType.SIGNED_PGP, CryptoErrorType.SIGNED_BUT_INCOMPLETE, NO_REPLACEMENT_PART);
+
+        List<Part> smimeSignedParts = MessageDecryptVerifier.findSmimeSignedParts(message);
+        processFoundParts(smimeSignedParts, CryptoPartType.SIGNED_SMIME, CryptoErrorType.SIGNED_BUT_INCOMPLETE, NO_REPLACEMENT_PART);
 
         List<Part> inlineParts = MessageDecryptVerifier.findPgpInlineParts(message);
         addFoundInlinePgpParts(inlineParts);
@@ -263,9 +268,12 @@ public final class MessageCryptoHelper {
         try {
             CryptoPartType cryptoPartType = currentCryptoPart.type;
             switch (cryptoPartType) {
-                case SIGNED: {
+                case SIGNED_PGP: {
                     callAsyncDetachedVerify(intent);
                     return;
+                }
+                case SIGNED_SMIME: {
+                    callAsyncVerifySmime();
                 }
                 case ENCRYPTED_PGP: {
                     callAsyncDecrypt(intent);
@@ -291,7 +299,7 @@ public final class MessageCryptoHelper {
     }
 
     private void callAsyncInlineOperation(final Intent intent) throws IOException {
-        PipedInputStream pipedInputStream = getPipedInputStreamForEncryptedOrInlineData();
+        PipedInputStream pipedInputStream = getPipedInputStream();
         final ByteArrayOutputStream decryptedOutputStream = new ByteArrayOutputStream();
 
         openPgpApi.executeApiAsync(intent, pipedInputStream, decryptedOutputStream, new IOpenPgpCallback() {
@@ -315,7 +323,7 @@ public final class MessageCryptoHelper {
     private void callAsyncDecrypt(final Intent intent) throws IOException {
         final CountDownLatch latch = new CountDownLatch(1);
 
-        PipedInputStream pipedInputStream = getPipedInputStreamForEncryptedOrInlineData();
+        PipedInputStream pipedInputStream = getPipedInputStream();
         final PipedOutputStream decryptedOutputStream = new PipedOutputStream();
         new DecryptedDataAsyncTask(decryptedOutputStream, latch).execute();
 
@@ -339,7 +347,7 @@ public final class MessageCryptoHelper {
             recipient = null;
         }
 
-        PipedInputStream pipedInputStream = getPipedInputStreamForEncryptedOrInlineData();
+        PipedInputStream pipedInputStream = getPipedInputStream();
         final PipedOutputStream decryptedOutputStream = new PipedOutputStream();
         new DecryptedSmimeDataAsyncTask(decryptedOutputStream, latch).execute();
         Intent data = SMimeApi.decryptAndVerifyMessage(sender, recipient);
@@ -353,8 +361,23 @@ public final class MessageCryptoHelper {
         });
     }
 
+    private void callAsyncVerifySmime() throws IOException, MessagingException {
+        PipedInputStream pipedInputStream = getPipedInputStream();
+        String[] fromHeader = currentCryptoPart.part.getHeader("From");
+        String sender = new Address(fromHeader[0]).getAddress();
+        Intent intent = SMimeApi.verifyMessage(sender);
+        sMimeApi.executeApiAsync(intent, pipedInputStream, null, new SMimeApi.ISMimeCallback() {
+            @Override
+            public void onReturn(Intent result) {
+                currentCryptoResult = result;
+                onSmimeCryptoOperationReturned(null);
+                Log.d(K9.LOG_TAG, "verify smime message");
+            }
+        });
+    }
+
     private void callAsyncDetachedVerify(Intent intent) throws IOException, MessagingException {
-        PipedInputStream pipedInputStream = getPipedInputStreamForSignedData();
+        PipedInputStream pipedInputStream = getPipedInputStream();
 
         byte[] signatureData = MessageDecryptVerifier.getSignatureData(currentCryptoPart.part);
         intent.putExtra(OpenPgpApi.EXTRA_DETACHED_SIGNATURE, signatureData);
@@ -362,75 +385,15 @@ public final class MessageCryptoHelper {
         openPgpApi.executeApiAsync(intent, pipedInputStream, null, new IOpenPgpCallback() {
             @Override
             public void onReturn(Intent result) {
-                // TODO: call smimeApi
                 currentCryptoResult = result;
                 onOpenPgpCryptoOperationReturned(null);
             }
         });
     }
 
-    private PipedInputStream getPipedInputStreamForSignedData() throws IOException {
+    private PipedInputStream getPipedInputStream() throws IOException {
         PipedInputStream pipedInputStream = new PipedInputStream();
-
-        final PipedOutputStream out = new PipedOutputStream(pipedInputStream);
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Multipart multipartSignedMultipart = (Multipart) currentCryptoPart.part.getBody();
-                    BodyPart signatureBodyPart = multipartSignedMultipart.getBodyPart(0);
-                    Log.d(K9.LOG_TAG, "signed data type: " + signatureBodyPart.getMimeType());
-                    signatureBodyPart.writeTo(out);
-                } catch (Exception e) {
-                    Log.e(K9.LOG_TAG, "Exception while writing message to crypto provider", e);
-                } finally {
-                    try {
-                        out.close();
-                    } catch (IOException e) {
-                        // don't care
-                    }
-                }
-            }
-        }).start();
-
-        return pipedInputStream;
-    }
-
-    private PipedInputStream getPipedInputStreamForEncryptedOrInlineData() throws IOException {
-        PipedInputStream pipedInputStream = new PipedInputStream();
-
-        final PipedOutputStream out = new PipedOutputStream(pipedInputStream);
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Part part = currentCryptoPart.part;
-                    CryptoPartType cryptoPartType = currentCryptoPart.type;
-                    if (cryptoPartType == CryptoPartType.ENCRYPTED_PGP) {
-                        Multipart multipartEncryptedMultipart = (Multipart) part.getBody();
-                        BodyPart encryptionPayloadPart = multipartEncryptedMultipart.getBodyPart(1);
-                        Body encryptionPayloadBody = encryptionPayloadPart.getBody();
-                        encryptionPayloadBody.writeTo(out);
-                    } else if (cryptoPartType == CryptoPartType.ENCRYPTED_SMIME) {
-                        part.writeTo(out);
-                    } else if (cryptoPartType == CryptoPartType.INLINE_PGP) {
-                        String text = MessageExtractor.getTextFromPart(part);
-                        out.write(text.getBytes());
-                    } else {
-                        Log.wtf(K9.LOG_TAG, "No suitable data to stream found!");
-                    }
-                } catch (Exception e) {
-                    Log.e(K9.LOG_TAG, "Exception while writing message to crypto provider", e);
-                } finally {
-                    try {
-                        out.close();
-                    } catch (IOException e) {
-                        // don't care
-                    }
-                }
-            }
-        }).start();
-
+        new Thread(new CopyDataToPipeRunnable(pipedInputStream, currentCryptoPart)).start();
         return pipedInputStream;
     }
 
@@ -722,6 +685,67 @@ public final class MessageCryptoHelper {
         @Override
         protected void onPostExecute(MimeBodyPart decryptedPart) {
             onSmimeCryptoOperationReturned(decryptedPart);
+        }
+    }
+
+    private class CopyDataToPipeRunnable implements Runnable {
+        private final PipedInputStream inputStream;
+        private final CryptoPart cryptoPart;
+
+        public CopyDataToPipeRunnable(final PipedInputStream inputStream, final CryptoPart cryptoPart) {
+            this.inputStream = inputStream;
+            this.cryptoPart = cryptoPart;
+        }
+
+        @Override
+        public void run() {
+            PipedOutputStream out = null;
+            try {
+                out = new PipedOutputStream(inputStream);
+                Part part = cryptoPart.part;
+
+                switch (cryptoPart.type) {
+                    case INLINE_PGP:{
+                        String text = MessageExtractor.getTextFromPart(part);
+                        out.write(text.getBytes());
+                        break;
+                    }
+                    case ENCRYPTED_PGP: {
+                        Multipart multipartEncryptedMultipart = (Multipart) part.getBody();
+                        BodyPart encryptionPayloadPart = multipartEncryptedMultipart.getBodyPart(1);
+                        Body encryptionPayloadBody = encryptionPayloadPart.getBody();
+                        encryptionPayloadBody.writeTo(out);
+                        break;
+                    }
+                    case ENCRYPTED_SMIME: {
+                        part.writeTo(out);
+                        break;
+                    }
+                    case SIGNED_PGP: {
+                        Multipart multipartSignedMultipart = (Multipart) currentCryptoPart.part.getBody();
+                        BodyPart signatureBodyPart = multipartSignedMultipart.getBodyPart(0);
+                        Log.d(K9.LOG_TAG, "signed data type: " + signatureBodyPart.getMimeType());
+                        signatureBodyPart.writeTo(out);
+                        break;
+                    }
+                    case SIGNED_SMIME:
+                        part.writeTo(out);
+                        break;
+                    default:
+                        Log.wtf(K9.LOG_TAG, "No suitable data to stream found!");
+                        break;
+                }
+            } catch (IOException | MessagingException e) {
+                Log.e(K9.LOG_TAG, "Exception while writing message to crypto provider", e);
+            } finally {
+                try {
+                    if (out != null) {
+                        out.close();
+                    }
+                } catch (IOException e) {
+                    // don't care
+                }
+            }
         }
     }
 }

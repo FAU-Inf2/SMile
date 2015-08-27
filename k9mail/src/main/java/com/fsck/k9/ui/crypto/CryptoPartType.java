@@ -4,5 +4,6 @@ enum CryptoPartType {
     INLINE_PGP,
     ENCRYPTED_PGP,
     ENCRYPTED_SMIME,
-    SIGNED
+    SIGNED_PGP,
+    SIGNED_SMIME
 }

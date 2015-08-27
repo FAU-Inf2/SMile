@@ -7,6 +7,7 @@ import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mail.Multipart;
 import com.fsck.k9.mail.Part;
 import com.fsck.k9.mail.internet.MessageExtractor;
+import com.fsck.k9.mail.internet.MimeUtility;
 
 import org.openintents.openpgp.util.OpenPgpUtils;
 
@@ -25,9 +26,10 @@ public class MessageDecryptVerifier {
     private static final String PROTOCOL_PARAMETER = "protocol";
     private static final String APPLICATION_PGP_ENCRYPTED = "application/pgp-encrypted";
     private static final String APPLICATION_PGP_SIGNATURE = "application/pgp-signature";
+    private static final String APPLICATION_SMIME_SIGNATURE = "application/pkcs7-signature";
     private static final String TEXT_PLAIN = "text/plain";
 
-    private static List<Part> findParts(final Part startPart, final String mimeType) {
+    private static List<Part> findParts(final Part startPart, final String mimeType, final String protocol) {
         List<Part> parts = new ArrayList<Part>();
         Stack<Part> partsToCheck = new Stack<Part>();
         partsToCheck.push(startPart);
@@ -38,7 +40,9 @@ public class MessageDecryptVerifier {
             Body body = part.getBody();
 
             if (isSameMimeType(partMimeType, mimeType)) {
-                parts.add(part);
+                if(checkProtocolParameter(part, protocol)) {
+                    parts.add(part);
+                }
             } else if (body instanceof Multipart) {
                 Multipart multipart = (Multipart) body;
                 for (int i = multipart.getCount() - 1; i >= 0; i--) {
@@ -47,19 +51,47 @@ public class MessageDecryptVerifier {
                 }
             }
         }
+
         return parts;
     }
 
-    public static List<Part> findEncryptedParts(final Part startPart) {
-        return findParts(startPart, MULTIPART_ENCRYPTED);
+    private static boolean checkProtocolParameter(final Part part, final String protocol) {
+        if(protocol != null) {
+            String partProtocol = null;
+            String[] contentTypes = new String[0];
+            try {
+                contentTypes = part.getHeader("Content-Type");
+            } catch (MessagingException e) {
+                e.printStackTrace();
+            }
+
+            for (String contentType : contentTypes) {
+                partProtocol = MimeUtility.getHeaderParameter(contentType, PROTOCOL_PARAMETER);
+                if(partProtocol != null && partProtocol.equalsIgnoreCase(protocol)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        return true;
     }
 
-    public static List<Part> findSignedParts(final Part startPart) {
-        return findParts(startPart, MULTIPART_SIGNED);
+    public static List<Part> findPgpEncryptedParts(final Part startPart) {
+        return findParts(startPart, MULTIPART_ENCRYPTED, null);
     }
 
-    public static List<Part> findSmimeParts(final Part startPart) {
-        return findParts(startPart, SMIME_ENCRYPTED);
+    public static List<Part> findPgpSignedParts(final Part startPart) {
+        return findParts(startPart, MULTIPART_SIGNED, APPLICATION_PGP_SIGNATURE);
+    }
+
+    public static List<Part> findSmimeSignedParts(final Part startPart) {
+        return findParts(startPart, MULTIPART_SIGNED, APPLICATION_SMIME_SIGNATURE);
+    }
+
+    public static List<Part> findSmimeEncryptedParts(final Part startPart) {
+        return findParts(startPart, SMIME_ENCRYPTED, null);
     }
 
     public static List<Part> findPgpInlineParts(Part startPart) {

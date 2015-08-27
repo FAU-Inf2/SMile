@@ -506,13 +506,26 @@ public final class MessageCryptoHelper {
         int resultType = currentCryptoResult.getIntExtra(SMimeApi.RESULT_TYPE, SMimeApi.RESULT_TYPE_UNENCRYPTED_UNSIGNED);
 
         if ((resultType & SMimeApi.RESULT_TYPE_ENCRYPTED) == SMimeApi.RESULT_TYPE_ENCRYPTED) {
-            //resultAnnotation.setWasEncrypted(true);
+            resultAnnotation.setEncrypted(true);
         } else {
-            //resultAnnotation.setWasEncrypted(false);
+            resultAnnotation.setEncrypted(false);
         }
 
         if ((resultType & SMimeApi.RESULT_TYPE_SIGNED) == SMimeApi.RESULT_TYPE_SIGNED) {
+            int signatureStatus = currentCryptoResult.getIntExtra(SMimeApi.RESULT_SIGNATURE, SMimeApi.RESULT_SIGNATURE_UNSIGNED);
             SignatureResult signatureResult = new SignatureResult(SignatureStatus.SUCCESS, null, null);
+            switch (signatureStatus) {
+                case SMimeApi.RESULT_SIGNATURE_SIGNED:
+                    signatureResult.setStatus(SignatureStatus.SUCCESS);
+                    break;
+                case SMimeApi.RESULT_SIGNATURE_SIGNED_UNCOFIRMED:
+                    signatureResult.setStatus(SignatureStatus.SUCCESS_UNCERTIFIED);
+                    break;
+                default:
+                    signatureResult.setStatus(SignatureStatus.INVALID_SIGNATURE);
+                    break;
+            }
+
             resultAnnotation.setSignatureResult(signatureResult);
         }
 
@@ -598,10 +611,26 @@ public final class MessageCryptoHelper {
                 break;
         }
 
+        switch (decryptionResult.getResult()) {
+            case OpenPgpDecryptionResult.RESULT_NOT_ENCRYPTED: {
+                resultAnnotation.setEncrypted(false);
+                break;
+            }
+            case OpenPgpDecryptionResult.RESULT_ENCRYPTED: {
+                resultAnnotation.setEncrypted(false);
+                break;
+            }
+            case OpenPgpDecryptionResult.RESULT_INSECURE: {
+                resultAnnotation.setEncrypted(false);
+                break;
+            }
+            default:
+                throw new RuntimeException("OpenPgpDecryptionResult result not handled!");
+        }
+
         SignatureResult signatureRes = new SignatureResult(signatureStatus, signatureResult.getPrimaryUserId(), signatureResult.getUserIds());
         PendingIntent pendingIntent = currentCryptoResult.getParcelableExtra(OpenPgpApi.RESULT_INTENT);
         resultAnnotation.setPendingIntent(pendingIntent);
-        resultAnnotation.setDecryptionResult(decryptionResult);
         resultAnnotation.setSignatureResult(signatureRes);
         resultAnnotation.setOutputData(outputPart);
 

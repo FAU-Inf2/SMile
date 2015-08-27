@@ -77,22 +77,10 @@ public final class CryptoHeaderView extends LinearLayout {
 
         switch (cryptoAnnotation.getErrorType()) {
             case NONE: {
-                OpenPgpDecryptionResult decryptionResult = cryptoAnnotation.getDecryptionResult();
-                switch (decryptionResult.getResult()) {
-                    case OpenPgpDecryptionResult.RESULT_NOT_ENCRYPTED: {
-                        displayNotEncrypted();
-                        break;
-                    }
-                    case OpenPgpDecryptionResult.RESULT_ENCRYPTED: {
-                        displayEncrypted();
-                        break;
-                    }
-                    case OpenPgpDecryptionResult.RESULT_INSECURE: {
-                        displayInsecure();
-                        break;
-                    }
-                    default:
-                        throw new RuntimeException("OpenPgpDecryptionResult result not handled!");
+                if (cryptoAnnotation.isEncrypted()) {
+                    displayEncrypted();
+                } else {
+                    displayNotEncrypted();
                 }
                 break;
             }
@@ -130,7 +118,6 @@ public final class CryptoHeaderView extends LinearLayout {
         resultEncryptionText.setText(R.string.openpgp_result_decryption_insecure);
     }
 
-
     private void displayEncryptionError() {
         setEncryptionImageAndTextColor(CryptoState.INVALID);
 
@@ -141,6 +128,7 @@ public final class CryptoHeaderView extends LinearLayout {
         } else {
             text = getContext().getString(R.string.openpgp_error, error.getMessage());
         }
+
         resultEncryptionText.setText(text);
     }
 

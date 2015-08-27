@@ -704,7 +704,7 @@ public class LocalFolder extends Folder<LocalMessage> implements Serializable {
             } else {
                 throw new IllegalStateException("Parent is neither a multipart nor a message");
             }
-            parseHeaderBytes(part, header);
+            parseHeaderBytes(part, header); // TODO: move out of if branch, otherwise no headers in messageview
         }
 
         partById.put(id, part);

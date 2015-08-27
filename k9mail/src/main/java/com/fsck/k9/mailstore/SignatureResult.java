@@ -20,4 +20,8 @@ public class SignatureResult {
     public SignatureStatus getStatus() {
         return status;
     }
+
+    public void setStatus(SignatureStatus status) {
+        this.status = status;
+    }
 }

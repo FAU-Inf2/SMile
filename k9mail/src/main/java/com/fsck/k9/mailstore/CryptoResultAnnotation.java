@@ -10,21 +10,22 @@ import org.openintents.openpgp.OpenPgpDecryptionResult;
 
 public final class CryptoResultAnnotation {
     private SignatureResult signatureResult;
-    private OpenPgpDecryptionResult decryptionResult;
     private CryptoError error;
     private PendingIntent pendingIntent;
     private MimeBodyPart outputData;
+    private boolean encrypted;
 
     public CryptoResultAnnotation() {
         this.error = new CryptoError();
+        this.signatureResult = new SignatureResult(SignatureStatus.UNSIGNED, null, null);
     }
 
-    public void setDecryptionResult(OpenPgpDecryptionResult decryptionResult) {
-        this.decryptionResult = decryptionResult;
+    public boolean isEncrypted() {
+        return encrypted;
     }
 
-    public OpenPgpDecryptionResult getDecryptionResult() {
-        return decryptionResult;
+    public void setEncrypted(boolean encrypted) {
+        this.encrypted = encrypted;
     }
 
     public void setSignatureResult(SignatureResult signatureResult) {

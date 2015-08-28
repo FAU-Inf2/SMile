@@ -46,6 +46,11 @@ public class AccountSettings {
          * and use that for whatever you add here.
          */
 
+        s.put("smime_app", Settings.versions(
+                new  V(41, new StringSetting("SMile-crypto")),
+                new  V(41, new StringSetting(""))
+        ));
+
         s.put("alwaysBcc", Settings.versions(
                 new V(11, new StringSetting(""))
             ));

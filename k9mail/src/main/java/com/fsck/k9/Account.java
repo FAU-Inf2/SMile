@@ -411,9 +411,9 @@ public class Account implements BaseAccount, StoreConfig {
         mSentFolderName = prefs.getString(mUuid  + ".sentFolderName", "Sent");
         mTrashFolderName = prefs.getString(mUuid  + ".trashFolderName", "Trash");
         mArchiveFolderName = prefs.getString(mUuid  + ".archiveFolderName", "Archive");
-        mSpamFolderName = prefs.getString(mUuid  + ".spamFolderName", "Spam");
+        mSpamFolderName = prefs.getString(mUuid + ".spamFolderName", "Spam");
         mExpungePolicy = getEnumStringPref(prefs, mUuid + ".expungePolicy", Expunge.EXPUNGE_IMMEDIATELY);
-        mSyncRemoteDeletions = prefs.getBoolean(mUuid  + ".syncRemoteDeletions", true);
+        mSyncRemoteDeletions = prefs.getBoolean(mUuid + ".syncRemoteDeletions", true);
 
         mMaxPushFolders = prefs.getInt(mUuid + ".maxPushFolders", 10);
         goToUnreadMessageSearch = prefs.getBoolean(mUuid + ".goToUnreadMessageSearch", false);
@@ -437,7 +437,7 @@ public class Account implements BaseAccount, StoreConfig {
             compressionMap.put(type, useCompression);
         }
 
-        mAutoExpandFolderName = prefs.getString(mUuid  + ".autoExpandFolderName", INBOX);
+        mAutoExpandFolderName = prefs.getString(mUuid + ".autoExpandFolderName", INBOX);
 
         mAccountNumber = prefs.getInt(mUuid + ".accountNumber", 0);
 
@@ -453,8 +453,8 @@ public class Account implements BaseAccount, StoreConfig {
         mNotificationSetting.setVibratePattern(prefs.getInt(mUuid + ".vibratePattern", 0));
         mNotificationSetting.setVibrateTimes(prefs.getInt(mUuid + ".vibrateTimes", 5));
         mNotificationSetting.setRing(prefs.getBoolean(mUuid + ".ring", true));
-        mNotificationSetting.setRingtone(prefs.getString(mUuid  + ".ringtone",
-                                         "content://settings/system/notification_sound"));
+        mNotificationSetting.setRingtone(prefs.getString(mUuid + ".ringtone",
+                "content://settings/system/notification_sound"));
         mNotificationSetting.setLed(prefs.getBoolean(mUuid + ".led", true));
         mNotificationSetting.setLedColor(prefs.getInt(mUuid + ".ledColor", mChipColor));
 
@@ -466,9 +466,9 @@ public class Account implements BaseAccount, StoreConfig {
 
         mFolderTargetMode = getEnumStringPref(prefs, mUuid  + ".folderTargetMode", FolderMode.NOT_SECOND_CLASS);
 
-        searchableFolders = getEnumStringPref(prefs, mUuid  + ".searchableFolders", Searchable.ALL);
+        searchableFolders = getEnumStringPref(prefs, mUuid + ".searchableFolders", Searchable.ALL);
 
-        mIsSignatureBeforeQuotedText = prefs.getBoolean(mUuid  + ".signatureBeforeQuotedText", false);
+        mIsSignatureBeforeQuotedText = prefs.getBoolean(mUuid + ".signatureBeforeQuotedText", false);
         identities = loadIdentities(prefs);
 
         String cryptoApp = prefs.getString(mUuid + ".cryptoApp", NO_OPENPGP_PROVIDER);
@@ -481,6 +481,7 @@ public class Account implements BaseAccount, StoreConfig {
         mEnabled = prefs.getBoolean(mUuid + ".enabled", true);
         mMarkMessageAsReadOnView = prefs.getBoolean(mUuid + ".markMessageAsReadOnView", true);
         mAlwaysShowCcBcc = prefs.getBoolean(mUuid + ".alwaysShowCcBcc", false);
+        mSmimeApp = prefs.getString(mUuid + ".smime_app", null);
 
         cacheChips();
 
@@ -578,6 +579,7 @@ public class Account implements BaseAccount, StoreConfig {
         editor.remove(mUuid + ".messageFormat");
         editor.remove(mUuid + ".messageReadReceipt");
         editor.remove(mUuid + ".notifyMailCheck");
+        editor.remove(mUuid + ".smime_app");
         for (NetworkType type : NetworkType.values()) {
             editor.remove(mUuid + ".useCompression." + type.name());
         }
@@ -754,6 +756,7 @@ public class Account implements BaseAccount, StoreConfig {
         editor.putString(mUuid + ".ringtone", mNotificationSetting.getRingtone());
         editor.putBoolean(mUuid + ".led", mNotificationSetting.isLed());
         editor.putInt(mUuid + ".ledColor", mNotificationSetting.getLedColor());
+        editor.putString(mUuid + ".smime_app", mSmimeApp);
 
         for (NetworkType type : NetworkType.values()) {
             Boolean useCompression = compressionMap.get(type);
@@ -1658,13 +1661,14 @@ public class Account implements BaseAccount, StoreConfig {
 
     public String getSmimeProvider() {
         if(mSmimeApp == null) {
-            setSmimeApp("de.fau.cs.mad.smile.android.encryption");
+            Log.d(K9.LOG_TAG, "Smime provider is null");
         }
 
         return mSmimeApp;
     }
 
     public void setSmimeApp(String smimeApp) {
+        Log.d(K9.LOG_TAG, "Smime app set to " + smimeApp);
         mSmimeApp = smimeApp;
     }
 

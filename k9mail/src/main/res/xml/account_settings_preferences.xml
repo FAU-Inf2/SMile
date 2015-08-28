@@ -475,6 +475,11 @@
             android:persistent="false"
             android:key="crypto_key"
             android:title="@string/account_settings_crypto_key" />
+        <ListPreference
+            android:persistent="false"
+            android:key="smime_app"
+            android:title="@string/smime_app"
+            />
 
     </PreferenceScreen>
 

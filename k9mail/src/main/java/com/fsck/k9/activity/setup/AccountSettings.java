@@ -5,6 +5,8 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Vibrator;
@@ -44,12 +46,14 @@ import org.openintents.openpgp.util.OpenPgpAppPreference;
 import org.openintents.openpgp.util.OpenPgpKeyPreference;
 import org.openintents.openpgp.util.OpenPgpUtils;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import de.fau.cs.mad.smile.android.R;
+import de.fau.cs.mad.smime_api.SMimeApi;
 
 
 public class AccountSettings extends K9PreferenceActivity {
@@ -127,6 +131,8 @@ public class AccountSettings extends K9PreferenceActivity {
     private static final String PREFERENCE_TRASH_FOLDER = "trash_folder";
     private static final String PREFERENCE_ALWAYS_SHOW_CC_BCC = "always_show_cc_bcc";
 
+    private static final String PREFERENCE_CRYPTO_SMIME_APP = "smime_app";
+
 
     private Account mAccount;
     private boolean mIsMoveCapable = false;
@@ -197,6 +203,8 @@ public class AccountSettings extends K9PreferenceActivity {
     private ListPreference mSpamFolder;
     private ListPreference mTrashFolder;
     private CheckBoxPreference mAlwaysShowCcBcc;
+
+    private ListPreference mSmimeApp;
 
 
     public static void actionSettings(Context context, Account account) {
@@ -718,9 +726,42 @@ public class AccountSettings extends K9PreferenceActivity {
                 }
             });
         } else {
-            final Preference mCryptoMenu = findPreference(PREFERENCE_CRYPTO);
-            mCryptoMenu.setEnabled(false);
-            mCryptoMenu.setSummary(R.string.account_settings_no_openpgp_provider_installed);
+            final Preference mCryptoApp = findPreference(PREFERENCE_CRYPTO_APP);
+            mCryptoApp.setEnabled(false);
+            mCryptoApp.setSummary(R.string.account_settings_no_openpgp_provider_installed);
+            final Preference mCryptoKey = findPreference(PREFERENCE_CRYPTO_KEY);
+            mCryptoKey.setEnabled(false);
+            mCryptoKey.setSummary(R.string.account_settings_no_openpgp_provider_installed);
+        }
+        PackageManager packageManager = getPackageManager();
+        Intent smime = new Intent(SMimeApi.SERVICE_INTENT);
+        List<ResolveInfo> activities = packageManager.queryIntentServices(smime, 0);
+        mSmimeApp = (ListPreference) findPreference(PREFERENCE_CRYPTO_SMIME_APP);
+        if(activities.size() > 0) {
+            final ArrayList<String> names = new ArrayList<>();
+            final ArrayList<String> values = new ArrayList<>();
+            for(ResolveInfo ri : activities) {
+                if(ri.serviceInfo != null) {
+                    names.add(ri.serviceInfo.loadLabel(packageManager).toString());
+                    values.add(ri.serviceInfo.packageName);
+                }
+            }
+            mSmimeApp.setEntries(names.toArray(new String[names.size()]));
+            mSmimeApp.setEntryValues(values.toArray(new String[values.size()]));
+            mSmimeApp.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                public boolean onPreferenceChange(Preference preference, Object newValue) {
+                    String value = newValue.toString();
+                    Log.d(K9.LOG_TAG, "Selected " + value);
+                    mSmimeApp.setValue(value);
+                    int pos = values.indexOf(value);
+                    String name = names.get(pos);
+                    mSmimeApp.setSummary(name);
+                    return false;
+                }
+            });
+        } else {
+            mSmimeApp.setSummary(getString(R.string.account_settings_smime_app_not_found));
+            mSmimeApp.setEnabled(false);
         }
     }
 
@@ -845,6 +886,9 @@ public class AccountSettings extends K9PreferenceActivity {
                 MailService.actionRestartPushers(this, null);
             }
         }
+
+        mAccount.setSmimeApp(mSmimeApp.getValue());
+
         // TODO: refresh folder list here
         mAccount.save(Preferences.getPreferences(this));
     }

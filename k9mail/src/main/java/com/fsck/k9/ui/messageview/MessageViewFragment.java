@@ -39,7 +39,6 @@ import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mailstore.AttachmentViewInfo;
 import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.mailstore.MessageViewInfo;
-import com.fsck.k9.mailstore.CryptoResultAnnotation;
 import com.fsck.k9.ui.crypto.MessageCryptoAnnotations;
 import com.fsck.k9.ui.crypto.MessageCryptoCallback;
 import com.fsck.k9.ui.crypto.MessageCryptoHelper;
@@ -196,7 +195,7 @@ public class MessageViewFragment extends Fragment
         }
 
         mAccount = Preferences.getPreferences(mContext).getAccount(mMessageReference.getAccountUuid());
-        messageCryptoHelper = new MessageCryptoHelper(getActivity(), mAccount, this);
+        messageCryptoHelper = new MessageCryptoHelper(getActivity(), this, mAccount.getSmimeProvider(), mAccount.getOpenPgpProvider());
         if (resetPgpData) {
             // start with fresh, empty PGP data
             mPgpData = new PgpData();

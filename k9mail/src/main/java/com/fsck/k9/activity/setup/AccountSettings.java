@@ -753,8 +753,10 @@ public class AccountSettings extends K9PreferenceActivity {
 
             mSmimeApp.setValue(mAccount.getSmimeProvider());
             int pos = values.indexOf(mAccount.getSmimeProvider());
-            String name = names.get(pos);
-            mSmimeApp.setSummary(name);
+            if(pos >= 0) {
+                String name = names.get(pos);
+                mSmimeApp.setSummary(name);
+            }
 
             mSmimeApp.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 public boolean onPreferenceChange(Preference preference, Object newValue) {

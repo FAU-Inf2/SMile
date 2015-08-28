@@ -1429,7 +1429,11 @@ public class MessageCompose extends K9Activity implements OnClickListener,
             }
         }).start();
 
-        sMimeApi.executeApiAsync(intent, pipedInputStream, pipedOutputStream, new SmimeSignEncryptCallback(latch));
+        if(sMimeApi != null) {
+            sMimeApi.executeApiAsync(intent, pipedInputStream, pipedOutputStream, new SmimeSignEncryptCallback(latch));
+        } else {
+            Toast.makeText(this, "SMIME-API was null", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private InputStream getOpenPgpInputStream() {

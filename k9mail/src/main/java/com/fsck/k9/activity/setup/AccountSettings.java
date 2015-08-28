@@ -733,6 +733,7 @@ public class AccountSettings extends K9PreferenceActivity {
             mCryptoKey.setEnabled(false);
             mCryptoKey.setSummary(R.string.account_settings_no_openpgp_provider_installed);
         }
+
         PackageManager packageManager = getPackageManager();
         Intent smime = new Intent(SMimeApi.SERVICE_INTENT);
         List<ResolveInfo> activities = packageManager.queryIntentServices(smime, 0);
@@ -746,8 +747,15 @@ public class AccountSettings extends K9PreferenceActivity {
                     values.add(ri.serviceInfo.packageName);
                 }
             }
+
             mSmimeApp.setEntries(names.toArray(new String[names.size()]));
             mSmimeApp.setEntryValues(values.toArray(new String[values.size()]));
+
+            mSmimeApp.setValue(mAccount.getSmimeProvider());
+            int pos = values.indexOf(mAccount.getSmimeProvider());
+            String name = names.get(pos);
+            mSmimeApp.setSummary(name);
+
             mSmimeApp.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
                     String value = newValue.toString();
@@ -887,7 +895,7 @@ public class AccountSettings extends K9PreferenceActivity {
             }
         }
 
-        mAccount.setSmimeApp(mSmimeApp.getValue());
+        mAccount.setSmimeProvider(mSmimeApp.getValue());
 
         // TODO: refresh folder list here
         mAccount.save(Preferences.getPreferences(this));
@@ -935,7 +943,6 @@ public class AccountSettings extends K9PreferenceActivity {
     public void onChooseChipColor() {
         showDialog(DIALOG_COLOR_PICKER_ACCOUNT);
     }
-
 
     public void onChooseLedColor() {
         showDialog(DIALOG_COLOR_PICKER_LED);

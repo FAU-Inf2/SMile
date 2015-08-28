@@ -67,6 +67,8 @@ public class MessageViewFragment extends Fragment
     public static final String ARG_MESSAGE = "message";
     public static final String ARG_ANNOTATIONS = "annotations";
 
+    private static final int REQUEST_CODE_CRYPTO = 1000;
+
     public static MessageViewFragment newInstance(MessageReference reference) {
         MessageViewFragment fragment = new MessageViewFragment();
 

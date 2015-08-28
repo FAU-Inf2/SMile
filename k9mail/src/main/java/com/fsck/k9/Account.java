@@ -1667,9 +1667,9 @@ public class Account implements BaseAccount, StoreConfig {
         return mSmimeApp;
     }
 
-    public void setSmimeApp(String smimeApp) {
-        Log.d(K9.LOG_TAG, "Smime app set to " + smimeApp);
-        mSmimeApp = smimeApp;
+    public void setSmimeProvider(String smimeProvider) {
+        Log.d(K9.LOG_TAG, "Smime app set to " + smimeProvider);
+        mSmimeApp = smimeProvider;
     }
 
     public boolean allowRemoteSearch() {

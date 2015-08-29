@@ -172,12 +172,14 @@ public class Prefs extends K9PreferenceActivity {
         List<CharSequence> entryValueVector = new ArrayList<CharSequence>(Arrays.asList(mLanguage.getEntryValues()));
         String supportedLanguages[] = getResources().getStringArray(R.array.supported_languages);
         Set<String> supportedLanguageSet = new HashSet<String>(Arrays.asList(supportedLanguages));
+
         for (int i = entryVector.size() - 1; i > -1; --i) {
             if (!supportedLanguageSet.contains(entryValueVector.get(i))) {
                 entryVector.remove(i);
                 entryValueVector.remove(i);
             }
         }
+
         initListPreference(mLanguage, K9.getK9Language(),
                            entryVector.toArray(EMPTY_CHAR_SEQUENCE_ARRAY),
                            entryValueVector.toArray(EMPTY_CHAR_SEQUENCE_ARRAY));

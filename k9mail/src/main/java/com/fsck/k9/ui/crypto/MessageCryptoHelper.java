@@ -117,7 +117,7 @@ public final class MessageCryptoHelper {
 
             List<Part> pgpSignedParts = MessageDecryptVerifier.findPgpSignedParts(message);
             processFoundParts(pgpSignedParts, CryptoPartType.SIGNED_PGP, CryptoErrorType.SIGNED_BUT_INCOMPLETE, NO_REPLACEMENT_PART);
-            
+
             List<Part> inlineParts = MessageDecryptVerifier.findPgpInlineParts(message);
             addFoundInlinePgpParts(inlineParts);
         }

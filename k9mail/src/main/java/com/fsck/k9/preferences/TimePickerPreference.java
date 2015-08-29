@@ -90,8 +90,7 @@ public class TimePickerPreference extends DialogPreference implements
 
     /**
      * @see
-     * android.widget.TimePicker.OnTimeChangedListener#onTimeChanged(android
-     * .widget.TimePicker, int, int)
+     * android.widget.TimePicker.OnTimeChangedListener#onTimeChanged(android.widget.TimePicker, int, int)
      */
     @Override
     public void onTimeChanged(final TimePicker view, final int hour, final int minute) {

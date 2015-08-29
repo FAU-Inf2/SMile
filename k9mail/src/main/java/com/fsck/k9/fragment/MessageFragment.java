@@ -78,7 +78,7 @@ public class MessageFragment extends Fragment {
             LocalStore localStore = LocalStore.getInstance(mAccount, getActivity());
             mLocalRemindMe = new LocalRemindMe(localStore);
         } catch (MessagingException e) {
-            // TODO: handle exception
+            Log.d(K9.LOG_TAG, "error retrieving remindmes:", e);
         }
 
         new LoadFollowUp().execute();

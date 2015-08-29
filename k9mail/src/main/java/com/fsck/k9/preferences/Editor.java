@@ -19,7 +19,6 @@ public class Editor implements android.content.SharedPreferences.Editor {
 
     Map<String, String> snapshot = new HashMap<String, String>();
 
-
     protected Editor(Storage storage) {
         this.storage = storage;
         snapshot.putAll(storage.getAll());
@@ -49,13 +48,10 @@ public class Editor implements android.content.SharedPreferences.Editor {
         return this;
     }
 
-
     // TODO Android 2.3 provides a sexy new "apply" method we need to implement
     public void apply() {
         commit();
     }
-
-
 
     /* This method is poorly defined.  It should throw an Exception on failure */
     //@Override
@@ -77,9 +73,11 @@ public class Editor implements android.content.SharedPreferences.Editor {
                 if (removeAll) {
                     storage.removeAll();
                 }
+
                 for (String removeKey : removals) {
                     storage.remove(removeKey);
                 }
+
                 Map<String, String> insertables = new HashMap<String, String>();
                 for (Entry<String, String> entry : changes.entrySet()) {
                     String key = entry.getKey();

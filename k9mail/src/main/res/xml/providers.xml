@@ -203,6 +203,14 @@
         <incoming uri="imap+tls+://posteo.de" username="$email" />
         <outgoing uri="smtp+tls+://posteo.de" username="$email" />
     </provider>
+    <provider id="fau.de" label="Friedrich-Alexander-Universtität" domain="fau.de">
+        <incoming uri="imap+ssl+://faumail.uni-erlangen.de" username="$email" />
+        <outgoing uri="smtp+tls+://smtp-auth.uni-erlangen.de" username="$email" />
+    </provider>
+    <provider id="uni-erlangen.de" label="Friedrich-Alexander-Universtität" domain="uni-erlangen.de">
+        <incoming uri="imap+ssl+://faumail.uni-erlangen.de" username="$email" />
+        <outgoing uri="smtp+tls+://smtp-auth.uni-erlangen.de" username="$email" />
+    </provider>
     <!-- GMX variants -->
     <provider id="gmx.net" label="GMX.net" domain="gmx.net">
         <incoming uri="imap+ssl+://imap.gmx.net" username="$email" />

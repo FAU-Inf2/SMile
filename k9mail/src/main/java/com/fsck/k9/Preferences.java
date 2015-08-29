@@ -27,6 +27,7 @@ public class Preferences {
         if (preferences == null) {
             preferences = new Preferences(appContext);
         }
+
         return preferences;
     }
 

@@ -240,6 +240,11 @@ public class MessageFragment extends Fragment {
         }
 
         @Override public void onTouchEvent(RecyclerView view, MotionEvent motionEvent) { }
+
+        @Override
+        public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+
+        }
     }
 
     class LoadFollowUp extends AsyncTask<Void, Void, List<RemindMe>> {

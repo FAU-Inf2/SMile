@@ -69,7 +69,7 @@ public final class CryptoHeaderView extends LinearLayout {
         initializeSignatureHeader();
     }
 
-    private final void initializeEncryptionHeader() {
+    private void initializeEncryptionHeader() {
         if (noCryptoAnnotationFound()) {
             displayNotEncrypted();
             return;
@@ -270,21 +270,21 @@ public final class CryptoHeaderView extends LinearLayout {
         showSignatureLayout();
     }
 
-    private final void displaySignatureSuccessUncertified() {
+    private void displaySignatureSuccessUncertified() {
         setSignatureImageAndTextColor(CryptoState.UNVERIFIED);
         resultSignatureText.setText(R.string.openpgp_result_signature_uncertified);
 
         displayUserIdAndSignatureButton();
     }
 
-    private final void displaySignatureKeyExpired() {
+    private void displaySignatureKeyExpired() {
         setSignatureImageAndTextColor(CryptoState.EXPIRED);
         resultSignatureText.setText(R.string.openpgp_result_signature_expired_key);
 
         displayUserIdAndSignatureButton();
     }
 
-    private final void displaySignatureKeyRevoked() {
+    private void displaySignatureKeyRevoked() {
         setSignatureImageAndTextColor(CryptoState.REVOKED);
         resultSignatureText.setText(R.string.openpgp_result_signature_revoked_key);
 
@@ -298,7 +298,7 @@ public final class CryptoHeaderView extends LinearLayout {
         displayUserIdAndSignatureButton();
     }
 
-    private final void displayUserIdAndSignatureButton() {
+    private void displayUserIdAndSignatureButton() {
         setUserId(cryptoAnnotation.getSignatureResult());
         showSignatureButtonWithTextIfNecessary(R.string.openpgp_result_action_show);
         showSignatureLayout();
@@ -324,7 +324,8 @@ public final class CryptoHeaderView extends LinearLayout {
     }
 
     private final void showSignatureLayout() {
-        resultSignatureLayout.setVisibility(View.VISIBLE);
+        hideSignatureLayout();
+        //resultSignatureLayout.setVisibility(View.VISIBLE);
     }
 
     private final void setEncryptionImageAndTextColor(final CryptoState state) {
@@ -358,7 +359,6 @@ public final class CryptoHeaderView extends LinearLayout {
         NOT_ENCRYPTED(R.drawable.status_lock_open, R.color.openpgp_red),
         NOT_SIGNED(R.drawable.status_signature_unknown_cutout, R.color.openpgp_red),
         INVALID(R.drawable.status_signature_invalid_cutout, R.color.openpgp_red);
-
 
         private final int drawableId;
         private final int colorId;

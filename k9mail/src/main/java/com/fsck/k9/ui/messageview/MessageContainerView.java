@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.KeyEvent;
@@ -25,11 +26,15 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.fsck.k9.K9;
+import com.fsck.k9.crypto.MessageDecryptVerifier;
 import com.fsck.k9.helper.ClipboardManager;
 import com.fsck.k9.helper.Contacts;
 import com.fsck.k9.helper.Utility;
 import com.fsck.k9.mail.Address;
 import com.fsck.k9.mail.MessagingException;
+import com.fsck.k9.mail.internet.MimeBodyPart;
+import com.fsck.k9.mail.internet.MimeUtility;
 import com.fsck.k9.mailstore.AttachmentViewInfo;
 import com.fsck.k9.mailstore.CryptoErrorType;
 import com.fsck.k9.mailstore.MessageViewInfo.MessageViewContainer;
@@ -38,10 +43,14 @@ import com.fsck.k9.view.K9WebViewClient;
 import com.fsck.k9.view.MessageHeader.OnLayoutChangedListener;
 import com.fsck.k9.view.MessageWebView;
 
+import org.apache.james.mime4j.util.MimeUtil;
+
 import java.util.HashMap;
 import java.util.Map;
 
 import de.fau.cs.mad.smile.android.R;
+
+import static com.fsck.k9.mail.internet.MimeUtility.isSameMimeType;
 
 /**
  *
@@ -467,6 +476,7 @@ public class MessageContainerView extends LinearLayout
     }
 
     public void renderAttachments(MessageViewContainer messageContainer) throws MessagingException {
+
         for (AttachmentViewInfo attachment : messageContainer.attachments) {
             AttachmentView view = (AttachmentView) mInflater.inflate(R.layout.message_view_attachment, null);
             view.setCallback(attachmentCallback);

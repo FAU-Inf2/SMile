@@ -20,14 +20,14 @@ import java.util.Stack;
 
 
 public class MessageDecryptVerifier {
-    private static final String MULTIPART_ENCRYPTED = "multipart/encrypted";
-    private static final String MULTIPART_SIGNED = "multipart/signed";
-    private static final String SMIME_ENCRYPTED = "application/pkcs7-mime";
-    private static final String PROTOCOL_PARAMETER = "protocol";
-    private static final String APPLICATION_PGP_ENCRYPTED = "application/pgp-encrypted";
-    private static final String APPLICATION_PGP_SIGNATURE = "application/pgp-signature";
-    private static final String APPLICATION_SMIME_SIGNATURE = "application/pkcs7-signature";
-    private static final String TEXT_PLAIN = "text/plain";
+    public static final String MULTIPART_ENCRYPTED = "multipart/encrypted";
+    public static final String MULTIPART_SIGNED = "multipart/signed";
+    public static final String SMIME_ENCRYPTED = "application/pkcs7-mime";
+    public static final String PROTOCOL_PARAMETER = "protocol";
+    public static final String APPLICATION_PGP_ENCRYPTED = "application/pgp-encrypted";
+    public static final String APPLICATION_PGP_SIGNATURE = "application/pgp-signature";
+    public static final String APPLICATION_SMIME_SIGNATURE = "application/pkcs7-signature";
+    public static final String TEXT_PLAIN = "text/plain";
 
     private static List<Part> findParts(final Part startPart, final String mimeType, final String protocol) {
         List<Part> parts = new ArrayList<Part>();

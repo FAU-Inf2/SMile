@@ -167,7 +167,7 @@ public class MessageExtractor {
                 Html html = new Html(part);
                 viewables.add(html);
             }
-        } else if (isSameMimeType(part.getMimeType(), "application/pgp-signature")) {
+        } else if (isSameMimeType(part.getMimeType(), "application/pgp-signature") || isSameMimeType(part.getMimeType(), "application/pkcs7-signature")) {
             // ignore this type explicitly
         } else {
             // Everything else is treated as attachment.

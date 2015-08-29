@@ -90,7 +90,8 @@ public class MessageTopView extends LinearLayout implements ShowPicturesControll
 
         for (MessageViewContainer container : messageViewInfo.containers) {
             MessageContainerView view = (MessageContainerView) mInflater.inflate(R.layout.message_container, null);
-            boolean displayPgpHeader = account.isOpenPgpProviderConfigured();
+            boolean displayPgpHeader = false; //account.isOpenPgpProviderConfigured();
+            mHeaderContainer.setCryptoAnnotation(container.cryptoAnnotation);
             view.displayMessageViewContainer(container, automaticallyLoadPictures, this, attachmentCallback,
                     cryptoHeaderViewCallback, displayPgpHeader);
 

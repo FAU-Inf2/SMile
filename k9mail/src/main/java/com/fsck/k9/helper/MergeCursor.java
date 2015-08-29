@@ -455,6 +455,13 @@ public class MergeCursor implements Cursor {
     }
 
     @Override
+    public void setExtras(Bundle extras) {
+        for (Cursor cursor : mCursors) {
+            cursor.setExtras(extras);
+        }
+    }
+
+    @Override
     public Bundle respond(Bundle extras) {
         throw new RuntimeException("Not implemented");
     }

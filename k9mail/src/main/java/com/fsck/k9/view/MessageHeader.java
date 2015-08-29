@@ -1,9 +1,13 @@
 package com.fsck.k9.view;
 
 import android.content.Context;
+import android.graphics.PorterDuff;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.ColorRes;
+import android.support.annotation.DrawableRes;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -11,11 +15,11 @@ import android.text.format.DateUtils;
 import android.text.style.StyleSpan;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.util.Pair;
 import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.QuickContactBadge;
 import android.widget.TextView;
@@ -33,6 +37,8 @@ import com.fsck.k9.mail.Flag;
 import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mail.internet.MimeUtility;
+import com.fsck.k9.mailstore.CryptoResultAnnotation;
+import com.fsck.k9.mailstore.SignatureResult;
 
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -49,6 +55,8 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
     private TextView mCcView;
     private TextView mCcLabel;
     private TextView mSubjectView;
+    private ImageView mEncryptionIcon;
+    private ImageView mSignatureIcon;
 
     private View mChip;
     private CheckBox mFlagged;
@@ -65,6 +73,7 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
     private MessageHelper mMessageHelper;
     private ContactPictureLoader mContactsPictureLoader;
     private QuickContactBadge mContactBadge;
+    private CryptoResultAnnotation cryptoAnnotation;
 
     private OnLayoutChangedListener mOnLayoutChangedListener; // TODO: is never set, remove?
 
@@ -92,6 +101,8 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
     protected void onFinishInflate() {
         mAnsweredIcon = findViewById(R.id.answered);
         mForwardedIcon = findViewById(R.id.forwarded);
+        mEncryptionIcon = (ImageView) findViewById(R.id.encryption_icon);
+        mSignatureIcon = (ImageView) findViewById(R.id.signature_icon);
         mFromView = (TextView) findViewById(R.id.from);
         mToView = (TextView) findViewById(R.id.to);
         mToLabel = (TextView) findViewById(R.id.to_label);
@@ -157,7 +168,6 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
     public void setOnFlagListener(OnClickListener listener) {
         mFlagged.setOnClickListener(listener);
     }
-
 
     public boolean additionalHeadersVisible() {
         return (mAdditionalHeadersView != null &&
@@ -304,6 +314,123 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
         } else {
             hideAdditionalHeaders();
         }
+    }
+
+    public void setCryptoAnnotation(final CryptoResultAnnotation cryptoAnnotation) {
+        this.cryptoAnnotation = cryptoAnnotation;
+
+        initializeEncryptionHeader();
+        initializeSignatureHeader();
+    }
+
+    private void initializeEncryptionHeader() {
+        if (noCryptoAnnotationFound()) {
+            setEncryptionImageAndTextColor(CryptoState.NOT_ENCRYPTED);
+            return;
+        }
+
+        switch (cryptoAnnotation.getErrorType()) {
+            case NONE: {
+                if (cryptoAnnotation.isEncrypted()) {
+                    setEncryptionImageAndTextColor(CryptoState.ENCRYPTED);
+                } else {
+                    setEncryptionImageAndTextColor(CryptoState.NOT_ENCRYPTED);
+                }
+                break;
+            }
+            case CRYPTO_API_RETURNED_ERROR: {
+                setEncryptionImageAndTextColor(CryptoState.INVALID);
+                break;
+            }
+            case ENCRYPTED_BUT_INCOMPLETE: {
+                setEncryptionImageAndTextColor(CryptoState.UNAVAILABLE);
+                break;
+            }
+            case SIGNED_BUT_INCOMPLETE: {
+                setEncryptionImageAndTextColor(CryptoState.NOT_ENCRYPTED);
+                break;
+            }
+        }
+    }
+
+    private void initializeSignatureHeader() {
+        if (noCryptoAnnotationFound()) {
+            setSignatureImageAndTextColor(CryptoState.NOT_SIGNED);
+            return;
+        }
+
+        switch (cryptoAnnotation.getErrorType()) {
+            case CRYPTO_API_RETURNED_ERROR:
+            case NONE: {
+                displayVerificationResult();
+                break;
+            }
+            case ENCRYPTED_BUT_INCOMPLETE:
+            case SIGNED_BUT_INCOMPLETE: {
+                setSignatureImageAndTextColor(CryptoState.UNAVAILABLE);
+                break;
+            }
+        }
+    }
+
+    private void displayVerificationResult() {
+        SignatureResult signatureResult = cryptoAnnotation.getSignatureResult();
+
+        switch (signatureResult.getStatus()) {
+            case UNSIGNED: {
+                setSignatureImageAndTextColor(CryptoState.NOT_SIGNED);
+                break;
+            }
+            case INVALID_SIGNATURE: {
+                setSignatureImageAndTextColor(CryptoState.INVALID);
+                break;
+            }
+            case SUCCESS: {
+                setSignatureImageAndTextColor(CryptoState.VERIFIED);
+                break;
+            }
+            case KEY_MISSING: {
+                setSignatureImageAndTextColor(CryptoState.UNKNOWN_KEY);
+                break;
+            }
+            case SUCCESS_UNCERTIFIED: {
+                setSignatureImageAndTextColor(CryptoState.UNVERIFIED);
+                break;
+            }
+            case KEY_EXPIRED: {
+                setSignatureImageAndTextColor(CryptoState.EXPIRED);
+                break;
+            }
+            case KEY_REVOKED: {
+                setSignatureImageAndTextColor(CryptoState.REVOKED);
+                break;
+            }
+            case ERROR: {
+                setSignatureImageAndTextColor(CryptoState.INVALID);
+                break;
+            }
+            default:
+                throw new RuntimeException("OpenPgpSignatureResult result not handled!");
+        }
+    }
+
+    private void setEncryptionImageAndTextColor(final CryptoState state) {
+        setStatusImageColor(mEncryptionIcon, state);
+    }
+
+    private void setSignatureImageAndTextColor(final CryptoState state) {
+        setStatusImageColor(mSignatureIcon, state);
+    }
+
+    private void setStatusImageColor(final ImageView statusIcon, final CryptoState state) {
+        final Drawable statusImageDrawable = getContext().getResources().getDrawable(state.getDrawableId());
+        statusIcon.setImageDrawable(statusImageDrawable);
+        final int color = getContext().getResources().getColor(state.getColorId());
+        statusIcon.setColorFilter(color, PorterDuff.Mode.SRC_IN);
+    }
+
+    private boolean noCryptoAnnotationFound() {
+        return cryptoAnnotation == null;
     }
 
     public void onShowAdditionalHeaders() {
@@ -457,5 +584,38 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
 
     public void hideSubjectLine() {
         mSubjectView.setVisibility(GONE);
+    }
+
+    private enum CryptoState {
+        VERIFIED(R.drawable.status_signature_verified_cutout, R.color.openpgp_green),
+        ENCRYPTED(R.drawable.status_lock_closed, R.color.openpgp_green),
+
+        UNAVAILABLE(R.drawable.status_signature_unverified_cutout, R.color.openpgp_orange),
+        UNVERIFIED(R.drawable.status_signature_unverified_cutout, R.color.openpgp_orange),
+        UNKNOWN_KEY(R.drawable.status_signature_unknown_cutout, R.color.openpgp_orange),
+
+        REVOKED(R.drawable.status_signature_revoked_cutout, R.color.openpgp_red),
+        EXPIRED(R.drawable.status_signature_expired_cutout, R.color.openpgp_red),
+        NOT_ENCRYPTED(R.drawable.status_lock_open, R.color.openpgp_red),
+        NOT_SIGNED(R.drawable.status_signature_unknown_cutout, R.color.openpgp_red),
+        INVALID(R.drawable.status_signature_invalid_cutout, R.color.openpgp_red);
+
+        private final int drawableId;
+        private final int colorId;
+
+        CryptoState(@DrawableRes int drawableId, @ColorRes int colorId) {
+            this.drawableId = drawableId;
+            this.colorId = colorId;
+        }
+
+        @DrawableRes
+        public int getDrawableId() {
+            return drawableId;
+        }
+
+        @ColorRes
+        public int getColorId() {
+            return colorId;
+        }
     }
 }

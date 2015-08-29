@@ -110,22 +110,26 @@ public final class MessageCryptoHelper {
             return;
         }
 
-        List<Part> encryptedParts = MessageDecryptVerifier.findPgpEncryptedParts(message);
-        processFoundParts(encryptedParts, CryptoPartType.ENCRYPTED_PGP, CryptoErrorType.ENCRYPTED_BUT_INCOMPLETE,
-                MessageHelper.createEmptyPart());
+        if(openPgpProvider != null) {
+            List<Part> encryptedParts = MessageDecryptVerifier.findPgpEncryptedParts(message);
+            processFoundParts(encryptedParts, CryptoPartType.ENCRYPTED_PGP, CryptoErrorType.ENCRYPTED_BUT_INCOMPLETE,
+                    MessageHelper.createEmptyPart());
 
-        List<Part> smimeParts = MessageDecryptVerifier.findSmimeEncryptedParts(message);
-        processFoundParts(smimeParts, CryptoPartType.ENCRYPTED_SMIME, CryptoErrorType.ENCRYPTED_BUT_INCOMPLETE,
-                MessageHelper.createEmptyPart());
+            List<Part> pgpSignedParts = MessageDecryptVerifier.findPgpSignedParts(message);
+            processFoundParts(pgpSignedParts, CryptoPartType.SIGNED_PGP, CryptoErrorType.SIGNED_BUT_INCOMPLETE, NO_REPLACEMENT_PART);
+            
+            List<Part> inlineParts = MessageDecryptVerifier.findPgpInlineParts(message);
+            addFoundInlinePgpParts(inlineParts);
+        }
 
-        List<Part> pgpSignedParts = MessageDecryptVerifier.findPgpSignedParts(message);
-        processFoundParts(pgpSignedParts, CryptoPartType.SIGNED_PGP, CryptoErrorType.SIGNED_BUT_INCOMPLETE, NO_REPLACEMENT_PART);
+        if(sMimeProvider != null) {
+            List<Part> smimeParts = MessageDecryptVerifier.findSmimeEncryptedParts(message);
+            processFoundParts(smimeParts, CryptoPartType.ENCRYPTED_SMIME, CryptoErrorType.ENCRYPTED_BUT_INCOMPLETE,
+                    MessageHelper.createEmptyPart());
 
-        List<Part> smimeSignedParts = MessageDecryptVerifier.findSmimeSignedParts(message);
-        processFoundParts(smimeSignedParts, CryptoPartType.SIGNED_SMIME, CryptoErrorType.SIGNED_BUT_INCOMPLETE, NO_REPLACEMENT_PART);
-
-        List<Part> inlineParts = MessageDecryptVerifier.findPgpInlineParts(message);
-        addFoundInlinePgpParts(inlineParts);
+            List<Part> smimeSignedParts = MessageDecryptVerifier.findSmimeSignedParts(message);
+            processFoundParts(smimeSignedParts, CryptoPartType.SIGNED_SMIME, CryptoErrorType.SIGNED_BUT_INCOMPLETE, NO_REPLACEMENT_PART);
+        }
 
         decryptOrVerifyNextPart();
     }

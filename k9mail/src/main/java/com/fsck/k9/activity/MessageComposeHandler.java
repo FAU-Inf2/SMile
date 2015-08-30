@@ -7,7 +7,7 @@ import java.lang.ref.WeakReference;
 
 import de.fau.cs.mad.smile.android.R;
 
-class MessageComposeHandler extends Handler {
+public class MessageComposeHandler extends Handler {
     private final WeakReference<MessageCompose> reference;
 
     public MessageComposeHandler(final MessageCompose messageViewFragment) {

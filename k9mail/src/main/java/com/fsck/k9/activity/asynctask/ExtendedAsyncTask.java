@@ -1,9 +1,11 @@
-package com.fsck.k9.activity.misc;
+package com.fsck.k9.activity.asynctask;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
+
+import com.fsck.k9.activity.misc.NonConfigurationInstance;
 
 /**
  * Extends {@link AsyncTask} with methods to attach and detach an {@link Activity}.

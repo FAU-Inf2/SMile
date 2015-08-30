@@ -1,4 +1,4 @@
-package com.fsck.k9.activity;
+package com.fsck.k9.activity.listener;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

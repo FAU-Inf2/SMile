@@ -23,6 +23,7 @@ import com.fsck.k9.Account;
 import com.fsck.k9.Account.DeletePolicy;
 import com.fsck.k9.Account.Expunge;
 import com.fsck.k9.AccountStats;
+import com.fsck.k9.BaseAccount;
 import com.fsck.k9.K9;
 import com.fsck.k9.K9.Intents;
 import com.fsck.k9.K9.NotificationHideSubject;
@@ -160,6 +161,28 @@ public class MessagingController implements Runnable {
     private static final String PENDING_COMMAND_APPEND = "com.fsck.k9.MessagingController.append";
     private static final String PENDING_COMMAND_MARK_ALL_AS_READ = "com.fsck.k9.MessagingController.markAllAsRead";
     private static final String PENDING_COMMAND_EXPUNGE = "com.fsck.k9.MessagingController.expunge";
+
+    public static LocalSearch createUnreadSearch(Context context, BaseAccount account) {
+        String searchTitle = context.getString(R.string.search_title, account.getDescription(),
+                context.getString(R.string.unread_modifier));
+
+        LocalSearch search;
+        if (account instanceof SearchAccount) {
+            search = ((SearchAccount) account).getRelatedSearch().clone();
+            search.setName(searchTitle);
+        } else {
+            search = new LocalSearch(searchTitle);
+            search.addAccountUuid(account.getUuid());
+
+            Account realAccount = (Account) account;
+            realAccount.excludeSpecialFolders(search);
+            realAccount.limitToDisplayableFolders(search);
+        }
+
+        search.and(SearchSpecification.SearchField.READ, "1", SearchSpecification.Attribute.NOT_EQUALS);
+
+        return search;
+    }
 
     public static class UidReverseComparator implements Comparator<Message> {
         @Override
@@ -5219,7 +5242,7 @@ public class MessagingController implements Runnable {
 
     private TaskStackBuilder buildUnreadBackStack(Context context, final Account account) {
         TaskStackBuilder stack = buildAccountsBackStack(context);
-        LocalSearch search = Accounts.createUnreadSearch(context, account);
+        LocalSearch search = createUnreadSearch(context, account);
         stack.addNextIntent(MessageList.intentDisplaySearch(context, search, true, false, false));
         return stack;
     }

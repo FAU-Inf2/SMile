@@ -1,6 +1,5 @@
 package com.fsck.k9.activity;
 
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -10,7 +9,7 @@ import android.widget.ListView;
 import com.fsck.k9.Account;
 import com.fsck.k9.BaseAccount;
 import com.fsck.k9.K9;
-import com.fsck.k9.Preferences;
+import com.fsck.k9.activity.asynctask.LoadAccountTask;
 import com.fsck.k9.adapter.AccountsAdapter;
 import com.fsck.k9.search.SearchAccount;
 
@@ -28,7 +27,8 @@ import de.fau.cs.mad.smile.android.R;
  * method to perform an action when an account is selected.
  * </p>
  */
-public abstract class AccountList extends K9ListActivity implements OnItemClickListener {
+public abstract class AccountList extends K9ListActivity
+        implements OnItemClickListener, LoadAccountTask.LoadAccountsCallback {
 
     @Override
     public void onCreate(Bundle icicle) {
@@ -49,7 +49,7 @@ public abstract class AccountList extends K9ListActivity implements OnItemClickL
     @Override
     public void onResume() {
         super.onResume();
-        new LoadAccounts().execute();
+        new LoadAccountTask(getApplicationContext(), this).execute();
     }
 
     @Override
@@ -61,22 +61,23 @@ public abstract class AccountList extends K9ListActivity implements OnItemClickL
     /**
      * Create a new {@link AccountsAdapter} instance and assign it to the {@link ListView}.
      *
-     * @param realAccounts
+     * @param accounts
      *         An array of accounts to display.
      */
-    public void populateListView(List<Account> realAccounts) {
-        List<BaseAccount> accounts = new ArrayList<BaseAccount>();
+    @Override
+    public void onAccountsLoaded(final List<Account> accounts) {
+        List<BaseAccount> baseAccounts = new ArrayList<>();
 
         if (displaySpecialAccounts() && !K9.isHideSpecialAccounts()) {
             BaseAccount unifiedInboxAccount = SearchAccount.createUnifiedInboxAccount(this);
             BaseAccount allMessagesAccount = SearchAccount.createAllMessagesAccount(this);
 
-            accounts.add(unifiedInboxAccount);
-            accounts.add(allMessagesAccount);
+            baseAccounts.add(unifiedInboxAccount);
+            baseAccounts.add(allMessagesAccount);
         }
 
-        accounts.addAll(realAccounts);
-        AccountsAdapter adapter = new AccountsAdapter(this, accounts);
+        baseAccounts.addAll(accounts);
+        AccountsAdapter adapter = new AccountsAdapter(this, baseAccounts);
         ListView listView = getListView();
         listView.setAdapter(adapter);
         listView.invalidate();
@@ -96,20 +97,4 @@ public abstract class AccountList extends K9ListActivity implements OnItemClickL
      *         The account the user selected.
      */
     protected abstract void onAccountSelected(BaseAccount account);
-
-    /**
-     * Load accounts in a background thread
-     */
-    class LoadAccounts extends AsyncTask<Void, Void, List<Account>> {
-        @Override
-        protected List<Account> doInBackground(Void... params) {
-            List<Account> accounts = Preferences.getPreferences(getApplicationContext()).getAccounts();
-            return accounts;
-        }
-
-        @Override
-        protected void onPostExecute(List<Account> accounts) {
-            populateListView(accounts);
-        }
-    }
 }

@@ -4,11 +4,6 @@ import android.content.SharedPreferences;
 
 import com.fsck.k9.EmailAddressValidator;
 import com.fsck.k9.K9;
-import com.fsck.k9.preferences.Settings.BooleanSetting;
-import com.fsck.k9.preferences.Settings.InvalidSettingValueException;
-import com.fsck.k9.preferences.Settings.SettingsDescription;
-import com.fsck.k9.preferences.Settings.SettingsUpgrader;
-import com.fsck.k9.preferences.Settings.V;
 
 import java.util.Collections;
 import java.util.HashMap;

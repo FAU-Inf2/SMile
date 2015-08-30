@@ -1,8 +1,9 @@
-package com.fsck.k9.activity;
+package com.fsck.k9.activity.listener;
 
 import android.content.Context;
 import android.view.View;
 
+import com.fsck.k9.activity.MessageList;
 import com.fsck.k9.search.LocalSearch;
 
 public class FolderClickListener implements View.OnClickListener {

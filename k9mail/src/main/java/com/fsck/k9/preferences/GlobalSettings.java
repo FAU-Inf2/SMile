@@ -11,17 +11,6 @@ import com.fsck.k9.K9.NotificationHideSubject;
 import com.fsck.k9.K9.NotificationQuickDelete;
 import com.fsck.k9.K9.SplitViewMode;
 import com.fsck.k9.K9.Theme;
-import com.fsck.k9.preferences.Settings.BooleanSetting;
-import com.fsck.k9.preferences.Settings.ColorSetting;
-import com.fsck.k9.preferences.Settings.EnumSetting;
-import com.fsck.k9.preferences.Settings.FontSizeSetting;
-import com.fsck.k9.preferences.Settings.IntegerRangeSetting;
-import com.fsck.k9.preferences.Settings.InvalidSettingValueException;
-import com.fsck.k9.preferences.Settings.PseudoEnumSetting;
-import com.fsck.k9.preferences.Settings.SettingsDescription;
-import com.fsck.k9.preferences.Settings.SettingsUpgrader;
-import com.fsck.k9.preferences.Settings.V;
-import com.fsck.k9.preferences.Settings.WebFontSizeSetting;
 
 import java.io.File;
 import java.util.Arrays;

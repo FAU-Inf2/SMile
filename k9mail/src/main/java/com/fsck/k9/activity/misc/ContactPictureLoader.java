@@ -45,12 +45,9 @@ public class ContactPictureLoader {
      */
     private static final String FALLBACK_CONTACT_LETTER = "?";
 
-
-    private ContentResolver mContentResolver;
+    private Context mContext;
     private Resources mResources;
-    private Contacts mContactsHelper;
     private int mPictureSizeInPx;
-
     private int mDefaultBackgroundColor;
 
     /**
@@ -84,10 +81,8 @@ public class ContactPictureLoader {
      *         use a dynamically calculated background color.
      */
     public ContactPictureLoader(Context context, int defaultBackgroundColor) {
-        Context appContext = context.getApplicationContext();
-        mContentResolver = appContext.getContentResolver();
-        mResources = appContext.getResources();
-        mContactsHelper = Contacts.getInstance(appContext);
+        mContext = context.getApplicationContext();
+        mResources = mContext.getResources();
 
         float scale = mResources.getDisplayMetrics().density;
         mPictureSizeInPx = (int) (PICTURE_SIZE * scale);
@@ -95,7 +90,7 @@ public class ContactPictureLoader {
         mDefaultBackgroundColor = defaultBackgroundColor;
 
         ActivityManager activityManager =
-                (ActivityManager) appContext.getSystemService(Context.ACTIVITY_SERVICE);
+                (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE);
         int memClass = activityManager.getMemoryClass();
 
         // Use 1/16th of the available memory for this memory cache.
@@ -137,7 +132,7 @@ public class ContactPictureLoader {
         } else if (cancelPotentialWork(address, badge)) {
             // Query the contacts database in a background thread and try to load the contact
             // picture, if there is one.
-            ContactPictureRetrievalTask task = new ContactPictureRetrievalTask(badge, address);
+            ContactPictureRetrievalTask task = new ContactPictureRetrievalTask(mContext, badge, address);
             AsyncDrawable asyncDrawable = new AsyncDrawable(mResources,
                     calculateFallbackBitmap(address), task);
             badge.setImageDrawable(asyncDrawable);
@@ -256,15 +251,20 @@ public class ContactPictureLoader {
         return null;
     }
 
-
     /**
      * Load a contact picture in a background thread.
      */
     class ContactPictureRetrievalTask extends AsyncTask<Void, Void, Bitmap> {
         private final WeakReference<QuickContactBadge> mQuickContactBadgeReference;
         private final Address mAddress;
+        private final Context mContext;
+        private final Contacts mContactsHelper;
+        private final ContentResolver mContentResolver;
 
-        ContactPictureRetrievalTask(QuickContactBadge badge, Address address) {
+        ContactPictureRetrievalTask(final Context context, QuickContactBadge badge, Address address) {
+            this.mContext = context;
+            this.mContactsHelper = Contacts.getInstance(mContext);
+            this.mContentResolver = mContext.getContentResolver();
             mQuickContactBadgeReference = new WeakReference<QuickContactBadge>(badge);
             mAddress = new Address(address);
         }

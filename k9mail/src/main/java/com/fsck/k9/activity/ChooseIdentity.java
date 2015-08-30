@@ -34,26 +34,32 @@ public class ChooseIdentity extends K9ListActivity {
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.list_content_simple);
 
-        getListView().setTextFilterEnabled(true);
-        getListView().setItemsCanFocus(false);
-        getListView().setChoiceMode(ListView.CHOICE_MODE_NONE);
-        Intent intent = getIntent();
-        String accountUuid = intent.getStringExtra(EXTRA_ACCOUNT);
+        final Intent intent = getIntent();
+        final String accountUuid = intent.getStringExtra(EXTRA_ACCOUNT);
         mAccount = Preferences.getPreferences(this).getAccount(accountUuid);
-
         adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
 
-        setListAdapter(adapter);
-        setupClickListeners();
+        configureListView();
     }
 
+    private void configureListView() {
+        ListView listView = getListView();
+        listView.setTextFilterEnabled(true);
+        listView.setItemsCanFocus(false);
+        listView.setChoiceMode(ListView.CHOICE_MODE_NONE);
+        setListAdapter(adapter);
+    }
+
+    protected void setupClickListeners() {
+        ListView listView = getListView();
+        listView.setOnItemClickListener(new MyOnItemClickListener());
+    }
 
     @Override
     public void onResume() {
-        super.onResume();
+            super.onResume();
         refreshView();
     }
-
 
     protected void refreshView() {
         adapter.setNotifyOnChange(false);
@@ -65,29 +71,27 @@ public class ChooseIdentity extends K9ListActivity {
             if (description == null || description.trim().isEmpty()) {
                 description = getString(R.string.message_view_from_format, identity.getName(), identity.getEmail());
             }
+
             adapter.add(description);
         }
 
         adapter.notifyDataSetChanged();
     }
 
-    protected void setupClickListeners() {
-        this.getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Identity identity = mAccount.getIdentity(position);
-                String email = identity.getEmail();
-                if (email != null && !email.trim().equals("")) {
-                    Intent intent = new Intent();
+    private class MyOnItemClickListener implements AdapterView.OnItemClickListener {
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            Identity identity = mAccount.getIdentity(position);
+            String email = identity.getEmail();
 
-                    intent.putExtra(EXTRA_IDENTITY, mAccount.getIdentity(position));
-                    setResult(RESULT_OK, intent);
-                    finish();
-                } else {
-                    Toast.makeText(ChooseIdentity.this, getString(R.string.identity_has_no_email),
-                                   Toast.LENGTH_LONG).show();
-                }
+            if (email != null && !email.trim().equals("")) {
+                Intent intent = new Intent();
+                intent.putExtra(EXTRA_IDENTITY, mAccount.getIdentity(position));
+                setResult(RESULT_OK, intent);
+                finish();
+            } else {
+                Toast.makeText(ChooseIdentity.this, getString(R.string.identity_has_no_email),
+                        Toast.LENGTH_LONG).show();
             }
-        });
-
+        }
     }
 }

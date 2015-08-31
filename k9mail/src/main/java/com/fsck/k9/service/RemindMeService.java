@@ -9,6 +9,7 @@ import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.activity.listener.ActivityListener;
 import com.fsck.k9.controller.MessagingController;
+import com.fsck.k9.helper.NotificationHelper;
 import com.fsck.k9.mail.FetchProfile;
 import com.fsck.k9.mail.Flag;
 import com.fsck.k9.mail.MessagingException;
@@ -69,7 +70,8 @@ public class RemindMeService extends CoreService {
         Date now = new Date();
         Date minDate = null;
 
-        final MessagingController messagingController = MessagingController.getInstance(getApplication());
+        final MessagingController messagingController = MessagingController.getInstance(getApplicationContext());
+        final NotificationHelper notificationHelper = new NotificationHelper(getApplicationContext());
         final List<LocalMessage> messages = new ArrayList<LocalMessage>();
         final List<Long> messageIds = new ArrayList<Long>();
         LocalRemindMe localRemindMe = null;
@@ -167,8 +169,9 @@ public class RemindMeService extends CoreService {
                         //set notification
                         Log.d(K9.LOG_TAG, "Set notification for remindMes.");
                         int i = 0;
-                        for (LocalMessage m : messages2)
-                            messagingController.notifyAccount(getApplication(), acc, m, i++);
+                        for (LocalMessage m : messages2) {
+                            notificationHelper.notifyAccount(getApplication(), acc, m, i++);
+                        }
                     }
                 }, null);
 

@@ -142,7 +142,7 @@ public class MessageDecryptVerifier {
         return null;
     }
 
-    public static boolean isPgpMimeSignedPart(Part part) {
+    public static boolean isMimeSignedPart(Part part) {
         return isSameMimeType(part.getMimeType(), MULTIPART_SIGNED);
     }
 

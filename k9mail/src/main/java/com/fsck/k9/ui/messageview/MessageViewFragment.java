@@ -30,6 +30,7 @@ import com.fsck.k9.activity.ChooseFolder;
 import com.fsck.k9.activity.MessageReference;
 import com.fsck.k9.activity.RemindMeList;
 import com.fsck.k9.controller.MessagingController;
+import com.fsck.k9.crypto.MessageDecryptVerifier;
 import com.fsck.k9.crypto.PgpData;
 import com.fsck.k9.fragment.ConfirmationDialogFragment;
 import com.fsck.k9.fragment.ConfirmationDialogFragment.ConfirmationDialogFragmentListener;
@@ -221,6 +222,11 @@ public class MessageViewFragment extends Fragment
 
         // TODO: download message body if it is missing
         if (!message.isBodyMissing()) {
+            if(MessageDecryptVerifier.isMimeSignedPart(message)) {
+                // TODO: display signed message before results return
+                //startExtractingTextAndAttachments(null);
+            }
+
             messageCryptoHelper.decryptOrVerifyMessagePartsIfNecessary(message);
         }
     }

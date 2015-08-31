@@ -20,6 +20,7 @@ import com.fsck.k9.K9;
 import com.fsck.k9.activity.FolderList;
 import com.fsck.k9.activity.listener.AccountClickListener;
 import com.fsck.k9.controller.MessagingController;
+import com.fsck.k9.helper.NotificationHelper;
 import com.fsck.k9.helper.SizeFormatter;
 import com.fsck.k9.search.LocalSearch;
 import com.fsck.k9.search.SearchAccount;
@@ -196,7 +197,7 @@ public class AccountsAdapter extends ArrayAdapter<BaseAccount> {
     }
 
     private View.OnClickListener createUnreadSearchListener(BaseAccount account) {
-        LocalSearch search = MessagingController.createUnreadSearch(getContext().getApplicationContext(), account);
+        LocalSearch search = NotificationHelper.createUnreadSearch(getContext().getApplicationContext(), account);
         return new AccountClickListener(getContext(), search);
     }
 

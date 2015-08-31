@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.K9;
+import com.fsck.k9.helper.NotificationHelper;
 import com.fsck.k9.mail.Folder;
 import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.PushReceiver;
@@ -17,14 +18,16 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 public class MessagingControllerPushReceiver implements PushReceiver {
-    final Account account;
-    final MessagingController controller;
-    final Context context;
+    private final Account account;
+    private final MessagingController controller;
+    private final Context context;
+    private final NotificationHelper notificationHelper;
 
     public MessagingControllerPushReceiver(Context context, Account nAccount, MessagingController nController) {
         account = nAccount;
         controller = nController;
         this.context = context;
+        notificationHelper = new NotificationHelper(context);
     }
 
     public void messagesFlagsChanged(Folder folder,
@@ -42,19 +45,7 @@ public class MessagingControllerPushReceiver implements PushReceiver {
         if (K9.DEBUG)
             Log.v(K9.LOG_TAG, "syncFolder(" + folder.getName() + ")");
         final CountDownLatch latch = new CountDownLatch(1);
-        controller.synchronizeMailbox(account, folder.getName(), new MessagingListener() {
-            @Override
-            public void synchronizeMailboxFinished(Account account, String folder,
-            int totalMessagesInMailbox, int numNewMessages) {
-                latch.countDown();
-            }
-
-            @Override
-            public void synchronizeMailboxFailed(Account account, String folder,
-            String message) {
-                latch.countDown();
-            }
-        }, folder);
+        controller.synchronizeMailbox(account, folder.getName(), new MyMessagingListener(latch), folder);
 
         if (K9.DEBUG)
             Log.v(K9.LOG_TAG, "syncFolder(" + folder.getName() + ") about to await latch release");
@@ -75,10 +66,11 @@ public class MessagingControllerPushReceiver implements PushReceiver {
     public void pushError(String errorMessage, Exception e) {
         String errMess = errorMessage;
 
-        controller.notifyUserIfCertificateProblem(context, e, account, true);
+        notificationHelper.notifyUserIfCertificateProblem(context, e, account, true);
         if (errMess == null && e != null) {
             errMess = e.getMessage();
         }
+
         controller.addErrorMessage(account, errMess, e);
     }
 
@@ -111,4 +103,23 @@ public class MessagingControllerPushReceiver implements PushReceiver {
         return context;
     }
 
+    private static class MyMessagingListener extends MessagingListener {
+        private final CountDownLatch latch;
+
+        public MyMessagingListener(CountDownLatch latch) {
+            this.latch = latch;
+        }
+
+        @Override
+        public void synchronizeMailboxFinished(Account account, String folder,
+        int totalMessagesInMailbox, int numNewMessages) {
+            latch.countDown();
+        }
+
+        @Override
+        public void synchronizeMailboxFailed(Account account, String folder,
+        String message) {
+            latch.countDown();
+        }
+    }
 }

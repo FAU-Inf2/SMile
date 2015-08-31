@@ -35,6 +35,7 @@ import com.fsck.k9.activity.setup.Prefs;
 import com.fsck.k9.adapter.FolderAdapter;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.controller.MessagingListener;
+import com.fsck.k9.helper.NotificationHelper;
 import com.fsck.k9.helper.SizeFormatter;
 import com.fsck.k9.mail.Folder;
 import com.fsck.k9.mail.Message;
@@ -228,14 +229,14 @@ public final class FolderList extends K9ListActivity {
         mListener = new FolderListActivityListener(mAdapter, mAccount, mHandler);
 
         refreshTitle();
-
-        MessagingController.getInstance(getApplication()).addListener(mListener);
+        final MessagingController controller = MessagingController.getInstance(getApplication());
+        controller.addListener(mListener);
         //mAccount.refresh(Preferences.getPreferences(this));
-        MessagingController.getInstance(getApplication()).getAccountStats(this, mAccount, mListener);
+        controller.getAccountStats(this, mAccount, mListener);
 
         onRefresh(!REFRESH_REMOTE);
-
-        MessagingController.getInstance(getApplication()).notifyAccountCancel(this, mAccount);
+        NotificationHelper notificationHelper = new NotificationHelper(getApplicationContext());
+        notificationHelper.notifyAccountCancel(this, mAccount);
         mListener.onResume(this);
     }
 

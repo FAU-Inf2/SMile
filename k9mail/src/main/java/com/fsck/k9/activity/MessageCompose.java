@@ -581,6 +581,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
 
         mOpenPgpProvider = mAccount.getOpenPgpProvider();
         mSmimeProvider = mAccount.getSmimeProvider();
+
         if (isCryptoProviderEnabled()) {
             mCryptoSignatureCheckbox = (CheckBox)findViewById(R.id.cb_crypto_signature);
             final OnCheckedChangeListener updateListener = new OnCheckedChangeListener() {

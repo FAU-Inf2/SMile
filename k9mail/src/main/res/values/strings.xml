@@ -1173,5 +1173,6 @@ Please submit bug reports, contribute new features and ask questions at
     <string name="material">MD</string>
     <string name="smime_app">SMIME App</string>
     <string name="account_settings_smime_app_not_found">No compatible SMIME App installed.</string>
+    <string name="global_settings_remindme_times_label">RemindME times</string>
 
 </resources>

@@ -214,6 +214,15 @@
                 android:entries="@array/global_settings_splitview_mode_entries"
                 android:entryValues="@array/global_settings_splitview_mode_values"
                 android:dialogTitle="@string/global_settings_splitview_mode_label" />
+<!--
+            <ListPreference
+                android:persistent="false"
+                android:key="messagelist_remindme_times"
+                android:title="@string/global_settings_remindme_times_label"
+                android:entries="@array/settings_remindme_times_entries"
+                android:entryValues="@array/settings_remindme_times_values"
+                android:dialogTitle="@string/global_settings_remindme_times_label"
+                />-->
 
         </PreferenceCategory>
 

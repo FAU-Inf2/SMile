@@ -70,6 +70,7 @@ import com.fsck.k9.fragment.ConfirmationDialogFragment.ConfirmationDialogFragmen
 import com.fsck.k9.helper.ContactPicture;
 import com.fsck.k9.helper.MergeCursorWithUniqueId;
 import com.fsck.k9.helper.MessageHelper;
+import com.fsck.k9.helper.NotificationHelper;
 import com.fsck.k9.helper.Utility;
 import com.fsck.k9.mail.Address;
 import com.fsck.k9.mail.Flag;
@@ -384,6 +385,7 @@ public class MessageListFragment extends Fragment
     private LayoutInflater mInflater;
 
     protected MessagingController mController;
+    private final NotificationHelper notificationHelper = new NotificationHelper(getContext());
 
     protected Account mAccount;
     private String[] mAccountUuids;
@@ -959,7 +961,7 @@ public class MessageListFragment extends Fragment
         }
 
         for (Account accountWithNotification : accountsWithNotification) {
-            mController.notifyAccountCancel(appContext, accountWithNotification);
+            notificationHelper.notifyAccountCancel(appContext, accountWithNotification);
         }
 
         if (mAccount != null && mFolderName != null && !mSearch.isManualSearch()) {

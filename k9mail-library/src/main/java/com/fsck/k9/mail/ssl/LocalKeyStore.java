@@ -34,10 +34,8 @@ public class LocalKeyStore {
         return LocalKeyStoreHolder.INSTANCE;
     }
 
-
     private File mKeyStoreFile;
     private KeyStore mKeyStore;
-
 
     private LocalKeyStore() {
         try {
@@ -70,6 +68,7 @@ public class LocalKeyStore {
         if (file == null) {
             file = new File(getKeyStoreFilePath(KEY_STORE_FILE_VERSION));
         }
+
         if (file.length() == 0) {
             /*
              * The file may be empty (e.g., if it was created with
@@ -107,12 +106,14 @@ public class LocalKeyStore {
             throw new CertificateException(
                     "Certificate not added because key store not initialized");
         }
+
         try {
             mKeyStore.setCertificateEntry(getCertKey(host, port), certificate);
         } catch (KeyStoreException e) {
             throw new CertificateException(
                     "Failed to add certificate to local key store", e);
         }
+
         writeCertificateFile();
     }
 
@@ -146,7 +147,9 @@ public class LocalKeyStore {
         if (mKeyStore == null) {
             return false;
         }
+
         Certificate storedCert = null;
+
         try {
             storedCert = mKeyStore.getCertificate(getCertKey(host, port));
             return (storedCert != null && storedCert.equals(certificate));
@@ -163,6 +166,7 @@ public class LocalKeyStore {
         if (mKeyStore == null) {
             return;
         }
+
         try {
             mKeyStore.deleteEntry(getCertKey(oldHost, oldPort));
             writeCertificateFile();

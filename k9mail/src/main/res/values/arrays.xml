@@ -754,7 +754,7 @@
         <item>NEVER</item>
         <item>WHEN_IN_LANDSCAPE</item>
     </string-array>
-    <string-array name="follow_up_default_time_values">
+    <string-array name="remindme_default_time_values">
         <item>10 minutes</item>
         <item>30 minutes</item>
         <item>tomorrow</item>

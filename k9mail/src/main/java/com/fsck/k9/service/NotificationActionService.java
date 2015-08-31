@@ -11,6 +11,7 @@ import com.fsck.k9.Preferences;
 import com.fsck.k9.activity.MessageCompose;
 import com.fsck.k9.activity.MessageReference;
 import com.fsck.k9.controller.MessagingController;
+import com.fsck.k9.helper.NotificationHelper;
 import com.fsck.k9.mail.Flag;
 import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mail.RemindMe;
@@ -160,7 +161,8 @@ public class NotificationActionService extends CoreService {
             Log.i(K9.LOG_TAG, "NotificationActionService started with startId = " + startId);
 
         final Preferences preferences = Preferences.getPreferences(this);
-        final MessagingController controller = MessagingController.getInstance(getApplication());
+        final MessagingController controller = MessagingController.getInstance(getApplicationContext());
+        final NotificationHelper notificationHelper = new NotificationHelper(getApplicationContext());
         final Account account = preferences.getAccount(intent.getStringExtra(EXTRA_ACCOUNT));
         final String action = intent.getAction();
         LocalRemindMe localRemindMe = null;
@@ -282,7 +284,7 @@ public class NotificationActionService extends CoreService {
             }
 
             /* there's no point in keeping the notification after the user clicked on it */
-            controller.notifyAccountCancel(this, account);
+            notificationHelper.notifyAccountCancel(this, account);
         } else {
             Log.w(K9.LOG_TAG, "Could not find account for notification action.");
         }

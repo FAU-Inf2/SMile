@@ -50,7 +50,7 @@ public class PollService extends CoreService {
             if (K9.DEBUG)
                 Log.i(K9.LOG_TAG, "PollService started with startId = " + startId);
 
-            MessagingController controller = MessagingController.getInstance(getApplication());
+            final MessagingController controller = MessagingController.getInstance(getApplication());
             Listener listener = (Listener)controller.getCheckMailListener();
             if (listener == null) {
                 if (K9.DEBUG)

@@ -170,7 +170,7 @@ public class RemindMeService extends CoreService {
                         Log.d(K9.LOG_TAG, "Set notification for remindMes.");
                         int i = 0;
                         for (LocalMessage m : messages2) {
-                            notificationHelper.notifyAccount(getApplication(), acc, m, i++);
+                            notificationHelper.notifyAccount(getApplication(), acc, m, i++, false);
                         }
                     }
                 }, null);

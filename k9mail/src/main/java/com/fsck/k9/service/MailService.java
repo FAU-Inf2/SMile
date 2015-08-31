@@ -351,7 +351,7 @@ public class MailService extends CoreService {
     }
 
     public static boolean isSyncDisabled() {
-        return  syncBlocked || (!pollingRequested && !pushingRequested);
+        return syncBlocked || (!pollingRequested && !pushingRequested);
     }
 
     private void stopPushers() {

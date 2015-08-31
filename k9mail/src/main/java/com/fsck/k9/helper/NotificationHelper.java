@@ -131,22 +131,21 @@ public class NotificationHelper {
     /**
      * Creates a notification of a newly received message.
      */
-    public void notifyAccount(Context context, Account account, LocalMessage message, int previousUnreadMessageCount) {
+    public void notifyAccount(Context context, Account account, LocalMessage message, int previousUnreadMessageCount, boolean removeMessage) {
         if (K9.isQuietTime() && !K9.isNotificationDuringQuietTimeEnabled()) {
             return;
         }
 
         final NotificationData data = getNotificationData(account, previousUnreadMessageCount);
         synchronized (data) {
+            if(removeMessage) {
+                if(!data.removeMatchingMessage(context, message.makeMessageReference())) {
+                    return;
+                }
+            }
+
             notifyAccountWithDataLocked(context, account, message, data);
         }
-
-        /*
-            MessageReference ref = localMessage.makeMessageReference();
-            if (data.removeMatchingMessage(context, ref)) {
-                notifyAccountWithDataLocked(context, account, null, data);
-            }
-         */
     }
 
     public void clearCertificateErrorNotifications(Context context,
@@ -242,6 +241,7 @@ public class NotificationHelper {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
         builder.setSmallIcon(R.drawable.ic_notify_new_mail);
         builder.setWhen(System.currentTimeMillis());
+
         if (!updateSilently) {
             builder.setTicker(summary);
         }
@@ -253,7 +253,7 @@ public class NotificationHelper {
 
         String accountDescr = (account.getDescription() != null) ?
                 account.getDescription() : account.getEmail();
-        final ArrayList<MessageReference> allRefs = new ArrayList<MessageReference>();
+        final ArrayList<MessageReference> allRefs = new ArrayList<>();
         data.supplyAllMessageRefs(allRefs);
 
         if (platformSupportsExtendedNotifications() && !privacyModeEnabled) {
@@ -284,6 +284,7 @@ public class NotificationHelper {
                 if (preview != null) {
                     style.bigText(preview);
                 }
+
                 builder.setContentText(subject);
                 builder.setSubText(accountDescr);
                 builder.setContentTitle(sender);
@@ -310,6 +311,7 @@ public class NotificationHelper {
                     (deleteOption == K9.NotificationQuickDelete.FOR_SINGLE_MSG && newMessages == 1);
 
             NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender();
+
             if (showDeleteAction) {
                 // we need to pass the action directly to the activity, otherwise the
                 // status bar won't be pulled up and we won't see the confirmation (if used)
@@ -333,6 +335,7 @@ public class NotificationHelper {
                     builder.extend(wearableExtender.addAction(wearActionDelete));
                 }
             }
+
             if (NotificationActionService.isArchiveAllMessagesWearAvaliable(context, account, data.getMessages())) {
 
                 // Archive on wear
@@ -344,6 +347,7 @@ public class NotificationHelper {
                                 .build();
                 builder.extend(wearableExtender.addAction(wearActionArchive));
             }
+
             if (NotificationActionService.isSpamAllMessagesWearAvaliable(context, account, data.getMessages())) {
 
                 // Archive on wear
@@ -411,9 +415,7 @@ public class NotificationHelper {
         }
 
         NotificationSetting n = account.getNotificationSetting();
-
         configureLockScreenNotification(builder, context, account, newMessages, unreadCount, accountDescr, sender, data.getMessages());
-
         configureNotification(
                 builder,
                 (n.shouldRing()) ? n.getRingtone() : null,

@@ -385,7 +385,7 @@ public class MessageListFragment extends Fragment
     private LayoutInflater mInflater;
 
     protected MessagingController mController;
-    private final NotificationHelper notificationHelper = new NotificationHelper(getContext());
+    private NotificationHelper notificationHelper;
 
     protected Account mAccount;
     private String[] mAccountUuids;
@@ -671,19 +671,19 @@ public class MessageListFragment extends Fragment
         Context appContext = getActivity().getApplicationContext();
 
         mPreferences = Preferences.getPreferences(appContext);
-        mController = MessagingController.getInstance(getActivity().getApplication());
+        mController = MessagingController.getInstance(appContext);
+        notificationHelper = new NotificationHelper(appContext);
 
         mPreviewLines = K9.messageListPreviewLines();
         mCheckboxes = K9.messageListCheckboxes();
         mStars = K9.messageListStars();
 
         if (K9.showContactPicture()) {
-            mContactsPictureLoader = ContactPicture.getContactPictureLoader(getActivity());
+            mContactsPictureLoader = ContactPicture.getContactPictureLoader(appContext);
         }
 
         restoreInstanceState(savedInstanceState);
         decodeArguments();
-
         createCacheBroadcastReceiver(appContext);
 
         mInitialized = true;

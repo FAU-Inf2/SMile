@@ -392,6 +392,7 @@ public class K9 extends Application {
              */
             MailService.actionReset(context, wakeLockId);
         }
+
         Class<?>[] classes = { MessageCompose.class, BootReceiver.class, MailService.class };
 
         for (Class<?> clazz : classes) {
@@ -459,7 +460,6 @@ public class K9 extends Application {
         registerReceiver(new ShutdownReceiver(), new IntentFilter(Intent.ACTION_SHUTDOWN));
         Log.i(K9.LOG_TAG, "Registered: shutdown receiver");
     }
-
 
     /**
      * Save settings from our statics into the app database.
@@ -649,7 +649,6 @@ public class K9 extends Application {
                 intent.putExtra(K9.Intents.EmailReceived.EXTRA_ACCOUNT, account.getDescription());
                 intent.putExtra(K9.Intents.EmailReceived.EXTRA_FOLDER, folderName);
                 K9.this.sendBroadcast(intent);
-
             }
 
         });

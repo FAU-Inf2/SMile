@@ -50,4 +50,10 @@ public class DecodeMessageLoader extends AsyncTaskLoader<MessageViewInfo> {
             return null;
         }
     }
+
+    @Override
+    protected void onReset() {
+        super.onReset();
+        this.messageViewInfo = null;
+    }
 }

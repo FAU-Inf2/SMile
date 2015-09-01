@@ -377,11 +377,9 @@ public class K9 extends Application {
         int acctLength = Preferences.getPreferences(context).getAvailableAccounts().size();
 
         setServicesEnabled(context, acctLength > 0, null);
-
     }
 
     private static void setServicesEnabled(Context context, boolean enabled, Integer wakeLockId) {
-
         PackageManager pm = context.getPackageManager();
 
         if (!enabled && pm.getComponentEnabledSetting(new ComponentName(context, MailService.class)) ==
@@ -417,7 +415,6 @@ public class K9 extends Application {
              */
             MailService.actionReset(context, wakeLockId);
         }
-
     }
 
     /**

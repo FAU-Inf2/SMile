@@ -5,8 +5,9 @@
          white) is being used as a mask or inverted (not sure which). The net
          effect is that specifying #ffffffff is resulting in black text. This
          needs to change once we go to targetSdk 21. -->
+
     <style name="TextAppearance.StatusBar.EventContent.Emphasized" parent="@android:style/TextAppearance.StatusBar.EventContent">
-        <item name="android:textColor">#ffffffff</item>
+        <item name="android:textColor">@android:color/black</item>
     </style>
 
     <style name="Theme.K9.Startup" parent="@android:style/Theme.Material.NoActionBar">

@@ -192,7 +192,7 @@ public class MessagingController implements Runnable {
         memorizingListener = new MemorizingListener();
         threadPool = Executors.newCachedThreadPool();
         pushers = new ConcurrentHashMap<>();
-        notificationHelper = new NotificationHelper(context);
+        notificationHelper = NotificationHelper.getInstance(context);
 
         mThread = new Thread(this);
         mThread.setName("MessagingController");
@@ -768,7 +768,6 @@ public class MessagingController implements Runnable {
             remoteFolder.expunge();
         }
 
-
         return remoteFolder;
     }
 
@@ -778,14 +777,14 @@ public class MessagingController implements Runnable {
         localFolder.setLastChecked(System.currentTimeMillis());
         localFolder.setStatus(null);
 
-        if (K9.DEBUG)
+        if (K9.DEBUG) {
             Log.d(K9.LOG_TAG, "Done synchronizing folder " + account.getDescription() + ":" + folder +
                     " @ " + new Date() + " with " + newMessages + " new messages");
+        }
 
         for (MessagingListener l : getListeners(listener)) {
             l.synchronizeMailboxFinished(account, folder, remoteMessageCount, newMessages);
         }
-
 
         if (commandException != null) {
             String rootMessage = getRootCauseMessage(commandException);
@@ -797,8 +796,9 @@ public class MessagingController implements Runnable {
             }
         }
 
-        if (K9.DEBUG)
+        if (K9.DEBUG) {
             Log.i(K9.LOG_TAG, "Done synchronizing folder " + account.getDescription() + ":" + folder);
+        }
     }
 
     private void syncRemoveRemoteDeletedMessages(Account account, String folder,
@@ -809,7 +809,7 @@ public class MessagingController implements Runnable {
          * Remove any messages that are in the local store but no longer on the remote store or are too old
          */
         if (account.syncRemoteDeletions()) {
-            List<Message> destroyMessages = new ArrayList<Message>();
+            List<Message> destroyMessages = new ArrayList<>();
             for (Message localMessage : localMessages) {
                 if (remoteUidMap.get(localMessage.getUid()) == null) {
                     destroyMessages.add(localMessage);
@@ -847,10 +847,8 @@ public class MessagingController implements Runnable {
             remoteStart = 1;
         }
 
-        int remoteEnd = remoteMessageCount;
-
         if (K9.DEBUG) {
-            Log.v(K9.LOG_TAG, "SYNC: About to get messages " + remoteStart + " through " + remoteEnd + " for folder " + folder);
+            Log.v(K9.LOG_TAG, "SYNC: About to get messages " + remoteStart + " through " + remoteMessageCount + " for folder " + folder);
         }
 
         final AtomicInteger headerProgress = new AtomicInteger(0);
@@ -858,8 +856,7 @@ public class MessagingController implements Runnable {
             l.synchronizeMailboxHeadersStarted(account, folder);
         }
 
-        List<? extends Message> remoteMessageArray = remoteFolder.getMessages(remoteStart, remoteEnd, earliestDate, null);
-
+        List<? extends Message> remoteMessageArray = remoteFolder.getMessages(remoteStart, remoteMessageCount, earliestDate, null);
         int messageCount = remoteMessageArray.size();
 
         for (Message thisMess : remoteMessageArray) {
@@ -952,11 +949,11 @@ public class MessagingController implements Runnable {
             Log.e(K9.LOG_TAG, "Unable to getUnreadMessageCount for account: " + account, e);
         }
 
-        List<Message> syncFlagMessages = new ArrayList<Message>();
-        List<Message> unsyncedMessages = new ArrayList<Message>();
+        List<Message> syncFlagMessages = new ArrayList<>();
+        List<Message> unsyncedMessages = new ArrayList<>();
         final AtomicInteger newMessages = new AtomicInteger(0);
 
-        List<Message> messages = new ArrayList<Message>(inputMessages);
+        List<Message> messages = new ArrayList<>(inputMessages);
 
         for (Message message : messages) {
             evaluateMessageForDownload(message, folder, localFolder, remoteFolder, account, unsyncedMessages, syncFlagMessages, flagSyncOnly);
@@ -1001,8 +998,8 @@ public class MessagingController implements Runnable {
             }
 
             fetchUnsyncedMessages(account, remoteFolder, unsyncedMessages, smallMessages, largeMessages, progress, todo, fp);
-
             String updatedPushState = localFolder.getPushState();
+
             for (Message message : unsyncedMessages) {
                 String newPushState = remoteFolder.getNewPushState(updatedPushState, message);
                 if (newPushState != null) {

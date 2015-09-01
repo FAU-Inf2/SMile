@@ -51,12 +51,21 @@ import de.fau.cs.mad.smile.android.R;
 public class NotificationHelper {
     // Maximum number of senders to display in a lock screen notification.
     private static final int NUM_SENDERS_IN_LOCK_SCREEN_NOTIFICATION = 5;
+    private static NotificationHelper instance = null;
 
     private final Context context;
     private final ConcurrentMap<Integer, NotificationData> notificationData;
     private TextAppearanceSpan sEmphasizedSpan;
 
-    public NotificationHelper(Context context) {
+    public static synchronized NotificationHelper getInstance(Context context) {
+        if(instance == null) {
+            instance = new NotificationHelper(context);
+        }
+
+        return instance;
+    }
+
+    private NotificationHelper(Context context) {
         this.context = context;
         notificationData = new ConcurrentHashMap<>();
     }

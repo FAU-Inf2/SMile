@@ -4,13 +4,10 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DialogFragment;
 import android.app.FragmentTransaction;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.StringRes;
 import android.util.Log;
 import android.view.View;
@@ -22,19 +19,12 @@ import com.fsck.k9.Account;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.activity.K9Activity;
-import com.fsck.k9.controller.MessagingController;
+import com.fsck.k9.activity.asynctask.CheckAccountTask;
 import com.fsck.k9.fragment.ConfirmationDialogFragment;
 import com.fsck.k9.fragment.ConfirmationDialogFragment.ConfirmationDialogFragmentListener;
-import com.fsck.k9.helper.NotificationHelper;
-import com.fsck.k9.mail.AuthenticationFailedException;
 import com.fsck.k9.mail.CertificateValidationException;
-import com.fsck.k9.mail.MessagingException;
-import com.fsck.k9.mail.Store;
-import com.fsck.k9.mail.Transport;
 import com.fsck.k9.mail.filter.Hex;
-import com.fsck.k9.mail.store.webdav.WebDavStore;
 
-import java.lang.ref.WeakReference;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateEncodingException;
@@ -59,12 +49,11 @@ public class AccountSetupCheckSettings extends K9Activity implements OnClickList
     public static final int ACTIVITY_REQUEST_CODE = 1;
     private static final String EXTRA_ACCOUNT = "account";
     private static final String EXTRA_CHECK_DIRECTION = "checkDirection";
-    private MyHandler mHandler = new MyHandler(this);
+    private AccountSetupCheckSettingsHandler mHandler = new AccountSetupCheckSettingsHandler(this);
     private ProgressBar mProgressBar;
     private TextView mMessageView;
     private Account mAccount;
     private CheckDirection mDirection;
-    private boolean mCanceled;
     private boolean mDestroyed;
     private CheckAccountTask checkAccountTask;
 
@@ -95,7 +84,7 @@ public class AccountSetupCheckSettings extends K9Activity implements OnClickList
         checkAccountTask.execute();
     }
 
-    private void handleCertificateValidationException(CertificateValidationException cve) {
+    public void handleCertificateValidationException(CertificateValidationException cve) {
         Log.e(K9.LOG_TAG, "Error while testing settings", cve);
 
         X509Certificate[] chain = cve.getCertChain();
@@ -116,14 +105,13 @@ public class AccountSetupCheckSettings extends K9Activity implements OnClickList
         super.onDestroy();
         checkAccountTask.cancel(true);
         mDestroyed = true;
-        mCanceled = true;
     }
 
-    private void setMessage(final int resId) {
+    public void setMessage(@StringRes final int resId) {
         mMessageView.setText(getString(resId));
     }
 
-    private void acceptKeyDialog(final int msgResId, final CertificateValidationException ex) {
+    private void acceptKeyDialog(@StringRes final int msgResId, final CertificateValidationException ex) {
         mHandler.post(new AcceptKeyRunnable(ex, msgResId));
     }
 
@@ -153,7 +141,6 @@ public class AccountSetupCheckSettings extends K9Activity implements OnClickList
 
     private void onCancel() {
         checkAccountTask.cancel(true);
-        mCanceled = true;
         setMessage(R.string.account_setup_check_settings_canceling_msg);
     }
 
@@ -166,18 +153,15 @@ public class AccountSetupCheckSettings extends K9Activity implements OnClickList
         }
     }
 
-    private void showErrorDialog(final int msgResId, final Object... args) {
-        mHandler.post(new Runnable() {
-            public void run() {
-                showDialogFragment(R.id.dialog_account_setup_error, getString(msgResId, args));
-            }
-        });
+    public void showErrorDialog(final int msgResId, final Object... args) {
+        showDialogFragment(R.id.dialog_account_setup_error, getString(msgResId, args));
     }
 
     private void showDialogFragment(int dialogId, String customMessage) {
         if (mDestroyed) {
             return;
         }
+
         mProgressBar.setIndeterminate(false);
 
         DialogFragment fragment;
@@ -223,7 +207,6 @@ public class AccountSetupCheckSettings extends K9Activity implements OnClickList
     public void doNegativeClick(int dialogId) {
         switch (dialogId) {
             case R.id.dialog_account_setup_error: {
-                mCanceled = false;
                 setResult(RESULT_OK);
                 finish();
                 break;
@@ -257,139 +240,6 @@ public class AccountSetupCheckSettings extends K9Activity implements OnClickList
         OUTGOING
     }
 
-    private static class MyHandler extends Handler {
-        private WeakReference<AccountSetupCheckSettings> reference;
-
-        public MyHandler(AccountSetupCheckSettings checkSettings) {
-            reference = new WeakReference<>(checkSettings);
-        }
-
-        public void showErrorDialog(@StringRes int message, String exceptionMessage) {
-            AccountSetupCheckSettings ref = reference.get();
-            if(ref != null) {
-                ref.showErrorDialog(message, exceptionMessage);
-            }
-        }
-
-        public void handleCertificateValidationException(CertificateValidationException cve) {
-            AccountSetupCheckSettings ref = reference.get();
-            if(ref != null) {
-                ref.handleCertificateValidationException(cve);
-            }
-        }
-    }
-
-    /**
-     * FIXME: Don't use an AsyncTask to perform network operations.
-     * See also discussion in https://github.com/k9mail/k-9/pull/560
-     */
-    private class CheckAccountTask extends AsyncTask<Void, Integer, Void> {
-        private final Context context;
-        private final MessagingController controller;
-        private final NotificationHelper helper;
-        private final Account account;
-        private final CheckDirection checkDirection;
-        private final MyHandler handler;
-
-        private CheckAccountTask(Context context, MyHandler handler, Account account, CheckDirection checkDirection) {
-            this.context = context;
-            this.account = account;
-            this.controller = MessagingController.getInstance(context);
-            this.helper = new NotificationHelper(context);
-            this.checkDirection = checkDirection;
-            this.handler = handler;
-        }
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            try {
-                /*
-                 * This task could be interrupted at any point, but network operations can block,
-                 * so relying on InterruptedException is not enough. Instead, check after
-                 * each potentially long-running operation.
-                 */
-                if (isCancelled()) {
-                    return null;
-                }
-
-                clearCertificateErrorNotifications(checkDirection);
-                checkServerSettings(checkDirection);
-
-                if (isCancelled()) {
-                    return null;
-                }
-
-                setResult(RESULT_OK);
-                finish();
-            } catch (AuthenticationFailedException afe) {
-                Log.e(K9.LOG_TAG, "Error while testing settings", afe);
-                handler.showErrorDialog(
-                        R.string.account_setup_failed_dlg_auth_message_fmt,
-                        afe.getMessage() == null ? "" : afe.getMessage());
-            } catch (CertificateValidationException cve) {
-                handler.handleCertificateValidationException(cve);
-            } catch (Throwable t) {
-                Log.e(K9.LOG_TAG, "Error while testing settings", t);
-                handler.showErrorDialog(
-                        R.string.account_setup_failed_dlg_server_message_fmt,
-                        (t.getMessage() == null ? "" : t.getMessage()));
-            }
-
-            return null;
-        }
-
-        private void clearCertificateErrorNotifications(CheckDirection direction) {
-            helper.clearCertificateErrorNotifications(context, account, direction);
-        }
-
-        private void checkServerSettings(CheckDirection direction) throws MessagingException {
-            switch (direction) {
-                case INCOMING: {
-                    checkIncoming();
-                    break;
-                }
-                case OUTGOING: {
-                    checkOutgoing();
-                    break;
-                }
-            }
-        }
-
-        private void checkIncoming() throws MessagingException {
-            final Store store = account.getRemoteStore();
-            if (store instanceof WebDavStore) {
-                publishProgress(R.string.account_setup_check_settings_authenticate);
-            } else {
-                publishProgress(R.string.account_setup_check_settings_check_incoming_msg);
-            }
-
-            store.checkSettings();
-
-            if (store instanceof WebDavStore) {
-                publishProgress(R.string.account_setup_check_settings_fetch);
-            }
-
-            controller.listFoldersSynchronous(account, true, null);
-            controller.synchronizeMailbox(account, account.getInboxFolderName(), null, null);
-        }
-
-        private void checkOutgoing() throws MessagingException {
-            if (!(account.getRemoteStore() instanceof WebDavStore)) {
-                publishProgress(R.string.account_setup_check_settings_check_outgoing_msg);
-            }
-
-            Transport transport = Transport.getInstance(K9.app, account);
-            transport.close();
-            transport.open();
-            transport.close();
-        }
-
-        @Override
-        protected void onProgressUpdate(Integer... values) {
-            setMessage(values[0]);
-        }
-    }
-
     private class AcceptKeyRunnable implements Runnable {
         private final CertificateValidationException ex;
         private final int msgResId;
@@ -404,6 +254,7 @@ public class AccountSetupCheckSettings extends K9Activity implements OnClickList
             if (mDestroyed) {
                 return;
             }
+
             String exMessage = "Unknown Error";
 
             if (ex != null) {
@@ -456,7 +307,7 @@ public class AccountSetupCheckSettings extends K9Activity implements OnClickList
                             Integer type = (Integer) subjectAlternativeName.get(0);
                             Object value = subjectAlternativeName.get(1);
                             String name;
-                            switch (type.intValue()) {
+                            switch (type) {
                                 case 0:
                                     Log.w(K9.LOG_TAG, "SubjectAltName of type OtherName not supported.");
                                     continue;

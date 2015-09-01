@@ -235,7 +235,7 @@ public final class FolderList extends K9ListActivity {
         controller.getAccountStats(this, mAccount, mListener);
 
         onRefresh(!REFRESH_REMOTE);
-        NotificationHelper notificationHelper = new NotificationHelper(getApplicationContext());
+        NotificationHelper notificationHelper = NotificationHelper.getInstance(getApplicationContext());
         notificationHelper.notifyAccountCancel(this, mAccount);
         mListener.onResume(this);
     }

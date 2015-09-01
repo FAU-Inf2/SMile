@@ -64,20 +64,20 @@ public class RemindMeService extends CoreService {
         return 0;
     }
 
-    private Date handleAccount(final Account acc) {
+    private Date handleAccount(final Account account) {
         Log.d(K9.LOG_TAG, "RemindMeService.handleAccount(): Get all remindMeItems.");
-        List<RemindMe> remindMes = getRemindMeItems(acc);
+        List<RemindMe> remindMes = getRemindMeItems(account);
         Date now = new Date();
         Date minDate = null;
 
         final MessagingController messagingController = MessagingController.getInstance(getApplicationContext());
-        final NotificationHelper notificationHelper = new NotificationHelper(getApplicationContext());
-        final List<LocalMessage> messages = new ArrayList<LocalMessage>();
-        final List<Long> messageIds = new ArrayList<Long>();
+        final NotificationHelper notificationHelper = NotificationHelper.getInstance(getApplicationContext());
+        final List<LocalMessage> messages = new ArrayList<>();
+        final List<Long> messageIds = new ArrayList<>();
         LocalRemindMe localRemindMe = null;
 
         try {
-            localRemindMe = new LocalRemindMe(acc.getLocalStore());
+            localRemindMe = new LocalRemindMe(account.getLocalStore());
         } catch (MessagingException e) {
             Log.e(K9.LOG_TAG, "Exception thrown while calling acquiring LocalRemindMe.", e);
         }
@@ -115,10 +115,10 @@ public class RemindMeService extends CoreService {
 
         // move mail back to inbox
         Log.d(K9.LOG_TAG, "Will move mails from RemindMe back to inbox.");
-        messagingController.moveMessages(acc,
-                acc.getRemindMeFolderName(),
+        messagingController.moveMessages(account,
+                account.getRemindMeFolderName(),
                 messages,
-                acc.getInboxFolderName(),
+                account.getInboxFolderName(),
                 new ActivityListener() {
                     @Override
                     public void folderStatusChanged(Account account, String folder, int unreadMessageCount) {
@@ -129,7 +129,7 @@ public class RemindMeService extends CoreService {
 
         //TODO: check whether move-to-inbox has finished!
         Log.d(K9.LOG_TAG, "Will synchronize inbox.");
-        messagingController.synchronizeMailbox(acc, acc.getInboxFolderName(),
+        messagingController.synchronizeMailbox(account, account.getInboxFolderName(),
                 new ActivityListener() {
                     @Override
                     public void folderStatusChanged(Account account, String folder, int unreadMessageCount) {
@@ -142,35 +142,39 @@ public class RemindMeService extends CoreService {
                                                            int totalMessagesInMailbox, int numNewMessages) {
                         Log.e(K9.LOG_TAG, "synchronization finished successfully.");
                         Log.d(K9.LOG_TAG, "Mark mails from RemindMe as unread.");
-                        messagingController.setFlag(acc, messageIds, Flag.SEEN, false);
+                        messagingController.setFlag(account, messageIds, Flag.SEEN, false);
 
                         FetchProfile fp = new FetchProfile();
                         fp.add(FetchProfile.Item.ENVELOPE);
                         try {
                             Log.d(K9.LOG_TAG, "Fetch flags.");
-                            LocalFolder localFolder = acc.getLocalStore().getFolder(acc.getInboxFolderName());
+                            LocalFolder localFolder = account.getLocalStore().getFolder(account.getInboxFolderName());
                             localFolder.fetch(messages, fp, null);
                             localFolder.close();
-                        } catch (Exception e) {
+                        } catch (MessagingException e) {
                             Log.e(K9.LOG_TAG, "Error while fetching flags for mail (remindMe): " +
                                     e.getMessage());
                         }
+
                         //need moved local messages
                         final List<LocalMessage> messages2 = new ArrayList<LocalMessage>();
                         LocalFolder inbox;
+
                         try {
-                            inbox = acc.getLocalStore().getFolder(acc.getInboxFolderName());
-                            for (long id : messageIds)
+                            inbox = account.getLocalStore().getFolder(account.getInboxFolderName());
+                            for (long id : messageIds) {
                                 messages2.add(inbox.getMessage(inbox.getMessageUidById(id)));
-                        } catch (Exception e) {
+                            }
+                        } catch (MessagingException e) {
                             Log.e(K9.LOG_TAG, "Error getting inbox." + e.getMessage());
                             return;
                         }
+
                         //set notification
                         Log.d(K9.LOG_TAG, "Set notification for remindMes.");
                         int i = 0;
                         for (LocalMessage m : messages2) {
-                            notificationHelper.notifyAccount(getApplication(), acc, m, i++, false);
+                            notificationHelper.notifyAccount(getApplication(), account, m, i++, false);
                         }
                     }
                 }, null);
@@ -178,10 +182,11 @@ public class RemindMeService extends CoreService {
         return minDate;
     }
 
-    private List<RemindMe> getRemindMeItems(Account acc) {
-        ArrayList<RemindMe> remindMes = new ArrayList<RemindMe>();
+    private List<RemindMe> getRemindMeItems(Account account) {
+        ArrayList<RemindMe> remindMes = new ArrayList<>();
+
         try {
-            LocalRemindMe localRemindMe = new LocalRemindMe(acc.getLocalStore());
+            LocalRemindMe localRemindMe = new LocalRemindMe(account.getLocalStore());
             remindMes.addAll(localRemindMe.getAllRemindMes());
         } catch (MessagingException e) {
             Log.e(K9.LOG_TAG, "Exception thrown while calling getAllRemindMes()", e);

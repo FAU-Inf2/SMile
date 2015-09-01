@@ -9,21 +9,21 @@ import java.util.HashMap;
 
 
 public class MessageCryptoAnnotations implements Serializable {
-    private HashMap<Part, CryptoResultAnnotation> annotations = new HashMap<Part, CryptoResultAnnotation>();
+    private final HashMap<Part, CryptoResultAnnotation> annotations;
 
-    MessageCryptoAnnotations() {
-        // Package-private constructor
+    public MessageCryptoAnnotations() {
+        annotations = new HashMap<>();
     }
 
     void put(Part part, CryptoResultAnnotation annotation) {
         annotations.put(part, annotation);
     }
 
-    public CryptoResultAnnotation get(Part part) {
+    public CryptoResultAnnotation get(final Part part) {
         return annotations.get(part);
     }
 
-    public boolean has(Part part) {
+    public boolean has(final Part part) {
         return annotations.containsKey(part);
     }
 }

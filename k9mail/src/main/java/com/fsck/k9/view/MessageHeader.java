@@ -316,9 +316,9 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
         }
     }
 
-    public void setCryptoAnnotation(final CryptoResultAnnotation cryptoAnnotation) {
+    public void setCryptoAnnotation(final CryptoResultAnnotation cryptoAnnotation) throws MessagingException {
         this.cryptoAnnotation = cryptoAnnotation;
-
+        invalidate();
         initializeEncryptionHeader();
         initializeSignatureHeader();
     }

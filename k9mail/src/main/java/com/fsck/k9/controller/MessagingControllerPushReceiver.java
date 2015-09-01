@@ -27,7 +27,7 @@ public class MessagingControllerPushReceiver implements PushReceiver {
         account = nAccount;
         controller = nController;
         this.context = context;
-        notificationHelper = new NotificationHelper(context);
+        notificationHelper = NotificationHelper.getInstance(context);
     }
 
     public void messagesFlagsChanged(Folder folder,

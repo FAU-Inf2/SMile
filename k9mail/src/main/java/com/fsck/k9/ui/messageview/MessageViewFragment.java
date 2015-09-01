@@ -114,9 +114,9 @@ public class MessageViewFragment extends Fragment
     public void onAttach(Activity activity) {
         super.onAttach(activity);
 
-        mContext = activity.getBaseContext();
+        mContext = activity.getApplicationContext();
         decodeMessageLoaderCallback = new DecodeMessageLoaderCallback(mContext, handler);
-        mController = MessagingController.getInstance(activity.getApplication());
+        mController = MessagingController.getInstance(mContext);
 
         try {
             mFragmentListener = (MessageViewFragmentListener) activity;
@@ -146,7 +146,6 @@ public class MessageViewFragment extends Fragment
         mMessageView = (MessageTopView) view.findViewById(R.id.message_view);
         mMessageView.setAttachmentCallback(new AttachmentCallback(mContext, mController, handler, this));
         mMessageView.setCryptoHeaderViewCallback(this);
-
         mMessageView.setOnToggleFlagClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -224,7 +223,7 @@ public class MessageViewFragment extends Fragment
         if (!message.isBodyMissing()) {
             if(MessageDecryptVerifier.isMimeSignedPart(message)) {
                 // TODO: display signed message before results return
-                //startExtractingTextAndAttachments(null);
+                startExtractingTextAndAttachments(new MessageCryptoAnnotations());
             }
 
             messageCryptoHelper.decryptOrVerifyMessagePartsIfNecessary(message);
@@ -273,14 +272,16 @@ public class MessageViewFragment extends Fragment
         args.putSerializable(ARG_ANNOTATIONS, annotations);
 
         if (getActivity() != null) {
-            getLoaderManager().initLoader(DECODE_MESSAGE_LOADER_ID, args, decodeMessageLoaderCallback);
+            getLoaderManager().restartLoader(DECODE_MESSAGE_LOADER_ID, args, decodeMessageLoaderCallback);
         }
     }
 
     void showMessage(final MessageViewInfo messageContainer) {
         try {
-            mMessageView.setMessage(mAccount, messageContainer);
-            mMessageView.setShowDownloadButton(mMessage);
+            if(messageContainer != null) {
+                mMessageView.setMessage(mAccount, messageContainer);
+                mMessageView.setShowDownloadButton(mMessage);
+            }
         } catch (MessagingException e) {
             Log.e(K9.LOG_TAG, "Error while trying to display message", e);
         }

@@ -19,10 +19,9 @@ public class LocalMessageLoader extends AsyncTaskLoader<LocalMessage> {
     private final MessageReference messageReference;
     private LocalMessage message;
 
-    public LocalMessageLoader(final Context context, final MessagingController controller, final Account account,
-                              final MessageReference messageReference) {
+    public LocalMessageLoader(final Context context, final Account account, final MessageReference messageReference) {
         super(context);
-        this.controller = controller;
+        this.controller = MessagingController.getInstance(context);
         this.account = account;
         this.messageReference = messageReference;
     }

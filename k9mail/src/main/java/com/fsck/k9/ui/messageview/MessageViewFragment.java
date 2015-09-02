@@ -10,7 +10,6 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
-import android.content.Loader;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -43,14 +42,13 @@ import com.fsck.k9.mailstore.MessageViewInfo;
 import com.fsck.k9.ui.crypto.MessageCryptoAnnotations;
 import com.fsck.k9.ui.crypto.MessageCryptoCallback;
 import com.fsck.k9.ui.crypto.MessageCryptoHelper;
-import com.fsck.k9.ui.message.LocalMessageLoader;
 
 import java.util.Collections;
 import java.util.Locale;
 
 import de.fau.cs.mad.smile.android.R;
 
-public class MessageViewFragment extends Fragment
+public final class MessageViewFragment extends Fragment
         implements ConfirmationDialogFragmentListener,
         CryptoHeaderViewCallback,
         MessageCryptoCallback {
@@ -67,8 +65,6 @@ public class MessageViewFragment extends Fragment
     private static final int DECODE_MESSAGE_LOADER_ID = 2;
     public static final String ARG_MESSAGE = "message";
     public static final String ARG_ANNOTATIONS = "annotations";
-
-    private static final int REQUEST_CODE_CRYPTO = 1000;
 
     public static MessageViewFragment newInstance(MessageReference reference) {
         MessageViewFragment fragment = new MessageViewFragment();
@@ -95,7 +91,6 @@ public class MessageViewFragment extends Fragment
      * dialog is shown.
      */
     private String mDstFolder;
-
     private MessageViewFragmentListener mFragmentListener;
 
     /**
@@ -104,10 +99,8 @@ public class MessageViewFragment extends Fragment
      * it is used.
      */
     private boolean mInitialized = false;
-
     private Context mContext;
-
-    private final LoaderCallbacks<LocalMessage> localMessageLoaderCallback = new LocalMessageLoaderCallback();
+    private LoaderCallbacks<LocalMessage> localMessageLoaderCallback;
     private LoaderCallbacks<MessageViewInfo> decodeMessageLoaderCallback;
 
     @Override
@@ -197,6 +190,7 @@ public class MessageViewFragment extends Fragment
         }
 
         mAccount = Preferences.getPreferences(mContext).getAccount(mMessageReference.getAccountUuid());
+        localMessageLoaderCallback = new LocalMessageLoaderCallback(handler, mContext, mAccount, mMessageReference);
         messageCryptoHelper = new MessageCryptoHelper(getActivity(), this, mAccount.getSmimeProvider(), mAccount.getOpenPgpProvider());
         if (resetPgpData) {
             // start with fresh, empty PGP data
@@ -216,13 +210,13 @@ public class MessageViewFragment extends Fragment
         getLoaderManager().initLoader(LOCAL_MESSAGE_LOADER_ID, null, localMessageLoaderCallback);
     }
 
-    private void onLoadMessageFromDatabaseFinished(LocalMessage message) {
+    void onLoadMessageFromDatabaseFinished(LocalMessage message) {
+        mMessage = message;
         displayMessageHeader(message);
 
         // TODO: download message body if it is missing
         if (!message.isBodyMissing()) {
             if(MessageDecryptVerifier.isMimeSignedPart(message)) {
-                // TODO: display signed message before results return
                 startExtractingTextAndAttachments(new MessageCryptoAnnotations());
             }
 
@@ -230,7 +224,7 @@ public class MessageViewFragment extends Fragment
         }
     }
 
-    private void onLoadMessageFromDatabaseFailed() {
+    void onLoadMessageFromDatabaseFailed() {
         // mMessageView.showStatusMessage(mContext.getString(R.string.status_invalid_id_error));
     }
 
@@ -588,7 +582,6 @@ public class MessageViewFragment extends Fragment
         // findFragmentByTag() below. Otherwise the fragment won't be found and the dialog will
         // never be dismissed.
         fragmentManager.executePendingTransactions();
-
         DialogFragment fragment = (DialogFragment) fragmentManager.findFragmentByTag(getDialogTag(dialogId));
 
         if (fragment != null) {
@@ -677,30 +670,6 @@ public class MessageViewFragment extends Fragment
 
     public boolean isInitialized() {
         return mInitialized;
-    }
-
-    class LocalMessageLoaderCallback implements LoaderCallbacks<LocalMessage> {
-        @Override
-        public Loader<LocalMessage> onCreateLoader(int id, Bundle args) {
-            setProgress(true);
-            return new LocalMessageLoader(mContext, mController, mAccount, mMessageReference);
-        }
-
-        @Override
-        public void onLoadFinished(Loader<LocalMessage> loader, LocalMessage message) {
-            setProgress(false);
-            mMessage = message;
-            if (message == null) {
-                onLoadMessageFromDatabaseFailed();
-            } else {
-                onLoadMessageFromDatabaseFinished(message);
-            }
-        }
-
-        @Override
-        public void onLoaderReset(Loader<LocalMessage> loader) {
-            // Do nothing
-        }
     }
 
     private AttachmentController getAttachmentController(AttachmentViewInfo attachment) {

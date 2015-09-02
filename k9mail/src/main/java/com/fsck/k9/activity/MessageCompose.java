@@ -210,8 +210,6 @@ public class MessageCompose extends K9Activity implements OnClickListener,
      * The account used for message composition.
      */
     private Account mAccount;
-
-
     private Contacts mContacts;
 
     /**
@@ -270,7 +268,6 @@ public class MessageCompose extends K9Activity implements OnClickListener,
     private Action mAction;
 
     private boolean mReadReceipt = false;
-
     private QuotedTextMode mQuotedTextMode = QuotedTextMode.NONE;
 
     /**
@@ -498,6 +495,8 @@ public class MessageCompose extends K9Activity implements OnClickListener,
 
         mReadReceipt = mAccount.isMessageReadReceiptAlways();
         mQuoteStyle = mAccount.getQuoteStyle();
+        mOpenPgpProvider = mAccount.getOpenPgpProvider();
+        mSmimeProvider = mAccount.getSmimeProvider();
 
         acquireLayout();
         setupLayout();
@@ -578,9 +577,6 @@ public class MessageCompose extends K9Activity implements OnClickListener,
         final View mEncryptLayout = findViewById(R.id.layout_encrypt);
 
         initializeCrypto();
-
-        mOpenPgpProvider = mAccount.getOpenPgpProvider();
-        mSmimeProvider = mAccount.getSmimeProvider();
 
         if (isCryptoProviderEnabled()) {
             mCryptoSignatureCheckbox = (CheckBox)findViewById(R.id.cb_crypto_signature);
@@ -721,7 +717,17 @@ public class MessageCompose extends K9Activity implements OnClickListener,
         mFontSizes.setViewTextSize(mQuotedText, fontSize);
         mFontSizes.setViewTextSize(mSignatureView, fontSize);
 
-        ArrayAdapter<CryptoProvider> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, new CryptoProvider[]{CryptoProvider.SMIME,CryptoProvider.PGP});
+        List<CryptoProvider> cryptoProviders = new ArrayList<>();
+
+        if(mOpenPgpProvider != null && mOpenPgpProvider.trim().length() > 0) {
+            cryptoProviders.add(CryptoProvider.PGP);
+        }
+
+        if(mSmimeProvider != null && mSmimeProvider.trim().length() > 0) {
+            cryptoProviders.add(CryptoProvider.SMIME);
+        }
+
+        ArrayAdapter<CryptoProvider> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, cryptoProviders);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mSpinner.setAdapter(adapter);
         mSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -735,6 +741,10 @@ public class MessageCompose extends K9Activity implements OnClickListener,
                 selectedCryptoProvider = CryptoProvider.NONE;
             }
         });
+
+        if(cryptoProviders.size() == 0) {
+            mSpinner.setVisibility(View.GONE);
+        }
     }
 
     private void acquireLayout() {
@@ -1283,8 +1293,18 @@ public class MessageCompose extends K9Activity implements OnClickListener,
     }
 
     private boolean handleEncrypt() {
-        // already encrypted or user does not want to encrypt...
-        if ((!mEncryptCheckbox.isChecked() && !mCryptoSignatureCheckbox.isChecked()) || currentMessage != null) {
+        // user does not want to encrypt...
+        if ((!mEncryptCheckbox.isChecked() && !mCryptoSignatureCheckbox.isChecked())) {
+            return false;
+        }
+
+        // SMIME already encrypted
+        if(currentMessage != null) {
+            return false;
+        }
+
+        // PGP already encrypted
+        if(mPgpData.getEncryptedData() != null) {
             return false;
         }
 
@@ -3253,15 +3273,6 @@ public class MessageCompose extends K9Activity implements OnClickListener,
                 Log.e(K9.LOG_TAG, "Failed to create new message for send or save.", me);
                 throw new RuntimeException("Failed to create a new message for send or save.", me);
             }
-
-            /*File outputFile = new File(getApplicationContext().getDir("messages", Context.MODE_PRIVATE), "encrypted2.tmp");
-            try {
-                message.writeTo(new FileOutputStream(outputFile));
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (MessagingException e) {
-                e.printStackTrace();
-            }*/
 
             try {
                 mContacts.markAsContacted(message.getRecipients(RecipientType.TO));

@@ -35,7 +35,7 @@ import com.fsck.k9.activity.setup.FolderSettings;
 import com.fsck.k9.activity.setup.Prefs;
 import com.fsck.k9.crypto.PgpData;
 import com.fsck.k9.fragment.MessageListFragment;
-import com.fsck.k9.fragment.MessageListFragment.MessageListFragmentListener;
+import com.fsck.k9.fragment.MessageListFragmentListener;
 import com.fsck.k9.fragment.SmsListFragment;
 import com.fsck.k9.mail.Address;
 import com.fsck.k9.mailstore.LocalMessage;
@@ -72,7 +72,6 @@ public class MessageList extends K9Activity
         implements MessageListFragmentListener,
         MessageViewFragmentListener,
         OnBackStackChangedListener,
-       // OnSwipeGestureListener,
         OnSwitchCompleteListener {
 
     // for this activity
@@ -1200,89 +1199,6 @@ public class MessageList extends K9Activity
     }
 
     @Override
-    public void setMessageListTitle(String title) {
-        setActionBarTitle(title);
-    }
-
-    @Override
-    public void setMessageListSubTitle(String subTitle) {
-        setActionBarSubTitle(subTitle);
-    }
-
-    @Override
-    public void setUnreadCount(int unread) {
-        setActionBarUnread(unread);
-    }
-
-    @Override
-    public void setMessageListProgress(int progress) {
-        setProgress(progress);
-    }
-
-    @Override
-    public void openMessage(MessageReference messageReference) {
-        Preferences prefs = Preferences.getPreferences(getApplicationContext());
-        Account account = prefs.getAccount(messageReference.getAccountUuid());
-        String folderName = messageReference.getFolderName();
-
-        if (folderName.equals(account.getDraftsFolderName())) {
-            MessageCompose.actionEditDraft(this, messageReference);
-        } else {
-            mMessageViewContainer.removeView(mMessageViewPlaceHolder);
-
-            if (mMessageListFragment != null) {
-                mMessageListFragment.setActiveMessage(messageReference);
-            }
-
-            MessageViewFragment fragment = MessageViewFragment.newInstance(messageReference);
-            FragmentTransaction ft = getFragmentManager().beginTransaction();
-            ft.replace(R.id.message_view_container, fragment);
-            mMessageViewFragment = fragment;
-            ft.commit();
-
-            if (mDisplayMode != DisplayMode.SPLIT_VIEW) {
-                showMessageView();
-            }
-        }
-    }
-
-    @Override
-    public void onResendMessage(LocalMessage message) {
-        MessageCompose.actionEditDraft(this, message.makeMessageReference());
-    }
-
-    @Override
-    public void onForward(LocalMessage message) {
-        MessageCompose.actionForward(this, message, null);
-    }
-
-    @Override
-    public void onReply(LocalMessage message) {
-        MessageCompose.actionReply(this, message, false, null);
-    }
-
-    @Override
-    public void onReplyAll(LocalMessage message) {
-        MessageCompose.actionReply(this, message, true, null);
-    }
-
-    @Override
-    public void onCompose(Account account) {
-        MessageCompose.actionCompose(this, account);
-    }
-
-    @Override
-    public void showMoreFromSameSender(String senderAddress) {
-        LocalSearch tmpSearch = new LocalSearch("From " + senderAddress);
-        tmpSearch.addAccountUuids(mSearch.getAccountUuids());
-        tmpSearch.and(SearchField.SENDER, senderAddress, Attribute.CONTAINS);
-
-        MessageListFragment fragment = MessageListFragment.newInstance(tmpSearch, false, false);
-
-        addMessageListFragment(fragment, true);
-    }
-
-    @Override
     public void onBackStackChanged() {
         findFragments();
 
@@ -1293,50 +1209,8 @@ public class MessageList extends K9Activity
         configureMenu(mMenu);
     }
 
-   /* @Override
-    public void onSwipeRightToLeft(MotionEvent e1, MotionEvent e2) {
-        if (mMessageListFragment != null && mDisplayMode != DisplayMode.MESSAGE_VIEW && mDisplayMode != DisplayMode.SMS_LIST) {
-            mMessageListFragment.onSwipeRightToLeft(e1, e2);
-        }
-    }
-
-    @Override
-    public void onSwipeLeftToRight(MotionEvent e1, MotionEvent e2) {
-        if (mMessageListFragment != null && mDisplayMode != DisplayMode.MESSAGE_VIEW && mDisplayMode != DisplayMode.SMS_LIST) {
-            mMessageListFragment.onSwipeLeftToRight(e1, e2);
-        }
-    }*/
-
-    @Override
-    public boolean startSearch(Account account, String folderName) {
-        // If this search was started from a MessageList of a single folder, pass along that folder info
-        // so that we can enable remote search.
-        if (account != null && folderName != null) {
-            final Bundle appData = new Bundle();
-            appData.putString(EXTRA_SEARCH_ACCOUNT, account.getUuid());
-            appData.putString(EXTRA_SEARCH_FOLDER, folderName);
-            startSearch(null, false, appData, false);
-        } else {
-            // TODO Handle the case where we're searching from within a search result.
-            startSearch(null, false, null, false);
-        }
-
-        return true;
-    }
-
-    @Override
-    public void showThread(Account account, String folderName, long threadRootId) {
-        showMessageViewPlaceHolder();
-
-        LocalSearch tmpSearch = new LocalSearch();
-        tmpSearch.addAccountUuid(account.getUuid());
-        tmpSearch.and(SearchField.THREAD_ID, String.valueOf(threadRootId), Attribute.EQUALS);
-
-        MessageListFragment fragment = MessageListFragment.newInstance(tmpSearch, true, false);
-        addMessageListFragment(fragment, true);
-    }
-
     private final class StorageListenerImplementation implements StorageManager.StorageListener {
+
         @Override
         public void onUnmount(String providerId) {
             if (mAccount != null && providerId.equals(mAccount.getLocalStorageProviderId())) {
@@ -1353,6 +1227,7 @@ public class MessageList extends K9Activity
         public void onMount(String providerId) {
             // no-op
         }
+
     }
 
     private void addMessageListFragment(MessageListFragment fragment, boolean addToBackStack) {
@@ -1409,62 +1284,6 @@ public class MessageList extends K9Activity
     }
 
     @Override
-    public void remoteSearchStarted() {
-        // Remove action button for remote search
-        configureMenu(mMenu);
-    }
-
-    @Override
-    public void goBack() {
-        Log.d(K9.LOG_TAG, "MessageList.goBack");
-
-        FragmentManager fragmentManager = getFragmentManager();
-
-        if (mDisplayMode == DisplayMode.MESSAGE_VIEW) {
-            showMessageList();
-        } else if (fragmentManager.getBackStackEntryCount() > 0) {
-            fragmentManager.popBackStack();
-        } else if (mMessageListFragment.isManualSearch()) {
-            finish();
-        } else if (!mSingleFolderMode) {
-            onAccounts();
-        } else {
-            onShowFolderList();
-        }
-    }
-
-    @Override
-    public void enableActionBarProgress(boolean enable) {
-        if (mMenuButtonCheckMail != null && mMenuButtonCheckMail.isVisible()) {
-            mActionBarProgress.setVisibility(ProgressBar.GONE);
-
-            if (enable) {
-                mMenuButtonCheckMail
-                        .setActionView(mActionButtonIndeterminateProgress);
-            } else {
-                mMenuButtonCheckMail.setActionView(null);
-            }
-        } else {
-            if (mMenuButtonCheckMail != null) {
-                mMenuButtonCheckMail.setActionView(null);
-            }
-
-            if (enable) {
-                mActionBarProgress.setVisibility(ProgressBar.VISIBLE);
-            } else {
-                mActionBarProgress.setVisibility(ProgressBar.GONE);
-            }
-        }
-    }
-
-    @Override
-    public void displayMessageSubject(String subject) {
-        if (mDisplayMode == DisplayMode.MESSAGE_VIEW) {
-            mActionBarSubject.setText(subject);
-        }
-    }
-
-    @Override
     public void onReply(LocalMessage message, PgpData pgpData) {
         MessageCompose.actionReply(this, message, false, pgpData.getDecryptedData());
     }
@@ -1515,12 +1334,17 @@ public class MessageList extends K9Activity
     public void setProgress(boolean enable) {
         setProgressBarIndeterminateVisibility(enable);
     }
-
     @Override
     public void messageHeaderViewAvailable(MessageHeader header) {
         mActionBarSubject.setMessageHeader(header);
     }
 
+    @Override
+    public void displayMessageSubject(String subject) {
+        if (mDisplayMode == DisplayMode.MESSAGE_VIEW) {
+            mActionBarSubject.setText(subject);
+        }
+    }
     private boolean showNextMessage() {
         MessageReference ref = mMessageViewFragment.getMessageReference();
         if (ref != null) {
@@ -1678,11 +1502,6 @@ public class MessageList extends K9Activity
     }
 
     @Override
-    public void showSMS(Account account, String FolderName, long rootId, MessageReference messageReference) {
-
-    }
-
-    @Override
     public void updateMenu() {
         invalidateOptionsMenu();
     }
@@ -1753,7 +1572,9 @@ public class MessageList extends K9Activity
     private class ButtonOnClickListener implements View.OnClickListener {
 
         private final String senderAddress;
+
         private final Button button;
+
         private final Button[] buttons;
 
         public ButtonOnClickListener(String senderAddress, Button button, Button[] buttons) {
@@ -1794,5 +1615,176 @@ public class MessageList extends K9Activity
                 }
             }
         }
+
+    }
+
+    /*
+        MessageListFragmentListener impl
+     */
+
+    @Override
+    public void enableActionBarProgress(boolean enable) {
+        if (mMenuButtonCheckMail != null && mMenuButtonCheckMail.isVisible()) {
+            mActionBarProgress.setVisibility(ProgressBar.GONE);
+
+            if (enable) {
+                mMenuButtonCheckMail
+                        .setActionView(mActionButtonIndeterminateProgress);
+            } else {
+                mMenuButtonCheckMail.setActionView(null);
+            }
+        } else {
+            if (mMenuButtonCheckMail != null) {
+                mMenuButtonCheckMail.setActionView(null);
+            }
+
+            if (enable) {
+                mActionBarProgress.setVisibility(ProgressBar.VISIBLE);
+            } else {
+                mActionBarProgress.setVisibility(ProgressBar.GONE);
+            }
+        }
+    }
+
+    @Override
+    public void goBack() {
+        Log.d(K9.LOG_TAG, "MessageList.goBack");
+
+        FragmentManager fragmentManager = getFragmentManager();
+
+        if (mDisplayMode == DisplayMode.MESSAGE_VIEW) {
+            showMessageList();
+        } else if (fragmentManager.getBackStackEntryCount() > 0) {
+            fragmentManager.popBackStack();
+        } else if (mMessageListFragment.isManualSearch()) {
+            finish();
+        } else if (!mSingleFolderMode) {
+            onAccounts();
+        } else {
+            onShowFolderList();
+        }
+    }
+
+    @Override
+    public void onCompose(Account account) {
+        MessageCompose.actionCompose(this, account);
+    }
+
+    @Override
+    public void onForward(LocalMessage message) {
+        MessageCompose.actionForward(this, message, null);
+    }
+
+    @Override
+    public void onReply(LocalMessage message) {
+        MessageCompose.actionReply(this, message, false, null);
+    }
+
+    @Override
+    public void onReplyAll(LocalMessage message) {
+        MessageCompose.actionReply(this, message, true, null);
+    }
+
+    @Override
+    public void onResendMessage(LocalMessage message) {
+        MessageCompose.actionEditDraft(this, message.makeMessageReference());
+    }
+
+    @Override
+    public void openMessage(MessageReference messageReference) {
+        Preferences prefs = Preferences.getPreferences(getApplicationContext());
+        Account account = prefs.getAccount(messageReference.getAccountUuid());
+        String folderName = messageReference.getFolderName();
+
+        if (folderName.equals(account.getDraftsFolderName())) {
+            MessageCompose.actionEditDraft(this, messageReference);
+        } else {
+            mMessageViewContainer.removeView(mMessageViewPlaceHolder);
+
+            if (mMessageListFragment != null) {
+                mMessageListFragment.setActiveMessage(messageReference);
+            }
+
+            MessageViewFragment fragment = MessageViewFragment.newInstance(messageReference);
+            FragmentTransaction ft = getFragmentManager().beginTransaction();
+            ft.replace(R.id.message_view_container, fragment);
+            mMessageViewFragment = fragment;
+            ft.commit();
+
+            if (mDisplayMode != DisplayMode.SPLIT_VIEW) {
+                showMessageView();
+            }
+        }
+    }
+
+    @Override
+    public void remoteSearchStarted() {
+        // Remove action button for remote search
+        configureMenu(mMenu);
+    }
+
+    @Override
+    public void setMessageListProgress(int progress) {
+        setProgress(progress);
+    }
+
+    @Override
+    public void setMessageListSubTitle(String subTitle) {
+        setActionBarSubTitle(subTitle);
+    }
+
+    @Override
+    public void setMessageListTitle(String title) {
+        setActionBarTitle(title);
+    }
+
+    @Override
+    public void setUnreadCount(int unread) {
+        setActionBarUnread(unread);
+    }
+
+    @Override
+    public void showMoreFromSameSender(String senderAddress) {
+        LocalSearch tmpSearch = new LocalSearch("From " + senderAddress);
+        tmpSearch.addAccountUuids(mSearch.getAccountUuids());
+        tmpSearch.and(SearchField.SENDER, senderAddress, Attribute.CONTAINS);
+
+        MessageListFragment fragment = MessageListFragment.newInstance(tmpSearch, false, false);
+
+        addMessageListFragment(fragment, true);
+    }
+
+    @Override
+    public void showSMS(Account account, String FolderName, long rootId, MessageReference messageReference) {
+
+    }
+
+    @Override
+    public void showThread(Account account, String folderName, long threadRootId) {
+        showMessageViewPlaceHolder();
+
+        LocalSearch tmpSearch = new LocalSearch();
+        tmpSearch.addAccountUuid(account.getUuid());
+        tmpSearch.and(SearchField.THREAD_ID, String.valueOf(threadRootId), Attribute.EQUALS);
+
+        MessageListFragment fragment = MessageListFragment.newInstance(tmpSearch, true, false);
+        addMessageListFragment(fragment, true);
+    }
+
+    @Override
+    public boolean startSearch(Account account, String folderName) {
+        // If this search was started from a MessageList of a single folder, pass along that folder info
+        // so that we can enable remote search.
+        if (account != null && folderName != null) {
+            final Bundle appData = new Bundle();
+            appData.putString(EXTRA_SEARCH_ACCOUNT, account.getUuid());
+            appData.putString(EXTRA_SEARCH_FOLDER, folderName);
+            startSearch(null, false, appData, false);
+        } else {
+            // TODO Handle the case where we're searching from within a search result.
+            startSearch(null, false, null, false);
+        }
+
+        return true;
     }
 }

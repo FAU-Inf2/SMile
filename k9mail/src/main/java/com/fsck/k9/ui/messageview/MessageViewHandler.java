@@ -104,4 +104,28 @@ class MessageViewHandler extends Handler {
         });
 
     }
+
+    public void onLoadMessageFromDatabaseFailed() {
+        this.post(new Runnable() {
+            @Override
+            public void run() {
+                MessageViewFragment fragment = messageViewFragmentWeakReference.get();
+                if (fragment != null) {
+                    fragment.onLoadMessageFromDatabaseFailed();
+                }
+            }
+        });
+    }
+
+    public void onLoadMessageFromDatabaseFinished(final LocalMessage message) {
+        this.post(new Runnable() {
+            @Override
+            public void run() {
+                MessageViewFragment fragment = messageViewFragmentWeakReference.get();
+                if (fragment != null) {
+                    fragment.onLoadMessageFromDatabaseFinished(message);
+                }
+            }
+        });
+    }
 }

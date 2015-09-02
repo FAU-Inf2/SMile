@@ -20,6 +20,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -158,6 +159,7 @@ public class MessageListFragment extends Fragment
             SpecialColumns.FOLDER_NAME,
             SpecialColumns.THREAD_COUNT,
     };
+
     private static final String[] PROJECTION = Arrays.copyOf(THREADED_PROJECTION,
             THREAD_COUNT_COLUMN);
     private static final int ACTIVITY_CHOOSE_FOLDER_MOVE = 1;
@@ -194,6 +196,7 @@ public class MessageListFragment extends Fragment
     protected FolderInfoHolder mCurrentFolder;
     protected MessagingController mController;
     protected Account mAccount;
+
     /**
      * Stores the name of the folder that we want to open as soon as possible after load.
      */
@@ -230,10 +233,11 @@ public class MessageListFragment extends Fragment
     private boolean mSenderAboveSubject = false;
     private boolean mCheckboxes = true;
     private boolean mStars = true;
-    private Set<Long> mSelected = new HashSet<Long>();
+    private Set<Long> mSelected = new HashSet<>();
     private FontSizes mFontSizes = K9.getFontSizes();
     private ActionMode mActionMode;
     private Boolean mHasConnectivity;
+
     /**
      * Relevant messages for the current context when we have to remember the chosen messages
      * between user interactions (e.g. selecting a folder for move operation).
@@ -245,6 +249,7 @@ public class MessageListFragment extends Fragment
     private Preferences mPreferences;
     private boolean mLoaderJustInitialized;
     private MessageReference mActiveMessage;
+
     /**
      * {@code true} after {@link #onCreate(Bundle)} was executed. Used in {@link #updateTitle()} to
      * make sure we don't access member variables before initialization is complete.
@@ -254,6 +259,7 @@ public class MessageListFragment extends Fragment
     private LocalBroadcastManager mLocalBroadcastManager;
     private BroadcastReceiver mCacheBroadcastReceiver;
     private IntentFilter mCacheIntentFilter;
+
     /**
      * Stores the unique ID of the message the context menu was opened for.
      * <p/>
@@ -274,128 +280,6 @@ public class MessageListFragment extends Fragment
         args.putBoolean(ARG_THREADED_LIST, threadedList);
         fragment.setArguments(args);
         return fragment;
-    }
-
-    private static String getSenderAddressFromCursor(Cursor cursor) {
-        String fromList = cursor.getString(SENDER_LIST_COLUMN);
-        Address[] fromAddrs = Address.unpack(fromList);
-        return (fromAddrs.length > 0) ? fromAddrs[0].getAddress() : null;
-    }
-
-    /**
-     * @return The comparator to use to display messages in an ordered
-     * fashion. Never {@code null}.
-     */
-    protected Comparator<Cursor> getComparator() {
-        final List<Comparator<Cursor>> chain =
-                new ArrayList<Comparator<Cursor>>(3 /* we add 3 comparators at most */);
-
-        // Add the specified comparator
-        final Comparator<Cursor> comparator = SORT_COMPARATORS.get(mSortType);
-        if (mSortAscending) {
-            chain.add(comparator);
-        } else {
-            chain.add(new ReverseComparator<Cursor>(comparator));
-        }
-
-        // Add the date comparator if not already specified
-        if (mSortType != SortType.SORT_DATE && mSortType != SortType.SORT_ARRIVAL) {
-            final Comparator<Cursor> dateComparator = SORT_COMPARATORS.get(SortType.SORT_DATE);
-            if (mSortDateAscending) {
-                chain.add(dateComparator);
-            } else {
-                chain.add(new ReverseComparator<Cursor>(dateComparator));
-            }
-        }
-
-        // Add the id comparator
-        chain.add(new ReverseIdComparator());
-
-        // Build the comparator chain
-        return new ComparatorChain<Cursor>(chain);
-    }
-
-    void folderLoading(String folder, boolean loading) {
-        if (mCurrentFolder != null && mCurrentFolder.name.equals(folder)) {
-            mCurrentFolder.loading = loading;
-        }
-        updateFooterView();
-    }
-
-    public void updateTitle() {
-        if (!mInitialized) {
-            return;
-        }
-
-        setWindowTitle();
-        if (!mSearch.isManualSearch()) {
-            setWindowProgress();
-        }
-    }
-
-    private void setWindowProgress() {
-        int level = Window.PROGRESS_END;
-
-        if (mCurrentFolder != null && mCurrentFolder.loading && mListener.getFolderTotal() > 0) {
-            int divisor = mListener.getFolderTotal();
-            if (divisor != 0) {
-                level = (Window.PROGRESS_END / divisor) * (mListener.getFolderCompleted());
-                if (level > Window.PROGRESS_END) {
-                    level = Window.PROGRESS_END;
-                }
-            }
-        }
-
-        mFragmentListener.setMessageListProgress(level);
-    }
-
-    private void setWindowTitle() {
-        // regular folder content display
-        if (!isManualSearch() && mSingleFolderMode) {
-            Activity activity = getActivity();
-            String displayName = FolderInfoHolder.getDisplayName(activity, mAccount,
-                    mFolderName);
-
-            mFragmentListener.setMessageListTitle(displayName);
-
-            String operation = mListener.getOperation(activity);
-            if (operation.length() < 1) {
-                mFragmentListener.setMessageListSubTitle(mAccount.getEmail());
-            } else {
-                mFragmentListener.setMessageListSubTitle(operation);
-            }
-        } else {
-            // query result display.  This may be for a search folder as opposed to a user-initiated search.
-            if (mTitle != null) {
-                // This was a search folder; the search folder has overridden our title.
-                mFragmentListener.setMessageListTitle(mTitle);
-            } else {
-                // This is a search result; set it to the default search result line.
-                mFragmentListener.setMessageListTitle(getString(R.string.search_results));
-            }
-
-            mFragmentListener.setMessageListSubTitle(null);
-        }
-
-        // set unread count
-        if (mUnreadMessageCount <= 0) {
-            mFragmentListener.setUnreadCount(0);
-        } else {
-            if (!mSingleFolderMode && mTitle == null) {
-                // The unread message count is easily confused
-                // with total number of messages in the search result, so let's hide it.
-                mFragmentListener.setUnreadCount(0);
-            } else {
-                mFragmentListener.setUnreadCount(mUnreadMessageCount);
-            }
-        }
-    }
-
-    void progress(final boolean progress) {
-        mFragmentListener.enableActionBarProgress(progress);
-        if (mPullToRefreshView != null && !progress) {
-            mPullToRefreshView.onRefreshComplete();
-        }
     }
 
     @Override
@@ -572,6 +456,130 @@ public class MessageListFragment extends Fragment
             selected[i++] = id;
         }
         outState.putLongArray(STATE_SELECTED_MESSAGES, selected);
+    }
+
+    private static String getSenderAddressFromCursor(Cursor cursor) {
+        String fromList = cursor.getString(SENDER_LIST_COLUMN);
+        Address[] fromAddrs = Address.unpack(fromList);
+        return (fromAddrs.length > 0) ? fromAddrs[0].getAddress() : null;
+    }
+
+    /**
+     * @return The comparator to use to display messages in an ordered
+     * fashion. Never {@code null}.
+     */
+    @NonNull
+    protected Comparator<Cursor> getComparator() {
+        final List<Comparator<Cursor>> chain =
+                new ArrayList<Comparator<Cursor>>(3 /* we add 3 comparators at most */);
+
+        // Add the specified comparator
+        final Comparator<Cursor> comparator = SORT_COMPARATORS.get(mSortType);
+        if (mSortAscending) {
+            chain.add(comparator);
+        } else {
+            chain.add(new ReverseComparator<Cursor>(comparator));
+        }
+
+        // Add the date comparator if not already specified
+        if (mSortType != SortType.SORT_DATE && mSortType != SortType.SORT_ARRIVAL) {
+            final Comparator<Cursor> dateComparator = SORT_COMPARATORS.get(SortType.SORT_DATE);
+            if (mSortDateAscending) {
+                chain.add(dateComparator);
+            } else {
+                chain.add(new ReverseComparator<Cursor>(dateComparator));
+            }
+        }
+
+        // Add the id comparator
+        chain.add(new ReverseIdComparator());
+
+        // Build the comparator chain
+        return new ComparatorChain<Cursor>(chain);
+    }
+
+    void folderLoading(String folder, boolean loading) {
+        if (mCurrentFolder != null && mCurrentFolder.name.equals(folder)) {
+            mCurrentFolder.loading = loading;
+        }
+
+        updateFooterView();
+    }
+
+    public void updateTitle() {
+        if (!mInitialized) {
+            return;
+        }
+
+        setWindowTitle();
+        if (!mSearch.isManualSearch()) {
+            setWindowProgress();
+        }
+    }
+
+    private void setWindowProgress() {
+        int level = Window.PROGRESS_END;
+
+        if (mCurrentFolder != null && mCurrentFolder.loading && mListener.getFolderTotal() > 0) {
+            int divisor = mListener.getFolderTotal();
+            if (divisor != 0) {
+                level = (Window.PROGRESS_END / divisor) * (mListener.getFolderCompleted());
+                if (level > Window.PROGRESS_END) {
+                    level = Window.PROGRESS_END;
+                }
+            }
+        }
+
+        mFragmentListener.setMessageListProgress(level);
+    }
+
+    private void setWindowTitle() {
+        // regular folder content display
+        if (!isManualSearch() && mSingleFolderMode) {
+            Activity activity = getActivity();
+            String displayName = FolderInfoHolder.getDisplayName(activity, mAccount,
+                    mFolderName);
+
+            mFragmentListener.setMessageListTitle(displayName);
+
+            String operation = mListener.getOperation(activity);
+            if (operation.length() < 1) {
+                mFragmentListener.setMessageListSubTitle(mAccount.getEmail());
+            } else {
+                mFragmentListener.setMessageListSubTitle(operation);
+            }
+        } else {
+            // query result display.  This may be for a search folder as opposed to a user-initiated search.
+            if (mTitle != null) {
+                // This was a search folder; the search folder has overridden our title.
+                mFragmentListener.setMessageListTitle(mTitle);
+            } else {
+                // This is a search result; set it to the default search result line.
+                mFragmentListener.setMessageListTitle(getString(R.string.search_results));
+            }
+
+            mFragmentListener.setMessageListSubTitle(null);
+        }
+
+        // set unread count
+        if (mUnreadMessageCount <= 0) {
+            mFragmentListener.setUnreadCount(0);
+        } else {
+            if (!mSingleFolderMode && mTitle == null) {
+                // The unread message count is easily confused
+                // with total number of messages in the search result, so let's hide it.
+                mFragmentListener.setUnreadCount(0);
+            } else {
+                mFragmentListener.setUnreadCount(mUnreadMessageCount);
+            }
+        }
+    }
+
+    void progress(final boolean progress) {
+        mFragmentListener.enableActionBarProgress(progress);
+        if (mPullToRefreshView != null && !progress) {
+            mPullToRefreshView.onRefreshComplete();
+        }
     }
 
     /**
@@ -2655,44 +2663,6 @@ public class MessageListFragment extends Fragment
         COPY, MOVE
     }
 
-    public interface MessageListFragmentListener {
-        void enableActionBarProgress(boolean enable);
-
-        void setMessageListProgress(int level);
-
-        void showThread(Account account, String folderName, long rootId);
-
-        void showSMS(Account account, String FolderName, long rootId, MessageReference messageReference);
-
-        void showMoreFromSameSender(String senderAddress);
-
-        void onResendMessage(LocalMessage message);
-
-        void onForward(LocalMessage message);
-
-        void onReply(LocalMessage message);
-
-        void onReplyAll(LocalMessage message);
-
-        void openMessage(MessageReference messageReference);
-
-        void setMessageListTitle(String title);
-
-        void setMessageListSubTitle(String subTitle);
-
-        void setUnreadCount(int unread);
-
-        void onCompose(Account account);
-
-        boolean startSearch(Account account, String folderName);
-
-        void remoteSearchStarted();
-
-        void goBack();
-
-        void updateMenu();
-    }
-
     /**
      * Reverses the result of a {@link Comparator}.
      *
@@ -2896,7 +2866,6 @@ public class MessageListFragment extends Fragment
                 mHandler.updateFooter("");
             }
             mFragmentListener.setMessageListProgress(Window.PROGRESS_END);
-
         }
 
         @Override

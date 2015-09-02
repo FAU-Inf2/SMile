@@ -35,8 +35,7 @@ public class MessageTopView extends LinearLayout implements ShowPicturesControll
     private AttachmentViewCallback attachmentCallback;
     private CryptoHeaderViewCallback cryptoHeaderViewCallback;
     private Button showPicturesButton;
-    private List<MessageContainerView> messageContainerViewsWithPictures = new ArrayList<MessageContainerView>();
-
+    private List<MessageContainerView> messageContainerViewsWithPictures = new ArrayList<>();
 
     public MessageTopView(Context context, AttributeSet attrs) {
         super(context, attrs);

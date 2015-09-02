@@ -2738,24 +2738,28 @@ public class MessagingController implements Runnable {
         Folder localFolder = null;
         Exception lastFailure = null;
         boolean wasPermanentFailure = false;
+
         try {
             Store localStore = account.getLocalStore();
-            localFolder = localStore.getFolder(
-                    account.getOutboxFolderName());
+            localFolder = localStore.getFolder(account.getOutboxFolderName());
+
             if (!localFolder.exists()) {
                 return;
             }
+
             for (MessagingListener l : getListeners()) {
                 l.sendPendingMessagesStarted(account);
             }
-            localFolder.open(Folder.OPEN_MODE_RW);
 
+            localFolder.open(Folder.OPEN_MODE_RW);
             List<? extends Message> localMessages = localFolder.getMessages(null);
             int progress = 0;
             int todo = localMessages.size();
+
             for (MessagingListener l : getListeners()) {
                 l.synchronizeMailboxProgress(account, account.getSentFolderName(), progress, todo);
             }
+
             /*
              * The profile we will use to pull all of the content
              * for a given local message into memory for sending.
@@ -2773,6 +2777,7 @@ public class MessagingController implements Runnable {
                     message.destroy();
                     continue;
                 }
+
                 try {
                     AtomicInteger count = new AtomicInteger(0);
                     AtomicInteger oldCount = sendCount.putIfAbsent(message.getUid(), count);
@@ -2791,27 +2796,27 @@ public class MessagingController implements Runnable {
 
 
                     localFolder.fetch(Collections.singletonList(message), fp, null);
+
                     try {
-
-
                         if (message.getHeader(K9.IDENTITY_HEADER).length > 0) {
                             Log.v(K9.LOG_TAG, "The user has set the Outbox and Drafts folder to the same thing. " +
                                     "This message appears to be a draft, so K-9 will not send it");
                             continue;
-
                         }
-
 
                         message.setFlag(Flag.X_SEND_IN_PROGRESS, true);
                         if (K9.DEBUG)
                             Log.i(K9.LOG_TAG, "Sending message with UID " + message.getUid());
+
                         transport.sendMessage(message);
                         message.setFlag(Flag.X_SEND_IN_PROGRESS, false);
                         message.setFlag(Flag.SEEN, true);
                         progress++;
+
                         for (MessagingListener l : getListeners()) {
                             l.synchronizeMailboxProgress(account, account.getSentFolderName(), progress, todo);
                         }
+
                         if (!account.hasSentFolder()) {
                             if (K9.DEBUG)
                                 Log.i(K9.LOG_TAG, "Account does not have a sent mail folder; deleting sent message");

@@ -11,7 +11,7 @@ repositories {
 def isTravis = "true".equals(System.getenv("TRAVIS"))
 def preDexEnabled = "true".equals(System.getProperty("pre-dex", "true"))
 
-def supportLibsVersion = '23.0.0'
+def supportLibsVersion = '22.2.1'
 def androidSupportGroup = 'com.android.support'
 
 dependencies {

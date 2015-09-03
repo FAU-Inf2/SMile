@@ -45,7 +45,7 @@ import com.fsck.k9.search.LocalSearch;
 import com.fsck.k9.search.SearchAccount;
 import com.fsck.k9.search.SearchSpecification;
 import com.fsck.k9.search.SearchSpecification.Attribute;
-import com.fsck.k9.search.SearchSpecification.SearchCondition;
+import com.fsck.k9.search.SearchCondition;
 import com.fsck.k9.search.SearchSpecification.SearchField;
 import com.fsck.k9.ui.messageview.MessageViewFragment;
 import com.fsck.k9.ui.messageview.MessageViewFragmentListener;
@@ -200,7 +200,6 @@ public class MessageList extends K9Activity
      */
     private boolean mMessageListWasDisplayed = false;
     private ViewSwitcher mViewSwitcher;
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -422,7 +421,6 @@ public class MessageList extends K9Activity
         }
 
         Preferences prefs = Preferences.getPreferences(getApplicationContext());
-
         String[] accountUuids = mSearch.getAccountUuids();
 
         Log.d(K9.LOG_TAG, "MessageList.decodeExtras Account: " + mAccount);
@@ -578,9 +576,11 @@ public class MessageList extends K9Activity
         if (KeyEvent.ACTION_DOWN == event.getAction()) {
             ret = onCustomKeyDown(event.getKeyCode(), event);
         }
+
         if (!ret) {
             ret = super.dispatchKeyEvent(event);
         }
+
         return ret;
     }
 

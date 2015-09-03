@@ -253,6 +253,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
      */
     private boolean mSourceMessageProcessed = false;
     private int mMaxLoaderId = 0;
+    private MessagingController controller;
 
     enum Action {
         COMPOSE,
@@ -497,6 +498,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
         mQuoteStyle = mAccount.getQuoteStyle();
         mOpenPgpProvider = mAccount.getOpenPgpProvider();
         mSmimeProvider = mAccount.getSmimeProvider();
+        controller = MessagingController.getInstance(getApplication());
 
         acquireLayout();
         setupLayout();
@@ -543,12 +545,12 @@ public class MessageCompose extends K9Activity implements OnClickListener,
                  * want to reload the message every time the activity is resumed.
                  * There is no harm in adding twice.
                  */
-                MessagingController.getInstance(getApplication()).addListener(mListener);
+                controller.addListener(mListener);
 
                 final Account account = Preferences.getPreferences(this).getAccount(mMessageReference.getAccountUuid());
                 final String folderName = mMessageReference.getFolderName();
                 final String sourceMessageUid = mMessageReference.getUid();
-                MessagingController.getInstance(getApplication()).loadMessageForView(account, folderName, sourceMessageUid, null);
+                controller.loadMessageForView(account, folderName, sourceMessageUid, null);
             }
 
             if (mAction != Action.EDIT_DRAFT) {
@@ -718,6 +720,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
         mFontSizes.setViewTextSize(mSignatureView, fontSize);
 
         List<CryptoProvider> cryptoProviders = new ArrayList<>();
+        cryptoProviders.add(CryptoProvider.NONE);
 
         if(mOpenPgpProvider != null && mOpenPgpProvider.trim().length() > 0) {
             cryptoProviders.add(CryptoProvider.PGP);
@@ -742,7 +745,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
             }
         });
 
-        if(cryptoProviders.size() == 0) {
+        if(cryptoProviders.size() == 1) {
             mSpinner.setVisibility(View.GONE);
         }
     }
@@ -1013,13 +1016,13 @@ public class MessageCompose extends K9Activity implements OnClickListener,
     public void onResume() {
         super.onResume();
         mIgnoreOnPause = false;
-        MessagingController.getInstance(getApplication()).addListener(mListener);
+        controller.addListener(mListener);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        MessagingController.getInstance(getApplication()).removeListener(mListener);
+        controller.removeListener(mListener);
         // Save email as draft when activity is changed (go to home screen, call received) or screen locked
         // don't do this if only changing orientations
         if (!mIgnoreOnPause && (getChangingConfigurations() & ActivityInfo.CONFIG_ORIENTATION) == 0) {
@@ -1288,7 +1291,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
             final Account account = Preferences.getPreferences(this).getAccount(mMessageReference.getAccountUuid());
             final String folderName = mMessageReference.getFolderName();
             final String sourceMessageUid = mMessageReference.getUid();
-            MessagingController.getInstance(getApplication()).setFlag(account, folderName, sourceMessageUid, mMessageReference.getFlag(), true);
+            controller.setFlag(account, folderName, sourceMessageUid, mMessageReference.getFlag(), true);
         }
     }
 
@@ -1373,22 +1376,25 @@ public class MessageCompose extends K9Activity implements OnClickListener,
     }
 
     private void handleSmimeEncrypt() {
-        List<Address> recipients = this.mToView.getRecipients();
+        List<String> recipients = new ArrayList<>();
 
-        for (Address recipient : recipients) {
-            // TODO: modify recipient list in message builder
-            final Intent intent = SMimeApi.encryptMessage(recipient.getAddress());
-            executeSmimeMethod(intent);
+        for (Address recipient : this.mToView.getRecipients()) {
+            recipients.add(recipient.getAddress());
         }
+
+        final Intent intent = SMimeApi.encryptMessage(recipients);
+        executeSmimeMethod(intent);
     }
 
     private void handleSmimeSignAndEncrypt() {
-        List<Address> recipients = this.mToView.getRecipients();
+        List<String> recipients = new ArrayList<>();
 
-        for (Address recipient : recipients) {
-            final Intent intent = SMimeApi.signAndEncryptMessage(this.mIdentity.getEmail(), recipient.getAddress());
-            executeSmimeMethod(intent);
+        for (Address recipient : this.mToView.getRecipients()) {
+            recipients.add(recipient.getAddress());
         }
+
+        final Intent intent = SMimeApi.signAndEncryptMessage(this.mIdentity.getEmail(), recipients);
+        executeSmimeMethod(intent);
     }
 
     private void handleSmimeSign() {
@@ -1559,9 +1565,10 @@ public class MessageCompose extends K9Activity implements OnClickListener,
 
     private void onDiscard() {
         if (mDraftId != INVALID_DRAFT_ID) {
-            MessagingController.getInstance(getApplication()).deleteDraft(mAccount, mDraftId);
+            controller.deleteDraft(mAccount, mDraftId);
             mDraftId = INVALID_DRAFT_ID;
         }
+
         mHandler.sendEmptyMessage(MSG_DISCARDED_DRAFT);
         mDraftNeedsSaving = false;
         finish();
@@ -1610,6 +1617,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
             txt = getString(R.string.read_receipt_disabled);
             mReadReceipt = false;
         }
+
         Context context = getApplicationContext();
         Toast toast = Toast.makeText(context, txt, Toast.LENGTH_SHORT);
         toast.show();
@@ -1708,74 +1716,10 @@ public class MessageCompose extends K9Activity implements OnClickListener,
     }
 
     private LoaderManager.LoaderCallbacks<Attachment> mAttachmentInfoLoaderCallback =
-            new LoaderManager.LoaderCallbacks<Attachment>() {
-        @Override
-        public Loader<Attachment> onCreateLoader(int id, Bundle args) {
-            onFetchAttachmentStarted();
-            Attachment attachment = args.getParcelable(LOADER_ARG_ATTACHMENT);
-            return new AttachmentInfoLoader(MessageCompose.this, attachment);
-        }
-
-        @Override
-        public void onLoadFinished(Loader<Attachment> loader, Attachment attachment) {
-            int loaderId = loader.getId();
-
-            View view = getAttachmentView(loaderId);
-            if (view != null) {
-                view.setTag(attachment);
-
-                TextView nameView = (TextView) view.findViewById(R.id.attachment_name);
-                nameView.setText(attachment.name);
-
-                attachment.loaderId = ++mMaxLoaderId;
-                initAttachmentContentLoader(attachment);
-            } else {
-                onFetchAttachmentFinished();
-            }
-
-            getLoaderManager().destroyLoader(loaderId);
-        }
-
-        @Override
-        public void onLoaderReset(Loader<Attachment> loader) {
-            onFetchAttachmentFinished();
-        }
-    };
+            new AttachmentInfoLoaderCallback();
 
     private LoaderManager.LoaderCallbacks<Attachment> mAttachmentContentLoaderCallback =
-            new LoaderManager.LoaderCallbacks<Attachment>() {
-        @Override
-        public Loader<Attachment> onCreateLoader(int id, Bundle args) {
-            Attachment attachment = args.getParcelable(LOADER_ARG_ATTACHMENT);
-            return new AttachmentContentLoader(MessageCompose.this, attachment);
-        }
-
-        @Override
-        public void onLoadFinished(Loader<Attachment> loader, Attachment attachment) {
-            int loaderId = loader.getId();
-
-            View view = getAttachmentView(loaderId);
-            if (view != null) {
-                if (attachment.state == Attachment.LoadingState.COMPLETE) {
-                    view.setTag(attachment);
-
-                    View progressBar = view.findViewById(R.id.progressBar);
-                    progressBar.setVisibility(View.GONE);
-                } else {
-                    mAttachments.removeView(view);
-                }
-            }
-
-            onFetchAttachmentFinished();
-
-            getLoaderManager().destroyLoader(loaderId);
-        }
-
-        @Override
-        public void onLoaderReset(Loader<Attachment> loader) {
-            onFetchAttachmentFinished();
-        }
-    };
+            new AttachmentContentLoaderCallback();
 
     private void onFetchAttachmentStarted() {
         mNumAttachmentsLoading += 1;
@@ -1953,8 +1897,8 @@ public class MessageCompose extends K9Activity implements OnClickListener,
                         Log.v(K9.LOG_TAG, "Account switch, deleting draft from previous account: "
                               + previousDraftId);
                     }
-                    MessagingController.getInstance(getApplication()).deleteDraft(previousAccount,
-                            previousDraftId);
+
+                    controller.deleteDraft(previousAccount, previousDraftId);
                 }
             } else {
                 mAccount = account;
@@ -2031,11 +1975,11 @@ public class MessageCompose extends K9Activity implements OnClickListener,
                 mForcePlainText = true;
                 if (mMessageReference != null) { // shouldn't happen...
                     // TODO - Should we check if mSourceMessageBody is already present and bypass the MessagingController call?
-                    MessagingController.getInstance(getApplication()).addListener(mListener);
+                    controller.addListener(mListener);
                     final Account account = Preferences.getPreferences(this).getAccount(mMessageReference.getAccountUuid());
                     final String folderName = mMessageReference.getFolderName();
                     final String sourceMessageUid = mMessageReference.getUid();
-                    MessagingController.getInstance(getApplication()).loadMessageForView(account, folderName, sourceMessageUid, null);
+                    controller.loadMessageForView(account, folderName, sourceMessageUid, null);
                 }
                 break;
             case R.id.identity:
@@ -2419,8 +2363,6 @@ public class MessageCompose extends K9Activity implements OnClickListener,
 
         mToView.addRecipients(replyToAddresses);
 
-
-
         if (message.getMessageId() != null && message.getMessageId().length() > 0) {
             mInReplyTo = message.getMessageId();
 
@@ -2456,12 +2398,14 @@ public class MessageCompose extends K9Activity implements OnClickListener,
                     }
                 }
             }
+
             for (Address address : message.getRecipients(RecipientType.TO)) {
                 if (!mAccount.isAnIdentity(address) && !Utility.arrayContains(replyToAddresses, address)) {
                     mToView.addRecipient(address);
                 }
 
             }
+
             if (message.getRecipients(RecipientType.CC).length > 0) {
                 for (Address address : message.getRecipients(RecipientType.CC)) {
                     if (!mAccount.isAnIdentity(address) && !Utility.arrayContains(replyToAddresses, address)) {
@@ -2509,7 +2453,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
     private void processDraftMessage(LocalMessage message) throws MessagingException {
         String showQuotedTextMode = "NONE";
 
-        mDraftId = MessagingController.getInstance(getApplication()).getId(message);
+        mDraftId = controller.getId(message);
         mSubjectView.setText(message.getSubject());
         mToView.addRecipients(message.getRecipients(RecipientType.TO));
         if (message.getRecipients(RecipientType.CC).length > 0) {
@@ -3294,6 +3238,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
     }
 
     private class SaveMessageTask extends AsyncTask<Void, Void, Void> {
+
         @Override
         protected Void doInBackground(Void... params) {
             /*
@@ -3370,23 +3315,28 @@ public class MessageCompose extends K9Activity implements OnClickListener,
             StringBuilder quotedText = new StringBuilder(body.length() + QUOTE_BUFFER_LENGTH);
             quotedText.append("\r\n");
             quotedText.append(getString(R.string.message_compose_quote_header_separator)).append("\r\n");
+
             if (originalMessage.getFrom() != null && Address.toString(originalMessage.getFrom()).length() != 0) {
                 quotedText.append(getString(R.string.message_compose_quote_header_from)).append(" ").append(Address.toString(originalMessage.getFrom())).append("\r\n");
             }
+
             if (sentDate.length() != 0) {
                 quotedText.append(getString(R.string.message_compose_quote_header_send_date)).append(" ").append(sentDate).append("\r\n");
             }
+
             if (originalMessage.getRecipients(RecipientType.TO) != null && originalMessage.getRecipients(RecipientType.TO).length != 0) {
                 quotedText.append(getString(R.string.message_compose_quote_header_to)).append(" ").append(Address.toString(originalMessage.getRecipients(RecipientType.TO))).append("\r\n");
             }
+
             if (originalMessage.getRecipients(RecipientType.CC) != null && originalMessage.getRecipients(RecipientType.CC).length != 0) {
                 quotedText.append(getString(R.string.message_compose_quote_header_cc)).append(" ").append(Address.toString(originalMessage.getRecipients(RecipientType.CC))).append("\r\n");
             }
+
             if (originalMessage.getSubject() != null) {
                 quotedText.append(getString(R.string.message_compose_quote_header_subject)).append(" ").append(originalMessage.getSubject()).append("\r\n");
             }
-            quotedText.append("\r\n");
 
+            quotedText.append("\r\n");
             quotedText.append(body);
 
             return quotedText.toString();
@@ -3440,26 +3390,31 @@ public class MessageCompose extends K9Activity implements OnClickListener,
                     .append(HtmlConverter.textToHtmlFragment(Address.toString(originalMessage.getFrom())))
                     .append("<br>\r\n");
             }
+
             if (sentDate.length() != 0) {
                 header.append("<b>").append(getString(R.string.message_compose_quote_header_send_date)).append("</b> ")
                     .append(sentDate)
                     .append("<br>\r\n");
             }
+
             if (originalMessage.getRecipients(RecipientType.TO) != null && originalMessage.getRecipients(RecipientType.TO).length != 0) {
                 header.append("<b>").append(getString(R.string.message_compose_quote_header_to)).append("</b> ")
                     .append(HtmlConverter.textToHtmlFragment(Address.toString(originalMessage.getRecipients(RecipientType.TO))))
                     .append("<br>\r\n");
             }
+
             if (originalMessage.getRecipients(RecipientType.CC) != null && originalMessage.getRecipients(RecipientType.CC).length != 0) {
                 header.append("<b>").append(getString(R.string.message_compose_quote_header_cc)).append("</b> ")
                     .append(HtmlConverter.textToHtmlFragment(Address.toString(originalMessage.getRecipients(RecipientType.CC))))
                     .append("<br>\r\n");
             }
+
             if (originalMessage.getSubject() != null) {
                 header.append("<b>").append(getString(R.string.message_compose_quote_header_subject)).append("</b> ")
                     .append(HtmlConverter.textToHtmlFragment(originalMessage.getSubject()))
                     .append("<br>\r\n");
             }
+
             header.append("</div>\r\n");
             header.append("<br>\r\n");
 
@@ -3560,4 +3515,71 @@ public class MessageCompose extends K9Activity implements OnClickListener,
         }
     }
 
+    private class AttachmentInfoLoaderCallback implements LoaderManager.LoaderCallbacks<Attachment> {
+        @Override
+        public Loader<Attachment> onCreateLoader(int id, Bundle args) {
+            onFetchAttachmentStarted();
+            Attachment attachment = args.getParcelable(LOADER_ARG_ATTACHMENT);
+            return new AttachmentInfoLoader(MessageCompose.this, attachment);
+        }
+
+        @Override
+        public void onLoadFinished(Loader<Attachment> loader, Attachment attachment) {
+            int loaderId = loader.getId();
+
+            View view = getAttachmentView(loaderId);
+            if (view != null) {
+                view.setTag(attachment);
+
+                TextView nameView = (TextView) view.findViewById(R.id.attachment_name);
+                nameView.setText(attachment.name);
+
+                attachment.loaderId = ++mMaxLoaderId;
+                initAttachmentContentLoader(attachment);
+            } else {
+                onFetchAttachmentFinished();
+            }
+
+            getLoaderManager().destroyLoader(loaderId);
+        }
+
+        @Override
+        public void onLoaderReset(Loader<Attachment> loader) {
+            onFetchAttachmentFinished();
+        }
+    }
+
+    private class AttachmentContentLoaderCallback implements LoaderManager.LoaderCallbacks<Attachment> {
+        @Override
+        public Loader<Attachment> onCreateLoader(int id, Bundle args) {
+            Attachment attachment = args.getParcelable(LOADER_ARG_ATTACHMENT);
+            return new AttachmentContentLoader(MessageCompose.this, attachment);
+        }
+
+        @Override
+        public void onLoadFinished(Loader<Attachment> loader, Attachment attachment) {
+            int loaderId = loader.getId();
+
+            View view = getAttachmentView(loaderId);
+            if (view != null) {
+                if (attachment.state == Attachment.LoadingState.COMPLETE) {
+                    view.setTag(attachment);
+
+                    View progressBar = view.findViewById(R.id.progressBar);
+                    progressBar.setVisibility(View.GONE);
+                } else {
+                    mAttachments.removeView(view);
+                }
+            }
+
+            onFetchAttachmentFinished();
+
+            getLoaderManager().destroyLoader(loaderId);
+        }
+
+        @Override
+        public void onLoaderReset(Loader<Attachment> loader) {
+            onFetchAttachmentFinished();
+        }
+    }
 }

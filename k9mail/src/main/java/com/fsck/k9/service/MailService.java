@@ -140,6 +140,7 @@ public class MailService extends CoreService {
         } else if (CANCEL_CONNECTIVITY_NOTICE.equals(intent.getAction())) {
             /* do nothing */
         }
+
         if (isSyncDisabled() != oldIsSyncDisabled) {
             MessagingController.getInstance(getApplication()).systemStatusChanged();
         }
@@ -150,13 +151,18 @@ public class MailService extends CoreService {
 
         // get current Account
         MessageReference mMessageReference = intent.getParcelableExtra("message_reference");
-        final String accountUuid = (mMessageReference != null) ?
-                mMessageReference.getAccountUuid() :
-                intent.getStringExtra("account");
+        final String accountUuid;
+        if (mMessageReference != null) {
+            accountUuid = mMessageReference.getAccountUuid();
+        } else {
+            accountUuid = intent.getStringExtra("account");
+        }
+
         Account mAccount = Preferences.getPreferences(this).getAccount(accountUuid);
         if (mAccount == null) {
             mAccount = Preferences.getPreferences(this).getDefaultAccount();
         }
+
         MessagingController messagingController = MessagingController.getInstance(getApplication());
         //get current Context
         Context mContext = this.getBaseContext();

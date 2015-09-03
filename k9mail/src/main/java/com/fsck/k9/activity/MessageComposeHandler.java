@@ -11,7 +11,7 @@ public class MessageComposeHandler extends Handler {
     private final WeakReference<MessageCompose> reference;
 
     public MessageComposeHandler(final MessageCompose messageViewFragment) {
-        reference = new WeakReference<MessageCompose>(messageViewFragment);
+        reference = new WeakReference<>(messageViewFragment);
     }
 
     @Override

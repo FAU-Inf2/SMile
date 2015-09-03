@@ -173,6 +173,7 @@ public final class MessageCryptoHelper {
 
     private void startDecryptingOrVerifyingPart(final CryptoPart cryptoPart) {
         int latchCount = 0;
+
         if(openPgpProvider != null) {
             latchCount++;
         }

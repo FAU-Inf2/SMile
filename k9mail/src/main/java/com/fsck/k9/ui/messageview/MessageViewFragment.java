@@ -107,7 +107,7 @@ public final class MessageViewFragment extends Fragment
     public void onAttach(Activity activity) {
         super.onAttach(activity);
 
-        mContext = activity.getApplicationContext();
+        mContext = activity;
         decodeMessageLoaderCallback = new DecodeMessageLoaderCallback(mContext, handler);
         mController = MessagingController.getInstance(mContext);
 
@@ -131,9 +131,7 @@ public final class MessageViewFragment extends Fragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        Context context = new ContextThemeWrapper(inflater.getContext(),
-                K9.getK9ThemeResourceId(K9.getK9MessageViewTheme()));
-        final LayoutInflater layoutInflater = LayoutInflater.from(context);
+        final LayoutInflater layoutInflater = LayoutInflater.from(mContext);
         View view = layoutInflater.inflate(R.layout.message, container, false);
 
         mMessageView = (MessageTopView) view.findViewById(R.id.message_view);

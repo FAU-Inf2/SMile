@@ -4505,38 +4505,38 @@ public class MessagingController implements Runnable {
                 listener.searchStats(stats);
             }
         }
+    }
 
-        private class LocalMessageMessageRetrievalListener implements MessageRetrievalListener<LocalMessage> {
-            private final AccountStats stats;
-            private final MessagingListener listener;
-            private final Account account;
+    private class LocalMessageMessageRetrievalListener implements MessageRetrievalListener<LocalMessage> {
+        private final AccountStats stats;
+        private final MessagingListener listener;
+        private final Account account;
 
-            public LocalMessageMessageRetrievalListener(AccountStats stats, MessagingListener listener, Account account) {
-                this.stats = stats;
-                this.listener = listener;
-                this.account = account;
-            }
+        public LocalMessageMessageRetrievalListener(AccountStats stats, MessagingListener listener, Account account) {
+            this.stats = stats;
+            this.listener = listener;
+            this.account = account;
+        }
 
-            @Override
-            public void messageStarted(String message, int number, int ofTotal) {
-            }
+        @Override
+        public void messageStarted(String message, int number, int ofTotal) {
+        }
 
-            @Override
-            public void messagesFinished(int number) {
-            }
+        @Override
+        public void messagesFinished(int number) {
+        }
 
-            @Override
+        @Override
 
-            public void messageFinished(LocalMessage message, int number, int ofTotal) {
-                if (!isMessageSuppressed(message)) {
-                    List<LocalMessage> messages = new ArrayList<LocalMessage>();
+        public void messageFinished(LocalMessage message, int number, int ofTotal) {
+            if (!isMessageSuppressed(message)) {
+                List<LocalMessage> messages = new ArrayList<LocalMessage>();
 
-                    messages.add(message);
-                    stats.unreadMessageCount += (!message.isSet(Flag.SEEN)) ? 1 : 0;
-                    stats.flaggedMessageCount += (message.isSet(Flag.FLAGGED)) ? 1 : 0;
-                    if (listener != null) {
-                        listener.listLocalMessagesAddMessages(account, null, messages);
-                    }
+                messages.add(message);
+                stats.unreadMessageCount += (!message.isSet(Flag.SEEN)) ? 1 : 0;
+                stats.flaggedMessageCount += (message.isSet(Flag.FLAGGED)) ? 1 : 0;
+                if (listener != null) {
+                    listener.listLocalMessagesAddMessages(account, null, messages);
                 }
             }
         }

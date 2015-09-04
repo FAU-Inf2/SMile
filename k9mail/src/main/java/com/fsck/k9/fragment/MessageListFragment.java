@@ -188,7 +188,6 @@ public class MessageListFragment extends Fragment
     /* package visibility for faster inner class access */
     MessageHelper mMessageHelper;
     private PullToRefreshListView mPullToRefreshView;
-    private int mPreviewLines = 0;
     private MessageListAdapter mAdapter;
     private LayoutInflater mInflater;
     private NotificationHelper notificationHelper;
@@ -332,8 +331,6 @@ public class MessageListFragment extends Fragment
         mPreferences = Preferences.getPreferences(appContext);
         mController = MessagingController.getInstance(appContext);
         notificationHelper = NotificationHelper.getInstance(appContext);
-
-        mPreviewLines = K9.messageListPreviewLines();
 
         restoreInstanceState(savedInstanceState);
         decodeArguments();

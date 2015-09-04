@@ -59,14 +59,17 @@ class MessageViewHolder extends SimpleSwipeListener implements View.OnClickListe
         ImageView archive = (ImageView) layout.findViewById(R.id.pull_out_archive);
         ImageView remindMe = (ImageView) layout.findViewById(R.id.pull_out_remind_me);
         View delete = layout.findViewById(R.id.trash);
+
         if (archive.isShown()) {
             //handler.onArchive(getMessageAtPosition(position));
             archive.setVisibility(View.INVISIBLE);
         }
+
         if (remindMe.isShown()) {
             //handler.onRemindMe(getMessageAtPosition(position));
             remindMe.setVisibility(View.INVISIBLE);
         }
+
         if (delete.isShown()) {
             //handler.onDelete(getMessageAtPosition(position));
         }

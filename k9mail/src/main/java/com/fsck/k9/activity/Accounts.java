@@ -1,7 +1,6 @@
 
 package com.fsck.k9.activity;
 
-import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Application;
@@ -17,6 +16,8 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
+import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -88,7 +89,7 @@ import de.cketti.library.changelog.ChangeLog;
 import de.fau.cs.mad.smile.android.R;
 
 // TODO: inherit from AccountList
-public class Accounts extends K9ListActivity implements OnItemClickListener {
+public class Accounts extends K9Activity implements OnItemClickListener {
 
     /**
      * URL used to open Android Market application
@@ -130,8 +131,9 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
     private SearchAccount mUnifiedInboxAccount;
 
     private MenuItem mRefreshMenuItem;
-    private ActionBar mActionBar;
+    private Toolbar toolbar;
 
+    private ListView listView;
     private TextView mActionBarTitle;
     private TextView mActionBarSubTitle;
     private TextView mActionBarUnread;
@@ -256,11 +258,10 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
             return;
         }
 
-        requestWindowFeature(Window.FEATURE_PROGRESS);
-        mActionBar = getActionBar();
-        initializeActionBar();
         setContentView(R.layout.accounts);
-        ListView listView = getListView();
+        toolbar = (Toolbar)findViewById(R.id.toolbar);
+        initializeActionBar();
+        listView = (ListView) findViewById(android.R.id.list);
         listView.setOnItemClickListener(this);
         listView.setItemsCanFocus(false);
         listView.setScrollingCacheEnabled(false);
@@ -309,15 +310,14 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
     }
 
     private void initializeActionBar() {
-        mActionBar.setDisplayShowCustomEnabled(true);
-        mActionBar.setCustomView(R.layout.actionbar_custom);
-
-        View customView = mActionBar.getCustomView();
-        mActionBarTitle = (TextView) customView.findViewById(R.id.actionbar_title_first);
-        mActionBarSubTitle = (TextView) customView.findViewById(R.id.actionbar_title_sub);
-        mActionBarUnread = (TextView) customView.findViewById(R.id.actionbar_unread_count);
-
-        mActionBar.setDisplayHomeAsUpEnabled(false);
+        setSupportActionBar(toolbar);
+        mActionBarTitle = (TextView) toolbar.findViewById(R.id.actionbar_title_first);
+        mActionBarSubTitle = (TextView) toolbar.findViewById(R.id.actionbar_title_sub);
+        mActionBarUnread = (TextView) toolbar.findViewById(R.id.actionbar_unread_count);
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(false);
+        }
     }
 
     /**
@@ -384,7 +384,7 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
      * Save the reference to a currently displayed dialog or a running AsyncTask (if available).
      */
     @Override
-    public Object onRetainNonConfigurationInstance() {
+    public Object onRetainCustomNonConfigurationInstance() {
         Object retain = null;
         if (mNonConfigurationInstance != null && mNonConfigurationInstance.retain()) {
             retain = mNonConfigurationInstance;
@@ -435,7 +435,7 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
         newAccounts.addAll(accounts);
 
         mAdapter = new AccountsAdapter(this, newAccounts, accountStats);
-        getListView().setAdapter(mAdapter);
+        listView.setAdapter(mAdapter);
         if (!newAccounts.isEmpty()) {
             mHandler.progress(Window.PROGRESS_START);
         }
@@ -1028,7 +1028,7 @@ public class Accounts extends K9ListActivity implements OnItemClickListener {
         // submenus don't actually set the menuInfo, so the "advanced"
         // submenu wouldn't work.
         if (menuInfo != null) {
-            mSelectedContextAccount = (BaseAccount) getListView().getItemAtPosition(menuInfo.position);
+            mSelectedContextAccount = (BaseAccount) listView.getItemAtPosition(menuInfo.position);
         }
         if (mSelectedContextAccount instanceof Account) {
             Account realAccount = (Account) mSelectedContextAccount;

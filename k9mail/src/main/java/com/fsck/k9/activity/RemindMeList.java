@@ -3,14 +3,14 @@ package com.fsck.k9.activity;
 
 import android.app.DatePickerDialog;
 import android.app.DialogFragment;
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -102,7 +102,7 @@ public class RemindMeList extends SmileActivity
             String accountUuid = reference.getAccountUuid();
 
             remindMeFragment = RemindMeFragment.newInstance(accountUuid);
-            FragmentManager fragmentManager = getFragmentManager();
+            FragmentManager fragmentManager = getSupportFragmentManager();
             fragmentManager.beginTransaction()
                     .replace(R.id.content_frame, remindMeFragment)
                     .commit();
@@ -188,8 +188,9 @@ public class RemindMeList extends SmileActivity
             onTimeSetCalled = false;
 
             final String datePickerTag = "remindMeDatePicker";
-            FragmentTransaction ft = getFragmentManager().beginTransaction();
-            Fragment prev = getFragmentManager().findFragmentByTag(datePickerTag);
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            FragmentTransaction ft = fragmentManager.beginTransaction();
+            Fragment prev = fragmentManager.findFragmentByTag(datePickerTag);
 
             if (prev != null) {
                 ft.remove(prev);

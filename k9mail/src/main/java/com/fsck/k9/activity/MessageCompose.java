@@ -2130,7 +2130,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
 
         ProgressDialogFragment fragment = ProgressDialogFragment.newInstance(title,
                 getString(R.string.fetching_attachment_dialog_message));
-        fragment.show(getFragmentManager(), FRAGMENT_WAITING_FOR_ATTACHMENT);
+        fragment.show(getSupportFragmentManager(), FRAGMENT_WAITING_FOR_ATTACHMENT);
     }
 
     public void onCancel(ProgressDialogFragment fragment) {
@@ -2143,7 +2143,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
 
     private void dismissWaitingForAttachmentDialog() {
         ProgressDialogFragment fragment = (ProgressDialogFragment)
-                getFragmentManager().findFragmentByTag(FRAGMENT_WAITING_FOR_ATTACHMENT);
+                getSupportFragmentManager().findFragmentByTag(FRAGMENT_WAITING_FOR_ATTACHMENT);
 
         if (fragment != null) {
             fragment.dismiss();

@@ -1,40 +1,33 @@
 package com.fsck.k9.fragment;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.GestureDetector;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
-import com.fsck.k9.activity.MessageReference;
 import com.fsck.k9.adapter.MessageAdapter;
-import com.fsck.k9.controller.MessagingController;
-import com.fsck.k9.mail.Folder;
 import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.MessageRetrievalListener;
 import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mail.RemindMe;
 import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.mailstore.LocalMessage;
-import com.fsck.k9.mailstore.LocalRemindMe;
-import com.fsck.k9.mailstore.LocalStore;
 import com.fsck.k9.search.LocalSearch;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import de.fau.cs.mad.smile.android.R;
@@ -43,19 +36,19 @@ public class MessageFragment extends Fragment {
 
     private static final String ARG_SEARCH = "searchObject";
 
-    private LocalRemindMe mLocalRemindMe;
+    private Context context;
     private List<LocalMessage> messages;
     private List<RemindMe> remindMeList;
     private MessageAdapter adapter;
     private SwipeRefreshLayout mPullToRefreshView;
     private RecyclerView mRecyclerView;
-    private MessageListHandler mHandler;
+    private MessageFragmentHandler handler;
     private LocalSearch search;
     private String mFolderName;
     private Account mAccount;
     private MessageActions mCallback;
 
-    public static final MessageFragment newInstance(final LocalSearch search) {
+    public static MessageFragment newInstance(final LocalSearch search) {
         MessageFragment fragment = new MessageFragment();
         Bundle args = new Bundle();
         args.putParcelable(ARG_SEARCH, search);
@@ -69,19 +62,13 @@ public class MessageFragment extends Fragment {
         super.onCreate(savedInstanceState);
         handleArguments(getArguments());
 
-        //mHandler = new MessageListHandler(this);
-        messages = new ArrayList<LocalMessage>();
-        remindMeList = new ArrayList<RemindMe>();
-        adapter = new MessageAdapter(getActivity(), messages, mCallback);
+        handler = new MessageFragmentHandler(this);
+        context = getActivity();
+        messages = new ArrayList<>();
+        remindMeList = new ArrayList<>();
+        adapter = new MessageAdapter(context, messages, mCallback);
 
-        try {
-            LocalStore localStore = LocalStore.getInstance(mAccount, getActivity());
-            mLocalRemindMe = new LocalRemindMe(localStore);
-        } catch (MessagingException e) {
-            Log.d(K9.LOG_TAG, "error retrieving remindmes:", e);
-        }
-
-        new LoadFollowUp().execute();
+        new LoadFollowUp(context, mAccount, handler).execute();
     }
 
     @Override
@@ -139,7 +126,7 @@ public class MessageFragment extends Fragment {
         String[] accountUuids = search.getAccountUuids();
         Preferences preferences = Preferences.getPreferences(getActivity().getApplication());
 
-        if(accountUuids.length > 0) {
+        if (accountUuids.length > 0) {
             mAccount = preferences.getAccount(accountUuids[0]);
         }
     }
@@ -154,7 +141,7 @@ public class MessageFragment extends Fragment {
             e.printStackTrace();
         }
 
-        if(folder == null) {
+        if (folder == null) {
             return null;
         }
 
@@ -184,12 +171,12 @@ public class MessageFragment extends Fragment {
 
     public final void add(final RemindMe remindMe) {
         remindMeList.add(remindMe);
-        new InsertFollowUp().execute(remindMe);
+        new InsertFollowUp(context, mAccount).execute(remindMe);
     }
 
     public final RemindMe isRemindMe(LocalMessage localMessage) {
         for (RemindMe remindMe : remindMeList) {
-            if(remindMe.getUid().equals(localMessage.getUid())) {
+            if (remindMe.getUid().equals(localMessage.getUid())) {
                 return remindMe;
             }
         }
@@ -198,130 +185,28 @@ public class MessageFragment extends Fragment {
     }
 
     public final void delete(RemindMe remindMe) {
-        new DeleteFollowUp().execute(remindMe);
+        new DeleteFollowUp(context, mAccount).execute(remindMe);
     }
 
-    public interface MessageActions {
-        void move(LocalMessage message, String destFolder);
-        void delete(LocalMessage message);
-        void archive(LocalMessage message);
-        void remindMe(LocalMessage message);
-        void reply(LocalMessage message);
-        void replyAll(LocalMessage message);
-        void openMessage(MessageReference messageReference);
-    }
+    static class MessageFragmentHandler extends Handler {
+        WeakReference<MessageFragment> messageFragment;
 
-    public static class RecyclerItemClickListener implements RecyclerView.OnItemTouchListener {
-        private final OnItemClickListener mListener;
-        private final GestureDetector mGestureDetector;
-
-        public interface OnItemClickListener {
-            void onItemClick(View view, int position);
+        public MessageFragmentHandler(MessageFragment fragment) {
+            this.messageFragment = new WeakReference<>(fragment);
         }
 
-        public RecyclerItemClickListener(Context context, OnItemClickListener listener) {
-            mListener = listener;
-            mGestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
-                @Override public boolean onSingleTapUp(MotionEvent e) {
-                    return true;
-                }
-            });
-        }
-
-        @Override public boolean onInterceptTouchEvent(RecyclerView view, MotionEvent e) {
-            View childView = view.findChildViewUnder(e.getX(), e.getY());
-
-            if (childView != null && mListener != null && mGestureDetector.onTouchEvent(e)) {
-                mListener.onItemClick(childView, view.getChildPosition(childView));
-                return true;
-            }
-
-            return false;
-        }
-
-        @Override public void onTouchEvent(RecyclerView view, MotionEvent motionEvent) { }
-
-        @Override
-        public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+        public void addMessage(List<LocalMessage> message) {
 
         }
-    }
 
-    class LoadFollowUp extends AsyncTask<Void, Void, List<RemindMe>> {
-
-        @Override
-        protected List<RemindMe> doInBackground(Void... params) {
-            try {
-                return mLocalRemindMe.getAllRemindMes();
-            } catch (MessagingException e) {
-                Log.e(K9.LOG_TAG, "Unable to retrieve FollowUps", e);
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(List<RemindMe> remindMes) {
-            super.onPostExecute(remindMes);
-            remindMeList.clear();
-            remindMeList.addAll(remindMes);
-        }
-    }
-
-    class InsertFollowUp extends AsyncTask<RemindMe, Void, Void> {
-
-        @Override
-        protected Void doInBackground(RemindMe... params) {
-            for(RemindMe remindMe : params) {
-                try {
-                    LocalStore store = LocalStore.getInstance(mAccount, getActivity());
-                    LocalFolder folder = new LocalFolder(store, mAccount.getRemindMeFolderName());
-                    folder.open(Folder.OPEN_MODE_RW);
-
-                    remindMe.setFolderId(folder.getId());
-
-                    Log.d(K9.LOG_TAG, "Inserting remindMe: " + remindMe);
-                    // TODO: remove messagingController
-                    MessagingController messagingController = MessagingController.getInstance(getActivity());
-                    messagingController.moveMessages(mAccount,
-                            remindMe.getReference().getFolder().getName(),
-                            new ArrayList<LocalMessage>(Arrays.asList((LocalMessage) remindMe.getReference())),
-                            mAccount.getRemindMeFolderName(), null);
-
-                    if(remindMe.getId() > 0) {
-                        mLocalRemindMe.update(remindMe);
-                    } else {
-                        mLocalRemindMe.add(remindMe);
-                    }
-                } catch (Exception e) {
-                    Log.e(K9.LOG_TAG, "Unable to insert followup", e);
+        public void addRemindMe(List<RemindMe> remindMe) {
+            MessageFragment frag = messageFragment.get();
+            if(frag != null) {
+                for(RemindMe item : remindMe) {
+                    frag.add(item);
                 }
             }
-            return null;
         }
     }
 
-    class DeleteFollowUp extends AsyncTask<RemindMe, Void, Void> {
-
-        @Override
-        protected Void doInBackground(RemindMe... params) {
-            for(RemindMe remindMe : params) {
-                try {
-                    mLocalRemindMe.delete(remindMe);
-                } catch (MessagingException e) {
-                    Log.e(K9.LOG_TAG, "Unable to delete RemindMe", e);
-                }
-                try {
-                    //move back to inbox
-                    MessagingController messagingController = MessagingController.getInstance(getActivity());
-                    messagingController.moveMessages(mAccount,
-                            remindMe.getReference().getFolder().getName(),
-                            new ArrayList<LocalMessage>(Arrays.asList((LocalMessage) remindMe.getReference())),
-                            mAccount.getInboxFolderName(), null);
-                } catch (Exception e) {
-                    Log.e(K9.LOG_TAG, "Moving back deleted RemindMe failed: " + e.getMessage());
-                }
-            }
-            return null;
-        }
-    }
 }

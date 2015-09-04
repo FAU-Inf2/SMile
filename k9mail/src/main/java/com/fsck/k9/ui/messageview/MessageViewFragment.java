@@ -1,20 +1,19 @@
 package com.fsck.k9.ui.messageview;
 
 import android.app.Activity;
-import android.app.DialogFragment;
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.LoaderManager;
-import android.app.LoaderManager.LoaderCallbacks;
+
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.LoaderManager;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.ContextThemeWrapper;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -42,6 +41,8 @@ import com.fsck.k9.mailstore.MessageViewInfo;
 import com.fsck.k9.ui.crypto.MessageCryptoAnnotations;
 import com.fsck.k9.ui.crypto.MessageCryptoCallback;
 import com.fsck.k9.ui.crypto.MessageCryptoHelper;
+import com.fsck.k9.ui.crypto.PgpMessageCryptoHelper;
+import com.fsck.k9.ui.crypto.SmimeMessageCryptoHelper;
 
 import java.util.Collections;
 import java.util.Locale;
@@ -100,8 +101,8 @@ public final class MessageViewFragment extends Fragment
      */
     private boolean mInitialized = false;
     private Context mContext;
-    private LoaderCallbacks<LocalMessage> localMessageLoaderCallback;
-    private LoaderCallbacks<MessageViewInfo> decodeMessageLoaderCallback;
+    private LoaderManager.LoaderCallbacks<LocalMessage> localMessageLoaderCallback;
+    private LoaderManager.LoaderCallbacks<MessageViewInfo> decodeMessageLoaderCallback;
 
     @Override
     public void onAttach(Activity activity) {
@@ -189,7 +190,6 @@ public final class MessageViewFragment extends Fragment
 
         mAccount = Preferences.getPreferences(mContext).getAccount(mMessageReference.getAccountUuid());
         localMessageLoaderCallback = new LocalMessageLoaderCallback(handler, mContext, mAccount, mMessageReference);
-        messageCryptoHelper = new MessageCryptoHelper(getActivity(), this, mAccount.getSmimeProvider(), mAccount.getOpenPgpProvider());
         if (resetPgpData) {
             // start with fresh, empty PGP data
             mPgpData = new PgpData();
@@ -216,6 +216,12 @@ public final class MessageViewFragment extends Fragment
         if (!message.isBodyMissing()) {
             if(MessageDecryptVerifier.isMimeSignedPart(message)) {
                 startExtractingTextAndAttachments(new MessageCryptoAnnotations());
+            }
+
+            if(MessageDecryptVerifier.isSmimePart(message)) {
+                messageCryptoHelper = new SmimeMessageCryptoHelper(getActivity(), this, mAccount.getSmimeProvider(), mAccount.getOpenPgpProvider());
+            } else {
+                messageCryptoHelper = new PgpMessageCryptoHelper(getActivity(), this, mAccount.getSmimeProvider(), mAccount.getOpenPgpProvider());
             }
 
             messageCryptoHelper.decryptOrVerifyMessagePartsIfNecessary(message);
@@ -501,7 +507,8 @@ public final class MessageViewFragment extends Fragment
                 downloadMessageListener);
     }
 
-    void setProgress(boolean enable) {
+    @Override
+    public void setProgress(boolean enable) {
         if (mFragmentListener != null) {
             mFragmentListener.setProgress(enable);
         }

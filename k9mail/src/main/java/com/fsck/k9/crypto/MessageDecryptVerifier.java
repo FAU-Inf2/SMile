@@ -1,6 +1,8 @@
 package com.fsck.k9.crypto;
 
 
+import android.support.annotation.NonNull;
+
 import com.fsck.k9.mail.Body;
 import com.fsck.k9.mail.BodyPart;
 import com.fsck.k9.mail.MessagingException;
@@ -8,6 +10,7 @@ import com.fsck.k9.mail.Multipart;
 import com.fsck.k9.mail.Part;
 import com.fsck.k9.mail.internet.MessageExtractor;
 import com.fsck.k9.mail.internet.MimeUtility;
+import com.fsck.k9.mailstore.LocalMessage;
 
 import org.openintents.openpgp.util.OpenPgpUtils;
 
@@ -29,9 +32,10 @@ public class MessageDecryptVerifier {
     public static final String APPLICATION_SMIME_SIGNATURE = "application/pkcs7-signature";
     public static final String TEXT_PLAIN = "text/plain";
 
+    @NonNull
     private static List<Part> findParts(final Part startPart, final String mimeType, final String protocol) {
-        List<Part> parts = new ArrayList<Part>();
-        Stack<Part> partsToCheck = new Stack<Part>();
+        List<Part> parts = new ArrayList<>();
+        Stack<Part> partsToCheck = new Stack<>();
         partsToCheck.push(startPart);
 
         while (!partsToCheck.isEmpty()) {
@@ -124,7 +128,6 @@ public class MessageDecryptVerifier {
     }
 
     public static byte[] getSignatureData(Part part) throws IOException, MessagingException {
-
         if (isSameMimeType(part.getMimeType(), MULTIPART_SIGNED)) {
             Body body = part.getBody();
 
@@ -147,10 +150,10 @@ public class MessageDecryptVerifier {
     }
 
     public static boolean isPgpMimeEncryptedPart(Part part) {
-        //FIXME: Doesn't work right now because LocalMessage.getContentType() doesn't load headers from database
-//        String contentType = part.getContentType();
-//        String protocol = MimeUtility.getHeaderParameter(contentType, PROTOCOL_PARAMETER);
-//        return APPLICATION_PGP_ENCRYPTED.equals(protocol);
         return isSameMimeType(part.getMimeType(), MULTIPART_ENCRYPTED);
+    }
+
+    public static boolean isSmimePart(LocalMessage message) {
+        return findSmimeEncryptedParts(message).size() > 0 || findSmimeSignedParts(message).size() > 0;
     }
 }

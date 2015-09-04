@@ -3,6 +3,9 @@
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
+    <include android:id="@+id/toolbar" layout="@layout/actionbar_custom" />
+
     <FrameLayout
         android:id="@+id/content_frame"
         android:layout_width="match_parent"

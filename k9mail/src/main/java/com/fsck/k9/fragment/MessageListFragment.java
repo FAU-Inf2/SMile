@@ -1,62 +1,41 @@
 package com.fsck.k9.fragment;
 
 import android.app.Activity;
-import android.app.DialogFragment;
-import android.app.Fragment;
-import android.app.LoaderManager;
-import android.app.LoaderManager.LoaderCallbacks;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.Loader;
-import android.content.SharedPreferences.Editor;
+import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.graphics.Color;
-import android.graphics.Rect;
-import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v4.content.LocalBroadcastManager;
-import android.text.Spannable;
-import android.text.SpannableStringBuilder;
+import android.support.v7.app.AppCompatDelegate;
+import android.support.v7.view.ActionMode;
 import android.text.TextUtils;
-import android.text.format.DateUtils;
-import android.text.style.AbsoluteSizeSpan;
-import android.text.style.ForegroundColorSpan;
 import android.util.Log;
-import android.util.TypedValue;
-import android.view.ActionMode;
 import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.AdapterView;
-import android.widget.AdapterView.AdapterContextMenuInfo;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.CheckBox;
-import android.widget.CursorAdapter;
-import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.QuickContactBadge;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.daimajia.swipe.SimpleSwipeListener;
-import com.daimajia.swipe.SwipeLayout;
 import com.fsck.k9.Account;
 import com.fsck.k9.Account.SortType;
-import com.fsck.k9.FontSizes;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.activity.ChooseFolder;
@@ -64,11 +43,9 @@ import com.fsck.k9.activity.MessageReference;
 import com.fsck.k9.activity.RemindMeList;
 import com.fsck.k9.activity.holder.FolderInfoHolder;
 import com.fsck.k9.activity.listener.ActivityListener;
-import com.fsck.k9.activity.misc.ContactPictureLoader;
 import com.fsck.k9.cache.EmailProviderCache;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.fragment.ConfirmationDialogFragment.ConfirmationDialogFragmentListener;
-import com.fsck.k9.helper.ContactPicture;
 import com.fsck.k9.helper.MergeCursorWithUniqueId;
 import com.fsck.k9.helper.MessageHelper;
 import com.fsck.k9.helper.NotificationHelper;
@@ -87,8 +64,8 @@ import com.fsck.k9.provider.EmailProvider.SpecialColumns;
 import com.fsck.k9.provider.EmailProvider.ThreadColumns;
 import com.fsck.k9.search.ConditionsTreeNode;
 import com.fsck.k9.search.LocalSearch;
-import com.fsck.k9.search.SearchSpecification;
 import com.fsck.k9.search.SearchCondition;
+import com.fsck.k9.search.SearchSpecification;
 import com.fsck.k9.search.SearchSpecification.SearchField;
 import com.fsck.k9.search.SqlQueryBuilder;
 import com.handmark.pulltorefresh.library.ILoadingLayout;
@@ -112,9 +89,9 @@ import de.fau.cs.mad.smile.android.R;
 
 
 public class MessageListFragment extends Fragment
-        implements OnItemClickListener,
+        implements AdapterView.OnItemClickListener,
         ConfirmationDialogFragmentListener,
-        LoaderCallbacks<Cursor> {
+        LoaderManager.LoaderCallbacks<Cursor> {
 
     protected static final int ID_COLUMN = 0;
     protected static final int UID_COLUMN = 1;
@@ -230,11 +207,7 @@ public class MessageListFragment extends Fragment
     private SortType mSortType = SortType.SORT_DATE;
     private boolean mSortAscending = true;
     private boolean mSortDateAscending = false;
-    private boolean mSenderAboveSubject = false;
-    private boolean mCheckboxes = true;
-    private boolean mStars = true;
     private Set<Long> mSelected = new HashSet<>();
-    private FontSizes mFontSizes = K9.getFontSizes();
     private ActionMode mActionMode;
     private Boolean mHasConnectivity;
 
@@ -255,7 +228,6 @@ public class MessageListFragment extends Fragment
      * make sure we don't access member variables before initialization is complete.
      */
     private boolean mInitialized = false;
-    private ContactPictureLoader mContactsPictureLoader;
     private LocalBroadcastManager mLocalBroadcastManager;
     private BroadcastReceiver mCacheBroadcastReceiver;
     private IntentFilter mCacheIntentFilter;
@@ -362,12 +334,6 @@ public class MessageListFragment extends Fragment
         notificationHelper = NotificationHelper.getInstance(appContext);
 
         mPreviewLines = K9.messageListPreviewLines();
-        mCheckboxes = K9.messageListCheckboxes();
-        mStars = K9.messageListStars();
-
-        if (K9.showContactPicture()) {
-            mContactsPictureLoader = ContactPicture.getContactPictureLoader(appContext);
-        }
 
         restoreInstanceState(savedInstanceState);
         decodeArguments();
@@ -662,7 +628,7 @@ public class MessageListFragment extends Fragment
     }
 
     private void initializeMessageList() {
-        mAdapter = new MessageListAdapter();
+        mAdapter = new MessageListAdapter(getActivity(), mThreadedList);
 
         if (mFolderName != null) {
             mCurrentFolder = getFolder(mFolderName, mAccount);
@@ -743,8 +709,6 @@ public class MessageListFragment extends Fragment
         super.onResume();
 
         Context appContext = getActivity().getApplicationContext();
-
-        mSenderAboveSubject = K9.messageListSenderAboveSubject();
 
         if (!mLoaderJustInitialized) {
             restartLoader();
@@ -943,7 +907,7 @@ public class MessageListFragment extends Fragment
             K9.setSortAscending(mSortType, mSortAscending);
             mSortDateAscending = K9.isSortAscending(SortType.SORT_DATE);
 
-            Editor editor = mPreferences.getPreferences().edit();
+            SharedPreferences.Editor editor = mPreferences.getPreferences().edit();
             K9.save(editor);
             editor.commit();
         }
@@ -1257,10 +1221,10 @@ public class MessageListFragment extends Fragment
     }
 
     @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
 
-        AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
         Cursor cursor = (Cursor) mListView.getItemAtPosition(info.position);
 
         if (cursor == null) {
@@ -1316,66 +1280,6 @@ public class MessageListFragment extends Fragment
 
     }
 
-    public void onSwipeRightToLeft(final MotionEvent e1, final MotionEvent e2) {
-        handleSwipe(e1);
-    }
-
-    public void onSwipeLeftToRight(final MotionEvent e1, final MotionEvent e2) {
-        handleSwipe(e1);
-    }
-
-    private void handleSwipe(final MotionEvent e1) {
-        int x = (int) e1.getRawX();
-        int y = (int) e1.getRawY();
-
-        Rect headerRect = new Rect();
-        mListView.getGlobalVisibleRect(headerRect);
-
-        // Only handle swipes in the visible area of the message list
-        if (headerRect.contains(x, y)) {
-            int[] listPosition = new int[2];
-            mListView.getLocationOnScreen(listPosition);
-
-            int listX = x - listPosition[0];
-            int listY = y - listPosition[1];
-
-            int listViewPosition = mListView.pointToPosition(listX, listY);
-            int adapterPosition = listViewToAdapterPosition(listViewPosition);
-
-            if (adapterPosition == AdapterView.INVALID_POSITION) {
-                return;
-            }
-
-            onRemindMe(getMessageAtPosition(adapterPosition));
-        }
-    }
-
-    /**
-     * Handle a select or unselect swipe event.
-     *
-     * @param downMotion Event that started the swipe
-     * @param selected   {@code true} if this was an attempt to select (i.e. left to right).
-     */
-   /* private void handleSwipe(final MotionEvent downMotion, final boolean selected) {
-        int x = (int) downMotion.getRawX();
-        int y = (int) downMotion.getRawY();
-
-        Rect headerRect = new Rect();
-        mListView.getGlobalVisibleRect(headerRect);
-
-        // Only handle swipes in the visible area of the message list
-        if (headerRect.contains(x, y)) {
-            int[] listPosition = new int[2];
-            mListView.getLocationOnScreen(listPosition);
-
-            int listX = x - listPosition[0];
-            int listY = y - listPosition[1];
-
-            int listViewPosition = mListView.pointToPosition(listX, listY);
-
-            toggleMessageSelect(listViewPosition);
-        }
-    }*/
     protected int listViewToAdapterPosition(int position) {
         if (position > 0 && position <= mAdapter.getCount()) {
             return position - 1;
@@ -1551,16 +1455,6 @@ public class MessageListFragment extends Fragment
         mActionMode.setTitle(String.format(getString(R.string.actionbar_selected), mSelectedCount));
     }
 
-    /*public void onSwipeRightToLeft(final MotionEvent e1, final MotionEvent e2) {
-        // Handle right-to-left as an un-select
-        handleSwipe(e1, false);
-    }
-
-    public void onSwipeLeftToRight(final MotionEvent e1, final MotionEvent e2) {
-        // Handle left-to-right as a select.
-        handleSwipe(e1, true);
-    }*/
-
     private void computeSelectAllVisibility() {
         mActionModeCallback.showSelectAll(mSelected.size() != mAdapter.getCount());
     }
@@ -1580,6 +1474,7 @@ public class MessageListFragment extends Fragment
                 if (!flagged) {
                     isBatchFlag = true;
                 }
+
                 if (!read) {
                     isBatchRead = true;
                 }
@@ -2555,7 +2450,8 @@ public class MessageListFragment extends Fragment
     }
 
     private void startAndPrepareActionMode() {
-        mActionMode = getActivity().startActionMode(mActionModeCallback);
+        AppCompatDelegate appCompatDelegate = AppCompatDelegate.create(getActivity(), null);
+        mActionMode = appCompatDelegate.startSupportActionMode(mActionModeCallback);
         mActionMode.invalidate();
     }
 
@@ -2939,411 +2835,6 @@ public class MessageListFragment extends Fragment
 
             List<String> folderNames = mSearch.getFolderNames();
             return (folderNames.isEmpty() || folderNames.contains(folder));
-        }
-    }
-
-    class MessageListAdapter extends CursorAdapter {
-
-        private Drawable mAttachmentIcon;
-        private Drawable mForwardedIcon;
-        private Drawable mAnsweredIcon;
-        private Drawable mForwardedAnsweredIcon;
-
-        MessageListAdapter() {
-            super(getActivity(), null, 0);
-            mAttachmentIcon = getResources().getDrawable(R.drawable.ic_email_attachment_small);
-            mAnsweredIcon = getResources().getDrawable(R.drawable.ic_email_answered_small);
-            mForwardedIcon = getResources().getDrawable(R.drawable.ic_email_forwarded_small);
-            mForwardedAnsweredIcon = getResources().getDrawable(R.drawable.ic_email_forwarded_answered_small);
-        }
-
-        private String recipientSigil(boolean toMe, boolean ccMe) {
-            if (toMe) {
-                return getString(R.string.messagelist_sent_to_me_sigil);
-            } else if (ccMe) {
-                return getString(R.string.messagelist_sent_cc_me_sigil);
-            } else {
-                return "";
-            }
-        }
-
-        @Override
-        public View newView(final Context context, Cursor cursor, ViewGroup parent) {
-            View view = mInflater.inflate(R.layout.message_list_item, parent, false);
-            view.setId(R.layout.message_list_item);
-
-            final MessageViewHolder holder = new MessageViewHolder();
-            holder.date = (TextView) view.findViewById(R.id.date);
-            holder.chip = view.findViewById(R.id.chip);
-
-
-            if (mPreviewLines == 0 && mContactsPictureLoader == null) {
-                view.findViewById(R.id.preview).setVisibility(View.GONE);
-                holder.preview = (TextView) view.findViewById(R.id.sender_compact);
-                holder.flagged = (CheckBox) view.findViewById(R.id.flagged_center_right);
-                view.findViewById(R.id.flagged_bottom_right).setVisibility(View.GONE);
-            } else {
-                view.findViewById(R.id.sender_compact).setVisibility(View.GONE);
-                holder.preview = (TextView) view.findViewById(R.id.preview);
-                holder.flagged = (CheckBox) view.findViewById(R.id.flagged_bottom_right);
-                view.findViewById(R.id.flagged_center_right).setVisibility(View.GONE);
-            }
-
-            QuickContactBadge contactBadge =
-                    (QuickContactBadge) view.findViewById(R.id.contact_badge);
-
-            if (mContactsPictureLoader != null) {
-                holder.contactBadge = contactBadge;
-            } else {
-                contactBadge.setVisibility(View.GONE);
-            }
-
-            if (mSenderAboveSubject) {
-                holder.from = (TextView) view.findViewById(R.id.subject);
-                mFontSizes.setViewTextSize(holder.from, mFontSizes.getMessageListSender());
-            } else {
-                holder.subject = (TextView) view.findViewById(R.id.subject);
-                mFontSizes.setViewTextSize(holder.subject, mFontSizes.getMessageListSubject());
-            }
-
-            mFontSizes.setViewTextSize(holder.date, mFontSizes.getMessageListDate());
-
-
-            // 1 preview line is needed even if it is set to 0, because subject is part of the same text view
-            holder.preview.setLines(Math.max(mPreviewLines, 1));
-            mFontSizes.setViewTextSize(holder.preview, mFontSizes.getMessageListPreview());
-            holder.threadCount = (TextView) view.findViewById(R.id.thread_count);
-            mFontSizes.setViewTextSize(holder.threadCount, mFontSizes.getMessageListSubject()); // thread count is next to subject
-            view.findViewById(R.id.selected_checkbox_wrapper).setVisibility((mCheckboxes) ? View.VISIBLE : View.GONE);
-
-            holder.flagged.setVisibility(mStars ? View.VISIBLE : View.GONE);
-            holder.flagged.setOnClickListener(holder);
-
-            holder.selected = (CheckBox) view.findViewById(R.id.selected_checkbox);
-            holder.selected.setOnClickListener(holder);
-
-            view.setTag(holder);
-
-            final SwipeLayout swipeLayout = (SwipeLayout) view;
-            swipeLayout.addDrag(SwipeLayout.DragEdge.Left, view.findViewById(R.id.pull_out));
-            swipeLayout.addDrag(SwipeLayout.DragEdge.Right, view.findViewById(R.id.delete));
-            /*swipeLayout.addSwipeListener(new SimpleSwipeListener() {
-                @Override
-                public void onOpen(SwipeLayout layout) {
-                    YoYo.with(Techniques.Tada).duration(500).delay(100).playOn(layout.findViewById(R.id.trash));
-                }
-            });*/
-
-            //view.findViewById(R.id.delete).setOnClickListener(holder);
-            swipeLayout.addRevealListener(R.id.delete, new SwipeLayout.OnRevealListener() {
-                @Override
-                public void onReveal(View view, SwipeLayout.DragEdge dragEdge, float v, int i) {
-                    ImageView trash = (ImageView) swipeLayout.findViewById(R.id.trash);
-                    if (v > 0.25) {
-                        view.setBackgroundColor(Color.RED);
-                        trash.setVisibility(View.VISIBLE);
-                    } else {
-                        view.setBackgroundColor(swipeLayout.getSolidColor());
-                        trash.setVisibility(View.INVISIBLE);
-                    }
-                }
-            });
-            swipeLayout.addRevealListener(R.id.pull_out, new SwipeLayout.OnRevealListener() {
-                private boolean img_set1 = false;
-                private boolean img_set2 = false;
-
-                @Override
-                public void onReveal(View view, SwipeLayout.DragEdge dragEdge, float v, int i) {
-                    ImageView archive = (ImageView) swipeLayout.findViewById(R.id.pull_out_archive);
-                    ImageView remindMe = (ImageView) swipeLayout.findViewById(R.id.pull_out_remind_me);
-                    if (v <= 0.2) {
-                        img_set1 = img_set2 = false;
-                        archive.setVisibility(View.INVISIBLE);
-                        remindMe.setVisibility(View.INVISIBLE);
-                    }
-                    if (v > 0.2 && !img_set1) {
-                        img_set1 = true;
-                        img_set2 = false;
-                        archive.setVisibility(View.INVISIBLE);
-                        remindMe.setVisibility(View.VISIBLE);
-
-
-                    }
-                    if (v > 0.5 && !img_set2) {
-                        img_set1 = false;
-                        img_set2 = true;
-                        remindMe.setVisibility(View.INVISIBLE);
-                        archive.setVisibility(View.VISIBLE);
-                    }
-                    if (v <= 0.2) {
-                        view.setBackgroundColor(swipeLayout.getSolidColor());
-                    } else {
-                        if (0.2 < v && v < 0.5) {
-                            view.setBackgroundColor(Color.YELLOW);
-                        } else {
-                            view.setBackgroundColor(Color.GREEN);
-                        }
-                    }
-                }
-            });
-            swipeLayout.addSwipeListener(holder);
-            return view;
-        }
-
-
-        @Override
-        public void bindView(View view, final Context context, Cursor cursor) {
-            Account account = getAccountFromCursor(cursor);
-
-            String fromList = cursor.getString(SENDER_LIST_COLUMN);
-            String toList = cursor.getString(TO_LIST_COLUMN);
-            String ccList = cursor.getString(CC_LIST_COLUMN);
-            Address[] fromAddrs = Address.unpack(fromList);
-            Address[] toAddrs = Address.unpack(toList);
-            Address[] ccAddrs = Address.unpack(ccList);
-
-            boolean fromMe = mMessageHelper.toMe(account, fromAddrs);
-            boolean toMe = mMessageHelper.toMe(account, toAddrs);
-            boolean ccMe = mMessageHelper.toMe(account, ccAddrs);
-
-            CharSequence displayName = mMessageHelper.getDisplayName(account, fromAddrs, toAddrs);
-            CharSequence displayDate = DateUtils.getRelativeTimeSpanString(context, cursor.getLong(DATE_COLUMN));
-
-            Address counterpartyAddress = null;
-            if (fromMe) {
-                if (toAddrs.length > 0) {
-                    counterpartyAddress = toAddrs[0];
-                } else if (ccAddrs.length > 0) {
-                    counterpartyAddress = ccAddrs[0];
-                }
-            } else if (fromAddrs.length > 0) {
-                counterpartyAddress = fromAddrs[0];
-            }
-
-            int threadCount = (mThreadedList) ? cursor.getInt(THREAD_COUNT_COLUMN) : 0;
-
-            String subject = cursor.getString(SUBJECT_COLUMN);
-            if (TextUtils.isEmpty(subject)) {
-                subject = getString(R.string.general_no_subject);
-            } else if (threadCount > 1) {
-                // If this is a thread, strip the RE/FW from the subject.  "Be like Outlook."
-                subject = Utility.stripSubject(subject);
-            }
-
-            boolean read = (cursor.getInt(READ_COLUMN) == 1);
-            boolean flagged = (cursor.getInt(FLAGGED_COLUMN) == 1);
-            boolean answered = (cursor.getInt(ANSWERED_COLUMN) == 1);
-            boolean forwarded = (cursor.getInt(FORWARDED_COLUMN) == 1);
-
-            boolean hasAttachments = (cursor.getInt(ATTACHMENT_COUNT_COLUMN) > 0);
-
-            MessageViewHolder holder = (MessageViewHolder) view.getTag();
-
-            int maybeBoldTypeface = (read) ? Typeface.NORMAL : Typeface.BOLD;
-
-            long uniqueId = cursor.getLong(mUniqueIdColumn);
-            boolean selected = mSelected.contains(uniqueId);
-
-
-            holder.chip.setBackgroundColor(account.getChipColor());
-
-            if (mCheckboxes) {
-                holder.selected.setChecked(selected);
-            }
-
-            if (mStars) {
-                holder.flagged.setChecked(flagged);
-            }
-
-            holder.position = cursor.getPosition();
-
-            if (holder.contactBadge != null) {
-                if (counterpartyAddress != null) {
-                    holder.contactBadge.assignContactFromEmail(counterpartyAddress.getAddress(), true);
-                    /*
-                     * At least in Android 2.2 a different background + padding is used when no
-                     * email address is available. ListView reuses the views but QuickContactBadge
-                     * doesn't reset the padding, so we do it ourselves.
-                     */
-                    holder.contactBadge.setPadding(0, 0, 0, 0);
-                    mContactsPictureLoader.loadContactPicture(counterpartyAddress, holder.contactBadge);
-                } else {
-                    holder.contactBadge.assignContactUri(null);
-                    holder.contactBadge.setImageResource(R.drawable.ic_contact_picture);
-                }
-            }
-
-            // Background color
-            if (selected || K9.useBackgroundAsUnreadIndicator()) {
-                int res;
-                if (selected) {
-                    res = R.attr.messageListSelectedBackgroundColor;
-                } else if (read) {
-                    res = R.attr.messageListReadItemBackgroundColor;
-                } else {
-                    res = R.attr.messageListUnreadItemBackgroundColor;
-                }
-
-                TypedValue outValue = new TypedValue();
-                getActivity().getTheme().resolveAttribute(res, outValue, true);
-                view.setBackgroundColor(outValue.data);
-            } else {
-                view.setBackgroundColor(Color.TRANSPARENT);
-            }
-
-            if (mActiveMessage != null) {
-                String uid = cursor.getString(UID_COLUMN);
-                String folderName = cursor.getString(FOLDER_NAME_COLUMN);
-
-                if (account.getUuid().equals(mActiveMessage.getAccountUuid()) &&
-                        folderName.equals(mActiveMessage.getFolderName()) &&
-                        uid.equals(mActiveMessage.getUid())) {
-                    int res = R.attr.messageListActiveItemBackgroundColor;
-
-                    TypedValue outValue = new TypedValue();
-                    getActivity().getTheme().resolveAttribute(res, outValue, true);
-                    view.setBackgroundColor(outValue.data);
-                }
-            }
-
-            // Thread count
-            if (threadCount > 1) {
-                holder.threadCount.setText(Integer.toString(threadCount));
-                holder.threadCount.setVisibility(View.VISIBLE);
-            } else {
-                holder.threadCount.setVisibility(View.GONE);
-            }
-
-            CharSequence beforePreviewText = (mSenderAboveSubject) ? subject : displayName;
-
-            String sigil = recipientSigil(toMe, ccMe);
-
-            SpannableStringBuilder messageStringBuilder = new SpannableStringBuilder(sigil)
-                    .append(beforePreviewText);
-
-            if (mPreviewLines > 0) {
-                String preview = cursor.getString(PREVIEW_COLUMN);
-                if (preview != null) {
-                    messageStringBuilder.append(" ").append(preview);
-                }
-            }
-
-            holder.preview.setText(messageStringBuilder, TextView.BufferType.SPANNABLE);
-
-            Spannable str = (Spannable) holder.preview.getText();
-
-            // Create a span section for the sender, and assign the correct font size and weight
-            int fontSize = (mSenderAboveSubject) ?
-                    mFontSizes.getMessageListSubject() :
-                    mFontSizes.getMessageListSender();
-
-            AbsoluteSizeSpan span = new AbsoluteSizeSpan(fontSize, true);
-            str.setSpan(span, 0, beforePreviewText.length() + sigil.length(),
-                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-            //TODO: make this part of the theme
-            int color = (K9.getK9Theme() == K9.Theme.LIGHT) ?
-                    Color.rgb(105, 105, 105) :
-                    Color.rgb(160, 160, 160);
-
-            // Set span (color) for preview message
-            str.setSpan(new ForegroundColorSpan(color), beforePreviewText.length() + sigil.length(),
-                    str.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-            Drawable statusHolder = null;
-            if (forwarded && answered) {
-                statusHolder = mForwardedAnsweredIcon;
-            } else if (answered) {
-                statusHolder = mAnsweredIcon;
-            } else if (forwarded) {
-                statusHolder = mForwardedIcon;
-            }
-
-            if (holder.from != null) {
-                holder.from.setTypeface(Typeface.create(holder.from.getTypeface(), maybeBoldTypeface));
-                if (mSenderAboveSubject) {
-                    holder.from.setCompoundDrawablesWithIntrinsicBounds(
-                            statusHolder, // left
-                            null, // top
-                            hasAttachments ? mAttachmentIcon : null, // right
-                            null); // bottom
-
-                    holder.from.setText(displayName);
-                } else {
-                    holder.from.setText(new SpannableStringBuilder(sigil).append(displayName));
-                }
-            }
-
-            if (holder.subject != null) {
-                if (!mSenderAboveSubject) {
-                    holder.subject.setCompoundDrawablesWithIntrinsicBounds(
-                            statusHolder, // left
-                            null, // top
-                            hasAttachments ? mAttachmentIcon : null, // right
-                            null); // bottom
-                }
-
-                holder.subject.setTypeface(Typeface.create(holder.subject.getTypeface(), maybeBoldTypeface));
-                holder.subject.setText(subject);
-            }
-
-            holder.date.setText(displayDate);
-
-        }
-    }
-
-    class MessageViewHolder extends SimpleSwipeListener implements View.OnClickListener {
-        public TextView subject;
-        public TextView preview;
-        public TextView from;
-        public TextView time;
-        public TextView date;
-        public View chip;
-        public TextView threadCount;
-        public CheckBox flagged;
-        public CheckBox selected;
-        public int position = -1;
-        public QuickContactBadge contactBadge;
-        public float fraction;
-
-        @Override
-        public void onClick(View view) {
-            if (position != -1) {
-
-                switch (view.getId()) {
-                    case R.id.selected_checkbox:
-                        toggleMessageSelectWithAdapterPosition(position);
-                        break;
-                    /*case R.id.delete:
-                        onDelete(getMessageAtPosition(position));
-                        break;*/
-                    case R.id.flagged_bottom_right:
-                    case R.id.flagged_center_right:
-                        toggleMessageFlagWithAdapterPosition(position);
-                        break;
-                }
-            }
-        }
-
-        @Override
-        public void onHandRelease(SwipeLayout layout, float xvel, float yvel) {
-            if (position == -1)
-                return;
-            layout.setDragDistance(0);
-            ImageView archive = (ImageView) layout.findViewById(R.id.pull_out_archive);
-            ImageView remindMe = (ImageView) layout.findViewById(R.id.pull_out_remind_me);
-            View delete = layout.findViewById(R.id.trash);
-            if (archive.isShown()) {
-                onArchive(getMessageAtPosition(position));
-                archive.setVisibility(View.INVISIBLE);
-            }
-            if (remindMe.isShown()) {
-                onRemindMe(getMessageAtPosition(position));
-                remindMe.setVisibility(View.INVISIBLE);
-            }
-            if (delete.isShown()) {
-                onDelete(getMessageAtPosition(position));
-            }
         }
     }
 

@@ -1,11 +1,12 @@
 package com.fsck.k9.activity;
 
-import android.app.ActionBar;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
+import android.support.v7.app.ActionBar;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -57,7 +58,7 @@ import de.fau.cs.mad.smile.android.R;
  * Activity shows list of the Account's folders
  */
 
-public final class FolderList extends K9ListActivity {
+public final class FolderList extends K9Activity {
     private static final String EXTRA_ACCOUNT = "account";
     private static final String EXTRA_FROM_SHORTCUT = "fromShortcut";
     private static final boolean REFRESH_REMOTE = true;
@@ -71,7 +72,7 @@ public final class FolderList extends K9ListActivity {
 
     private MenuItem mRefreshMenuItem;
     private View mActionBarProgressView;
-    private ActionBar mActionBar;
+    private Toolbar toolbar;
 
     private TextView mActionBarTitle;
     private TextView mActionBarSubTitle;
@@ -104,12 +105,11 @@ public final class FolderList extends K9ListActivity {
         }
 
         mHandler = new Handler();
-        mActionBarProgressView = getLayoutInflater().inflate(R.layout.actionbar_indeterminate_progress_actionview, null);
-        mActionBar = getActionBar();
-        initializeActionBar();
-
         setContentView(R.layout.folder_list);
-        mListView = getListView();
+        mActionBarProgressView = getLayoutInflater().inflate(R.layout.actionbar_indeterminate_progress_actionview, null);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        initializeActionBar();
+        mListView = (ListView) findViewById(android.R.id.list);
         mListView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
         mListView.setLongClickable(true);
         mListView.setFastScrollEnabled(true);
@@ -140,15 +140,15 @@ public final class FolderList extends K9ListActivity {
     }
 
     private final void initializeActionBar() {
-        mActionBar.setDisplayShowCustomEnabled(true);
-        mActionBar.setCustomView(R.layout.actionbar_custom);
+        mActionBarTitle = (TextView) toolbar.findViewById(R.id.actionbar_title_first);
+        mActionBarSubTitle = (TextView) toolbar.findViewById(R.id.actionbar_title_sub);
+        mActionBarUnread = (TextView) toolbar.findViewById(R.id.actionbar_unread_count);
+        setSupportActionBar(toolbar);
+        ActionBar actionBar = getSupportActionBar();
 
-        View customView = mActionBar.getCustomView();
-        mActionBarTitle = (TextView) customView.findViewById(R.id.actionbar_title_first);
-        mActionBarSubTitle = (TextView) customView.findViewById(R.id.actionbar_title_sub);
-        mActionBarUnread = (TextView) customView.findViewById(R.id.actionbar_unread_count);
-
-        mActionBar.setDisplayHomeAsUpEnabled(true);
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
     }
 
     @Override
@@ -178,11 +178,11 @@ public final class FolderList extends K9ListActivity {
         }
     }
 
-    private final void initializeActivityView() {
+    private void initializeActivityView() {
         mAdapter = new FolderAdapter(this, mAccount);
         // TODO: renable data restoration on configuration change in Fragment restorePreviousData();
-        setListAdapter(mAdapter);
-        getListView().setTextFilterEnabled(mAdapter.getFilter() != null); // should never be false but better safe then sorry
+        mListView.setAdapter(mAdapter);
+        mListView.setTextFilterEnabled(mAdapter.getFilter() != null); // should never be false but better safe then sorry
     }
 /*
     private final void restorePreviousData() {
@@ -195,7 +195,7 @@ public final class FolderList extends K9ListActivity {
     }*/
 
     @Override
-    public final Object onRetainNonConfigurationInstance() {
+    public final Object onRetainCustomNonConfigurationInstance() {
         return (mAdapter == null) ? null : mAdapter;
     }
 

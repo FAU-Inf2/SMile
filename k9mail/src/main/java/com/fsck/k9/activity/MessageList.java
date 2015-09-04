@@ -1,9 +1,4 @@
 package com.fsck.k9.activity;
-
-import android.app.ActionBar;
-import android.app.FragmentManager;
-import android.app.FragmentManager.OnBackStackChangedListener;
-import android.app.FragmentTransaction;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
@@ -12,6 +7,10 @@ import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.ActionBar;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -71,7 +70,7 @@ import de.fau.cs.mad.smile.android.R;
 public class MessageList extends K9Activity
         implements MessageListFragmentListener,
         MessageViewFragmentListener,
-        OnBackStackChangedListener,
+        FragmentManager.OnBackStackChangedListener,
         OnSwitchCompleteListener {
 
     // for this activity
@@ -154,7 +153,7 @@ public class MessageList extends K9Activity
 
     private StorageManager.StorageListener mStorageListener = new StorageListenerImplementation();
 
-    private ActionBar mActionBar;
+    private Toolbar toolbar;
     private View mActionBarMessageList;
     private View mActionBarMessageView;
     private MessageTitleView mActionBarSubject;
@@ -277,7 +276,7 @@ public class MessageList extends K9Activity
      * Get references to existing fragments if the activity was restarted.
      */
     private void findFragments() {
-        FragmentManager fragmentManager = getFragmentManager();
+        android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
         mMessageListFragment = (MessageListFragment) fragmentManager.findFragmentById(
                 R.id.message_list_container);
         mMessageViewFragment = (MessageViewFragment) fragmentManager.findFragmentById(
@@ -290,7 +289,7 @@ public class MessageList extends K9Activity
      * @see #findFragments()
      */
     private void initializeFragments() {
-        FragmentManager fragmentManager = getFragmentManager();
+        FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.addOnBackStackChangedListener(this);
 
         boolean hasMessageListFragment = (mMessageListFragment != null);
@@ -551,23 +550,24 @@ public class MessageList extends K9Activity
     }
 
     private void initializeActionBar() {
-        mActionBar = getActionBar();
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
 
-        mActionBar.setDisplayShowCustomEnabled(true);
-        mActionBar.setCustomView(R.layout.actionbar_custom);
-
-        View customView = mActionBar.getCustomView();
-        mActionBarMessageList = customView.findViewById(R.id.actionbar_message_list);
-        mActionBarMessageView = customView.findViewById(R.id.actionbar_message_view);
-        mActionBarSubject = (MessageTitleView) customView.findViewById(R.id.message_title_view);
-        mActionBarTitle = (TextView) customView.findViewById(R.id.actionbar_title_first);
-        mActionBarSubTitle = (TextView) customView.findViewById(R.id.actionbar_title_sub);
-        mActionBarUnread = (TextView) customView.findViewById(R.id.actionbar_unread_count);
-        mActionBarProgress = (ProgressBar) customView.findViewById(R.id.actionbar_progress);
+        mActionBarMessageList = toolbar.findViewById(R.id.actionbar_message_list);
+        mActionBarMessageView = toolbar.findViewById(R.id.actionbar_message_view);
+        mActionBarSubject = (MessageTitleView) toolbar.findViewById(R.id.message_title_view);
+        mActionBarTitle = (TextView) toolbar.findViewById(R.id.actionbar_title_first);
+        mActionBarSubTitle = (TextView) toolbar.findViewById(R.id.actionbar_title_sub);
+        mActionBarUnread = (TextView) toolbar.findViewById(R.id.actionbar_unread_count);
+        mActionBarProgress = (ProgressBar) toolbar.findViewById(R.id.actionbar_progress);
         mActionButtonIndeterminateProgress =
                 getLayoutInflater().inflate(R.layout.actionbar_indeterminate_progress_actionview, null);
 
-        mActionBar.setDisplayHomeAsUpEnabled(true);
+
     }
 
     @Override
@@ -1231,7 +1231,7 @@ public class MessageList extends K9Activity
     }
 
     private void addMessageListFragment(MessageListFragment fragment, boolean addToBackStack) {
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 
         if (mDisplayMode != DisplayMode.SMS_LIST) {
             ft.replace(R.id.message_list_container, fragment);
@@ -1252,7 +1252,7 @@ public class MessageList extends K9Activity
     }
 
     private void removeMessageListFragment() {
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         ft.remove(mMessageListFragment);
         mMessageListFragment = null;
         ft.commit();
@@ -1274,7 +1274,7 @@ public class MessageList extends K9Activity
      */
     private void removeMessageViewFragment() {
         if (mMessageViewFragment != null) {
-            FragmentTransaction ft = getFragmentManager().beginTransaction();
+            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
             ft.remove(mMessageViewFragment);
             mMessageViewFragment = null;
             ft.commit();
@@ -1332,8 +1332,16 @@ public class MessageList extends K9Activity
 
     @Override
     public void setProgress(boolean enable) {
+        mActionBarProgress.setIndeterminate(enable);
+        if(enable) {
+            mActionBarProgress.setVisibility(View.VISIBLE);
+        } else {
+            mActionBarProgress.setVisibility(View.GONE);
+        }
+
         setProgressBarIndeterminateVisibility(enable);
     }
+
     @Override
     public void messageHeaderViewAvailable(MessageHeader header) {
         mActionBarSubject.setMessageHeader(header);
@@ -1345,6 +1353,7 @@ public class MessageList extends K9Activity
             mActionBarSubject.setText(subject);
         }
     }
+
     private boolean showNextMessage() {
         MessageReference ref = mMessageViewFragment.getMessageReference();
         if (ref != null) {
@@ -1365,6 +1374,7 @@ public class MessageList extends K9Activity
                 return true;
             }
         }
+
         return false;
     }
 
@@ -1495,7 +1505,7 @@ public class MessageList extends K9Activity
                 parent.removeView(vMessageList);
             }
         }
-        FragmentManager fm = getFragmentManager();
+        FragmentManager fm = getSupportFragmentManager();
         FragmentTransaction transaction = fm.beginTransaction();
         transaction.replace(R.id.sms_message_list_container, fragment);
         transaction.commit();
@@ -1650,7 +1660,7 @@ public class MessageList extends K9Activity
     public void goBack() {
         Log.d(K9.LOG_TAG, "MessageList.goBack");
 
-        FragmentManager fragmentManager = getFragmentManager();
+        FragmentManager fragmentManager = getSupportFragmentManager();
 
         if (mDisplayMode == DisplayMode.MESSAGE_VIEW) {
             showMessageList();
@@ -1706,7 +1716,7 @@ public class MessageList extends K9Activity
             }
 
             MessageViewFragment fragment = MessageViewFragment.newInstance(messageReference);
-            FragmentTransaction ft = getFragmentManager().beginTransaction();
+            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
             ft.replace(R.id.message_view_container, fragment);
             mMessageViewFragment = fragment;
             ft.commit();

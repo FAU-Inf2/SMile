@@ -2,15 +2,15 @@ package com.fsck.k9.activity;
 
 import android.app.DatePickerDialog;
 import android.app.DialogFragment;
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.app.SearchManager;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.widget.DatePicker;
 import android.widget.TimePicker;
@@ -19,6 +19,7 @@ import com.fsck.k9.Account;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.crypto.PgpData;
+import com.fsck.k9.fragment.MessageActions;
 import com.fsck.k9.fragment.MessageFragment;
 import com.fsck.k9.fragment.RemindMeDatePickerDialog;
 import com.fsck.k9.fragment.RemindMeDialog;
@@ -45,7 +46,7 @@ import java.util.List;
 import de.fau.cs.mad.smile.android.R;
 
 public class Messages extends SmileActivity
-        implements MessageFragment.MessageActions,
+        implements MessageActions,
         MessageViewFragmentListener,RemindMeDialog.NoticeDialogListener,
         TimePickerDialog.OnTimeSetListener,
         DatePickerDialog.OnDateSetListener {
@@ -99,7 +100,7 @@ public class Messages extends SmileActivity
 
         handleIntent(getIntent());
 
-        FragmentManager fragmentManager = getFragmentManager();
+        FragmentManager fragmentManager = getSupportFragmentManager();
         messageFragment = (MessageFragment) fragmentManager.findFragmentById(R.layout.messages_fragment);
 
         if(messageFragment == null) {
@@ -109,7 +110,7 @@ public class Messages extends SmileActivity
         loadFragment(messageFragment);
     }
 
-    private final void handleIntent(final Intent intent) {
+    private void handleIntent(final Intent intent) {
         String action = intent.getAction();
 
         if (Intent.ACTION_VIEW.equals(action) && intent.getData() != null) {
@@ -124,7 +125,7 @@ public class Messages extends SmileActivity
         }
     }
 
-    private final void decodeExtraActionSearch(final Intent intent) {
+    private void decodeExtraActionSearch(final Intent intent) {
         // check if this intent comes from the system search ( remote )
         if (!Intent.ACTION_SEARCH.equals(intent.getAction())) {
             return;
@@ -152,7 +153,7 @@ public class Messages extends SmileActivity
         }
     }
 
-    private final void decodeExtraActionShortcut(final Intent intent) {
+    private void decodeExtraActionShortcut(final Intent intent) {
         // Handle shortcut intents
         final String specialFolder = intent.getStringExtra(EXTRA_SPECIAL_FOLDER);
         if (SearchAccount.UNIFIED_INBOX.equals(specialFolder)) {
@@ -162,7 +163,7 @@ public class Messages extends SmileActivity
         }
     }
 
-    private final void decodeExtraActionView(final Intent intent) {
+    private void decodeExtraActionView(final Intent intent) {
         final Uri uri = intent.getData();
         List<String> segmentList = uri.getPathSegments();
         String accountId = segmentList.get(0);
@@ -291,8 +292,9 @@ public class Messages extends SmileActivity
             onTimeSetCalled = false;
 
             final String datePickerTag = "remindMeDatePicker";
-            FragmentTransaction ft = getFragmentManager().beginTransaction();
-            Fragment prev = getFragmentManager().findFragmentByTag(datePickerTag);
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            FragmentTransaction ft = fragmentManager.beginTransaction();
+            Fragment prev = fragmentManager.findFragmentByTag(datePickerTag);
 
             if (prev != null) {
                 ft.remove(prev);

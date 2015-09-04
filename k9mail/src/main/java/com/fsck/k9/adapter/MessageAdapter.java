@@ -25,7 +25,7 @@ import com.fsck.k9.Account;
 import com.fsck.k9.FontSizes;
 import com.fsck.k9.K9;
 import com.fsck.k9.activity.misc.ContactPictureLoader;
-import com.fsck.k9.fragment.MessageFragment;
+import com.fsck.k9.fragment.MessageActions;
 import com.fsck.k9.helper.ContactPicture;
 import com.fsck.k9.helper.MessageHelper;
 import com.fsck.k9.mail.Address;
@@ -112,9 +112,9 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     private final Drawable mForwardedIcon;
     private final Drawable mAnsweredIcon;
     private final Drawable mForwardedAnsweredIcon;
-    private final MessageFragment.MessageActions mMessageActionsCallback;
+    private final MessageActions mMessageActionsCallback;
 
-    public MessageAdapter(final Context context, final List<LocalMessage> messages, final MessageFragment.MessageActions messageActionsCallback) {
+    public MessageAdapter(final Context context, final List<LocalMessage> messages, final MessageActions messageActionsCallback) {
         this.mContext = context;
         this.mMessages = messages;
         this.mContactsPictureLoader = ContactPicture.getContactPictureLoader(this.mContext);

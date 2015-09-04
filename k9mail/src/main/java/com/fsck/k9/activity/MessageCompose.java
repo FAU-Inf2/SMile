@@ -480,7 +480,6 @@ public class MessageCompose extends K9Activity implements OnClickListener,
             return;
         }
 
-        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setupTheme();
 
         final Intent intent = getIntent();

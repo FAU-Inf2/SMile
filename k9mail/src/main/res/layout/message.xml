@@ -40,7 +40,16 @@
                 android:orientation="vertical"
                 android:id="@+id/message_containers"
                 android:layout_width="fill_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content">
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:indeterminate="true"
+                    style="@style/Widget.AppCompat.ProgressBar"
+                    />
+            </LinearLayout>
 
 	    </LinearLayout>
 

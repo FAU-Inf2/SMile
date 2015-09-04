@@ -5,20 +5,18 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBar;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.AdapterView.AdapterContextMenuInfo;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
-import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -114,7 +112,7 @@ public final class FolderList extends K9Activity {
         mListView.setLongClickable(true);
         mListView.setFastScrollEnabled(true);
         mListView.setScrollingCacheEnabled(false);
-        mListView.setOnItemClickListener(new OnItemClickListener() {
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 onOpenFolder(((FolderInfoHolder) mAdapter.getItem(position)).name);
             }
@@ -507,13 +505,13 @@ public final class FolderList extends K9Activity {
 
     private final void configureFolderSearchView(final Menu menu) {
         final MenuItem folderMenuItem = menu.findItem(R.id.filter_folders);
-        final SearchView folderSearchView = (SearchView) folderMenuItem.getActionView();
+        final SearchView folderSearchView = (SearchView) MenuItemCompat.getActionView(folderMenuItem);
         folderSearchView.setQueryHint(getString(R.string.folder_list_filter_hint));
         folderSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 
             @Override
             public boolean onQueryTextSubmit(String query) {
-                folderMenuItem.collapseActionView();
+                MenuItemCompat.collapseActionView(folderMenuItem);
                 mActionBarTitle.setText(getString(R.string.filter_folders_action));
                 return true;
             }
@@ -537,7 +535,7 @@ public final class FolderList extends K9Activity {
 
     @Override
     public final boolean onContextItemSelected(final MenuItem item) {
-        AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
         FolderInfoHolder folder = mAdapter.getItem(info.position);
 
         switch (item.getItemId()) {
@@ -588,9 +586,9 @@ public final class FolderList extends K9Activity {
     }
 
     @Override
-    public final void onCreateContextMenu(final ContextMenu menu, final View v, final ContextMenuInfo menuInfo) {
+    public final void onCreateContextMenu(final ContextMenu menu, final View v, final ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
-        AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
         getMenuInflater().inflate(R.menu.folder_context, menu);
 
         FolderInfoHolder folder = mAdapter.getItem(info.position);

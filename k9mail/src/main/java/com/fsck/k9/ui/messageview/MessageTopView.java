@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.Account.ShowPictures;
@@ -35,6 +36,7 @@ public class MessageTopView extends LinearLayout implements ShowPicturesControll
     private AttachmentViewCallback attachmentCallback;
     private CryptoHeaderViewCallback cryptoHeaderViewCallback;
     private Button showPicturesButton;
+    private ProgressBar progressBar;
     private List<MessageContainerView> messageContainerViewsWithPictures = new ArrayList<>();
 
     public MessageTopView(Context context, AttributeSet attrs) {
@@ -54,6 +56,7 @@ public class MessageTopView extends LinearLayout implements ShowPicturesControll
         setShowPicturesButtonListener();
 
         containerViews = (LinearLayout) findViewById(R.id.message_containers);
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
         super.onFinishInflate();
     }
 
@@ -77,6 +80,7 @@ public class MessageTopView extends LinearLayout implements ShowPicturesControll
     public void resetView() {
         mDownloadRemainder.setVisibility(View.GONE);
         containerViews.removeAllViews();
+        containerViews.addView(progressBar);
     }
 
     public void setMessage(Account account, MessageViewInfo messageViewInfo)
@@ -87,6 +91,7 @@ public class MessageTopView extends LinearLayout implements ShowPicturesControll
         boolean automaticallyLoadPictures =
                 shouldAutomaticallyLoadPictures(showPicturesSetting, messageViewInfo.message);
 
+        containerViews.removeView(progressBar);
         for (MessageViewContainer container : messageViewInfo.containers) {
             MessageContainerView view = (MessageContainerView) mInflater.inflate(R.layout.message_container, null);
             boolean displayPgpHeader = false; //account.isOpenPgpProviderConfigured();

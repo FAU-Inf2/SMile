@@ -1338,8 +1338,6 @@ public class MessageList extends K9Activity
         } else {
             mActionBarProgress.setVisibility(View.GONE);
         }
-
-        setProgressBarIndeterminateVisibility(enable);
     }
 
     @Override

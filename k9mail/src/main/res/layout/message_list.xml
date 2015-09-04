@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.fsck.k9.view.ViewSwitcher xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/container"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
-    <LinearLayout
+    <include
+        android:id="@+id/toolbar"
+        layout="@layout/actionbar_custom" />
+
+    <com.fsck.k9.view.ViewSwitcher
+        android:id="@+id/container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
-
-        <include
-            android:id="@+id/toolbar"
-            layout="@layout/actionbar_custom" />
+        android:layout_height="match_parent">
 
         <FrameLayout
             android:id="@+id/message_list_container"
@@ -22,32 +22,33 @@
             android:id="@+id/message_view_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
-<!--
-        <com.fsck.k9.view.SmsLikeView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" android:visibility="gone">
 
-            <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-                android:id="@+id/smsLikeView_scrollView_contacts"
-                android:layout_width="240dp"
-                android:layout_height="match_parent"
-                android:layout_gravity="left"
-                android:background="@android:color/holo_blue_light">
+    </com.fsck.k9.view.ViewSwitcher>
+    <!--
+            <com.fsck.k9.view.SmsLikeView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" android:visibility="gone">
 
-                <LinearLayout
-                    android:id="@+id/smsLikeView_leftlinear_contacts"
+                <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:id="@+id/smsLikeView_scrollView_contacts"
+                    android:layout_width="240dp"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="left"
+                    android:background="@android:color/holo_blue_light">
+
+                    <LinearLayout
+                        android:id="@+id/smsLikeView_leftlinear_contacts"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"/>
+                </ScrollView>
+
+                <FrameLayout
+                    android:id="@+id/sms_message_list_container"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="vertical"/>
-            </ScrollView>
-
-            <FrameLayout
-                android:id="@+id/sms_message_list_container"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_gravity="start"
-                android:layout_marginLeft="70dp"
-                android:layout_marginStart="70dp" />
-        </com.fsck.k9.view.SmsLikeView>-->
-    </LinearLayout>
-</com.fsck.k9.view.ViewSwitcher>
+                    android:layout_gravity="start"
+                    android:layout_marginLeft="70dp"
+                    android:layout_marginStart="70dp" />
+            </com.fsck.k9.view.SmsLikeView>-->
+</LinearLayout>

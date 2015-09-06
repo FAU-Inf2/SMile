@@ -227,6 +227,8 @@ public class Account implements BaseAccount, StoreConfig {
     private String mPgpApp;
     private long mPgpKey;
     private String mSmimeApp;
+    private String defaultCryptoProvider;
+
     private boolean mMarkMessageAsReadOnView;
     private boolean mAlwaysShowCcBcc;
     private boolean mAllowRemoteSearch;
@@ -482,6 +484,7 @@ public class Account implements BaseAccount, StoreConfig {
         mMarkMessageAsReadOnView = prefs.getBoolean(mUuid + ".markMessageAsReadOnView", true);
         mAlwaysShowCcBcc = prefs.getBoolean(mUuid + ".alwaysShowCcBcc", false);
         mSmimeApp = prefs.getString(mUuid + ".smime_app", null);
+        defaultCryptoProvider = prefs.getString(mUuid + ".default_crypto", null);
 
         cacheChips();
 
@@ -756,7 +759,9 @@ public class Account implements BaseAccount, StoreConfig {
         editor.putString(mUuid + ".ringtone", mNotificationSetting.getRingtone());
         editor.putBoolean(mUuid + ".led", mNotificationSetting.isLed());
         editor.putInt(mUuid + ".ledColor", mNotificationSetting.getLedColor());
+
         editor.putString(mUuid + ".smime_app", mSmimeApp);
+        editor.putString(mUuid + ".default_crypto", defaultCryptoProvider);
 
         for (NetworkType type : NetworkType.values()) {
             Boolean useCompression = compressionMap.get(type);
@@ -1670,6 +1675,14 @@ public class Account implements BaseAccount, StoreConfig {
     public void setSmimeProvider(String smimeProvider) {
         Log.d(K9.LOG_TAG, "Smime app set to " + smimeProvider);
         mSmimeApp = smimeProvider;
+    }
+
+    public String getDefaultCryptoProvider() {
+        return defaultCryptoProvider;
+    }
+
+    public void setDefaultCryptoProvider(String defaultCryptoProvider) {
+        this.defaultCryptoProvider = defaultCryptoProvider;
     }
 
     public boolean allowRemoteSearch() {

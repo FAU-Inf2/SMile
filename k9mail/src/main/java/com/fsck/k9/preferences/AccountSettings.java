@@ -41,6 +41,10 @@ public class AccountSettings {
                 new  V(42, new StringSetting(null))
         ));
 
+        s.put("default_crypto", Settings.versions(
+                new  V(43, new StringSetting(null))
+        ));
+
         s.put("alwaysBcc", Settings.versions(
                 new V(11, new StringSetting(""))
             ));

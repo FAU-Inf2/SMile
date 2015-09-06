@@ -205,6 +205,7 @@ public class AccountSettings extends K9PreferenceActivity {
     private CheckBoxPreference mAlwaysShowCcBcc;
 
     private ListPreference mSmimeApp;
+    private ListPreference defaultCryptoProvider;
 
 
     public static void actionSettings(Context context, Account account) {
@@ -773,6 +774,20 @@ public class AccountSettings extends K9PreferenceActivity {
             mSmimeApp.setSummary(getString(R.string.account_settings_smime_app_not_found));
             mSmimeApp.setEnabled(false);
         }
+
+        defaultCryptoProvider = (ListPreference) findPreference("default_crypto");
+        if(defaultCryptoProvider != null) {
+            defaultCryptoProvider.setValue(mAccount.getDefaultCryptoProvider());
+            defaultCryptoProvider.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+                @Override
+                public boolean onPreferenceChange(Preference preference, Object newValue) {
+                    String value = newValue.toString();
+                    defaultCryptoProvider.setValue(value);
+
+                    return false;
+                }
+            });
+        }
     }
 
     private void removeListEntry(ListPreference listPreference, String remove) {
@@ -898,6 +913,7 @@ public class AccountSettings extends K9PreferenceActivity {
         }
 
         mAccount.setSmimeProvider(mSmimeApp.getValue());
+        mAccount.setDefaultCryptoProvider(defaultCryptoProvider.getValue());
 
         // TODO: refresh folder list here
         mAccount.save(Preferences.getPreferences(this));

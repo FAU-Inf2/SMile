@@ -354,8 +354,8 @@ public class MessageCompose extends K9Activity implements OnClickListener,
     }
 
     private enum CryptoProvider {
-        NONE("NONE"),
-        PGP("PGP"),
+        NONE("None"),
+        PGP("OpenPGP"),
         SMIME("S/MIME");
 
         private final String name;
@@ -743,6 +743,13 @@ public class MessageCompose extends K9Activity implements OnClickListener,
                 selectedCryptoProvider = CryptoProvider.NONE;
             }
         });
+
+        for(int i = 0; i < mSpinner.getCount(); i++) {
+            if(mSpinner.getItemAtPosition(i).toString().equals(mAccount.getDefaultCryptoProvider())) {
+                mSpinner.setSelection(i);
+                break;
+            }
+        }
 
         if(cryptoProviders.size() == 1) {
             mSpinner.setVisibility(View.GONE);

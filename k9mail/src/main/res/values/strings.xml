@@ -1171,11 +1171,12 @@ Please submit bug reports, contribute new features and ask questions at
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
     <string name="material">MD</string>
-    <string name="smime_app">SMIME App</string>
-    <string name="account_settings_smime_app_not_found">No compatible SMIME App installed.</string>
+    <string name="smime_app">S/MIME App</string>
+    <string name="account_settings_smime_app_not_found">No compatible S/MIME App installed.</string>
     <string name="global_settings_remindme_times_label">RemindME times</string>
     <string name="global_settings_remindme_time_short_label">short timespan</string>
     <string name="global_settings_remindme_time_medium_label">medium timespan</string>
     <string name="global_settings_remindme_time_long_label">long timespan</string>
+    <string name="default_crypto_title">Default crypto protocol</string>
 
 </resources>

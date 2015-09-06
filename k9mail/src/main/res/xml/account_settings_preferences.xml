@@ -482,6 +482,14 @@
             android:title="@string/smime_app"
             />
 
+        <ListPreference
+            android:persistent="false"
+            android:key="default_crypto"
+            android:entries="@array/default_crypto_entries"
+            android:entryValues="@array/default_crypto_entries"
+            android:summary="%s"
+            android:title="@string/default_crypto_title"/>
+
     </PreferenceScreen>
 
 </PreferenceScreen>

@@ -760,4 +760,9 @@
         <item>tomorrow</item>
         <item>user defined</item>
     </string-array>
+    <string-array name="default_crypto_entries">
+        <item>None</item>
+        <item>OpenPGP</item>
+        <item>S/MIME</item>
+    </string-array>
 </resources>

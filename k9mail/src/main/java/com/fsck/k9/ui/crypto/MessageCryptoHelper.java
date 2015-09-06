@@ -37,6 +37,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import de.fau.cs.mad.smile.android.R;
 import de.fau.cs.mad.smime_api.ISMimeService;
@@ -146,10 +147,10 @@ public abstract class MessageCryptoHelper {
             @Override
             public void run() {
                 try {
-                    latch.await();
-
-                    if (isBoundToCryptoProvider()) {
-                        decryptOrVerifyPart(cryptoPart);
+                    if(latch.await(10, TimeUnit.SECONDS)) {
+                        if (isBoundToCryptoProvider()) {
+                            decryptOrVerifyPart(cryptoPart);
+                        }
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();

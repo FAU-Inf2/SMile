@@ -1,4 +1,4 @@
-package com.fsck.k9.fragment;
+package com.fsck.k9.adapter;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -16,25 +16,35 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.QuickContactBadge;
 import android.widget.TextView;
 
+import com.daimajia.swipe.SimpleSwipeListener;
 import com.daimajia.swipe.SwipeLayout;
 import com.fsck.k9.Account;
 import com.fsck.k9.FontSizes;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.activity.misc.ContactPictureLoader;
+import com.fsck.k9.fragment.MessageActions;
+import com.fsck.k9.fragment.MessageListFragment;
 import com.fsck.k9.helper.ContactPicture;
 import com.fsck.k9.helper.MessageHelper;
 import com.fsck.k9.helper.Utility;
 import com.fsck.k9.mail.Address;
+import com.fsck.k9.holder.MessageViewHolder;
+import com.fsck.k9.mail.Folder;
+import com.fsck.k9.mail.MessagingException;
+import com.fsck.k9.mailstore.LocalFolder;
+import com.fsck.k9.mailstore.LocalMessage;
+import com.fsck.k9.mailstore.LocalStore;
 
 import de.fau.cs.mad.smile.android.R;
 
-class MessageListAdapter extends CursorAdapter {
+public class MessageListAdapter extends CursorAdapter {
     private final Context context;
     private final boolean mCheckboxes;
     private final boolean mStars;
@@ -43,19 +53,22 @@ class MessageListAdapter extends CursorAdapter {
     private final int mPreviewLines;
     private final FontSizes mFontSizes;
     private final boolean mSenderAboveSubject;
+    private final MessageActions messageActionsCallback;
     private ContactPictureLoader mContactsPictureLoader;
     private Drawable mAttachmentIcon;
     private Drawable mForwardedIcon;
     private Drawable mAnsweredIcon;
     private Drawable mForwardedAnsweredIcon;
 
-    MessageListAdapter(Context context, boolean threadedList) {
+
+    public MessageListAdapter(Context context, MessageActions messageActionsCallback, boolean threadedList) {
         super(context, null, 0);
 
         if (K9.showContactPicture()) {
             mContactsPictureLoader = ContactPicture.getContactPictureLoader(context);
         }
 
+        this.messageActionsCallback = messageActionsCallback;
         this.context = context;
         mThreadedList = threadedList;
         mCheckboxes = K9.messageListCheckboxes();
@@ -85,58 +98,49 @@ class MessageListAdapter extends CursorAdapter {
     public View newView(final Context context, Cursor cursor, ViewGroup parent) {
         LayoutInflater inflater = LayoutInflater.from(context);
         View view = inflater.inflate(R.layout.message_list_item, parent, false);
-        view.setId(R.layout.message_list_item);
+        //view.setId(R.layout.message_list_item);
+
+        final MessageViewHolder holder = new MessageViewHolder(view);
         final boolean senderAboveSubject = K9.messageListSenderAboveSubject();
-
-        final MessageViewHolder holder = new MessageViewHolder();
-        holder.date = (TextView) view.findViewById(R.id.date);
-        holder.chip = view.findViewById(R.id.chip);
-
 
         if (mPreviewLines == 0 && mContactsPictureLoader == null) {
             view.findViewById(R.id.preview).setVisibility(View.GONE);
-            holder.preview = (TextView) view.findViewById(R.id.sender_compact);
-            holder.flagged = (CheckBox) view.findViewById(R.id.flagged_center_right);
+            holder.setPreview((TextView) view.findViewById(R.id.sender_compact));
+            holder.setFlagged((CheckBox) view.findViewById(R.id.flagged_center_right));
             view.findViewById(R.id.flagged_bottom_right).setVisibility(View.GONE);
         } else {
             view.findViewById(R.id.sender_compact).setVisibility(View.GONE);
-            holder.preview = (TextView) view.findViewById(R.id.preview);
-            holder.flagged = (CheckBox) view.findViewById(R.id.flagged_bottom_right);
+            holder.setPreview((TextView) view.findViewById(R.id.preview));
+            holder.setFlagged((CheckBox) view.findViewById(R.id.flagged_bottom_right));
             view.findViewById(R.id.flagged_center_right).setVisibility(View.GONE);
         }
 
-        QuickContactBadge contactBadge =
-                (QuickContactBadge) view.findViewById(R.id.contact_badge);
-
-        if (mContactsPictureLoader != null) {
-            holder.contactBadge = contactBadge;
-        } else {
-            contactBadge.setVisibility(View.GONE);
+        if (mContactsPictureLoader == null) {
+            holder.getContactBadge().setVisibility(View.GONE);
         }
 
         if (senderAboveSubject) {
-            holder.from = (TextView) view.findViewById(R.id.subject);
-            mFontSizes.setViewTextSize(holder.from, mFontSizes.getMessageListSender());
+            holder.setFrom((TextView) view.findViewById(R.id.subject));
+            mFontSizes.setViewTextSize(holder.getFrom(), mFontSizes.getMessageListSender());
         } else {
-            holder.subject = (TextView) view.findViewById(R.id.subject);
-            mFontSizes.setViewTextSize(holder.subject, mFontSizes.getMessageListSubject());
+            holder.setSubject((TextView) view.findViewById(R.id.subject));
+            mFontSizes.setViewTextSize(holder.getSubject(), mFontSizes.getMessageListSubject());
         }
 
-        mFontSizes.setViewTextSize(holder.date, mFontSizes.getMessageListDate());
-
+        mFontSizes.setViewTextSize(holder.getDate(), mFontSizes.getMessageListDate());
 
         // 1 preview line is needed even if it is set to 0, because subject is part of the same text view
-        holder.preview.setLines(Math.max(mPreviewLines, 1));
-        mFontSizes.setViewTextSize(holder.preview, mFontSizes.getMessageListPreview());
-        holder.threadCount = (TextView) view.findViewById(R.id.thread_count);
-        mFontSizes.setViewTextSize(holder.threadCount, mFontSizes.getMessageListSubject()); // thread count is next to subject
+        holder.getPreview().setLines(Math.max(mPreviewLines, 1));
+        mFontSizes.setViewTextSize(holder.getPreview(), mFontSizes.getMessageListPreview());
+        holder.setThreadCount((TextView) view.findViewById(R.id.thread_count));
+        mFontSizes.setViewTextSize(holder.getThreadCount(), mFontSizes.getMessageListSubject()); // thread count is next to subject
         view.findViewById(R.id.selected_checkbox_wrapper).setVisibility((mCheckboxes) ? View.VISIBLE : View.GONE);
 
-        holder.flagged.setVisibility(mStars ? View.VISIBLE : View.GONE);
-        holder.flagged.setOnClickListener(holder);
+        holder.getFlagged().setVisibility(mStars ? View.VISIBLE : View.GONE);
+        holder.getFlagged().setOnClickListener(holder);
 
-        holder.selected = (CheckBox) view.findViewById(R.id.selected_checkbox);
-        holder.selected.setOnClickListener(holder);
+        holder.setSelected((CheckBox) view.findViewById(R.id.selected_checkbox));
+        holder.getSelected().setOnClickListener(holder);
 
         view.setTag(holder);
 
@@ -196,10 +200,9 @@ class MessageListAdapter extends CursorAdapter {
                 }
             }
         });
-        swipeLayout.addSwipeListener(holder);
+
         return view;
     }
-
 
     @Override
     public void bindView(View view, final Context context, Cursor cursor) {
@@ -247,39 +250,38 @@ class MessageListAdapter extends CursorAdapter {
 
         boolean hasAttachments = (cursor.getInt(MessageListFragment.ATTACHMENT_COUNT_COLUMN) > 0);
 
-        MessageViewHolder holder = (MessageViewHolder) view.getTag();
+        final MessageViewHolder holder = (MessageViewHolder) view.getTag();
 
         int maybeBoldTypeface = (read) ? Typeface.NORMAL : Typeface.BOLD;
 
         //long uniqueId = cursor.getLong(mUniqueIdColumn);
         //boolean selected = mSelected.contains(uniqueId);
 
-
-        holder.chip.setBackgroundColor(account.getChipColor());
+        holder.getChip().setBackgroundColor(account.getChipColor());
 
         if (mCheckboxes) {
             //holder.selected.setChecked(selected);
         }
 
         if (mStars) {
-            holder.flagged.setChecked(flagged);
+            holder.getFlagged().setChecked(flagged);
         }
 
-        holder.position = cursor.getPosition();
+        holder.setPosition(cursor.getPosition());
 
-        if (holder.contactBadge != null) {
+        if (holder.getContactBadge() != null) {
             if (counterpartyAddress != null) {
-                holder.contactBadge.assignContactFromEmail(counterpartyAddress.getAddress(), true);
+                holder.getContactBadge().assignContactFromEmail(counterpartyAddress.getAddress(), true);
                 /*
                  * At least in Android 2.2 a different background + padding is used when no
                  * email address is available. ListView reuses the views but QuickContactBadge
                  * doesn't reset the padding, so we do it ourselves.
                  */
-                holder.contactBadge.setPadding(0, 0, 0, 0);
-                mContactsPictureLoader.loadContactPicture(counterpartyAddress, holder.contactBadge);
+                holder.getContactBadge().setPadding(0, 0, 0, 0);
+                mContactsPictureLoader.loadContactPicture(counterpartyAddress, holder.getContactBadge());
             } else {
-                holder.contactBadge.assignContactUri(null);
-                holder.contactBadge.setImageResource(R.drawable.ic_contact_picture);
+                holder.getContactBadge().assignContactUri(null);
+                holder.getContactBadge().setImageResource(R.drawable.ic_contact_picture);
             }
         }
 
@@ -320,10 +322,10 @@ class MessageListAdapter extends CursorAdapter {
 
         // Thread count
         if (threadCount > 1) {
-            holder.threadCount.setText(Integer.toString(threadCount));
-            holder.threadCount.setVisibility(View.VISIBLE);
+            holder.getThreadCount().setText(Integer.toString(threadCount));
+            holder.getThreadCount().setVisibility(View.VISIBLE);
         } else {
-            holder.threadCount.setVisibility(View.GONE);
+            holder.getThreadCount().setVisibility(View.GONE);
         }
 
         CharSequence beforePreviewText = (mSenderAboveSubject) ? subject : displayName;
@@ -340,9 +342,9 @@ class MessageListAdapter extends CursorAdapter {
             }
         }
 
-        holder.preview.setText(messageStringBuilder, TextView.BufferType.SPANNABLE);
+        holder.getPreview().setText(messageStringBuilder, TextView.BufferType.SPANNABLE);
 
-        Spannable str = (Spannable) holder.preview.getText();
+        Spannable str = (Spannable) holder.getPreview().getText();
 
         // Create a span section for the sender, and assign the correct font size and weight
         int fontSize = (mSenderAboveSubject) ?
@@ -371,40 +373,92 @@ class MessageListAdapter extends CursorAdapter {
             statusHolder = mForwardedIcon;
         }
 
-        if (holder.from != null) {
-            holder.from.setTypeface(Typeface.create(holder.from.getTypeface(), maybeBoldTypeface));
+        if (holder.getFrom() != null) {
+            holder.getFrom().setTypeface(Typeface.create(holder.getFrom().getTypeface(), maybeBoldTypeface));
             if (mSenderAboveSubject) {
-                holder.from.setCompoundDrawablesWithIntrinsicBounds(
+                holder.getFrom().setCompoundDrawablesWithIntrinsicBounds(
                         statusHolder, // left
                         null, // top
                         hasAttachments ? mAttachmentIcon : null, // right
                         null); // bottom
 
-                holder.from.setText(displayName);
+                holder.getFrom().setText(displayName);
             } else {
-                holder.from.setText(new SpannableStringBuilder(sigil).append(displayName));
+                holder.getFrom().setText(new SpannableStringBuilder(sigil).append(displayName));
             }
         }
 
-        if (holder.subject != null) {
+        if (holder.getSubject() != null) {
             if (!mSenderAboveSubject) {
-                holder.subject.setCompoundDrawablesWithIntrinsicBounds(
+                holder.getSubject().setCompoundDrawablesWithIntrinsicBounds(
                         statusHolder, // left
                         null, // top
                         hasAttachments ? mAttachmentIcon : null, // right
                         null); // bottom
             }
 
-            holder.subject.setTypeface(Typeface.create(holder.subject.getTypeface(), maybeBoldTypeface));
-            holder.subject.setText(subject);
+            holder.getSubject().setTypeface(Typeface.create(holder.getSubject().getTypeface(), maybeBoldTypeface));
+            holder.getSubject().setText(subject);
         }
 
-        holder.date.setText(displayDate);
+        holder.getDate().setText(displayDate);
+        holder.getSwipeLayout().addSwipeListener(new SimpleSwipeListener() {
+            @Override
+            public void onHandRelease(SwipeLayout layout, float xvel, float yvel) {layout.setDragDistance(0);
+                ImageView archive = (ImageView) layout.findViewById(R.id.pull_out_archive);
+                ImageView remindMe = (ImageView) layout.findViewById(R.id.pull_out_remind_me);
+                View delete = layout.findViewById(R.id.trash);
 
+                LocalMessage message = getMessageAtPosition(holder.getPosition());
+                if (archive.isShown()) {
+                    messageActionsCallback.archive(message);
+                    archive.setVisibility(View.INVISIBLE);
+                }
+
+                if (remindMe.isShown()) {
+                    messageActionsCallback.remindMe(message);
+                    remindMe.setVisibility(View.INVISIBLE);
+                }
+
+                if (delete.isShown()) {
+                    messageActionsCallback.delete(message);
+                }
+            }
+        });
     }
 
     protected Account getAccountFromCursor(Cursor cursor) {
         String accountUuid = cursor.getString(MessageListFragment.ACCOUNT_UUID_COLUMN);
         return Preferences.getPreferences(context).getAccount(accountUuid);
+    }
+
+    private LocalMessage getMessageAtPosition(int adapterPosition) {
+        if (adapterPosition == AdapterView.INVALID_POSITION) {
+            return null;
+        }
+
+        Cursor cursor = (Cursor) getItem(adapterPosition);
+        String uid = cursor.getString(MessageListFragment.UID_COLUMN);
+
+        Account account = getAccountFromCursor(cursor);
+        long folderId = cursor.getLong(MessageListFragment.FOLDER_ID_COLUMN);
+        LocalFolder folder = getFolderById(account, folderId);
+
+        try {
+            return folder.getMessage(uid);
+        } catch (MessagingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private LocalFolder getFolderById(Account account, long folderId) {
+        try {
+            LocalStore localStore = account.getLocalStore();
+            LocalFolder localFolder = localStore.getFolderById(folderId);
+            localFolder.open(Folder.OPEN_MODE_RO);
+            return localFolder;
+        } catch (MessagingException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

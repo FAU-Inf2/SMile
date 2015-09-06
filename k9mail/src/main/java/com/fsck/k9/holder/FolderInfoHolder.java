@@ -1,4 +1,4 @@
-package com.fsck.k9.activity.holder;
+package com.fsck.k9.holder;
 
 import android.content.Context;
 

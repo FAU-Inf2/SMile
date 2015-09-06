@@ -41,8 +41,9 @@ import com.fsck.k9.Preferences;
 import com.fsck.k9.activity.ChooseFolder;
 import com.fsck.k9.activity.MessageReference;
 import com.fsck.k9.activity.RemindMeList;
-import com.fsck.k9.activity.holder.FolderInfoHolder;
+import com.fsck.k9.holder.FolderInfoHolder;
 import com.fsck.k9.activity.listener.ActivityListener;
+import com.fsck.k9.adapter.MessageListAdapter;
 import com.fsck.k9.cache.EmailProviderCache;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.fragment.ConfirmationDialogFragment.ConfirmationDialogFragmentListener;
@@ -91,27 +92,28 @@ import de.fau.cs.mad.smile.android.R;
 public class MessageListFragment extends Fragment
         implements AdapterView.OnItemClickListener,
         ConfirmationDialogFragmentListener,
-        LoaderManager.LoaderCallbacks<Cursor> {
+        LoaderManager.LoaderCallbacks<Cursor>,
+        MessageActions {
 
     protected static final int ID_COLUMN = 0;
-    protected static final int UID_COLUMN = 1;
+    public static final int UID_COLUMN = 1;
     protected static final int INTERNAL_DATE_COLUMN = 2;
-    protected static final int SUBJECT_COLUMN = 3;
-    protected static final int DATE_COLUMN = 4;
-    protected static final int SENDER_LIST_COLUMN = 5;
-    protected static final int TO_LIST_COLUMN = 6;
-    protected static final int CC_LIST_COLUMN = 7;
-    protected static final int READ_COLUMN = 8;
-    protected static final int FLAGGED_COLUMN = 9;
-    protected static final int ANSWERED_COLUMN = 10;
-    protected static final int FORWARDED_COLUMN = 11;
-    protected static final int ATTACHMENT_COUNT_COLUMN = 12;
-    protected static final int FOLDER_ID_COLUMN = 13;
-    protected static final int PREVIEW_COLUMN = 14;
+    public static final int SUBJECT_COLUMN = 3;
+    public static final int DATE_COLUMN = 4;
+    public static final int SENDER_LIST_COLUMN = 5;
+    public static final int TO_LIST_COLUMN = 6;
+    public static final int CC_LIST_COLUMN = 7;
+    public static final int READ_COLUMN = 8;
+    public static final int FLAGGED_COLUMN = 9;
+    public static final int ANSWERED_COLUMN = 10;
+    public static final int FORWARDED_COLUMN = 11;
+    public static final int ATTACHMENT_COUNT_COLUMN = 12;
+    public static final int FOLDER_ID_COLUMN = 13;
+    public static final int PREVIEW_COLUMN = 14;
     protected static final int THREAD_ROOT_COLUMN = 15;
-    protected static final int ACCOUNT_UUID_COLUMN = 16;
+    public static final int ACCOUNT_UUID_COLUMN = 16;
     protected static final int FOLDER_NAME_COLUMN = 17;
-    protected static final int THREAD_COUNT_COLUMN = 18;
+    public static final int THREAD_COUNT_COLUMN = 18;
     protected static final String ARG_SEARCH = "searchObject";
     protected static final String ARG_THREADED_LIST = "threadedList";
     protected static final String ARG_IS_THREAD_DISPLAY = "isThreadedDisplay";
@@ -625,7 +627,7 @@ public class MessageListFragment extends Fragment
     }
 
     private void initializeMessageList() {
-        mAdapter = new MessageListAdapter(getActivity(), mThreadedList);
+        mAdapter = new MessageListAdapter(getActivity(), this, mThreadedList);
 
         if (mFolderName != null) {
             mCurrentFolder = getFolder(mFolderName, mAccount);
@@ -942,6 +944,33 @@ public class MessageListFragment extends Fragment
         }
 
         changeSort(sorts[curIndex]);
+    }
+
+    public void move(LocalMessage message, String destFolder) {
+        //onMove(message);
+    }
+
+    public void delete(LocalMessage message){
+        onDelete(message);
+    }
+
+    public void archive(LocalMessage message) {
+        onArchive(message);
+    }
+
+    public void remindMe(LocalMessage message) {
+        onRemindMe(message);
+    }
+
+    public void reply(LocalMessage message) {
+        onReply(message);
+    }
+
+    public void replyAll(LocalMessage message){
+        onReplyAll(message);
+    }
+
+    public void openMessage(MessageReference messageReference) {
     }
 
     private void onDelete(LocalMessage message) {

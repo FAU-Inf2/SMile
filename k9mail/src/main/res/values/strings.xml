@@ -1174,5 +1174,8 @@ Please submit bug reports, contribute new features and ask questions at
     <string name="smime_app">SMIME App</string>
     <string name="account_settings_smime_app_not_found">No compatible SMIME App installed.</string>
     <string name="global_settings_remindme_times_label">RemindME times</string>
+    <string name="global_settings_remindme_time_short_label">short timespan</string>
+    <string name="global_settings_remindme_time_medium_label">medium timespan</string>
+    <string name="global_settings_remindme_time_long_label">long timespan</string>
 
 </resources>

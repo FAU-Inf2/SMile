@@ -8,6 +8,10 @@
      They are automatically updated with "ant bump-version".
 -->
 <changelog>
+    <release version="1.1" versioncode="00003">
+        <change>added S/MIME support</change>
+    </release>
+
     <release version="1.01" versioncode="00002">
         <change>Swipe gestures for delete, archive and "RemindMe!"</change>
     </release>

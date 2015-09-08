@@ -621,7 +621,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
 
                             @Override
                             public void onError(Exception e) {
-                                Log.d(K9.LOG_TAG, "smime api failed: " + e);
+                                Log.d(K9.LOG_TAG, "smime api failed: ", e);
                             }
                         });
                         mSmimeServiceConnection.bindToService();
@@ -1453,12 +1453,8 @@ public class MessageCompose extends K9Activity implements OnClickListener,
                         currentMessage = resultMessage;
                         onSend();
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (MessagingException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                } catch (IOException | MessagingException | InterruptedException e) {
+                    Log.e(K9.LOG_TAG, "error retrieving processed message from smime service", e);
                 }
             }
         }).start();

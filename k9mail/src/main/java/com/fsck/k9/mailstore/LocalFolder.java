@@ -215,7 +215,7 @@ public class LocalFolder extends Folder<LocalMessage> implements Serializable {
                 Cursor cursor = null;
                 try {
                     cursor = db.rawQuery("SELECT id FROM folders where folders.name = ?",
-                            new String[] { LocalFolder.this.getName() });
+                            new String[]{LocalFolder.this.getName()});
                     if (cursor.moveToFirst()) {
                         int folderId = cursor.getInt(0);
                         return (folderId > 0);
@@ -706,7 +706,10 @@ public class LocalFolder extends Folder<LocalMessage> implements Serializable {
             }
         }
 
-        parseHeaderBytes(part, header); // TODO: move out of if branch, otherwise no headers in messageview
+        //FIXME: hack to prevent duplicate headers in outgoing mails
+        if(!message.getFolder().getName().equals(getAccount().getOutboxFolderName())) {
+            parseHeaderBytes(part, header);
+        }
 
         partById.put(id, part);
         part.setServerExtra(serverExtra);

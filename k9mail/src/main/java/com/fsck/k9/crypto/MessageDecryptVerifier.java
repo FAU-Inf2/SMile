@@ -90,14 +90,6 @@ public class MessageDecryptVerifier {
         return findParts(startPart, MULTIPART_SIGNED, APPLICATION_PGP_SIGNATURE);
     }
 
-    public static List<Part> findSmimeSignedParts(final Part startPart) {
-        return findParts(startPart, MULTIPART_SIGNED, APPLICATION_SMIME_SIGNATURE);
-    }
-
-    public static List<Part> findSmimeEncryptedParts(final Part startPart) {
-        return findParts(startPart, SMIME_ENCRYPTED, null);
-    }
-
     public static List<Part> findPgpInlineParts(Part startPart) {
         List<Part> inlineParts = new ArrayList<Part>();
         Stack<Part> partsToCheck = new Stack<Part>();
@@ -127,6 +119,14 @@ public class MessageDecryptVerifier {
         return inlineParts;
     }
 
+    public static List<Part> findSmimeSignedParts(final Part startPart) {
+        return findParts(startPart, MULTIPART_SIGNED, APPLICATION_SMIME_SIGNATURE);
+    }
+
+    public static List<Part> findSmimeEncryptedParts(final Part startPart) {
+        return findParts(startPart, SMIME_ENCRYPTED, null);
+    }
+
     public static byte[] getSignatureData(Part part) throws IOException, MessagingException {
         if (isSameMimeType(part.getMimeType(), MULTIPART_SIGNED)) {
             Body body = part.getBody();
@@ -153,7 +153,15 @@ public class MessageDecryptVerifier {
         return isSameMimeType(part.getMimeType(), MULTIPART_ENCRYPTED);
     }
 
-    public static boolean isSmimePart(LocalMessage message) {
-        return findSmimeEncryptedParts(message).size() > 0 || findSmimeSignedParts(message).size() > 0;
+    public static boolean isSmimePart(Part part) {
+        return findSmimeEncryptedParts(part).size() > 0 || findSmimeSignedParts(part).size() > 0;
+    }
+
+    public static boolean isSmimeEncryptedPart(Part part) {
+        return isSameMimeType(part.getMimeType(), SMIME_ENCRYPTED);
+    }
+
+    public static boolean isEncryptedPart(Part part) {
+        return isSmimeEncryptedPart(part) || isPgpMimeEncryptedPart(part);
     }
 }

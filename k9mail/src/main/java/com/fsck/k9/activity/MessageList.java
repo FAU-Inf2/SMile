@@ -566,8 +566,6 @@ public class MessageList extends K9Activity
         mActionBarProgress = (ProgressBar) toolbar.findViewById(R.id.actionbar_progress);
         mActionButtonIndeterminateProgress =
                 getLayoutInflater().inflate(R.layout.actionbar_indeterminate_progress_actionview, null);
-
-
     }
 
     @Override

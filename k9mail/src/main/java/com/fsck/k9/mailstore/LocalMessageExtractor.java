@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.Uri;
 
 import com.fsck.k9.crypto.DecryptedTempFileBody;
+import com.fsck.k9.crypto.MessageDecryptVerifier;
 import com.fsck.k9.helper.HtmlConverter;
 import com.fsck.k9.mail.Address;
 import com.fsck.k9.mail.Body;
@@ -44,6 +45,7 @@ public class LocalMessageExtractor {
     private static final String FILENAME_SUFFIX = " ";
     private static final int FILENAME_SUFFIX_LENGTH = FILENAME_SUFFIX.length();
     private static final CryptoResultAnnotation NO_ANNOTATIONS = null;
+    private static final List<AttachmentViewInfo> EMPTY_LIST = new ArrayList<>();
 
     private LocalMessageExtractor() {}
     /**
@@ -439,6 +441,13 @@ public class LocalMessageExtractor {
             // TODO properly handle decrypted data part - this just replaces the part
             if (cryptoResultAnnotation != NO_ANNOTATIONS && cryptoResultAnnotation.hasOutputData()) {
                 part = cryptoResultAnnotation.getOutputData();
+            }
+
+            if(cryptoResultAnnotation == NO_ANNOTATIONS && MessageDecryptVerifier.isEncryptedPart(part)) {
+                final String text = context.getString(R.string.no_crypto_provider_configured);
+                MessageViewContainer container = new MessageViewContainer(text, part, EMPTY_LIST, cryptoResultAnnotation);
+                containers.add(container);
+                continue;
             }
 
             ArrayList<Part> attachments = new ArrayList<Part>();

@@ -21,6 +21,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
+import android.support.v7.app.ActionBar;
+import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -800,6 +802,13 @@ public class MessageCompose extends K9Activity implements OnClickListener,
         });
 
         mSpinner = (Spinner)findViewById(R.id.crypto_provider);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
     }
 
     private boolean ensureAccount(final String accountUuid) {

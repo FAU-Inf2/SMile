@@ -5,6 +5,10 @@
     android:layout_height="fill_parent"
     android:orientation="vertical">
 
+    <include
+        android:id="@+id/toolbar"
+        layout="@layout/actionbar_custom" />
+
     <ScrollView
         android:layout_width="fill_parent"
         android:layout_height="0dip"

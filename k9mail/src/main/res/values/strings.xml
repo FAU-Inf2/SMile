@@ -1178,5 +1178,6 @@ Please submit bug reports, contribute new features and ask questions at
     <string name="global_settings_remindme_time_medium_label">medium timespan</string>
     <string name="global_settings_remindme_time_long_label">long timespan</string>
     <string name="default_crypto_title">Default crypto protocol</string>
+    <string name="no_crypto_provider_configured">This is an encrypted message and you have not configured a suitable crypto provider.</string>
 
 </resources>

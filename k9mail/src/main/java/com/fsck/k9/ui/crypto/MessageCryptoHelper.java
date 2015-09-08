@@ -212,7 +212,7 @@ public abstract class MessageCryptoHelper {
 
     private void returnResultToFragment() {
         if(callback != null) {
-            callback.setProgress(true);
+            callback.setProgress(false);
             callback.onCryptoOperationsFinished(messageAnnotations);
         }
     }

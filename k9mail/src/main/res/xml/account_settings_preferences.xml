@@ -487,6 +487,7 @@
             android:key="default_crypto"
             android:entries="@array/default_crypto_entries"
             android:entryValues="@array/default_crypto_entries"
+            android:defaultValue="None"
             android:summary="%s"
             android:title="@string/default_crypto_title"/>
 

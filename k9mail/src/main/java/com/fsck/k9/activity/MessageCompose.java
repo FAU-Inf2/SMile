@@ -1430,7 +1430,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
                         currentMessage.writeTo(out); // TODO: only send body part
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Log.e(K9.LOG_TAG, "Failed to write: ", e);
                 }
             }
         }).start();

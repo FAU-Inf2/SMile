@@ -607,12 +607,12 @@ public class MessageCompose extends K9Activity implements OnClickListener,
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    if(mOpenPgpProvider != null) {
+                    if(mOpenPgpProvider != null && !mOpenPgpProvider.equals("")) {
                         mOpenPgpServiceConnection = new OpenPgpServiceConnection(getApplicationContext(), mOpenPgpProvider);
                         mOpenPgpServiceConnection.bindToService();
                     }
 
-                    if(mSmimeProvider != null) {
+                    if(mSmimeProvider != null && !mSmimeProvider.equals("")) {
                         mSmimeServiceConnection = new SMimeServiceConnection(getApplicationContext(), mSmimeProvider, new SMimeServiceConnection.OnBound() {
                             @Override
                             public void onBound(ISMimeService service) {

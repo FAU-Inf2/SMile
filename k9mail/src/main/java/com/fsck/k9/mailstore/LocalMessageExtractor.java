@@ -434,11 +434,11 @@ public class LocalMessageExtractor {
         // 2. extract viewables/attachments of parts
         ArrayList<MessageViewContainer> containers = new ArrayList<MessageViewContainer>();
         for (Part part : parts) {
-            CryptoResultAnnotation pgpAnnotation = annotations.get(part);
+            CryptoResultAnnotation cryptoResultAnnotation = annotations.get(part);
 
             // TODO properly handle decrypted data part - this just replaces the part
-            if (pgpAnnotation != NO_ANNOTATIONS && pgpAnnotation.hasOutputData()) {
-                part = pgpAnnotation.getOutputData();
+            if (cryptoResultAnnotation != NO_ANNOTATIONS && cryptoResultAnnotation.hasOutputData()) {
+                part = cryptoResultAnnotation.getOutputData();
             }
 
             ArrayList<Part> attachments = new ArrayList<Part>();
@@ -450,7 +450,7 @@ public class LocalMessageExtractor {
             List<AttachmentViewInfo> attachmentInfos = extractAttachmentInfos(context, attachments);
 
             MessageViewContainer messageViewContainer =
-                    new MessageViewContainer(viewable.html, part, attachmentInfos, pgpAnnotation);
+                    new MessageViewContainer(viewable.html, part, attachmentInfos, cryptoResultAnnotation);
 
             containers.add(messageViewContainer);
         }

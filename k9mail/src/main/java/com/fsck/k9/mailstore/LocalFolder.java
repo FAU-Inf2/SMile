@@ -707,9 +707,7 @@ public class LocalFolder extends Folder<LocalMessage> implements Serializable {
         }
 
         //FIXME: hack to prevent duplicate headers in outgoing mails
-        if(!message.getFolder().getName().equals(getAccount().getOutboxFolderName())) {
-            parseHeaderBytes(part, header);
-        }
+        parseHeaderBytes(part, header);
 
         partById.put(id, part);
         part.setServerExtra(serverExtra);

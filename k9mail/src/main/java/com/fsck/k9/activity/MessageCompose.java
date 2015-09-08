@@ -1498,10 +1498,12 @@ public class MessageCompose extends K9Activity implements OnClickListener,
             switch (resultCode) {
                 case SMimeApi.RESULT_CODE_SUCCESS:
                     latch.countDown();
+                    Log.d(K9.LOG_TAG, "crypto operation success");
                     break;
                 case SMimeApi.RESULT_CODE_ERROR:
                     currentMessage = null;
                     latch.countDown();
+                    Log.d(K9.LOG_TAG, "crypto operation fail");
                     break;
             }
         }

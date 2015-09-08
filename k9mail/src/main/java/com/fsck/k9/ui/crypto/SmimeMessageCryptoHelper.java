@@ -51,7 +51,7 @@ public class SmimeMessageCryptoHelper extends MessageCryptoHelper {
 
     @Override
     void findParts(LocalMessage message) {
-        if (sMimeProvider == null) {
+        if (sMimeProvider == null || sMimeProvider == "") {
             return;
         }
 
@@ -87,8 +87,8 @@ public class SmimeMessageCryptoHelper extends MessageCryptoHelper {
                         latch.countDown();
                     }
                 });
-        sMimeServiceConnection.bindToService();
 
+        sMimeServiceConnection.bindToService();
     }
 
     @Override

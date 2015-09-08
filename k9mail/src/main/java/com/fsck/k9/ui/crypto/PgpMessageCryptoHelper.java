@@ -54,7 +54,7 @@ public class PgpMessageCryptoHelper extends MessageCryptoHelper {
 
     @Override
     void findParts(final LocalMessage message) {
-        if(openPgpProvider == null) {
+        if(openPgpProvider == null || openPgpProvider.equals("")) {
             return;
         }
 

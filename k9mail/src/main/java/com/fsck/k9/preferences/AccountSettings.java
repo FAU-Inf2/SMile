@@ -37,12 +37,11 @@ public class AccountSettings {
          */
 
         s.put("smime_app", Settings.versions(
-                new  V(42, new StringSetting("SMile-crypto")),
-                new  V(42, new StringSetting(null))
+                new  V(42, new StringSetting("SMile-crypto"))
         ));
 
         s.put("default_crypto", Settings.versions(
-                new  V(43, new StringSetting(null))
+                new  V(43, new StringSetting("None"))
         ));
 
         s.put("alwaysBcc", Settings.versions(

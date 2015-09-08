@@ -11,6 +11,7 @@ import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mail.Part;
 import com.fsck.k9.mail.internet.MimeBodyPart;
+import com.fsck.k9.mailstore.CryptoError;
 import com.fsck.k9.mailstore.CryptoErrorType;
 import com.fsck.k9.mailstore.CryptoResultAnnotation;
 import com.fsck.k9.mailstore.LocalMessage;
@@ -178,11 +179,16 @@ public class SmimeMessageCryptoHelper extends MessageCryptoHelper {
                 Log.e(K9.LOG_TAG, "no result code!");
                 break;
             case SMimeApi.RESULT_CODE_ERROR:
+                handleSmimeCryptoOperationError();
                 break;
             case SMimeApi.RESULT_CODE_SUCCESS:
                 handleSmimeCryptoOperationSuccess(outputPart);
                 break;
         }
+    }
+
+    private void handleSmimeCryptoOperationError() {
+        onCryptoFailed(new CryptoError(CryptoErrorType.GENERIC_ERROR, "dummy"));
     }
 
     private void handleSmimeCryptoOperationSuccess(MimeBodyPart outputPart) {

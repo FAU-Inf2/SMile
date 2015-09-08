@@ -3457,15 +3457,14 @@ public class MessagingController implements Runnable {
                 remoteFolder.open(Folder.OPEN_MODE_RW);
 
                 List<? extends Message> trashMessages = remoteFolder.getMessages(null, true);
-                List<Message> deleteMessages = new ArrayList<Message>();
+                List<Message> deleteMessages = new ArrayList<>();
                 FetchProfile fp = new FetchProfile();
                 fp.add(FetchProfile.Item.ENVELOPE);
                 for (Message trashMessage : trashMessages) {
-                    try {
-                        remoteFolder.fetch(Collections.singletonList(trashMessage), fp, null);
-                        if (trashMessage.getMessageId().startsWith("SmileStorage"))
-                            deleteMessages.add(trashMessage);
-                    } catch (Exception e) {
+                    remoteFolder.fetch(Collections.singletonList(trashMessage), fp, null);
+                    final String messageId = trashMessage.getMessageId();
+                    if (messageId != null && messageId.startsWith("SmileStorage")) {
+                        deleteMessages.add(trashMessage);
                     }
                 }
 

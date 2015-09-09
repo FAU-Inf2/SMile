@@ -1609,9 +1609,7 @@ public class MessageList extends K9Activity
         }
 
         public void onClick(View v) {
-
             SmsListFragment fragment = getFragmentForSender();
-
             displayContactMessages(fragment);
 
             button.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_dark));

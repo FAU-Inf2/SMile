@@ -10,6 +10,7 @@
 <changelog>
     <release version="1.1" versioncode="00003">
         <change>added S/MIME support</change>
+        <change>for S/MIME to work you need to install SMile-crypto and configure it in the cryptography settings of the account</change>
     </release>
 
     <release version="1.01" versioncode="00002">

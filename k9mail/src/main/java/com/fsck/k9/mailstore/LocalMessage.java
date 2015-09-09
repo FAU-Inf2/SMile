@@ -315,7 +315,7 @@ public class LocalMessage extends MimeMessage implements Serializable {
             this.localStore.database.execute(true, new DbCallback<Void>() {
                 @Override
                 public Void doDbWork(final SQLiteDatabase db) throws WrappedException,
-                    UnavailableStorageException {
+                        UnavailableStorageException {
                     try {
                         LocalFolder localFolder = (LocalFolder) mFolder;
 
@@ -477,6 +477,14 @@ public class LocalMessage extends MimeMessage implements Serializable {
         if (!mHeadersLoaded)
             loadHeaders();
         return super.getHeaderNames();
+    }
+
+    @Override
+    public String getContentType() throws MessagingException {
+        if(!mHeadersLoaded) {
+            loadHeaders();
+        }
+        return super.getContentType();
     }
 
     @Override

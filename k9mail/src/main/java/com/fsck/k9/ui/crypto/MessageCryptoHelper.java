@@ -91,11 +91,17 @@ public abstract class MessageCryptoHelper {
             callback.setProgress(true);
         }
 
-        findParts(message);
+        try {
+            findParts(message);
+        } catch (MessagingException e) {
+            onCryptoFailed(new CryptoError(CryptoErrorType.CLIENT_SIDE_ERROR, e.getMessage()));
+            return;
+        }
+
         decryptOrVerifyNextPart();
     }
 
-    abstract void findParts(final LocalMessage message);
+    abstract void findParts(final LocalMessage message) throws MessagingException;
 
     protected void addPart(CryptoPart part) {
         partsToDecryptOrVerify.add(part);

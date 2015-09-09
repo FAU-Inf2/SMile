@@ -605,6 +605,7 @@ public class LocalStore extends Store implements Serializable {
                         }
                         i++;
                     }
+
                     cursor.close();
                     cursor = db.rawQuery(queryString + " LIMIT -1 OFFSET 10", placeHolders);
 

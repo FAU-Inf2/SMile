@@ -704,10 +704,9 @@ public class LocalFolder extends Folder<LocalMessage> implements Serializable {
             } else {
                 throw new IllegalStateException("Parent is neither a multipart nor a message");
             }
-        }
 
-        //FIXME: hack to prevent duplicate headers in outgoing mails
-        parseHeaderBytes(part, header);
+            parseHeaderBytes(part, header);
+        }
 
         partById.put(id, part);
         part.setServerExtra(serverExtra);

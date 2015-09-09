@@ -53,7 +53,7 @@ public class PgpMessageCryptoHelper extends MessageCryptoHelper {
     }
 
     @Override
-    void findParts(final LocalMessage message) {
+    void findParts(final LocalMessage message) throws MessagingException {
         if(openPgpProvider == null || openPgpProvider.equals("")) {
             return;
         }

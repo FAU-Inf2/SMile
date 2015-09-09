@@ -2515,7 +2515,6 @@ public class MessagingController implements Runnable {
                         return;
                     }
 
-
                     for (MessagingListener l : getListeners(listener)) {
                         l.loadMessageForViewHeadersAvailable(account, folder, uid, message);
                     }
@@ -2706,7 +2705,11 @@ public class MessagingController implements Runnable {
         });
     }
 
-
+    /**
+     * Checks the OutboxFolder if there are messages present
+     * @param account
+     * @return a value indicating wether there are messages to send
+     */
     public boolean messagesPendingSend(final Account account) {
         Folder localFolder = null;
         try {
@@ -2726,6 +2729,7 @@ public class MessagingController implements Runnable {
         } finally {
             closeFolder(localFolder);
         }
+
         return false;
     }
 

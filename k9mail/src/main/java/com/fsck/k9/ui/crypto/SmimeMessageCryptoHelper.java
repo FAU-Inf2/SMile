@@ -50,7 +50,7 @@ public class SmimeMessageCryptoHelper extends MessageCryptoHelper {
     }
 
     @Override
-    void findParts(LocalMessage message) {
+    void findParts(LocalMessage message) throws MessagingException {
         if (sMimeProvider == null || sMimeProvider.equals("")) {
             return;
         }

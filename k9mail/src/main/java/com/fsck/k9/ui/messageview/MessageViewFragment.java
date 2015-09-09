@@ -1,7 +1,6 @@
 package com.fsck.k9.ui.messageview;
 
 import android.app.Activity;
-
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -55,17 +54,39 @@ public final class MessageViewFragment extends Fragment
         MessageCryptoCallback {
 
     public static final String ARG_REFERENCE = "reference";
-    private static final String STATE_MESSAGE_REFERENCE = "reference";
-    private static final String STATE_PGP_DATA = "pgpData";
-
-    private static final int ACTIVITY_CHOOSE_FOLDER_MOVE = 1;
-    private static final int ACTIVITY_CHOOSE_FOLDER_COPY = 2;
-    static final int ACTIVITY_CHOOSE_DIRECTORY = 3;
-
-    private static final int LOCAL_MESSAGE_LOADER_ID = 1;
-    private static final int DECODE_MESSAGE_LOADER_ID = 2;
     public static final String ARG_MESSAGE = "message";
     public static final String ARG_ANNOTATIONS = "annotations";
+    static final int ACTIVITY_CHOOSE_DIRECTORY = 3;
+    private static final String STATE_MESSAGE_REFERENCE = "reference";
+    private static final String STATE_PGP_DATA = "pgpData";
+    private static final int ACTIVITY_CHOOSE_FOLDER_MOVE = 1;
+    private static final int ACTIVITY_CHOOSE_FOLDER_COPY = 2;
+    private static final int LOCAL_MESSAGE_LOADER_ID = 1;
+    private static final int DECODE_MESSAGE_LOADER_ID = 2;
+    private final MessageViewHandler handler = new MessageViewHandler(this);
+    private final DownloadMessageListener downloadMessageListener = new DownloadMessageListener(handler);
+    private MessageTopView mMessageView;
+    private PgpData mPgpData;
+    private Account mAccount;
+    private MessageReference mMessageReference;
+    private LocalMessage mMessage;
+    private MessagingController mController;
+    private MessageCryptoHelper messageCryptoHelper;
+    /**
+     * Used to temporarily store the destination folder for refile operations if a confirmation
+     * dialog is shown.
+     */
+    private String mDstFolder;
+    private MessageViewFragmentListener mFragmentListener;
+    /**
+     * {@code true} after {@link #onCreate(Bundle)} has been executed. This is used by
+     * {@code MessageList.configureMenu()} to make sure the fragment has been initialized before
+     * it is used.
+     */
+    private boolean mInitialized = false;
+    private Context mContext;
+    private LoaderManager.LoaderCallbacks<LocalMessage> localMessageLoaderCallback;
+    private LoaderManager.LoaderCallbacks<MessageViewInfo> decodeMessageLoaderCallback;
 
     public static MessageViewFragment newInstance(MessageReference reference) {
         MessageViewFragment fragment = new MessageViewFragment();
@@ -76,33 +97,6 @@ public final class MessageViewFragment extends Fragment
 
         return fragment;
     }
-
-    private MessageTopView mMessageView;
-    private PgpData mPgpData;
-    private Account mAccount;
-    private MessageReference mMessageReference;
-    private LocalMessage mMessage;
-    private MessagingController mController;
-    private final MessageViewHandler handler = new MessageViewHandler(this);
-    private final DownloadMessageListener downloadMessageListener = new DownloadMessageListener(handler);
-    private MessageCryptoHelper messageCryptoHelper;
-
-    /**
-     * Used to temporarily store the destination folder for refile operations if a confirmation
-     * dialog is shown.
-     */
-    private String mDstFolder;
-    private MessageViewFragmentListener mFragmentListener;
-
-    /**
-     * {@code true} after {@link #onCreate(Bundle)} has been executed. This is used by
-     * {@code MessageList.configureMenu()} to make sure the fragment has been initialized before
-     * it is used.
-     */
-    private boolean mInitialized = false;
-    private Context mContext;
-    private LoaderManager.LoaderCallbacks<LocalMessage> localMessageLoaderCallback;
-    private LoaderManager.LoaderCallbacks<MessageViewInfo> decodeMessageLoaderCallback;
 
     @Override
     public void onAttach(Activity activity) {
@@ -214,14 +208,18 @@ public final class MessageViewFragment extends Fragment
 
         // TODO: download message body if it is missing
         if (!message.isBodyMissing()) {
-            if(MessageDecryptVerifier.isMimeSignedPart(message)) {
-                startExtractingTextAndAttachments(new MessageCryptoAnnotations());
-            }
+            try {
+                if (MessageDecryptVerifier.isMimeSignedPart(message)) {
+                    startExtractingTextAndAttachments(new MessageCryptoAnnotations());
+                }
 
-            if(MessageDecryptVerifier.isSmimePart(message)) {
-                messageCryptoHelper = new SmimeMessageCryptoHelper(getActivity(), this, mAccount.getSmimeProvider(), mAccount.getOpenPgpProvider());
-            } else {
-                messageCryptoHelper = new PgpMessageCryptoHelper(getActivity(), this, mAccount.getSmimeProvider(), mAccount.getOpenPgpProvider());
+                if (MessageDecryptVerifier.isSmimePart(message)) {
+                    messageCryptoHelper = new SmimeMessageCryptoHelper(getActivity(), this, mAccount.getSmimeProvider(), mAccount.getOpenPgpProvider());
+                } else {
+                    messageCryptoHelper = new PgpMessageCryptoHelper(getActivity(), this, mAccount.getSmimeProvider(), mAccount.getOpenPgpProvider());
+                }
+            } catch (MessagingException e) {
+                Log.e(K9.LOG_TAG, "error loading message", e);
             }
 
             messageCryptoHelper.decryptOrVerifyMessagePartsIfNecessary(message);
@@ -276,7 +274,7 @@ public final class MessageViewFragment extends Fragment
 
     void showMessage(final MessageViewInfo messageContainer) {
         try {
-            if(messageContainer != null) {
+            if (messageContainer != null) {
                 mMessageView.setMessage(mAccount, messageContainer);
                 mMessageView.setShowDownloadButton(mMessage);
             }

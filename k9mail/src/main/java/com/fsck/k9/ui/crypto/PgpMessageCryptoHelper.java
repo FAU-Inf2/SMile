@@ -105,6 +105,7 @@ public class PgpMessageCryptoHelper extends MessageCryptoHelper {
     protected void decryptOrVerifyPart(CryptoPart cryptoPart) {
         final Intent intent = new Intent();
         intent.setAction(OpenPgpApi.ACTION_DECRYPT_VERIFY);
+        currentCryptoPart = cryptoPart;
 
         try {
             CryptoPartType cryptoPartType = cryptoPart.type;

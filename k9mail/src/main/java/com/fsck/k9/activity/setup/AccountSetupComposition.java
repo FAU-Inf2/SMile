@@ -4,15 +4,17 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.CompoundButton;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
+
 import com.fsck.k9.Account;
 import com.fsck.k9.Preferences;
-import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.activity.K9Activity;
+
+import de.fau.cs.mad.smile.android.R;
 
 public class AccountSetupComposition extends K9Activity {
 

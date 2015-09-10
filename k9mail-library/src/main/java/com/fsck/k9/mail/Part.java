@@ -16,17 +16,20 @@ public interface Part {
 
     Body getBody();
 
-    String getContentType();
+    String getContentType() throws MessagingException;
 
     String getDisposition() throws MessagingException;
 
     String getContentId();
 
+    /**
+     * Returns an array of headers of the given name. The array may be empty.
+     */
     String[] getHeader(String name) throws MessagingException;
 
     boolean isMimeType(String mimeType) throws MessagingException;
 
-    String getMimeType();
+    String getMimeType() throws MessagingException;
 
     void setBody(Body body);
 

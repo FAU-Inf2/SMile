@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <style name="Theme.K9.Startup" parent="@android:style/Theme.Holo.NoActionBar">
+    <style name="Theme.K9.Startup" parent="@style/Theme.AppCompat.NoActionBar">
         <item name="android:windowBackground">@android:color/black</item>
     </style>
 
-    <style name="Theme.K9.Light.Base" parent="@android:style/Theme.Holo.Light">
+    <style name="Theme.K9.Light.Base" parent="@style/Theme.AppCompat.Light.NoActionBar">
         <item name="iconFolder">@drawable/folder_light</item>
         <item name="iconListItemMenu">@drawable/dropdown_ic_arrow_normal_holo_light</item>
         <item name="iconMenuInfoDetails">@android:drawable/ic_menu_info_details</item>
@@ -59,7 +59,7 @@
         <item name="contactPictureFallbackDefaultBackgroundColor">#ffababab</item>
     </style>
 
-    <style name="Theme.K9.Dark.Base" parent="@android:style/Theme.Holo">
+    <style name="Theme.K9.Dark.Base" parent="@style/Theme.AppCompat.NoActionBar">
         <item name="iconFolder">@drawable/folder_dark</item>
         <item name="iconListItemMenu">@drawable/dropdown_ic_arrow_normal_holo_dark</item>
         <item name="iconMenuInfoDetails">@android:drawable/ic_menu_info_details</item>
@@ -133,7 +133,7 @@
         <item name="backgroundColorChooseAccountHeader">#404040</item>
     </style>
 
-    <style name="Theme.K9.Dialog.Translucent.Dark" parent="@android:style/Theme.Holo.Dialog">
+    <style name="Theme.K9.Dialog.Translucent.Dark" parent="@style/Theme.AppCompat.Dialog">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:colorBackgroundCacheHint">@null</item>
         <item name="android:windowIsTranslucent">true</item>
@@ -142,7 +142,7 @@
         <item name="android:windowAnimationStyle">@android:style/Animation.Translucent</item>
     </style>
 
-    <style name="Theme.K9.Dialog.Translucent.Light" parent="@android:style/Theme.Holo.Light.Dialog">
+    <style name="Theme.K9.Dialog.Translucent.Light" parent="@style/Theme.AppCompat.Light.Dialog">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:colorBackgroundCacheHint">@null</item>
         <item name="android:windowIsTranslucent">true</item>

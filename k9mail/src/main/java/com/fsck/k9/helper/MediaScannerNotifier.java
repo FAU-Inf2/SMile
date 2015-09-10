@@ -1,10 +1,10 @@
 package com.fsck.k9.helper;
 
 
-import java.io.File;
-
 import android.content.Context;
 import android.media.MediaScannerConnection;
+
+import java.io.File;
 
 
 public class MediaScannerNotifier {

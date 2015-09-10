@@ -4,6 +4,7 @@ import com.fsck.k9.activity.Accounts;
 import com.fsck.k9.endtoend.framework.AccountForTest;
 import com.fsck.k9.endtoend.framework.ApplicationState;
 import com.fsck.k9.endtoend.pages.AccountsPage;
+
 import org.junit.Test;
 
 

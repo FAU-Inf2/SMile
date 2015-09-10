@@ -5,7 +5,9 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.Log;
-import com.fsck.k9.*;
+
+import com.fsck.k9.Account;
+import com.fsck.k9.K9;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.controller.MessagingListener;
 import com.fsck.k9.mail.power.TracingPowerManager;
@@ -48,7 +50,7 @@ public class PollService extends CoreService {
             if (K9.DEBUG)
                 Log.i(K9.LOG_TAG, "PollService started with startId = " + startId);
 
-            MessagingController controller = MessagingController.getInstance(getApplication());
+            final MessagingController controller = MessagingController.getInstance(getApplication());
             Listener listener = (Listener)controller.getCheckMailListener();
             if (listener == null) {
                 if (K9.DEBUG)

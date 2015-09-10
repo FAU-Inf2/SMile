@@ -8,13 +8,16 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Toast;
+
 import com.fsck.k9.Account;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
-import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.activity.K9Activity;
+
 import java.net.URI;
 import java.net.URISyntaxException;
+
+import de.fau.cs.mad.smile.android.R;
 
 /**
  * Prompts the user to select an account type. The account type, along with the

@@ -1,18 +1,5 @@
 package com.fsck.k9.provider;
 
-import com.fsck.k9.Account;
-import com.fsck.k9.AccountStats;
-import com.fsck.k9.BaseAccount;
-import com.fsck.k9.K9;
-import com.fsck.k9.Preferences;
-import de.fau.cs.mad.smile.android.R;
-import com.fsck.k9.activity.UnreadWidgetConfiguration;
-import com.fsck.k9.activity.FolderList;
-import com.fsck.k9.activity.MessageList;
-import com.fsck.k9.controller.MessagingController;
-import com.fsck.k9.search.LocalSearch;
-import com.fsck.k9.search.SearchAccount;
-
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
@@ -22,6 +9,20 @@ import android.content.Intent;
 import android.util.Log;
 import android.view.View;
 import android.widget.RemoteViews;
+
+import com.fsck.k9.Account;
+import com.fsck.k9.AccountStats;
+import com.fsck.k9.BaseAccount;
+import com.fsck.k9.K9;
+import com.fsck.k9.Preferences;
+import com.fsck.k9.activity.FolderList;
+import com.fsck.k9.activity.MessageList;
+import com.fsck.k9.activity.UnreadWidgetConfiguration;
+import com.fsck.k9.controller.MessagingController;
+import com.fsck.k9.search.LocalSearch;
+import com.fsck.k9.search.SearchAccount;
+
+import de.fau.cs.mad.smile.android.R;
 
 public class UnreadWidgetProvider extends AppWidgetProvider {
     private static final int MAX_COUNT = 9999;

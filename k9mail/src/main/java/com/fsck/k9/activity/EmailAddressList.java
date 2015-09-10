@@ -4,13 +4,14 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
-import android.widget.AdapterView.OnItemClickListener;
+
+import com.fsck.k9.helper.ContactItem;
 
 import de.fau.cs.mad.smile.android.R;
-import com.fsck.k9.helper.ContactItem;
 
 public class EmailAddressList extends K9ListActivity implements OnItemClickListener {
     public static final String EXTRA_CONTACT_ITEM = "contact";

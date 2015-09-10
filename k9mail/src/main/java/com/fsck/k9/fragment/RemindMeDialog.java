@@ -7,8 +7,8 @@ import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
 
-import com.fsck.k9.mail.RemindMe;
 import com.fsck.k9.mail.Message;
+import com.fsck.k9.mail.RemindMe;
 
 import de.fau.cs.mad.smile.android.R;
 
@@ -53,7 +53,7 @@ public class RemindMeDialog extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setItems(R.array.follow_up_default_time_values, new AlertDialogOnClickListener());
+        builder.setItems(R.array.remindme_default_time_values, new AlertDialogOnClickListener());
         return builder.create();
     }
 

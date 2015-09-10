@@ -1,14 +1,16 @@
 package com.fsck.k9.helper;
 
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-
+import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 
 import static junit.framework.Assert.assertEquals;
 
@@ -136,18 +138,23 @@ public class HtmlConverterTest {
         if (!WRITE_TO_FILE) {
             return;
         }
+
+        FileWriter fstream = null;
+
         try {
             System.err.println(content);
 
             File f = new File(OUTPUT_FILE);
             f.delete();
 
-            FileWriter fstream = new FileWriter(OUTPUT_FILE);
+            fstream = new FileWriter(OUTPUT_FILE);
             BufferedWriter out = new BufferedWriter(fstream);
             out.write(content);
             out.close();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            IOUtils.closeQuietly(fstream);
         }
     }
 

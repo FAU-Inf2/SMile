@@ -1,8 +1,5 @@
 package com.fsck.k9.service;
 
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -18,6 +15,9 @@ import com.fsck.k9.activity.UpgradeDatabases;
 import com.fsck.k9.mail.power.TracingPowerManager;
 import com.fsck.k9.mail.power.TracingPowerManager.TracingWakeLock;
 import com.fsck.k9.mailstore.UnavailableStorageException;
+
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Service used to upgrade the accounts' databases and/or track the progress of the upgrade.

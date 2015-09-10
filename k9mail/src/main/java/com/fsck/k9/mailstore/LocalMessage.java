@@ -1,10 +1,5 @@
 package com.fsck.k9.mailstore;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Date;
-import java.util.Set;
-
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -21,7 +16,13 @@ import com.fsck.k9.mail.internet.MimeMessage;
 import com.fsck.k9.mailstore.LockableDatabase.DbCallback;
 import com.fsck.k9.mailstore.LockableDatabase.WrappedException;
 
-public class LocalMessage extends MimeMessage {
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.util.Date;
+import java.util.Set;
+
+public class LocalMessage extends MimeMessage implements Serializable {
     protected MessageReference mReference;
     private final LocalStore localStore;
 
@@ -48,7 +49,7 @@ public class LocalMessage extends MimeMessage {
         this.mFolder = folder;
     }
 
-    void populateFromGetMessageCursor(Cursor cursor) throws MessagingException {
+    final void populateFromGetMessageCursor(Cursor cursor) throws MessagingException {
         final String subject = cursor.getString(0);
         this.setSubject(subject == null ? "" : subject);
         Address[] from = Address.unpack(cursor.getString(1));
@@ -314,7 +315,7 @@ public class LocalMessage extends MimeMessage {
             this.localStore.database.execute(true, new DbCallback<Void>() {
                 @Override
                 public Void doDbWork(final SQLiteDatabase db) throws WrappedException,
-                    UnavailableStorageException {
+                        UnavailableStorageException {
                     try {
                         LocalFolder localFolder = (LocalFolder) mFolder;
 
@@ -476,6 +477,14 @@ public class LocalMessage extends MimeMessage {
         if (!mHeadersLoaded)
             loadHeaders();
         return super.getHeaderNames();
+    }
+
+    @Override
+    public String getContentType() throws MessagingException {
+        if(!mHeadersLoaded) {
+            loadHeaders();
+        }
+        return super.getContentType();
     }
 
     @Override

@@ -4,14 +4,14 @@
 
 package com.fsck.k9.preferences;
 
-import java.util.Locale;
-
 import android.content.Context;
 import android.preference.DialogPreference;
 import android.text.format.DateFormat;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.TimePicker;
+
+import java.util.Locale;
 
 /**
  * A preference type that allows a user to choose a time
@@ -90,8 +90,7 @@ public class TimePickerPreference extends DialogPreference implements
 
     /**
      * @see
-     * android.widget.TimePicker.OnTimeChangedListener#onTimeChanged(android
-     * .widget.TimePicker, int, int)
+     * android.widget.TimePicker.OnTimeChangedListener#onTimeChanged(android.widget.TimePicker, int, int)
      */
     @Override
     public void onTimeChanged(final TimePicker view, final int hour, final int minute) {

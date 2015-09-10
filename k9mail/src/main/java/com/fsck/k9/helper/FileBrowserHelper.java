@@ -1,18 +1,21 @@
 package com.fsck.k9.helper;
 
-import java.io.File;
-
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Fragment;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
+import android.support.annotation.NonNull;
+import android.support.v4.app.Fragment;
 import android.text.InputType;
 import android.widget.EditText;
 
 import com.fsck.k9.K9;
+
+import java.io.File;
+
 import de.fau.cs.mad.smile.android.R;
 
 public class FileBrowserHelper {
@@ -105,7 +108,7 @@ public class FileBrowserHelper {
         return success;
     }
 
-    public boolean showFileBrowserActivity(Fragment c, File startPath, int requestcode, FileBrowserFailOverCallback callback) {
+    public boolean showFileBrowserActivity(Fragment fragment, File startPath, int requestCode, FileBrowserFailOverCallback callback, @NonNull Intent data) {
         boolean success = false;
 
         if (startPath == null) {
@@ -116,11 +119,11 @@ public class FileBrowserHelper {
         do {
             String intentAction = PICK_DIRECTORY_INTENTS[listIndex][0];
             String uriPrefix = PICK_DIRECTORY_INTENTS[listIndex][1];
-            Intent intent = new Intent(intentAction);
-            intent.setData(Uri.parse(uriPrefix + startPath.getPath()));
+            data.setAction(intentAction);
+            data.setData(Uri.parse(uriPrefix + startPath.getPath()));
 
             try {
-                c.startActivityForResult(intent, requestcode);
+                fragment.startActivityForResult(data, requestCode);
                 success = true;
             } catch (ActivityNotFoundException e) {
                 // Try the next intent in the list
@@ -130,37 +133,40 @@ public class FileBrowserHelper {
 
         if (listIndex == PICK_DIRECTORY_INTENTS.length) {
             //No Filebrowser is installed => show a fallback textdialog
-            showPathTextInput(c.getActivity(), startPath, callback);
+            showPathTextInput(fragment.getActivity(), startPath, callback);
             success = false;
         }
 
         return success;
+
     }
 
-    private void showPathTextInput(final Activity c, final File startPath, final FileBrowserFailOverCallback callback) {
-        AlertDialog.Builder alert = new AlertDialog.Builder(c);
+    private void showPathTextInput(final Context context, final File startPath, final FileBrowserFailOverCallback callback) {
+        AlertDialog.Builder alert = new AlertDialog.Builder(context);
 
-        alert.setTitle(c.getString(R.string.attachment_save_title));
-        alert.setMessage(c.getString(R.string.attachment_save_desc));
-        final EditText input = new EditText(c);
+        alert.setTitle(context.getString(R.string.attachment_save_title));
+        alert.setMessage(context.getString(R.string.attachment_save_desc));
+        final EditText input = new EditText(context);
         input.setInputType(InputType.TYPE_CLASS_TEXT);
-        if (startPath != null)
+        if (startPath != null) {
             input.setText(startPath.toString());
+        }
+
         alert.setView(input);
 
-        alert.setPositiveButton(c.getString(R.string.okay_action), new DialogInterface.OnClickListener() {
+        alert.setPositiveButton(context.getString(R.string.okay_action), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 String path = input.getText().toString();
                 callback.onPathEntered(path);
             }
         });
 
-        alert.setNegativeButton(c.getString(R.string.cancel_action),
-        new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                callback.onCancel();
-            }
-        });
+        alert.setNegativeButton(context.getString(R.string.cancel_action),
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        callback.onCancel();
+                    }
+                });
 
         alert.show();
     }

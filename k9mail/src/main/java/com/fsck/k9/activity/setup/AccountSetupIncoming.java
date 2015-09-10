@@ -11,26 +11,35 @@ import android.text.method.DigitsKeyListener;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.*;
+import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.EditText;
+import android.widget.Spinner;
+import android.widget.TextView;
+import android.widget.Toast;
 
-import com.fsck.k9.*;
+import com.fsck.k9.Account;
 import com.fsck.k9.Account.FolderMode;
-import com.fsck.k9.mail.NetworkType;
+import com.fsck.k9.K9;
+import com.fsck.k9.Preferences;
+import com.fsck.k9.account.AccountCreator;
 import com.fsck.k9.activity.K9Activity;
 import com.fsck.k9.activity.setup.AccountSetupCheckSettings.CheckDirection;
 import com.fsck.k9.helper.Utility;
 import com.fsck.k9.mail.AuthType;
 import com.fsck.k9.mail.ConnectionSecurity;
+import com.fsck.k9.mail.NetworkType;
 import com.fsck.k9.mail.ServerSettings;
 import com.fsck.k9.mail.ServerSettings.Type;
 import com.fsck.k9.mail.Store;
 import com.fsck.k9.mail.Transport;
 import com.fsck.k9.mail.store.RemoteStore;
 import com.fsck.k9.mail.store.imap.ImapStore.ImapStoreSettings;
-import com.fsck.k9.mail.store.webdav.WebDavStore.WebDavStoreSettings;
-import com.fsck.k9.account.AccountCreator;
+import com.fsck.k9.mail.store.webdav.WebDavStoreSettings;
 import com.fsck.k9.service.MailService;
 import com.fsck.k9.view.ClientCertificateSpinner;
 import com.fsck.k9.view.ClientCertificateSpinner.OnClientCertificateChangedListener;
@@ -155,6 +164,8 @@ public class AccountSetupIncoming extends K9Activity implements OnClickListener 
             mAccount = Preferences.getPreferences(this).getAccount(accountUuid);
         }
 
+        boolean editSettings = Intent.ACTION_EDIT.equals(getIntent().getAction());
+
         try {
             ServerSettings settings = RemoteStore.decodeStoreUri(mAccount.getStoreUri());
 
@@ -205,7 +216,7 @@ public class AccountSetupIncoming extends K9Activity implements OnClickListener 
                 findViewById(R.id.webdav_owa_path_section).setVisibility(View.GONE);
                 findViewById(R.id.webdav_auth_path_section).setVisibility(View.GONE);
 
-                if (!Intent.ACTION_EDIT.equals(getIntent().getAction())) {
+                if (!editSettings) {
                     findViewById(R.id.imap_folder_setup_section).setVisibility(View.GONE);
                 }
             } else if (Type.WebDAV == settings.type) {
@@ -239,7 +250,9 @@ public class AccountSetupIncoming extends K9Activity implements OnClickListener 
                 throw new Exception("Unknown account type: " + mAccount.getStoreUri());
             }
 
-            mAccount.setDeletePolicy(AccountCreator.getDefaultDeletePolicy(settings.type));
+            if (!editSettings) {
+                mAccount.setDeletePolicy(AccountCreator.getDefaultDeletePolicy(settings.type));
+            }
 
             // Note that mConnectionSecurityChoices is configured above based on server type
             ConnectionSecurityAdapter securityTypesAdapter =

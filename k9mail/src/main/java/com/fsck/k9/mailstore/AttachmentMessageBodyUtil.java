@@ -1,14 +1,14 @@
 package com.fsck.k9.mailstore;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import com.fsck.k9.mail.MessagingException;
+import com.fsck.k9.mail.internet.MimeMessage;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.james.mime4j.util.MimeUtil;
 
-import com.fsck.k9.mail.MessagingException;
-import com.fsck.k9.mail.internet.MimeMessage;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 class AttachmentMessageBodyUtil {
     public static void writeTo(BinaryAttachmentBody body, OutputStream out) throws IOException,

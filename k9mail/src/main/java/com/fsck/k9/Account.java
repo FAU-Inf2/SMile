@@ -1,6 +1,40 @@
 
 package com.fsck.k9;
 
+import android.content.ContentResolver;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.graphics.Color;
+import android.net.Uri;
+import android.support.annotation.StringRes;
+import android.util.Log;
+
+import com.fsck.k9.activity.setup.AccountSetupCheckSettings.CheckDirection;
+import com.fsck.k9.helper.Utility;
+import com.fsck.k9.mail.Address;
+import com.fsck.k9.mail.Folder.FolderClass;
+import com.fsck.k9.mail.MessagingException;
+import com.fsck.k9.mail.NetworkType;
+import com.fsck.k9.mail.Store;
+import com.fsck.k9.mail.filter.Base64;
+import com.fsck.k9.mail.ssl.LocalKeyStore;
+import com.fsck.k9.mail.store.RemoteStore;
+import com.fsck.k9.mail.store.StoreConfig;
+import com.fsck.k9.mailstore.LocalStore;
+import com.fsck.k9.mailstore.StorageManager;
+import com.fsck.k9.mailstore.StorageManager.StorageProvider;
+import com.fsck.k9.provider.EmailProvider;
+import com.fsck.k9.provider.EmailProvider.StatsColumns;
+import com.fsck.k9.search.ConditionsTreeNode;
+import com.fsck.k9.search.LocalSearch;
+import com.fsck.k9.search.SearchSpecification.Attribute;
+import com.fsck.k9.search.SearchCondition;
+import com.fsck.k9.search.SearchSpecification.SearchField;
+import com.fsck.k9.search.SqlQueryBuilder;
+import com.fsck.k9.view.ColorChip;
+import com.larswerkman.colorpicker.ColorPicker;
+
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -8,44 +42,11 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
-
-import android.content.ContentResolver;
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.graphics.Color;
-import android.net.Uri;
-import android.util.Log;
-
-import com.fsck.k9.activity.setup.AccountSetupCheckSettings.CheckDirection;
-import com.fsck.k9.helper.Utility;
-import com.fsck.k9.mail.Address;
-import com.fsck.k9.mail.MessagingException;
-import com.fsck.k9.mail.NetworkType;
-import com.fsck.k9.mail.Store;
-import com.fsck.k9.mail.Folder.FolderClass;
-import com.fsck.k9.mail.filter.Base64;
-import com.fsck.k9.mail.store.RemoteStore;
-import com.fsck.k9.mail.store.StoreConfig;
-import com.fsck.k9.mailstore.StorageManager;
-import com.fsck.k9.mailstore.StorageManager.StorageProvider;
-import com.fsck.k9.mailstore.LocalStore;
-import com.fsck.k9.provider.EmailProvider;
-import com.fsck.k9.provider.EmailProvider.StatsColumns;
-import com.fsck.k9.search.ConditionsTreeNode;
-import com.fsck.k9.search.LocalSearch;
-import com.fsck.k9.search.SqlQueryBuilder;
-import com.fsck.k9.search.SearchSpecification.Attribute;
-import com.fsck.k9.search.SearchSpecification.SearchCondition;
-import com.fsck.k9.search.SearchSpecification.SearchField;
-import com.fsck.k9.mail.ssl.LocalKeyStore;
-import com.fsck.k9.view.ColorChip;
-import com.larswerkman.colorpicker.ColorPicker;
 
 import de.fau.cs.mad.smile.android.R;
 
@@ -141,7 +142,7 @@ public class Account implements BaseAccount, StoreConfig {
         private int descendingToast;
         private boolean defaultAscending;
 
-        SortType(int ascending, int descending, boolean ndefaultAscending) {
+        SortType(@StringRes int ascending, @StringRes int descending, boolean ndefaultAscending) {
             ascendingToast = ascending;
             descendingToast = descending;
             defaultAscending = ndefaultAscending;
@@ -159,6 +160,7 @@ public class Account implements BaseAccount, StoreConfig {
     public static final SortType DEFAULT_SORT_TYPE = SortType.SORT_DATE;
     public static final boolean DEFAULT_SORT_ASCENDING = false;
     public static final String NO_OPENPGP_PROVIDER = "";
+    public static final long NO_OPENPGP_KEY = 0;
 
     private DeletePolicy mDeletePolicy = DeletePolicy.NEVER;
 
@@ -183,7 +185,7 @@ public class Account implements BaseAccount, StoreConfig {
     private boolean mNotifySelfNewMail;
     private String mInboxFolderName;
     private String mDraftsFolderName;
-    private String mSmileStorageFolderName = "SmileStorage"; //TODO
+    private String mSmileStorageFolderName = "SmileStorage"; // TODO: add to preferences
     private String mRemindMeFolderName = "RemindMe";
     private String mSentFolderName;
     private String mTrashFolderName;
@@ -222,8 +224,11 @@ public class Account implements BaseAccount, StoreConfig {
     private boolean mReplyAfterQuote;
     private boolean mStripSignature;
     private boolean mSyncRemoteDeletions;
-    private String mCryptoApp;
-    private long mCryptoKey;
+    private String mPgpApp;
+    private long mPgpKey;
+    private String mSmimeApp;
+    private String defaultCryptoProvider;
+
     private boolean mMarkMessageAsReadOnView;
     private boolean mAlwaysShowCcBcc;
     private boolean mAllowRemoteSearch;
@@ -317,8 +322,8 @@ public class Account implements BaseAccount, StoreConfig {
         mReplyAfterQuote = DEFAULT_REPLY_AFTER_QUOTE;
         mStripSignature = DEFAULT_STRIP_SIGNATURE;
         mSyncRemoteDeletions = true;
-        mCryptoApp = NO_OPENPGP_PROVIDER;
-        mCryptoKey = 0;
+        mPgpApp = NO_OPENPGP_PROVIDER;
+        mPgpKey = NO_OPENPGP_KEY;
         mAllowRemoteSearch = false;
         mRemoteSearchFullText = false;
         mRemoteSearchNumResults = DEFAULT_REMOTE_SEARCH_NUM_RESULTS;
@@ -408,9 +413,9 @@ public class Account implements BaseAccount, StoreConfig {
         mSentFolderName = prefs.getString(mUuid  + ".sentFolderName", "Sent");
         mTrashFolderName = prefs.getString(mUuid  + ".trashFolderName", "Trash");
         mArchiveFolderName = prefs.getString(mUuid  + ".archiveFolderName", "Archive");
-        mSpamFolderName = prefs.getString(mUuid  + ".spamFolderName", "Spam");
+        mSpamFolderName = prefs.getString(mUuid + ".spamFolderName", "Spam");
         mExpungePolicy = getEnumStringPref(prefs, mUuid + ".expungePolicy", Expunge.EXPUNGE_IMMEDIATELY);
-        mSyncRemoteDeletions = prefs.getBoolean(mUuid  + ".syncRemoteDeletions", true);
+        mSyncRemoteDeletions = prefs.getBoolean(mUuid + ".syncRemoteDeletions", true);
 
         mMaxPushFolders = prefs.getInt(mUuid + ".maxPushFolders", 10);
         goToUnreadMessageSearch = prefs.getBoolean(mUuid + ".goToUnreadMessageSearch", false);
@@ -434,7 +439,7 @@ public class Account implements BaseAccount, StoreConfig {
             compressionMap.put(type, useCompression);
         }
 
-        mAutoExpandFolderName = prefs.getString(mUuid  + ".autoExpandFolderName", INBOX);
+        mAutoExpandFolderName = prefs.getString(mUuid + ".autoExpandFolderName", INBOX);
 
         mAccountNumber = prefs.getInt(mUuid + ".accountNumber", 0);
 
@@ -450,8 +455,8 @@ public class Account implements BaseAccount, StoreConfig {
         mNotificationSetting.setVibratePattern(prefs.getInt(mUuid + ".vibratePattern", 0));
         mNotificationSetting.setVibrateTimes(prefs.getInt(mUuid + ".vibrateTimes", 5));
         mNotificationSetting.setRing(prefs.getBoolean(mUuid + ".ring", true));
-        mNotificationSetting.setRingtone(prefs.getString(mUuid  + ".ringtone",
-                                         "content://settings/system/notification_sound"));
+        mNotificationSetting.setRingtone(prefs.getString(mUuid + ".ringtone",
+                "content://settings/system/notification_sound"));
         mNotificationSetting.setLed(prefs.getBoolean(mUuid + ".led", true));
         mNotificationSetting.setLedColor(prefs.getInt(mUuid + ".ledColor", mChipColor));
 
@@ -463,13 +468,14 @@ public class Account implements BaseAccount, StoreConfig {
 
         mFolderTargetMode = getEnumStringPref(prefs, mUuid  + ".folderTargetMode", FolderMode.NOT_SECOND_CLASS);
 
-        searchableFolders = getEnumStringPref(prefs, mUuid  + ".searchableFolders", Searchable.ALL);
+        searchableFolders = getEnumStringPref(prefs, mUuid + ".searchableFolders", Searchable.ALL);
 
-        mIsSignatureBeforeQuotedText = prefs.getBoolean(mUuid  + ".signatureBeforeQuotedText", false);
+        mIsSignatureBeforeQuotedText = prefs.getBoolean(mUuid + ".signatureBeforeQuotedText", false);
         identities = loadIdentities(prefs);
 
         String cryptoApp = prefs.getString(mUuid + ".cryptoApp", NO_OPENPGP_PROVIDER);
-        setCryptoApp(cryptoApp);
+        setPgpApp(cryptoApp);
+        mPgpKey = prefs.getLong(mUuid + ".cryptoKey", NO_OPENPGP_KEY);
         mAllowRemoteSearch = prefs.getBoolean(mUuid + ".allowRemoteSearch", false);
         mRemoteSearchFullText = prefs.getBoolean(mUuid + ".remoteSearchFullText", false);
         mRemoteSearchNumResults = prefs.getInt(mUuid + ".remoteSearchNumResults", DEFAULT_REMOTE_SEARCH_NUM_RESULTS);
@@ -477,6 +483,8 @@ public class Account implements BaseAccount, StoreConfig {
         mEnabled = prefs.getBoolean(mUuid + ".enabled", true);
         mMarkMessageAsReadOnView = prefs.getBoolean(mUuid + ".markMessageAsReadOnView", true);
         mAlwaysShowCcBcc = prefs.getBoolean(mUuid + ".alwaysShowCcBcc", false);
+        mSmimeApp = prefs.getString(mUuid + ".smime_app", null);
+        defaultCryptoProvider = prefs.getString(mUuid + ".default_crypto", null);
 
         cacheChips();
 
@@ -574,6 +582,7 @@ public class Account implements BaseAccount, StoreConfig {
         editor.remove(mUuid + ".messageFormat");
         editor.remove(mUuid + ".messageReadReceipt");
         editor.remove(mUuid + ".notifyMailCheck");
+        editor.remove(mUuid + ".smime_app");
         for (NetworkType type : NetworkType.values()) {
             editor.remove(mUuid + ".useCompression." + type.name());
         }
@@ -734,8 +743,8 @@ public class Account implements BaseAccount, StoreConfig {
         editor.putBoolean(mUuid + ".defaultQuotedTextShown", mDefaultQuotedTextShown);
         editor.putBoolean(mUuid + ".replyAfterQuote", mReplyAfterQuote);
         editor.putBoolean(mUuid + ".stripSignature", mStripSignature);
-        editor.putString(mUuid + ".cryptoApp", mCryptoApp);
-        editor.putLong(mUuid + ".cryptoKey", mCryptoKey);
+        editor.putString(mUuid + ".cryptoApp", mPgpApp);
+        editor.putLong(mUuid + ".cryptoKey", mPgpKey);
         editor.putBoolean(mUuid + ".allowRemoteSearch", mAllowRemoteSearch);
         editor.putBoolean(mUuid + ".remoteSearchFullText", mRemoteSearchFullText);
         editor.putInt(mUuid + ".remoteSearchNumResults", mRemoteSearchNumResults);
@@ -750,6 +759,9 @@ public class Account implements BaseAccount, StoreConfig {
         editor.putString(mUuid + ".ringtone", mNotificationSetting.getRingtone());
         editor.putBoolean(mUuid + ".led", mNotificationSetting.isLed());
         editor.putInt(mUuid + ".ledColor", mNotificationSetting.getLedColor());
+
+        editor.putString(mUuid + ".smime_app", mSmimeApp);
+        editor.putString(mUuid + ".default_crypto", defaultCryptoProvider);
 
         for (NetworkType type : NetworkType.values()) {
             Boolean useCompression = compressionMap.get(type);
@@ -1070,7 +1082,6 @@ public class Account implements BaseAccount, StoreConfig {
     public synchronized String getSmileStorageFolderName() {
         return mSmileStorageFolderName;
     }
-
 
     public synchronized String getRemindMeFolderName() {
         return mRemindMeFolderName;
@@ -1440,7 +1451,7 @@ public class Account implements BaseAccount, StoreConfig {
         if (i < identities.size()) {
             return identities.get(i);
         }
-        return null;
+        throw new IllegalArgumentException("Identity with index " + i + " not found");
     }
 
     public boolean isAnIdentity(Address[] addrs) {
@@ -1632,24 +1643,45 @@ public class Account implements BaseAccount, StoreConfig {
         mStripSignature = stripSignature;
     }
 
-    public String getCryptoApp() {
-        return mCryptoApp;
+    public String getPgpApp() {
+        return mPgpApp;
     }
 
-    public void setCryptoApp(String cryptoApp) {
-        if (cryptoApp == null || cryptoApp.equals("apg")) {
-            mCryptoApp = NO_OPENPGP_PROVIDER;
+    public void setPgpApp(String pgpApp) {
+        if (pgpApp == null || pgpApp.equals("apg")) {
+            mPgpApp = NO_OPENPGP_PROVIDER;
         } else {
-            mCryptoApp = cryptoApp;
+            mPgpApp = pgpApp;
         }
     }
 
-    public long getCryptoKey() {
-        return mCryptoKey;
+    public long getPgpKey() {
+        return mPgpKey;
     }
 
-    public void setCryptoKey(long keyId) {
-        mCryptoKey = keyId;
+    public void setPgpKey(long keyId) {
+        mPgpKey = keyId;
+    }
+
+    public String getSmimeProvider() {
+        if(mSmimeApp == null) {
+            Log.d(K9.LOG_TAG, "Smime provider is null");
+        }
+
+        return mSmimeApp;
+    }
+
+    public void setSmimeProvider(String smimeProvider) {
+        Log.d(K9.LOG_TAG, "Smime app set to " + smimeProvider);
+        mSmimeApp = smimeProvider;
+    }
+
+    public String getDefaultCryptoProvider() {
+        return defaultCryptoProvider;
+    }
+
+    public void setDefaultCryptoProvider(String defaultCryptoProvider) {
+        this.defaultCryptoProvider = defaultCryptoProvider;
     }
 
     public boolean allowRemoteSearch() {
@@ -1696,11 +1728,12 @@ public class Account implements BaseAccount, StoreConfig {
         if (!isOpenPgpProviderConfigured()) {
             return null;
         }
-        return getCryptoApp();
+
+        return getPgpApp();
     }
 
     public synchronized boolean isOpenPgpProviderConfigured() {
-        return !NO_OPENPGP_PROVIDER.equals(getCryptoApp());
+        return !NO_OPENPGP_PROVIDER.equals(getPgpApp());
     }
 
     public synchronized NotificationSetting getNotificationSetting() {

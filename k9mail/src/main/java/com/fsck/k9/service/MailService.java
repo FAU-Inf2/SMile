@@ -1,9 +1,6 @@
 
 package com.fsck.k9.service;
 
-import java.util.Collection;
-import java.util.Date;
-
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -12,14 +9,18 @@ import android.os.IBinder;
 import android.util.Log;
 
 import com.fsck.k9.Account;
+import com.fsck.k9.Account.FolderMode;
 import com.fsck.k9.FeatureStorage;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
-import com.fsck.k9.Account.FolderMode;
 import com.fsck.k9.activity.MessageReference;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.helper.Utility;
+import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mail.Pusher;
+
+import java.util.Collection;
+import java.util.Date;
 
 public class MailService extends CoreService {
     private static final String ACTION_CHECK_MAIL = "com.fsck.k9.intent.action.MAIL_SERVICE_WAKEUP";
@@ -145,28 +146,36 @@ public class MailService extends CoreService {
             MessagingController.getInstance(getApplication()).systemStatusChanged();
         }
 
-        if (K9.DEBUG)
+        if (K9.DEBUG) {
             Log.i(K9.LOG_TAG, "MailService.onStart took " + (System.currentTimeMillis() - startTime) + "ms");
+        }
 
 
         // get current Account
-        MessageReference mMessageReference = intent.getParcelableExtra("message_reference");
-        final String accountUuid = (mMessageReference != null) ?
-                mMessageReference.getAccountUuid() :
-                intent.getStringExtra("account");
-        Account mAccount = Preferences.getPreferences(this).getAccount(accountUuid);
-        if (mAccount == null) {
-            mAccount = Preferences.getPreferences(this).getDefaultAccount();
+        MessageReference messageReference = intent.getParcelableExtra("message_reference");
+        final String accountUuid;
+        if (messageReference == null) {
+            accountUuid = intent.getStringExtra("account");
+        } else {
+            accountUuid = messageReference.getAccountUuid();
         }
-        MessagingController messagingController = MessagingController.getInstance(getApplication());
-        //get current Context
-        Context mContext = this.getBaseContext();
 
-        String filesDirectory = this.getFilesDir().getAbsolutePath();
+        Account account = Preferences.getPreferences(this).getAccount(accountUuid);
+        if (account == null) {
+            account = Preferences.getPreferences(this).getDefaultAccount();
+        }
+
+        Context context = this.getApplication();
+        FeatureStorage featureStorage = null;
+
         Log.i(K9.LOG_TAG, "Calling FeatureStorage from MailService.");
-        FeatureStorage featureStorage = new FeatureStorage(mAccount, mContext, messagingController,
-                filesDirectory);
-        featureStorage.pollService();
+
+        try {
+            featureStorage = new FeatureStorage(account, context);
+            featureStorage.pollService();
+        } catch (MessagingException e) {
+            Log.e(K9.LOG_TAG, "failed to synchronize feature storage", e);
+        }
 
         return START_NOT_STICKY;
     }
@@ -352,7 +361,7 @@ public class MailService extends CoreService {
     }
 
     public static boolean isSyncDisabled() {
-        return  syncBlocked || (!pollingRequested && !pushingRequested);
+        return syncBlocked || (!pollingRequested && !pushingRequested);
     }
 
     private void stopPushers() {

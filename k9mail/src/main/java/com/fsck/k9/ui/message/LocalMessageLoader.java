@@ -1,8 +1,7 @@
 package com.fsck.k9.ui.message;
 
-
-import android.content.AsyncTaskLoader;
 import android.content.Context;
+import android.support.v4.content.AsyncTaskLoader;
 import android.util.Log;
 
 import com.fsck.k9.Account;
@@ -19,10 +18,9 @@ public class LocalMessageLoader extends AsyncTaskLoader<LocalMessage> {
     private final MessageReference messageReference;
     private LocalMessage message;
 
-    public LocalMessageLoader(Context context, MessagingController controller, Account account,
-            MessageReference messageReference) {
+    public LocalMessageLoader(final Context context, final Account account, final MessageReference messageReference) {
         super(context);
-        this.controller = controller;
+        this.controller = MessagingController.getInstance(context);
         this.account = account;
         this.messageReference = messageReference;
     }

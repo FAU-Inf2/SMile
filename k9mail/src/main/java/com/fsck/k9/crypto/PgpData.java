@@ -1,10 +1,10 @@
 package com.fsck.k9.crypto;
 
-import java.io.Serializable;
-
 import org.openintents.openpgp.OpenPgpSignatureResult;
 
-public class PgpData implements Serializable {
+import java.io.Serializable;
+
+public final class PgpData implements Serializable {
     private static final long serialVersionUID = 6314045536470848410L;
     protected long mEncryptionKeyIds[] = null;
     protected long mSignatureKeyId = 0;

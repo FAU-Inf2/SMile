@@ -1,9 +1,11 @@
 package com.fsck.k9.endtoend.pages;
 
-import de.fau.cs.mad.smile.android.R;
-import com.fsck.k9.endtoend.framework.AccountForTest;
 import android.support.test.espresso.NoMatchingViewException;
 import android.support.test.espresso.ViewAssertion;
+
+import com.fsck.k9.endtoend.framework.AccountForTest;
+
+import de.fau.cs.mad.smile.android.R;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;

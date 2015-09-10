@@ -1,12 +1,9 @@
 package com.fsck.k9.mailstore;
 
 
-import java.util.List;
-
 import android.content.Context;
 import android.text.TextUtils;
 
-import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.helper.HtmlConverter;
 import com.fsck.k9.mail.Part;
 import com.fsck.k9.mail.internet.MessageExtractor;
@@ -15,6 +12,10 @@ import com.fsck.k9.mail.internet.Viewable.Alternative;
 import com.fsck.k9.mail.internet.Viewable.Html;
 import com.fsck.k9.mail.internet.Viewable.MessageHeader;
 import com.fsck.k9.mail.internet.Viewable.Textual;
+
+import java.util.List;
+
+import de.fau.cs.mad.smile.android.R;
 
 
 class MessagePreviewExtractor {

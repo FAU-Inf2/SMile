@@ -330,6 +330,7 @@ Please submit bug reports, contribute new features and ask questions at
     <string name="global_settings_confirm_action_delete">Delete</string>
     <string name="global_settings_confirm_action_delete_starred">Delete Starred (in message view)</string>
     <string name="global_settings_confirm_action_spam">Spam</string>
+    <string name="global_settings_confirm_menu_discard">Discard message</string>
     <string name="global_settings_confirm_action_delete_notif">Delete (from notification)</string>
 
     <string name="global_settings_privacy_hide_useragent">Remove SMile User-Agent from mail headers</string>
@@ -354,6 +355,8 @@ Please submit bug reports, contribute new features and ask questions at
 
     <string name="quiet_time">Quiet Time</string>
     <string name="quiet_time_description">Disable ringing, buzzing and flashing at night</string>
+    <string name="quiet_time_notification">Disable notifications</string>
+    <string name="quiet_time_notification_description">Completely disable notifications during Quiet Time</string>
     <string name="quiet_time_starts">Quiet Time starts</string>
     <string name="quiet_time_ends">Quiet Time ends</string>
 
@@ -1121,6 +1124,7 @@ Please submit bug reports, contribute new features and ask questions at
     <string name="openpgp_error">OpenPGP Error: %s</string>
     <string name="openpgp_unknown_error">Unknown OpenPGP Error</string>
     <string name="openpgp_user_id">User Id</string>
+    <string name="openpgp_canceled_by_user">Canceled by user</string>
     
     <string name="openpgp_result_no_signature">"Not Signed"</string>
     <string name="openpgp_result_invalid_signature">"Invalid signature!"</string>
@@ -1128,9 +1132,11 @@ Please submit bug reports, contribute new features and ask questions at
     <string name="openpgp_result_signature_certified">"Signed by"</string>
     <string name="openpgp_result_signature_expired_key">"Key is expired!"</string>
     <string name="openpgp_result_signature_revoked_key">"Key has been revoked!"</string>
+    <string name="openpgp_result_signature_insecure">"Insecure!"</string>
     <string name="openpgp_result_signature_missing_key">"Unknown public key"</string>
     <string name="openpgp_result_encrypted">"Encrypted"</string>
     <string name="openpgp_result_not_encrypted">"Not Encrypted"</string>
+    <string name="openpgp_result_decryption_insecure">"Insecure"</string>
     <string name="openpgp_result_action_show">"Show"</string>
     <string name="openpgp_result_action_lookup">"Lookup"</string>
     <string name="openpgp_result_no_name">"No name"</string>
@@ -1164,5 +1170,14 @@ Please submit bug reports, contribute new features and ask questions at
     
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
+    <string name="material">MD</string>
+    <string name="smime_app">S/MIME App</string>
+    <string name="account_settings_smime_app_not_found">No compatible S/MIME App installed.</string>
+    <string name="global_settings_remindme_times_label">RemindME times</string>
+    <string name="global_settings_remindme_time_short_label">short timespan</string>
+    <string name="global_settings_remindme_time_medium_label">medium timespan</string>
+    <string name="global_settings_remindme_time_long_label">long timespan</string>
+    <string name="default_crypto_title">Default crypto protocol</string>
+    <string name="no_crypto_provider_configured">This is an encrypted message and you have not configured a suitable crypto provider.</string>
 
 </resources>

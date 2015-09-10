@@ -1,8 +1,5 @@
 package com.fsck.k9.activity;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -14,9 +11,12 @@ import android.os.Bundle;
 import com.fsck.k9.Account;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
-import de.fau.cs.mad.smile.android.R;
-
 import com.fsck.k9.service.NotificationActionService;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+
+import de.fau.cs.mad.smile.android.R;
 
 public class NotificationDeleteConfirmation extends Activity {
     private final static String EXTRA_ACCOUNT = "account";

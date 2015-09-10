@@ -1,5 +1,10 @@
 package com.fsck.k9.preferences;
 
+import android.content.SharedPreferences;
+
+import com.fsck.k9.EmailAddressValidator;
+import com.fsck.k9.K9;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -7,12 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import android.content.SharedPreferences;
-
-import com.fsck.k9.EmailAddressValidator;
-import com.fsck.k9.K9;
 import de.fau.cs.mad.smile.android.R;
-import com.fsck.k9.preferences.Settings.*;
 
 public class IdentitySettings {
     public static final Map<String, TreeMap<Integer, SettingsDescription>> SETTINGS;

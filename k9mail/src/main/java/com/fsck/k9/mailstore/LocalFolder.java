@@ -1,27 +1,6 @@
 package com.fsck.k9.mailstore;
 
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-import java.util.UUID;
-
 import android.content.ContentValues;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -49,12 +28,35 @@ import com.fsck.k9.mail.internet.BinaryTempFileBody;
 import com.fsck.k9.mail.internet.MimeHeader;
 import com.fsck.k9.mail.internet.MimeMessage;
 import com.fsck.k9.mail.internet.MimeMultipart;
+import com.fsck.k9.mail.internet.MimeUtility;
 import com.fsck.k9.mail.internet.SizeAware;
 import com.fsck.k9.mail.message.MessageHeaderParser;
 import com.fsck.k9.mailstore.LockableDatabase.DbCallback;
 import com.fsck.k9.mailstore.LockableDatabase.WrappedException;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.james.mime4j.util.MimeUtil;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+import java.util.UUID;
 
 
 public class LocalFolder extends Folder<LocalMessage> implements Serializable {
@@ -213,7 +215,7 @@ public class LocalFolder extends Folder<LocalMessage> implements Serializable {
                 Cursor cursor = null;
                 try {
                     cursor = db.rawQuery("SELECT id FROM folders where folders.name = ?",
-                            new String[] { LocalFolder.this.getName() });
+                            new String[]{LocalFolder.this.getName()});
                     if (cursor.moveToFirst()) {
                         int folderId = cursor.getInt(0);
                         return (folderId > 0);
@@ -690,12 +692,12 @@ public class LocalFolder extends Folder<LocalMessage> implements Serializable {
             }
 
             String parentMimeType = parentPart.getMimeType();
-            if (parentMimeType.startsWith("multipart/")) {
+            if (MimeUtility.isMultipart(parentMimeType)) {
                 BodyPart bodyPart = new LocalBodyPart(getAccountUuid(), message, id, displayName, size,
                         firstClassAttachment);
                 ((Multipart) parentPart.getBody()).addBodyPart(bodyPart);
                 part = bodyPart;
-            } else if (parentMimeType.startsWith("message/")) {
+            } else if (MimeUtility.isMessage(parentMimeType)) {
                 Message innerMessage = new MimeMessage();
                 parentPart.setBody(innerMessage);
                 part = innerMessage;
@@ -705,11 +707,11 @@ public class LocalFolder extends Folder<LocalMessage> implements Serializable {
 
             parseHeaderBytes(part, header);
         }
+
         partById.put(id, part);
         part.setServerExtra(serverExtra);
 
-        boolean isMultipart = mimeType.startsWith("multipart/");
-        if (isMultipart) {
+        if (MimeUtility.isMultipart(mimeType)) {
             byte[] preamble = cursor.getBlob(11);
             byte[] epilogue = cursor.getBlob(12);
             String boundary = cursor.getString(13);
@@ -1314,6 +1316,8 @@ public class LocalFolder extends Folder<LocalMessage> implements Serializable {
             multipartToContentValues(cv, (Multipart) body);
         } else if (body == null) {
             missingPartToContentValues(cv, part);
+        } else if (body instanceof Message) {
+            messageMarkerToContentValues(cv);
         } else {
             file = leafPartToContentValues(cv, part, body);
         }
@@ -1345,6 +1349,10 @@ public class LocalFolder extends Folder<LocalMessage> implements Serializable {
         cv.put("display_name", attachment.displayName);
         cv.put("data_location", DataLocation.MISSING);
         cv.put("decoded_body_size", attachment.size);
+    }
+
+    private void messageMarkerToContentValues(ContentValues cv) throws MessagingException {
+        cv.put("data_location", DataLocation.CHILD_PART_CONTAINS_DATA);
     }
 
     private File leafPartToContentValues(ContentValues cv, Part part, Body body)
@@ -1454,7 +1462,7 @@ public class LocalFolder extends Folder<LocalMessage> implements Serializable {
 
     private String getTransferEncoding(Part part) throws MessagingException {
         String[] contentTransferEncoding = part.getHeader(MimeHeader.HEADER_CONTENT_TRANSFER_ENCODING);
-        if (contentTransferEncoding != null && contentTransferEncoding.length > 0) {
+        if (contentTransferEncoding.length > 0) {
             return contentTransferEncoding[0].toLowerCase(Locale.US);
         }
 
@@ -1469,6 +1477,9 @@ public class LocalFolder extends Folder<LocalMessage> implements Serializable {
                 BodyPart childPart = multipart.getBodyPart(i);
                 stack.push(new PartContainer(parentMessageId, childPart));
             }
+        } else if (body instanceof Message) {
+            Message innerMessage = (Message) body;
+            stack.push(new PartContainer(parentMessageId, innerMessage));
         }
     }
 
@@ -1815,14 +1826,14 @@ public class LocalFolder extends Folder<LocalMessage> implements Serializable {
         // Get the message IDs from the "References" header line
         String[] referencesArray = message.getHeader("References");
         List<String> messageIds = null;
-        if (referencesArray != null && referencesArray.length > 0) {
+        if (referencesArray.length > 0) {
             messageIds = Utility.extractMessageIds(referencesArray[0]);
         }
 
         // Append the first message ID from the "In-Reply-To" header line
         String[] inReplyToArray = message.getHeader("In-Reply-To");
         String inReplyTo;
-        if (inReplyToArray != null && inReplyToArray.length > 0) {
+        if (inReplyToArray.length > 0) {
             inReplyTo = Utility.extractMessageId(inReplyToArray[0]);
             if (inReplyTo != null) {
                 if (messageIds == null) {
@@ -1997,5 +2008,6 @@ public class LocalFolder extends Folder<LocalMessage> implements Serializable {
         static final int MISSING = 0;
         static final int IN_DATABASE = 1;
         static final int ON_DISK = 2;
+        static final int CHILD_PART_CONTAINS_DATA = 3;
     }
 }

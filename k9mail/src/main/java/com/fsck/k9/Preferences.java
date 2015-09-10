@@ -1,14 +1,6 @@
 
 package com.fsck.k9;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
@@ -17,6 +9,14 @@ import com.fsck.k9.mail.store.RemoteStore;
 import com.fsck.k9.mailstore.LocalStore;
 import com.fsck.k9.preferences.Editor;
 import com.fsck.k9.preferences.Storage;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 public class Preferences {
 
@@ -27,6 +27,7 @@ public class Preferences {
         if (preferences == null) {
             preferences = new Preferences(appContext);
         }
+
         return preferences;
     }
 

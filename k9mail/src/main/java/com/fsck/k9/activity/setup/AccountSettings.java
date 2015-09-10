@@ -1,15 +1,12 @@
 
 package com.fsck.k9.activity.setup;
 
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Vibrator;
@@ -33,7 +30,6 @@ import com.fsck.k9.Account.ShowPictures;
 import com.fsck.k9.K9;
 import com.fsck.k9.NotificationSetting;
 import com.fsck.k9.Preferences;
-import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.activity.ChooseFolder;
 import com.fsck.k9.activity.ChooseIdentity;
 import com.fsck.k9.activity.ColorPickerDialog;
@@ -49,6 +45,15 @@ import com.fsck.k9.service.MailService;
 import org.openintents.openpgp.util.OpenPgpAppPreference;
 import org.openintents.openpgp.util.OpenPgpKeyPreference;
 import org.openintents.openpgp.util.OpenPgpUtils;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import de.fau.cs.mad.smile.android.R;
+import de.fau.cs.mad.smime_api.SMimeApi;
 
 
 public class AccountSettings extends K9PreferenceActivity {
@@ -126,6 +131,8 @@ public class AccountSettings extends K9PreferenceActivity {
     private static final String PREFERENCE_TRASH_FOLDER = "trash_folder";
     private static final String PREFERENCE_ALWAYS_SHOW_CC_BCC = "always_show_cc_bcc";
 
+    private static final String PREFERENCE_CRYPTO_SMIME_APP = "smime_app";
+
 
     private Account mAccount;
     private boolean mIsMoveCapable = false;
@@ -196,6 +203,9 @@ public class AccountSettings extends K9PreferenceActivity {
     private ListPreference mSpamFolder;
     private ListPreference mTrashFolder;
     private CheckBoxPreference mAlwaysShowCcBcc;
+
+    private ListPreference mSmimeApp;
+    private ListPreference defaultCryptoProvider;
 
 
     public static void actionSettings(Context context, Account account) {
@@ -694,7 +704,7 @@ public class AccountSettings extends K9PreferenceActivity {
             mCryptoApp = (OpenPgpAppPreference) findPreference(PREFERENCE_CRYPTO_APP);
             mCryptoKey = (OpenPgpKeyPreference) findPreference(PREFERENCE_CRYPTO_KEY);
 
-            mCryptoApp.setValue(String.valueOf(mAccount.getCryptoApp()));
+            mCryptoApp.setValue(String.valueOf(mAccount.getPgpApp()));
             mCryptoApp.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
                     String value = newValue.toString();
@@ -705,7 +715,7 @@ public class AccountSettings extends K9PreferenceActivity {
                 }
             });
 
-            mCryptoKey.setValue(mAccount.getCryptoKey());
+            mCryptoKey.setValue(mAccount.getPgpKey());
             mCryptoKey.setOpenPgpProvider(mCryptoApp.getValue());
             // TODO: other identities?
             mCryptoKey.setDefaultUserId(OpenPgpApiHelper.buildUserId(mAccount.getIdentity(0)));
@@ -717,9 +727,76 @@ public class AccountSettings extends K9PreferenceActivity {
                 }
             });
         } else {
-            final Preference mCryptoMenu = findPreference(PREFERENCE_CRYPTO);
-            mCryptoMenu.setEnabled(false);
-            mCryptoMenu.setSummary(R.string.account_settings_no_openpgp_provider_installed);
+            final Preference mCryptoApp = findPreference(PREFERENCE_CRYPTO_APP);
+            mCryptoApp.setEnabled(false);
+            mCryptoApp.setSummary(R.string.account_settings_no_openpgp_provider_installed);
+            final Preference mCryptoKey = findPreference(PREFERENCE_CRYPTO_KEY);
+            mCryptoKey.setEnabled(false);
+            mCryptoKey.setSummary(R.string.account_settings_no_openpgp_provider_installed);
+        }
+
+        PackageManager packageManager = getPackageManager();
+        Intent smime = new Intent(SMimeApi.SERVICE_INTENT);
+        List<ResolveInfo> activities = packageManager.queryIntentServices(smime, 0);
+        mSmimeApp = (ListPreference) findPreference(PREFERENCE_CRYPTO_SMIME_APP);
+
+        if(activities.size() > 0) {
+            final ArrayList<String> names = new ArrayList<>();
+            final ArrayList<String> values = new ArrayList<>();
+            final String none = "None";
+            names.add(none);
+            values.add(none);
+
+            for(ResolveInfo ri : activities) {
+                if(ri.serviceInfo != null) {
+                    names.add(ri.serviceInfo.loadLabel(packageManager).toString());
+                    values.add(ri.serviceInfo.packageName);
+                }
+            }
+
+            mSmimeApp.setEntries(names.toArray(new String[names.size()]));
+            mSmimeApp.setEntryValues(values.toArray(new String[values.size()]));
+            mSmimeApp.setDefaultValue(none);
+            mSmimeApp.setSummary(none);
+
+            final String smimeApp = mAccount.getSmimeProvider();
+            if(smimeApp != null && !smimeApp.equals("")) {
+                mSmimeApp.setValue(smimeApp);
+                int pos = values.indexOf(smimeApp);
+                if (pos >= 0) {
+                    String name = names.get(pos);
+                    mSmimeApp.setSummary(name);
+                }
+            }
+
+            mSmimeApp.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                public boolean onPreferenceChange(Preference preference, Object newValue) {
+                    String value = newValue.toString();
+                    Log.d(K9.LOG_TAG, "Selected " + value);
+                    mSmimeApp.setValue(value);
+                    int pos = values.indexOf(value);
+                    String name = names.get(pos);
+                    mSmimeApp.setSummary(name);
+                    return false;
+                }
+            });
+        } else {
+            mSmimeApp.setSummary(getString(R.string.account_settings_smime_app_not_found));
+            mSmimeApp.setEnabled(false);
+        }
+
+        defaultCryptoProvider = (ListPreference) findPreference("default_crypto");
+        if(defaultCryptoProvider != null) {
+            defaultCryptoProvider.setValue(mAccount.getDefaultCryptoProvider());
+            defaultCryptoProvider.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+                @Override
+                public boolean onPreferenceChange(Preference preference, Object newValue) {
+                    String value = newValue.toString();
+                    defaultCryptoProvider.setValue(value);
+
+                    return false;
+                }
+            });
         }
     }
 
@@ -781,8 +858,8 @@ public class AccountSettings extends K9PreferenceActivity {
         mAccount.setStripSignature(mStripSignature.isChecked());
         mAccount.setLocalStorageProviderId(mLocalStorageProvider.getValue());
         if (mHasCrypto) {
-            mAccount.setCryptoApp(mCryptoApp.getValue());
-            mAccount.setCryptoKey(mCryptoKey.getValue());
+            mAccount.setPgpApp(mCryptoApp.getValue());
+            mAccount.setPgpKey(mCryptoKey.getValue());
         }
 
         // In webdav account we use the exact folder name also for inbox,
@@ -844,6 +921,10 @@ public class AccountSettings extends K9PreferenceActivity {
                 MailService.actionRestartPushers(this, null);
             }
         }
+
+        mAccount.setSmimeProvider(mSmimeApp.getValue());
+        mAccount.setDefaultCryptoProvider(defaultCryptoProvider.getValue());
+
         // TODO: refresh folder list here
         mAccount.save(Preferences.getPreferences(this));
     }
@@ -890,7 +971,6 @@ public class AccountSettings extends K9PreferenceActivity {
     public void onChooseChipColor() {
         showDialog(DIALOG_COLOR_PICKER_ACCOUNT);
     }
-
 
     public void onChooseLedColor() {
         showDialog(DIALOG_COLOR_PICKER_LED);

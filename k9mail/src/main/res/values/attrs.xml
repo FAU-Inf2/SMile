@@ -66,4 +66,8 @@
         <attr name="unFoldedLabel" format="string" />
     </declare-styleable>
 
+    <declare-styleable name="MessageComposeRecipient">
+        <attr name="recipientHint" format="string" />
+        <attr name="addDescription" format="string" />
+    </declare-styleable>
 </resources>

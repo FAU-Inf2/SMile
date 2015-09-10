@@ -16,13 +16,14 @@
 
 package com.fsck.k9;
 
-import com.fsck.k9.helper.Contacts;
-import com.fsck.k9.mail.Address;
 import android.content.Context;
 import android.database.Cursor;
 import android.view.View;
 import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
+
+import com.fsck.k9.helper.Contacts;
+import com.fsck.k9.mail.Address;
 
 import de.fau.cs.mad.smile.android.R;
 

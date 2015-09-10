@@ -143,7 +143,6 @@ public class Storage implements SharedPreferences {
         return mDb;
     }
 
-
     public static Storage getStorage(Context context) {
         Storage tmpStorage = storages.get(context);
         if (tmpStorage != null) {

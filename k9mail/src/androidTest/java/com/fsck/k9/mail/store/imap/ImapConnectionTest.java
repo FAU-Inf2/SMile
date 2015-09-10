@@ -1,10 +1,6 @@
 package com.fsck.k9.mail.store.imap;
 
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import android.support.test.runner.AndroidJUnit4;
 
 import com.fsck.k9.endtoend.framework.StubMailServer;
@@ -19,6 +15,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;

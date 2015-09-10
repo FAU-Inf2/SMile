@@ -1,12 +1,12 @@
 package com.fsck.k9.mailstore;
 
-import java.io.IOException;
-import java.io.OutputStream;
+import com.fsck.k9.mail.CompositeBody;
+import com.fsck.k9.mail.MessagingException;
 
 import org.apache.james.mime4j.util.MimeUtil;
 
-import com.fsck.k9.mail.CompositeBody;
-import com.fsck.k9.mail.MessagingException;
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * An attachment containing a body of type message/rfc822 whose contents are contained in a file.

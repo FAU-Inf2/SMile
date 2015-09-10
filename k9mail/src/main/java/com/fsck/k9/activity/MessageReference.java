@@ -10,9 +10,9 @@ import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.mail.Flag;
 import com.fsck.k9.mail.MessagingException;
+import com.fsck.k9.mail.filter.Base64;
 import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.mailstore.LocalMessage;
-import com.fsck.k9.mail.filter.Base64;
 
 import java.util.StringTokenizer;
 
@@ -112,6 +112,7 @@ public class MessageReference implements Parcelable {
         if (o instanceof MessageReference == false) {
             return false;
         }
+
         MessageReference other = (MessageReference) o;
         if ((accountUuid == other.accountUuid || (accountUuid != null && accountUuid.equals(other.accountUuid)))
                 && (folderName == other.folderName || (folderName != null && folderName.equals(other.folderName)))

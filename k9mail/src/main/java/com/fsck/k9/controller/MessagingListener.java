@@ -1,8 +1,6 @@
 
 package com.fsck.k9.controller;
 
-import java.util.List;
-
 import android.content.Context;
 
 import com.fsck.k9.Account;
@@ -12,6 +10,8 @@ import com.fsck.k9.mail.Folder;
 import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.Part;
 import com.fsck.k9.mailstore.LocalMessage;
+
+import java.util.List;
 
 /**
  * Defines the interface that {@link MessagingController} will use to callback to requesters.

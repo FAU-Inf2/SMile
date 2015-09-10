@@ -1,14 +1,13 @@
 package com.fsck.k9.view;
 
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-
 import android.content.Context;
+import android.graphics.PorterDuff;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.ColorRes;
+import android.support.annotation.DrawableRes;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -20,6 +19,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.QuickContactBadge;
 import android.widget.TextView;
@@ -28,7 +28,6 @@ import android.widget.Toast;
 import com.fsck.k9.Account;
 import com.fsck.k9.FontSizes;
 import com.fsck.k9.K9;
-import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.activity.misc.ContactPictureLoader;
 import com.fsck.k9.helper.ContactPicture;
 import com.fsck.k9.helper.Contacts;
@@ -38,9 +37,17 @@ import com.fsck.k9.mail.Flag;
 import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mail.internet.MimeUtility;
+import com.fsck.k9.mailstore.CryptoResultAnnotation;
+import com.fsck.k9.mailstore.SignatureResult;
+
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+
+import de.fau.cs.mad.smile.android.R;
 
 public class MessageHeader extends LinearLayout implements OnClickListener {
-    private Context mContext;
     private TextView mFromView;
     private TextView mDateView;
     private TextView mToView;
@@ -48,6 +55,8 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
     private TextView mCcView;
     private TextView mCcLabel;
     private TextView mSubjectView;
+    private ImageView mEncryptionIcon;
+    private ImageView mSignatureIcon;
 
     private View mChip;
     private CheckBox mFlagged;
@@ -57,15 +66,16 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
     private View mForwardedIcon;
     private Message mMessage;
     private Account mAccount;
-    private FontSizes mFontSizes = K9.getFontSizes();
-    private Contacts mContacts;
+    private final FontSizes mFontSizes;
+    private final Contacts mContacts;
     private SavedState mSavedState;
 
     private MessageHelper mMessageHelper;
     private ContactPictureLoader mContactsPictureLoader;
     private QuickContactBadge mContactBadge;
+    private CryptoResultAnnotation cryptoAnnotation;
 
-    private OnLayoutChangedListener mOnLayoutChangedListener;
+    private OnLayoutChangedListener mOnLayoutChangedListener; // TODO: is never set, remove?
 
     /**
      * Pair class is only available since API Level 5, so we need
@@ -83,14 +93,16 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
 
     public MessageHeader(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mContext = context;
-        mContacts = Contacts.getInstance(mContext);
+        mContacts = Contacts.getInstance(getContext());
+        mFontSizes = K9.getFontSizes();
     }
 
     @Override
     protected void onFinishInflate() {
         mAnsweredIcon = findViewById(R.id.answered);
         mForwardedIcon = findViewById(R.id.forwarded);
+        mEncryptionIcon = (ImageView) findViewById(R.id.encryption_icon);
+        mSignatureIcon = (ImageView) findViewById(R.id.signature_icon);
         mFromView = (TextView) findViewById(R.id.from);
         mToView = (TextView) findViewById(R.id.to);
         mToLabel = (TextView) findViewById(R.id.to_label);
@@ -120,10 +132,11 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
         mToView.setOnClickListener(this);
         mCcView.setOnClickListener(this);
 
-        mMessageHelper = MessageHelper.getInstance(mContext);
+        mMessageHelper = MessageHelper.getInstance(getContext());
 
         mSubjectView.setVisibility(VISIBLE);
         hideAdditionalHeaders();
+        super.onFinishInflate();
     }
 
     @Override
@@ -135,7 +148,7 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
             }
             case R.id.to:
             case R.id.cc: {
-                expand((TextView)view, ((TextView)view).getEllipsize() != null);
+                expand((TextView) view, ((TextView) view).getEllipsize() != null);
                 layoutChanged();
             }
         }
@@ -156,7 +169,6 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
         mFlagged.setOnClickListener(listener);
     }
 
-
     public boolean additionalHeadersVisible() {
         return (mAdditionalHeadersView != null &&
                 mAdditionalHeadersView.getVisibility() == View.VISIBLE);
@@ -170,7 +182,6 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
         mAdditionalHeadersView.setVisibility(View.GONE);
         mAdditionalHeadersView.setText("");
     }
-
 
     /**
      * Set up and then show the additional headers view. Called by
@@ -188,6 +199,7 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
                 populateAdditionalHeadersView(additionalHeaders);
                 mAdditionalHeadersView.setVisibility(View.VISIBLE);
             }
+
             if (!allHeadersDownloaded) {
                 /*
                 * Tell the user about the "save all headers" setting
@@ -206,7 +218,7 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
         }
         // Show a message to the user, if any
         if (messageToShow != null) {
-            Toast toast = Toast.makeText(mContext, messageToShow, Toast.LENGTH_LONG);
+            Toast toast = Toast.makeText(getContext(), messageToShow, Toast.LENGTH_LONG);
             toast.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL, 0, 0);
             toast.show();
         }
@@ -251,25 +263,26 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
 
         if (K9.showContactPicture()) {
             mContactBadge.setVisibility(View.VISIBLE);
-            mContactsPictureLoader = ContactPicture.getContactPictureLoader(mContext);
-        }  else {
+            mContactsPictureLoader = ContactPicture.getContactPictureLoader(getContext());
+        } else {
             mContactBadge.setVisibility(View.GONE);
         }
 
         final String subject = message.getSubject();
         if (TextUtils.isEmpty(subject)) {
-            mSubjectView.setText(mContext.getText(R.string.general_no_subject));
+            mSubjectView.setText(getContext().getText(R.string.general_no_subject));
         } else {
             mSubjectView.setText(subject);
         }
+
         mSubjectView.setTextColor(0xff000000 | defaultSubjectColor);
 
-        String dateTime = DateUtils.formatDateTime(mContext,
+        String dateTime = DateUtils.formatDateTime(getContext(),
                 message.getSentDate().getTime(),
                 DateUtils.FORMAT_SHOW_DATE
-                | DateUtils.FORMAT_ABBREV_ALL
-                | DateUtils.FORMAT_SHOW_TIME
-                | DateUtils.FORMAT_SHOW_YEAR);
+                        | DateUtils.FORMAT_ABBREV_ALL
+                        | DateUtils.FORMAT_SHOW_TIME
+                        | DateUtils.FORMAT_SHOW_YEAR);
         mDateView.setText(dateTime);
 
         if (K9.showContactPicture()) {
@@ -303,6 +316,123 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
         }
     }
 
+    public void setCryptoAnnotation(final CryptoResultAnnotation cryptoAnnotation) throws MessagingException {
+        this.cryptoAnnotation = cryptoAnnotation;
+        invalidate();
+        initializeEncryptionHeader();
+        initializeSignatureHeader();
+    }
+
+    private void initializeEncryptionHeader() {
+        if (noCryptoAnnotationFound()) {
+            setEncryptionImageAndTextColor(CryptoState.NOT_ENCRYPTED);
+            return;
+        }
+
+        switch (cryptoAnnotation.getErrorType()) {
+            case NONE: {
+                if (cryptoAnnotation.isEncrypted()) {
+                    setEncryptionImageAndTextColor(CryptoState.ENCRYPTED);
+                } else {
+                    setEncryptionImageAndTextColor(CryptoState.NOT_ENCRYPTED);
+                }
+                break;
+            }
+            case CRYPTO_API_RETURNED_ERROR: {
+                setEncryptionImageAndTextColor(CryptoState.INVALID);
+                break;
+            }
+            case ENCRYPTED_BUT_INCOMPLETE: {
+                setEncryptionImageAndTextColor(CryptoState.UNAVAILABLE);
+                break;
+            }
+            case SIGNED_BUT_INCOMPLETE: {
+                setEncryptionImageAndTextColor(CryptoState.NOT_ENCRYPTED);
+                break;
+            }
+        }
+    }
+
+    private void initializeSignatureHeader() {
+        if (noCryptoAnnotationFound()) {
+            setSignatureImageAndTextColor(CryptoState.NOT_SIGNED);
+            return;
+        }
+
+        switch (cryptoAnnotation.getErrorType()) {
+            case CRYPTO_API_RETURNED_ERROR:
+            case NONE: {
+                displayVerificationResult();
+                break;
+            }
+            case ENCRYPTED_BUT_INCOMPLETE:
+            case SIGNED_BUT_INCOMPLETE: {
+                setSignatureImageAndTextColor(CryptoState.UNAVAILABLE);
+                break;
+            }
+        }
+    }
+
+    private void displayVerificationResult() {
+        SignatureResult signatureResult = cryptoAnnotation.getSignatureResult();
+
+        switch (signatureResult.getStatus()) {
+            case UNSIGNED: {
+                setSignatureImageAndTextColor(CryptoState.NOT_SIGNED);
+                break;
+            }
+            case INVALID_SIGNATURE: {
+                setSignatureImageAndTextColor(CryptoState.INVALID);
+                break;
+            }
+            case SUCCESS: {
+                setSignatureImageAndTextColor(CryptoState.VERIFIED);
+                break;
+            }
+            case KEY_MISSING: {
+                setSignatureImageAndTextColor(CryptoState.UNKNOWN_KEY);
+                break;
+            }
+            case SUCCESS_UNCERTIFIED: {
+                setSignatureImageAndTextColor(CryptoState.UNVERIFIED);
+                break;
+            }
+            case KEY_EXPIRED: {
+                setSignatureImageAndTextColor(CryptoState.EXPIRED);
+                break;
+            }
+            case KEY_REVOKED: {
+                setSignatureImageAndTextColor(CryptoState.REVOKED);
+                break;
+            }
+            case ERROR: {
+                setSignatureImageAndTextColor(CryptoState.INVALID);
+                break;
+            }
+            default:
+                throw new RuntimeException("OpenPgpSignatureResult result not handled!");
+        }
+    }
+
+    private void setEncryptionImageAndTextColor(final CryptoState state) {
+        setStatusImageColor(mEncryptionIcon, state);
+    }
+
+    private void setSignatureImageAndTextColor(final CryptoState state) {
+        setStatusImageColor(mSignatureIcon, state);
+    }
+
+    private void setStatusImageColor(final ImageView statusIcon, final CryptoState state) {
+        final Drawable statusImageDrawable = getContext().getResources().getDrawable(state.getDrawableId());
+        statusIcon.setImageDrawable(statusImageDrawable);
+        final int color = getContext().getResources().getColor(state.getColorId());
+        statusIcon.setColorFilter(color, PorterDuff.Mode.SRC_IN);
+    }
+
+    private boolean noCryptoAnnotationFound() {
+        return cryptoAnnotation == null;
+    }
+
     public void onShowAdditionalHeaders() {
         int currentVisibility = mAdditionalHeadersView.getVisibility();
         if (currentVisibility == View.VISIBLE) {
@@ -314,9 +444,9 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
             expand(mToView, true);
             expand(mCcView, true);
         }
+
         layoutChanged();
     }
-
 
     private void updateAddressField(TextView v, CharSequence text, View label) {
         boolean hasText = !TextUtils.isEmpty(text);
@@ -330,17 +460,17 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
      * Expand or collapse a TextView by removing or adding the 2 lines limitation
      */
     private void expand(TextView v, boolean expand) {
-       if (expand) {
-           v.setMaxLines(Integer.MAX_VALUE);
-           v.setEllipsize(null);
-       } else {
-           v.setMaxLines(2);
-           v.setEllipsize(android.text.TextUtils.TruncateAt.END);
-       }
+        if (expand) {
+            v.setMaxLines(Integer.MAX_VALUE);
+            v.setEllipsize(null);
+        } else {
+            v.setMaxLines(2);
+            v.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        }
     }
 
     private List<HeaderEntry> getAdditionalHeaders(final Message message)
-    throws MessagingException {
+            throws MessagingException {
         List<HeaderEntry> additionalHeaders = new LinkedList<HeaderEntry>();
 
         Set<String> headerNames = new LinkedHashSet<String>(message.getHeaderNames());
@@ -350,6 +480,7 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
                 additionalHeaders.add(new HeaderEntry(headerName, headerValue));
             }
         }
+
         return additionalHeaders;
     }
 
@@ -359,7 +490,7 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
      * @param additionalHeaders List of header entries. Each entry consists of a header
      *                          name and a header value. Header names may appear multiple
      *                          times.
-     *                          <p/>
+     *                          <p>
      *                          This method is always called from within the UI thread by
      *                          {@link #showAdditionalHeaders()}.
      */
@@ -372,34 +503,33 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
             } else {
                 first = false;
             }
+
             StyleSpan boldSpan = new StyleSpan(Typeface.BOLD);
             SpannableString label = new SpannableString(additionalHeader.label + ": ");
             label.setSpan(boldSpan, 0, label.length(), 0);
             sb.append(label);
             sb.append(MimeUtility.unfoldAndDecode(additionalHeader.value));
         }
+
         mAdditionalHeadersView.setText(sb);
     }
 
     @Override
     public Parcelable onSaveInstanceState() {
         Parcelable superState = super.onSaveInstanceState();
-
         SavedState savedState = new SavedState(superState);
-
         savedState.additionalHeadersVisible = additionalHeadersVisible();
-
         return savedState;
     }
 
     @Override
     public void onRestoreInstanceState(Parcelable state) {
-        if(!(state instanceof SavedState)) {
+        if (!(state instanceof SavedState)) {
             super.onRestoreInstanceState(state);
             return;
         }
 
-        SavedState savedState = (SavedState)state;
+        SavedState savedState = (SavedState) state;
         super.onRestoreInstanceState(savedState.getSuperState());
 
         mSavedState = savedState;
@@ -410,16 +540,16 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
 
         public static final Parcelable.Creator<SavedState> CREATOR =
                 new Parcelable.Creator<SavedState>() {
-            @Override
-            public SavedState createFromParcel(Parcel in) {
-                return new SavedState(in);
-            }
+                    @Override
+                    public SavedState createFromParcel(Parcel in) {
+                        return new SavedState(in);
+                    }
 
-            @Override
-            public SavedState[] newArray(int size) {
-                return new SavedState[size];
-            }
-        };
+                    @Override
+                    public SavedState[] newArray(int size) {
+                        return new SavedState[size];
+                    }
+                };
 
 
         SavedState(Parcelable superState) {
@@ -454,5 +584,38 @@ public class MessageHeader extends LinearLayout implements OnClickListener {
 
     public void hideSubjectLine() {
         mSubjectView.setVisibility(GONE);
+    }
+
+    private enum CryptoState {
+        VERIFIED(R.drawable.status_signature_verified_cutout, R.color.openpgp_green),
+        ENCRYPTED(R.drawable.status_lock_closed, R.color.openpgp_green),
+
+        UNAVAILABLE(R.drawable.status_signature_unverified_cutout, R.color.openpgp_orange),
+        UNVERIFIED(R.drawable.status_signature_unverified_cutout, R.color.openpgp_orange),
+        UNKNOWN_KEY(R.drawable.status_signature_unknown_cutout, R.color.openpgp_orange),
+
+        REVOKED(R.drawable.status_signature_revoked_cutout, R.color.openpgp_red),
+        EXPIRED(R.drawable.status_signature_expired_cutout, R.color.openpgp_red),
+        NOT_ENCRYPTED(R.drawable.status_lock_open, R.color.openpgp_red),
+        NOT_SIGNED(R.drawable.status_signature_unknown_cutout, R.color.openpgp_red),
+        INVALID(R.drawable.status_signature_invalid_cutout, R.color.openpgp_red);
+
+        private final int drawableId;
+        private final int colorId;
+
+        CryptoState(@DrawableRes int drawableId, @ColorRes int colorId) {
+            this.drawableId = drawableId;
+            this.colorId = colorId;
+        }
+
+        @DrawableRes
+        public int getDrawableId() {
+            return drawableId;
+        }
+
+        @ColorRes
+        public int getColorId() {
+            return colorId;
+        }
     }
 }

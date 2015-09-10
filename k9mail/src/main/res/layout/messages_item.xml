@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.daimajia.swipe.SwipeLayout
+    xmlns:swipe="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="fill_parent"
+    swipe:leftEdgeSwipeOffset="0dp"
+    swipe:rightEdgeSwipeOffset="0dp">
+
+
+    <RelativeLayout
+        android:id="@+id/pull_out"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="left"
+        android:layout_toLeftOf="@+id/msg"
+        android:background="@color/background_floating_material_light"
+        >
+        <ImageView
+            android:id="@+id/pull_out_remind_me"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginRight="10dip"
+            android:layout_weight="1"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_alarm_add_black_48dp"/>
+        <ImageView
+            android:id="@+id/pull_out_archive"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="10dip"
+            android:layout_weight="1"
+            android:src="@drawable/ic_action_archive_material_light" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/delete"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#FF5534"
+        android:gravity="left"
+        android:tag="Delete"
+        android:weightSum="10">
+
+        <ImageView
+            android:id="@+id/trash"
+            android:layout_width="50dp"
+            android:layout_height="30dp"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_action_delete_material_light" />
+    </RelativeLayout>
+
+    <View
+        android:id="@+id/chip"
+        android:layout_width="8dip"
+        android:layout_height="match_parent"
+        android:layout_marginRight="4dp"
+        android:adjustViewBounds="false" />
+
+    <RelativeLayout
+        android:id="@+id/msg"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="horizontal">
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <QuickContactBadge
+                android:id="@+id/contact_badge"
+                style="?android:attr/quickContactBadgeStyleWindowLarge"
+                android:layout_width="40dip"
+                android:layout_height="40dip"
+                android:layout_gravity="center_vertical"
+                android:layout_marginBottom="3dip"
+                android:layout_marginLeft="4dp"
+                android:layout_marginRight="8dip"
+                android:layout_marginTop="4dip"
+                android:background="@android:color/transparent"
+                android:src="@drawable/ic_contact_picture" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="2dp"
+            android:padding="6dip">
+
+            <TextView
+                android:id="@+id/preview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="false"
+                android:layout_alignParentLeft="true"
+                android:layout_alignWithParentIfMissing="false"
+                android:layout_below="@+id/subject_wrapper"
+                android:layout_marginLeft="50dip"
+                android:layout_marginRight="3dip"
+                android:layout_toLeftOf="@+id/flagged_bottom_right"
+                android:bufferType="spannable"
+                android:gravity="top"
+                android:longClickable="false"
+                android:singleLine="false"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="?android:attr/textColorPrimary" />
+
+            <LinearLayout
+                android:id="@+id/subject_wrapper"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="false"
+                android:layout_alignParentLeft="false"
+                android:layout_alignParentRight="false"
+                android:layout_alignParentTop="true"
+                android:layout_centerInParent="true"
+                android:layout_toLeftOf="@+id/date">
+
+                <TextView
+                    android:id="@+id/sender_compact"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="1dip"
+                    android:layout_marginLeft="50dip"
+                    android:layout_weight="0.3"
+                    android:ellipsize="end"
+                    android:singleLine="true"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textColor="?android:attr/textColorPrimary" />
+
+                <TextView
+                    android:id="@+id/subject"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="1dip"
+                    android:layout_marginLeft="50dip"
+                    android:layout_weight="0.7"
+                    android:ellipsize="marquee"
+                    android:singleLine="true"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textColor="?android:attr/textColorPrimary" />
+
+                <TextView
+                    android:id="@+id/thread_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="3dip"
+                    android:layout_marginRight="4dip"
+                    android:focusable="false"
+                    android:paddingBottom="1dip"
+                    android:paddingLeft="4dip"
+                    android:paddingRight="4dip" />
+            </LinearLayout>
+
+            <CheckBox
+                android:id="@+id/flagged_center_right"
+                style="?android:attr/starStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:focusable="false"
+                android:paddingLeft="2dip"
+                android:paddingRight="4dip"
+                android:paddingTop="3dip"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignTop="@+id/subject_wrapper"
+                android:layout_alignWithParentIfMissing="true"
+                android:layout_centerVertical="true"
+                android:layout_toLeftOf="@+id/flagged_center_right"
+                android:paddingLeft="3dip"
+                android:paddingRight="8dip"
+                android:singleLine="true"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="?android:attr/textColorSecondary" />
+
+            <CheckBox
+                android:id="@+id/flagged_bottom_right"
+                style="?android:attr/starStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:layout_alignParentRight="true"
+                android:layout_below="@+id/date"
+                android:focusable="false"
+                android:gravity="center_vertical"
+                android:paddingLeft="2dip"
+                android:paddingRight="4dip"
+                android:paddingTop="5dip"
+                android:visibility="visible" />
+
+        </RelativeLayout>
+
+    </RelativeLayout>
+
+
+</com.daimajia.swipe.SwipeLayout>

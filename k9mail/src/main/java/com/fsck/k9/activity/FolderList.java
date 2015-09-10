@@ -1,28 +1,22 @@
 package com.fsck.k9.activity;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-
-import android.app.ActionBar;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v7.app.ActionBar;
+import android.support.v7.widget.SearchView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.AdapterView.AdapterContextMenuInfo;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
-import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,38 +26,43 @@ import com.fsck.k9.AccountStats;
 import com.fsck.k9.BaseAccount;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
-
-import de.fau.cs.mad.smile.android.R;
-
-import com.fsck.k9.activity.holder.FolderInfoHolder;
+import com.fsck.k9.holder.FolderInfoHolder;
+import com.fsck.k9.activity.listener.ActivityListener;
 import com.fsck.k9.activity.setup.AccountSettings;
 import com.fsck.k9.activity.setup.FolderSettings;
 import com.fsck.k9.activity.setup.Prefs;
+import com.fsck.k9.adapter.FolderAdapter;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.controller.MessagingListener;
+import com.fsck.k9.helper.NotificationHelper;
 import com.fsck.k9.helper.SizeFormatter;
-import com.fsck.k9.mail.power.TracingPowerManager;
-import com.fsck.k9.mail.power.TracingPowerManager.TracingWakeLock;
 import com.fsck.k9.mail.Folder;
 import com.fsck.k9.mail.Message;
+import com.fsck.k9.mail.power.TracingPowerManager;
+import com.fsck.k9.mail.power.TracingPowerManager.TracingWakeLock;
 import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.search.LocalSearch;
 import com.fsck.k9.service.MailService;
 
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+
 import de.cketti.library.changelog.ChangeLog;
+import de.fau.cs.mad.smile.android.R;
 
 /**
  * FolderList is the primary user interface for the program. This
  * Activity shows list of the Account's folders
  */
 
-public final class FolderList extends K9ListActivity {
+public final class FolderList extends K9Activity {
     private static final String EXTRA_ACCOUNT = "account";
     private static final String EXTRA_FROM_SHORTCUT = "fromShortcut";
     private static final boolean REFRESH_REMOTE = true;
 
     private ListView mListView;
-    private FolderListAdapter mAdapter;
+    private FolderAdapter mAdapter;
     private FolderListActivityListener mListener;
     private Account mAccount;
     private int mUnreadMessageCount;
@@ -71,7 +70,7 @@ public final class FolderList extends K9ListActivity {
 
     private MenuItem mRefreshMenuItem;
     private View mActionBarProgressView;
-    private ActionBar mActionBar;
+    private Toolbar toolbar;
 
     private TextView mActionBarTitle;
     private TextView mActionBarSubTitle;
@@ -104,17 +103,16 @@ public final class FolderList extends K9ListActivity {
         }
 
         mHandler = new Handler();
-        mActionBarProgressView = getLayoutInflater().inflate(R.layout.actionbar_indeterminate_progress_actionview, null);
-        mActionBar = getActionBar();
-        initializeActionBar();
-
         setContentView(R.layout.folder_list);
-        mListView = getListView();
+        mActionBarProgressView = getLayoutInflater().inflate(R.layout.actionbar_indeterminate_progress_actionview, null);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        initializeActionBar();
+        mListView = (ListView) findViewById(android.R.id.list);
         mListView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
         mListView.setLongClickable(true);
         mListView.setFastScrollEnabled(true);
         mListView.setScrollingCacheEnabled(false);
-        mListView.setOnItemClickListener(new OnItemClickListener() {
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 onOpenFolder(((FolderInfoHolder) mAdapter.getItem(position)).name);
             }
@@ -140,15 +138,15 @@ public final class FolderList extends K9ListActivity {
     }
 
     private final void initializeActionBar() {
-        mActionBar.setDisplayShowCustomEnabled(true);
-        mActionBar.setCustomView(R.layout.actionbar_custom);
+        mActionBarTitle = (TextView) toolbar.findViewById(R.id.actionbar_title_first);
+        mActionBarSubTitle = (TextView) toolbar.findViewById(R.id.actionbar_title_sub);
+        mActionBarUnread = (TextView) toolbar.findViewById(R.id.actionbar_unread_count);
+        setSupportActionBar(toolbar);
+        ActionBar actionBar = getSupportActionBar();
 
-        View customView = mActionBar.getCustomView();
-        mActionBarTitle = (TextView) customView.findViewById(R.id.actionbar_title_first);
-        mActionBarSubTitle = (TextView) customView.findViewById(R.id.actionbar_title_sub);
-        mActionBarUnread = (TextView) customView.findViewById(R.id.actionbar_unread_count);
-
-        mActionBar.setDisplayHomeAsUpEnabled(true);
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
     }
 
     @Override
@@ -178,11 +176,11 @@ public final class FolderList extends K9ListActivity {
         }
     }
 
-    private final void initializeActivityView() {
-        mAdapter = new FolderListAdapter(this, mAccount);
+    private void initializeActivityView() {
+        mAdapter = new FolderAdapter(this, mAccount);
         // TODO: renable data restoration on configuration change in Fragment restorePreviousData();
-        setListAdapter(mAdapter);
-        getListView().setTextFilterEnabled(mAdapter.getFilter() != null); // should never be false but better safe then sorry
+        mListView.setAdapter(mAdapter);
+        mListView.setTextFilterEnabled(mAdapter.getFilter() != null); // should never be false but better safe then sorry
     }
 /*
     private final void restorePreviousData() {
@@ -195,7 +193,7 @@ public final class FolderList extends K9ListActivity {
     }*/
 
     @Override
-    public final Object onRetainNonConfigurationInstance() {
+    public final Object onRetainCustomNonConfigurationInstance() {
         return (mAdapter == null) ? null : mAdapter;
     }
 
@@ -229,14 +227,14 @@ public final class FolderList extends K9ListActivity {
         mListener = new FolderListActivityListener(mAdapter, mAccount, mHandler);
 
         refreshTitle();
-
-        MessagingController.getInstance(getApplication()).addListener(mListener);
+        final MessagingController controller = MessagingController.getInstance(getApplication());
+        controller.addListener(mListener);
         //mAccount.refresh(Preferences.getPreferences(this));
-        MessagingController.getInstance(getApplication()).getAccountStats(this, mAccount, mListener);
+        controller.getAccountStats(this, mAccount, mListener);
 
         onRefresh(!REFRESH_REMOTE);
-
-        MessagingController.getInstance(getApplication()).notifyAccountCancel(this, mAccount);
+        NotificationHelper notificationHelper = NotificationHelper.getInstance(getApplicationContext());
+        notificationHelper.notifyAccountCancel(this, mAccount);
         mListener.onResume(this);
     }
 
@@ -507,13 +505,13 @@ public final class FolderList extends K9ListActivity {
 
     private final void configureFolderSearchView(final Menu menu) {
         final MenuItem folderMenuItem = menu.findItem(R.id.filter_folders);
-        final SearchView folderSearchView = (SearchView) folderMenuItem.getActionView();
+        final SearchView folderSearchView = (SearchView) MenuItemCompat.getActionView(folderMenuItem);
         folderSearchView.setQueryHint(getString(R.string.folder_list_filter_hint));
         folderSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 
             @Override
             public boolean onQueryTextSubmit(String query) {
-                folderMenuItem.collapseActionView();
+                MenuItemCompat.collapseActionView(folderMenuItem);
                 mActionBarTitle.setText(getString(R.string.filter_folders_action));
                 return true;
             }
@@ -537,7 +535,7 @@ public final class FolderList extends K9ListActivity {
 
     @Override
     public final boolean onContextItemSelected(final MenuItem item) {
-        AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
         FolderInfoHolder folder = mAdapter.getItem(info.position);
 
         switch (item.getItemId()) {
@@ -588,9 +586,9 @@ public final class FolderList extends K9ListActivity {
     }
 
     @Override
-    public final void onCreateContextMenu(final ContextMenu menu, final View v, final ContextMenuInfo menuInfo) {
+    public final void onCreateContextMenu(final ContextMenu menu, final View v, final ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
-        AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
         getMenuInflater().inflate(R.menu.folder_context, menu);
 
         FolderInfoHolder folder = mAdapter.getItem(info.position);
@@ -598,12 +596,12 @@ public final class FolderList extends K9ListActivity {
     }
 
     public final class FolderListActivityListener extends ActivityListener {
-        private final FolderListAdapter mAdapter;
+        private final FolderAdapter mAdapter;
         private final Account mAccount;
         private final Context mContext;
         private final Handler mHandler;
 
-        public FolderListActivityListener(FolderListAdapter adapter, Account account, Handler handler) {
+        public FolderListActivityListener(FolderAdapter adapter, Account account, Handler handler) {
             this.mAdapter = adapter;
             this.mAccount = account;
             this.mContext = adapter.getContext();

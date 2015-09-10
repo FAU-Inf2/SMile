@@ -6,9 +6,9 @@
 
     <!-- OpenPGP header -->
     <ViewStub
-        android:id="@+id/openpgp_header_stub"
-        android:inflatedId="@+id/openpgp_header"
-        android:layout="@layout/message_view_openpgp_header"
+        android:id="@+id/crypto_header_stub"
+        android:inflatedId="@+id/crypto_header"
+        android:layout="@layout/message_view_crypto_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
@@ -24,7 +24,7 @@
             android:layout_marginLeft="12dp"
             android:layout_marginRight="4dp"
             android:layout_height="match_parent"
-            android:background="@color/openpgp_sidebar"
+            android:background="@color/crypto_sidebar"
             android:visibility="gone"/>
 
         <LinearLayout

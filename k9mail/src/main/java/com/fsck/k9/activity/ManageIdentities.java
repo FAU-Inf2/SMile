@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 import com.fsck.k9.Identity;
 import com.fsck.k9.Preferences;
+
 import de.fau.cs.mad.smile.android.R;
 
 public class ManageIdentities extends ChooseIdentity {
@@ -22,13 +23,8 @@ public class ManageIdentities extends ChooseIdentity {
 
     @Override
     protected void setupClickListeners() {
-        this.getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                editItem(position);
-            }
-        });
-
         ListView listView = getListView();
+        listView.setOnItemClickListener(new MyOnItemClickListener());
         registerForContextMenu(listView);
     }
 
@@ -133,5 +129,11 @@ public class ManageIdentities extends ChooseIdentity {
             mAccount.save(Preferences.getPreferences(getApplication().getApplicationContext()));
         }
         finish();
+    }
+
+    private class MyOnItemClickListener implements AdapterView.OnItemClickListener {
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            editItem(position);
+        }
     }
 }

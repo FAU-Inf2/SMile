@@ -1,14 +1,6 @@
 
 package com.fsck.k9;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.SynchronousQueue;
-
 import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
@@ -37,13 +29,21 @@ import com.fsck.k9.mail.K9MailLib;
 import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mail.internet.BinaryTempFileBody;
+import com.fsck.k9.mail.ssl.LocalKeyStore;
 import com.fsck.k9.mailstore.LocalStore;
 import com.fsck.k9.provider.UnreadWidgetProvider;
-import com.fsck.k9.mail.ssl.LocalKeyStore;
 import com.fsck.k9.service.BootReceiver;
 import com.fsck.k9.service.MailService;
 import com.fsck.k9.service.ShutdownReceiver;
 import com.fsck.k9.service.StorageGoneReceiver;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.SynchronousQueue;
 
 import de.fau.cs.mad.smile.android.BuildConfig;
 import de.fau.cs.mad.smile.android.R;
@@ -171,6 +171,7 @@ public class K9 extends Application {
     private static boolean mAnimations = true;
 
     private static boolean mConfirmDelete = false;
+    private static boolean mConfirmDiscardMessage = true;
     private static boolean mConfirmDeleteStarred = false;
     private static boolean mConfirmSpam = false;
     private static boolean mConfirmDeleteFromNotification = true;
@@ -240,6 +241,7 @@ public class K9 extends Application {
     private static boolean mHideSpecialAccounts = false;
     private static boolean mAutofitWidth;
     private static boolean mQuietTimeEnabled = false;
+    private static boolean mNotificationDuringQuietTimeEnabled = true;
     private static String mQuietTimeStarts = null;
     private static String mQuietTimeEnds = null;
     private static String mAttachmentDefaultPath = "";
@@ -375,11 +377,9 @@ public class K9 extends Application {
         int acctLength = Preferences.getPreferences(context).getAvailableAccounts().size();
 
         setServicesEnabled(context, acctLength > 0, null);
-
     }
 
     private static void setServicesEnabled(Context context, boolean enabled, Integer wakeLockId) {
-
         PackageManager pm = context.getPackageManager();
 
         if (!enabled && pm.getComponentEnabledSetting(new ComponentName(context, MailService.class)) ==
@@ -390,6 +390,7 @@ public class K9 extends Application {
              */
             MailService.actionReset(context, wakeLockId);
         }
+
         Class<?>[] classes = { MessageCompose.class, BootReceiver.class, MailService.class };
 
         for (Class<?> clazz : classes) {
@@ -414,7 +415,6 @@ public class K9 extends Application {
              */
             MailService.actionReset(context, wakeLockId);
         }
-
     }
 
     /**
@@ -458,7 +458,6 @@ public class K9 extends Application {
         Log.i(K9.LOG_TAG, "Registered: shutdown receiver");
     }
 
-
     /**
      * Save settings from our statics into the app database.
      * <p/>
@@ -477,6 +476,7 @@ public class K9 extends Application {
         editor.putBoolean("useVolumeKeysForListNavigation", mUseVolumeKeysForListNavigation);
         editor.putBoolean("autofitWidth", mAutofitWidth);
         editor.putBoolean("quietTimeEnabled", mQuietTimeEnabled);
+        editor.putBoolean("notificationDuringQuietTimeEnabled", mNotificationDuringQuietTimeEnabled);
         editor.putString("quietTimeStarts", mQuietTimeStarts);
         editor.putString("quietTimeEnds", mQuietTimeEnds);
 
@@ -507,6 +507,7 @@ public class K9 extends Application {
         editor.putBoolean("fixedMessageViewTheme", useFixedMessageTheme);
 
         editor.putBoolean("confirmDelete", mConfirmDelete);
+        editor.putBoolean("confirmDiscardMessage", mConfirmDiscardMessage);
         editor.putBoolean("confirmDeleteStarred", mConfirmDeleteStarred);
         editor.putBoolean("confirmSpam", mConfirmSpam);
         editor.putBoolean("confirmDeleteFromNotification", mConfirmDeleteFromNotification);
@@ -645,7 +646,6 @@ public class K9 extends Application {
                 intent.putExtra(K9.Intents.EmailReceived.EXTRA_ACCOUNT, account.getDescription());
                 intent.putExtra(K9.Intents.EmailReceived.EXTRA_FOLDER, folderName);
                 K9.this.sendBroadcast(intent);
-
             }
 
         });
@@ -711,6 +711,7 @@ public class K9 extends Application {
         mAutofitWidth = sprefs.getBoolean("autofitWidth", true);
 
         mQuietTimeEnabled = sprefs.getBoolean("quietTimeEnabled", false);
+        mNotificationDuringQuietTimeEnabled = sprefs.getBoolean("notificationDuringQuietTimeEnabled", true);
         mQuietTimeStarts = sprefs.getString("quietTimeStarts", "21:00");
         mQuietTimeEnds = sprefs.getString("quietTimeEnds", "7:00");
 
@@ -727,6 +728,7 @@ public class K9 extends Application {
         mHideTimeZone = sprefs.getBoolean("hideTimeZone", false);
 
         mConfirmDelete = sprefs.getBoolean("confirmDelete", false);
+        mConfirmDiscardMessage = sprefs.getBoolean("confirmDiscardMessage", true);
         mConfirmDeleteStarred = sprefs.getBoolean("confirmDeleteStarred", false);
         mConfirmSpam = sprefs.getBoolean("confirmSpam", false);
         mConfirmDeleteFromNotification = sprefs.getBoolean("confirmDeleteFromNotification", true);
@@ -867,7 +869,11 @@ public class K9 extends Application {
     }
 
     public static int getK9ThemeResourceId(Theme themeId) {
-        return (themeId == Theme.LIGHT) ? R.style.Theme_K9_Light : R.style.Theme_K9_Dark;
+        if (themeId == Theme.LIGHT) {
+            return R.style.Theme_K9_Light;
+        }
+
+        return R.style.Theme_K9_Dark;
     }
 
     public static int getK9ThemeResourceId() {
@@ -973,6 +979,14 @@ public class K9 extends Application {
         mQuietTimeEnabled = quietTimeEnabled;
     }
 
+    public static boolean isNotificationDuringQuietTimeEnabled() {
+        return mNotificationDuringQuietTimeEnabled;
+    }
+
+    public static void setNotificationDuringQuietTimeEnabled(boolean notificationDuringQuietTimeEnabled) {
+        mNotificationDuringQuietTimeEnabled = notificationDuringQuietTimeEnabled;
+    }
+
     public static String getQuietTimeStarts() {
         return mQuietTimeStarts;
     }
@@ -1031,8 +1045,6 @@ public class K9 extends Application {
 
         return false;
     }
-
-
 
     public static boolean startIntegratedInbox() {
         return mStartIntegratedInbox;
@@ -1185,8 +1197,16 @@ public class K9 extends Application {
         return mConfirmSpam;
     }
 
+    public static boolean confirmDiscardMessage() {
+        return mConfirmDiscardMessage;
+    }
+
     public static void setConfirmSpam(final boolean confirm) {
         mConfirmSpam = confirm;
+    }
+
+    public static void setConfirmDiscardMessage(final boolean confirm) {
+        mConfirmDiscardMessage = confirm;
     }
 
     public static boolean confirmDeleteFromNotification() {

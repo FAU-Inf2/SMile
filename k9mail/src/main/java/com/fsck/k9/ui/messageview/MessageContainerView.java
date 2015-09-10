@@ -1,8 +1,5 @@
 package com.fsck.k9.ui.messageview;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
@@ -10,6 +7,7 @@ import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.KeyEvent;
@@ -28,23 +26,37 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import de.fau.cs.mad.smile.android.R;
+import com.fsck.k9.K9;
+import com.fsck.k9.crypto.MessageDecryptVerifier;
 import com.fsck.k9.helper.ClipboardManager;
 import com.fsck.k9.helper.Contacts;
 import com.fsck.k9.helper.Utility;
 import com.fsck.k9.mail.Address;
 import com.fsck.k9.mail.MessagingException;
+import com.fsck.k9.mail.internet.MimeBodyPart;
+import com.fsck.k9.mail.internet.MimeUtility;
 import com.fsck.k9.mailstore.AttachmentViewInfo;
+import com.fsck.k9.mailstore.CryptoErrorType;
 import com.fsck.k9.mailstore.MessageViewInfo.MessageViewContainer;
-
-import com.fsck.k9.mailstore.OpenPgpResultAnnotation;
-import com.fsck.k9.mailstore.OpenPgpResultAnnotation.CryptoError;
+import com.fsck.k9.mailstore.CryptoResultAnnotation;
 import com.fsck.k9.view.K9WebViewClient;
 import com.fsck.k9.view.MessageHeader.OnLayoutChangedListener;
 import com.fsck.k9.view.MessageWebView;
 
+import org.apache.james.mime4j.util.MimeUtil;
 
-public class MessageContainerView extends LinearLayout implements OnClickListener,
+import java.util.HashMap;
+import java.util.Map;
+
+import de.fau.cs.mad.smile.android.R;
+
+import static com.fsck.k9.mail.internet.MimeUtility.isSameMimeType;
+
+/**
+ *
+ */
+public class MessageContainerView extends LinearLayout
+        implements OnClickListener,
         OnLayoutChangedListener, OnCreateContextMenuListener {
     private static final int MENU_ITEM_LINK_VIEW = Menu.FIRST;
     private static final int MENU_ITEM_LINK_SHARE = Menu.FIRST + 1;
@@ -77,6 +89,10 @@ public class MessageContainerView extends LinearLayout implements OnClickListene
     private Map<AttachmentViewInfo, AttachmentView> attachments = new HashMap<AttachmentViewInfo, AttachmentView>();
 
 
+    public MessageContainerView(final Context context, final AttributeSet attrs) {
+        super(context, attrs);
+    }
+
     @Override
     public void onFinishInflate() {
         mSidebar = findViewById(R.id.message_sidebar);
@@ -96,16 +112,17 @@ public class MessageContainerView extends LinearLayout implements OnClickListene
 
         showingPictures = false;
 
-        Context context = getContext();
+        final Context context = getContext();
         mInflater = LayoutInflater.from(context);
         mClipboardManager = ClipboardManager.getInstance(context);
+        super.onFinishInflate();
     }
 
     @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
+    public void onCreateContextMenu(ContextMenu menu, View view, ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu);
 
-        WebView webview = (WebView) v;
+        WebView webview = (WebView) view;
         WebView.HitTestResult result = webview.getHitTestResult();
 
         if (result == null) {
@@ -113,12 +130,12 @@ public class MessageContainerView extends LinearLayout implements OnClickListene
         }
 
         int type = result.getType();
-        Context context = getContext();
+        final Context context = getContext();
 
         switch (type) {
             case HitTestResult.SRC_ANCHOR_TYPE: {
                 final String url = result.getExtra();
-                OnMenuItemClickListener listener = new OnMenuItemClickListener() {
+                final OnMenuItemClickListener listener = new OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
                         switch (item.getItemId()) {
@@ -332,16 +349,11 @@ public class MessageContainerView extends LinearLayout implements OnClickListene
         mHiddenAttachments.setVisibility(View.VISIBLE);
     }
 
-    public MessageContainerView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-    }
-
-
     private boolean isShowingPictures() {
         return showingPictures;
     }
 
-    private void setLoadPictures(boolean enable) {
+    private void setLoadPictures(final boolean enable) {
         mMessageContentView.blockNetworkData(!enable);
         showingPictures = enable;
     }
@@ -363,10 +375,12 @@ public class MessageContainerView extends LinearLayout implements OnClickListene
         }
     }
 
-    public void displayMessageViewContainer(MessageViewContainer messageViewContainer,
-            boolean automaticallyLoadPictures, ShowPicturesController showPicturesController,
-            AttachmentViewCallback attachmentCallback, OpenPgpHeaderViewCallback openPgpHeaderViewCallback,
-            boolean displayPgpHeader) throws MessagingException {
+    public void displayMessageViewContainer(final MessageViewContainer messageViewContainer,
+                                            final boolean automaticallyLoadPictures,
+                                            final ShowPicturesController showPicturesController,
+                                            final AttachmentViewCallback attachmentCallback,
+                                            final CryptoHeaderViewCallback cryptoHeaderViewCallback,
+                                            final boolean displayPgpHeader) throws MessagingException {
 
         this.attachmentCallback = attachmentCallback;
 
@@ -408,12 +422,12 @@ public class MessageContainerView extends LinearLayout implements OnClickListene
         }
 
         if (displayPgpHeader) {
-            ViewStub openPgpHeaderStub = (ViewStub) findViewById(R.id.openpgp_header_stub);
-            OpenPgpHeaderView openPgpHeaderView = (OpenPgpHeaderView) openPgpHeaderStub.inflate();
+            ViewStub cryptoHeaderStub = (ViewStub) findViewById(R.id.crypto_header_stub);
+            CryptoHeaderView cryptoHeaderView = (CryptoHeaderView) cryptoHeaderStub.inflate();
 
-            OpenPgpResultAnnotation cryptoAnnotation = messageViewContainer.cryptoAnnotation;
-            openPgpHeaderView.setOpenPgpData(cryptoAnnotation);
-            openPgpHeaderView.setCallback(openPgpHeaderViewCallback);
+            CryptoResultAnnotation cryptoAnnotation = messageViewContainer.cryptoAnnotation;
+            cryptoHeaderView.setCryptoAnnotation(cryptoAnnotation);
+            cryptoHeaderView.setCallback(cryptoHeaderViewCallback);
             mSidebar.setVisibility(View.VISIBLE);
         } else {
             mSidebar.setVisibility(View.GONE);
@@ -430,12 +444,12 @@ public class MessageContainerView extends LinearLayout implements OnClickListene
     }
 
     private String getTextToDisplay(MessageViewContainer messageViewContainer) {
-        OpenPgpResultAnnotation cryptoAnnotation = messageViewContainer.cryptoAnnotation;
+        CryptoResultAnnotation cryptoAnnotation = messageViewContainer.cryptoAnnotation;
         if (cryptoAnnotation == null) {
             return messageViewContainer.text;
         }
 
-        CryptoError errorType = cryptoAnnotation.getErrorType();
+        CryptoErrorType errorType = cryptoAnnotation.getErrorType();
         switch (errorType) {
             case CRYPTO_API_RETURNED_ERROR: {
                 // TODO make a nice view for this
@@ -462,6 +476,7 @@ public class MessageContainerView extends LinearLayout implements OnClickListene
     }
 
     public void renderAttachments(MessageViewContainer messageContainer) throws MessagingException {
+
         for (AttachmentViewInfo attachment : messageContainer.attachments) {
             AttachmentView view = (AttachmentView) mInflater.inflate(R.layout.message_view_attachment, null);
             view.setCallback(attachmentCallback);

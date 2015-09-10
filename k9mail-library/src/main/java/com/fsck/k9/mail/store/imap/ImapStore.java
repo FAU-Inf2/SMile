@@ -1746,7 +1746,7 @@ public class ImapStore extends RemoteStore {
                 String encoding = bs.getString(5);
                 int size = bs.getNumber(6);
 
-                if (MimeUtility.mimeTypeMatches(mimeType, "message/rfc822")) {
+                if (MimeUtility.isMessage(mimeType)) {
 //                  A body type of type MESSAGE and subtype RFC822
 //                  contains, immediately after the basic fields, the
 //                  envelope structure, body structure, and size in
@@ -1938,7 +1938,7 @@ public class ImapStore extends RemoteStore {
                 */
                 String[] messageIdHeader = message.getHeader("Message-ID");
 
-                if (messageIdHeader == null || messageIdHeader.length == 0) {
+                if (messageIdHeader.length == 0) {
                     if (K9MailLib.isDebug())
                         Log.d(LOG_TAG, "Did not get a message-id in order to search for UID  for " + getLogId());
                     return null;

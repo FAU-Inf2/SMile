@@ -1,9 +1,6 @@
 
 package com.fsck.k9.view;
 
-import com.fsck.k9.K9;
-import de.fau.cs.mad.smile.android.R;
-
 import android.app.Activity;
 import android.content.Context;
 import android.security.KeyChain;
@@ -15,6 +12,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+
+import com.fsck.k9.K9;
+
+import de.fau.cs.mad.smile.android.R;
 
 public class ClientCertificateSpinner extends LinearLayout {
     Activity mActivity;

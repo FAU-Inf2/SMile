@@ -3,6 +3,8 @@ package com.fsck.k9.fragment;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.TimePickerDialog;
+import android.content.DialogInterface;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.format.DateFormat;
 
@@ -33,7 +35,23 @@ public class RemindMeTimePickerDialog extends DialogFragment {
         int minute = c.get(Calendar.MINUTE);
 
         // Create a new instance of TimePickerDialog and return it
-        return new TimePickerDialog(getActivity(), this.getOnTimeSetListener(), hour, minute,
+        final TimePickerDialog timePickerDialog = new TimePickerDialog(getActivity(), this.getOnTimeSetListener(), hour, minute,
                 DateFormat.is24HourFormat(getActivity()));
+
+        if(hasJellyBeanAndAbove()) {
+            timePickerDialog.setButton(DialogInterface.BUTTON_NEGATIVE,
+                    getActivity().getString(android.R.string.cancel),
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                        }
+                    });
+        }
+
+        return timePickerDialog;
+    }
+
+    private static boolean hasJellyBeanAndAbove() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN;
     }
 }

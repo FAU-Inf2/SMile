@@ -1,12 +1,5 @@
 package com.fsck.k9.activity.setup;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -26,16 +19,24 @@ import com.fsck.k9.K9.NotificationHideSubject;
 import com.fsck.k9.K9.NotificationQuickDelete;
 import com.fsck.k9.K9.SplitViewMode;
 import com.fsck.k9.Preferences;
-import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.activity.ColorPickerDialog;
 import com.fsck.k9.activity.K9PreferenceActivity;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.helper.FileBrowserHelper;
 import com.fsck.k9.helper.FileBrowserHelper.FileBrowserFailOverCallback;
+import com.fsck.k9.helper.NotificationHelper;
 import com.fsck.k9.preferences.CheckBoxListPreference;
 import com.fsck.k9.preferences.TimePickerPreference;
-
 import com.fsck.k9.service.MailService;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import de.fau.cs.mad.smile.android.R;
 
 
 public class Prefs extends K9PreferenceActivity {
@@ -79,6 +80,8 @@ public class Prefs extends K9PreferenceActivity {
     private static final String PREFERENCE_MESSAGEVIEW_RETURN_TO_LIST = "messageview_return_to_list";
     private static final String PREFERENCE_MESSAGEVIEW_SHOW_NEXT = "messageview_show_next";
     private static final String PREFERENCE_QUIET_TIME_ENABLED = "quiet_time_enabled";
+    private static final String PREFERENCE_DISABLE_NOTIFICATION_DURING_QUIET_TIME =
+            "disable_notifications_during_quiet_time";
     private static final String PREFERENCE_QUIET_TIME_STARTS = "quiet_time_starts";
     private static final String PREFERENCE_QUIET_TIME_ENDS = "quiet_time_ends";
     private static final String PREFERENCE_NOTIF_QUICK_DELETE = "notification_quick_delete";
@@ -142,6 +145,7 @@ public class Prefs extends K9PreferenceActivity {
     private CheckBoxListPreference mVisibleRefileActions;
 
     private CheckBoxPreference mQuietTimeEnabled;
+    private CheckBoxPreference mDisableNotificationDuringQuietTime;
     private com.fsck.k9.preferences.TimePickerPreference mQuietTimeStarts;
     private com.fsck.k9.preferences.TimePickerPreference mQuietTimeEnds;
     private ListPreference mNotificationQuickDelete;
@@ -169,12 +173,14 @@ public class Prefs extends K9PreferenceActivity {
         List<CharSequence> entryValueVector = new ArrayList<CharSequence>(Arrays.asList(mLanguage.getEntryValues()));
         String supportedLanguages[] = getResources().getStringArray(R.array.supported_languages);
         Set<String> supportedLanguageSet = new HashSet<String>(Arrays.asList(supportedLanguages));
+
         for (int i = entryVector.size() - 1; i > -1; --i) {
             if (!supportedLanguageSet.contains(entryValueVector.get(i))) {
                 entryVector.remove(i);
                 entryValueVector.remove(i);
             }
         }
+
         initListPreference(mLanguage, K9.getK9Language(),
                            entryVector.toArray(EMPTY_CHAR_SEQUENCE_ARRAY),
                            entryValueVector.toArray(EMPTY_CHAR_SEQUENCE_ARRAY));
@@ -210,9 +216,9 @@ public class Prefs extends K9PreferenceActivity {
 
         mConfirmActions = (CheckBoxListPreference) findPreference(PREFERENCE_CONFIRM_ACTIONS);
 
-        boolean canDeleteFromNotification = MessagingController.platformSupportsExtendedNotifications();
-        CharSequence[] confirmActionEntries = new CharSequence[canDeleteFromNotification ? 4 : 3];
-        boolean[] confirmActionValues = new boolean[canDeleteFromNotification ? 4 : 3];
+        boolean canDeleteFromNotification = NotificationHelper.platformSupportsExtendedNotifications();
+        CharSequence[] confirmActionEntries = new CharSequence[canDeleteFromNotification ? 5 : 4];
+        boolean[] confirmActionValues = new boolean[canDeleteFromNotification ? 5 : 4];
         int index = 0;
 
         confirmActionEntries[index] = getString(R.string.global_settings_confirm_action_delete);
@@ -225,6 +231,8 @@ public class Prefs extends K9PreferenceActivity {
         }
         confirmActionEntries[index] = getString(R.string.global_settings_confirm_action_spam);
         confirmActionValues[index++] = K9.confirmSpam();
+        confirmActionEntries[index] = getString(R.string.global_settings_confirm_menu_discard);
+        confirmActionValues[index++] = K9.confirmDiscardMessage();
 
         mConfirmActions.setItems(confirmActionEntries);
         mConfirmActions.setCheckedItems(confirmActionValues);
@@ -309,6 +317,9 @@ public class Prefs extends K9PreferenceActivity {
         mQuietTimeEnabled = (CheckBoxPreference) findPreference(PREFERENCE_QUIET_TIME_ENABLED);
         mQuietTimeEnabled.setChecked(K9.getQuietTimeEnabled());
 
+        mDisableNotificationDuringQuietTime = (CheckBoxPreference) findPreference(
+                PREFERENCE_DISABLE_NOTIFICATION_DURING_QUIET_TIME);
+        mDisableNotificationDuringQuietTime.setChecked(!K9.isNotificationDuringQuietTimeEnabled());
         mQuietTimeStarts = (TimePickerPreference) findPreference(PREFERENCE_QUIET_TIME_STARTS);
         mQuietTimeStarts.setDefaultValue(K9.getQuietTimeStarts());
         mQuietTimeStarts.setSummary(K9.getQuietTimeStarts());
@@ -333,7 +344,7 @@ public class Prefs extends K9PreferenceActivity {
 
         mNotificationQuickDelete = setupListPreference(PREFERENCE_NOTIF_QUICK_DELETE,
                 K9.getNotificationQuickDeleteBehaviour().toString());
-        if (!MessagingController.platformSupportsExtendedNotifications()) {
+        if (!NotificationHelper.platformSupportsExtendedNotifications()) {
             PreferenceScreen prefs = (PreferenceScreen) findPreference("notification_preferences");
             prefs.removePreference(mNotificationQuickDelete);
             mNotificationQuickDelete = null;
@@ -341,7 +352,7 @@ public class Prefs extends K9PreferenceActivity {
 
         mLockScreenNotificationVisibility = setupListPreference(PREFERENCE_LOCK_SCREEN_NOTIFICATION_VISIBILITY,
             K9.getLockScreenNotificationVisibility().toString());
-        if (!MessagingController.platformSupportsLockScreenNotifications()) {
+        if (!NotificationHelper.platformSupportsLockScreenNotifications()) {
             ((PreferenceScreen) findPreference("notification_preferences"))
                 .removePreference(mLockScreenNotificationVisibility);
             mLockScreenNotificationVisibility = null;
@@ -453,10 +464,11 @@ public class Prefs extends K9PreferenceActivity {
         int index = 0;
         K9.setConfirmDelete(mConfirmActions.getCheckedItems()[index++]);
         K9.setConfirmDeleteStarred(mConfirmActions.getCheckedItems()[index++]);
-        if (MessagingController.platformSupportsExtendedNotifications()) {
+        if (NotificationHelper.platformSupportsExtendedNotifications()) {
             K9.setConfirmDeleteFromNotification(mConfirmActions.getCheckedItems()[index++]);
         }
         K9.setConfirmSpam(mConfirmActions.getCheckedItems()[index++]);
+        K9.setConfirmDiscardMessage(mConfirmActions.getCheckedItems()[index++]);
 
         K9.setMeasureAccounts(mMeasureAccounts.isChecked());
         K9.setCountSearchMessages(mCountSearch.isChecked());
@@ -485,6 +497,7 @@ public class Prefs extends K9PreferenceActivity {
         K9.setMessageViewCopyActionVisible(enabledRefileActions[VISIBLE_REFILE_ACTIONS_COPY]);
         K9.setMessageViewSpamActionVisible(enabledRefileActions[VISIBLE_REFILE_ACTIONS_SPAM]);
 
+        K9.setNotificationDuringQuietTimeEnabled(!mDisableNotificationDuringQuietTime.isChecked());
         K9.setQuietTimeStarts(mQuietTimeStarts.getTime());
         K9.setQuietTimeEnds(mQuietTimeEnds.getTime());
         K9.setWrapFolderNames(mWrapFolderNames.isChecked());

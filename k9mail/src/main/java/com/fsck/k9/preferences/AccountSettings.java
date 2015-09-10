@@ -1,13 +1,7 @@
 package com.fsck.k9.preferences;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-
 import android.content.SharedPreferences;
+
 import com.fsck.k9.Account;
 import com.fsck.k9.Account.DeletePolicy;
 import com.fsck.k9.Account.Expunge;
@@ -18,9 +12,16 @@ import com.fsck.k9.Account.Searchable;
 import com.fsck.k9.Account.ShowPictures;
 import com.fsck.k9.Account.SortType;
 import com.fsck.k9.K9;
-import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.mailstore.StorageManager;
-import com.fsck.k9.preferences.Settings.*;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+
+import de.fau.cs.mad.smile.android.R;
 
 public class AccountSettings {
     public static final Map<String, TreeMap<Integer, SettingsDescription>> SETTINGS;
@@ -34,6 +35,14 @@ public class AccountSettings {
          * When adding new settings here, be sure to increment {@link Settings.VERSION}
          * and use that for whatever you add here.
          */
+
+        s.put("smime_app", Settings.versions(
+                new  V(42, new StringSetting(""))
+        ));
+
+        s.put("default_crypto", Settings.versions(
+                new  V(43, new StringSetting("None"))
+        ));
 
         s.put("alwaysBcc", Settings.versions(
                 new V(11, new StringSetting(""))

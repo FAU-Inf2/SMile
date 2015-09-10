@@ -1,8 +1,5 @@
 package com.fsck.k9.ui.messageview;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.content.Context;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -10,11 +7,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.Account.ShowPictures;
 import com.fsck.k9.K9;
-import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.helper.Contacts;
 import com.fsck.k9.mail.Address;
 import com.fsck.k9.mail.Flag;
@@ -24,6 +21,11 @@ import com.fsck.k9.mailstore.MessageViewInfo;
 import com.fsck.k9.mailstore.MessageViewInfo.MessageViewContainer;
 import com.fsck.k9.view.MessageHeader;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import de.fau.cs.mad.smile.android.R;
+
 
 public class MessageTopView extends LinearLayout implements ShowPicturesController {
 
@@ -32,10 +34,10 @@ public class MessageTopView extends LinearLayout implements ShowPicturesControll
     private LinearLayout containerViews;
     private Button mDownloadRemainder;
     private AttachmentViewCallback attachmentCallback;
-    private OpenPgpHeaderViewCallback openPgpHeaderViewCallback;
+    private CryptoHeaderViewCallback cryptoHeaderViewCallback;
     private Button showPicturesButton;
-    private List<MessageContainerView> messageContainerViewsWithPictures = new ArrayList<MessageContainerView>();
-
+    private ProgressBar progressBar;
+    private List<MessageContainerView> messageContainerViewsWithPictures = new ArrayList<>();
 
     public MessageTopView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -54,6 +56,8 @@ public class MessageTopView extends LinearLayout implements ShowPicturesControll
         setShowPicturesButtonListener();
 
         containerViews = (LinearLayout) findViewById(R.id.message_containers);
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        super.onFinishInflate();
     }
 
     private void setShowPicturesButtonListener() {
@@ -76,6 +80,7 @@ public class MessageTopView extends LinearLayout implements ShowPicturesControll
     public void resetView() {
         mDownloadRemainder.setVisibility(View.GONE);
         containerViews.removeAllViews();
+        containerViews.addView(progressBar);
     }
 
     public void setMessage(Account account, MessageViewInfo messageViewInfo)
@@ -86,11 +91,13 @@ public class MessageTopView extends LinearLayout implements ShowPicturesControll
         boolean automaticallyLoadPictures =
                 shouldAutomaticallyLoadPictures(showPicturesSetting, messageViewInfo.message);
 
+        containerViews.removeView(progressBar);
         for (MessageViewContainer container : messageViewInfo.containers) {
             MessageContainerView view = (MessageContainerView) mInflater.inflate(R.layout.message_container, null);
-            boolean displayPgpHeader = account.isOpenPgpProviderConfigured();
+            boolean displayPgpHeader = false; //account.isOpenPgpProviderConfigured();
+            mHeaderContainer.setCryptoAnnotation(container.cryptoAnnotation);
             view.displayMessageViewContainer(container, automaticallyLoadPictures, this, attachmentCallback,
-                    openPgpHeaderViewCallback, displayPgpHeader);
+                    cryptoHeaderViewCallback, displayPgpHeader);
 
             containerViews.addView(view);
         }
@@ -110,8 +117,6 @@ public class MessageTopView extends LinearLayout implements ShowPicturesControll
         try {
             mHeaderContainer.populate(message, account);
             mHeaderContainer.setVisibility(View.VISIBLE);
-
-
         } catch (Exception me) {
             Log.e(K9.LOG_TAG, "setHeaders - error", me);
         }
@@ -141,8 +146,8 @@ public class MessageTopView extends LinearLayout implements ShowPicturesControll
         attachmentCallback = callback;
     }
 
-    public void setOpenPgpHeaderViewCallback(OpenPgpHeaderViewCallback callback) {
-        openPgpHeaderViewCallback = callback;
+    public void setCryptoHeaderViewCallback(CryptoHeaderViewCallback callback) {
+        cryptoHeaderViewCallback = callback;
     }
 
     public void enableDownloadButton() {

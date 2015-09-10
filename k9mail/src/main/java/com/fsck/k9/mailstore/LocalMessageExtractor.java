@@ -3,8 +3,9 @@ package com.fsck.k9.mailstore;
 import android.content.Context;
 import android.net.Uri;
 
-import de.fau.cs.mad.smile.android.R;
 import com.fsck.k9.crypto.DecryptedTempFileBody;
+import com.fsck.k9.crypto.MessageDecryptVerifier;
+import com.fsck.k9.helper.HtmlConverter;
 import com.fsck.k9.mail.Address;
 import com.fsck.k9.mail.Body;
 import com.fsck.k9.mail.BodyPart;
@@ -12,7 +13,6 @@ import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mail.Multipart;
 import com.fsck.k9.mail.Part;
-import com.fsck.k9.helper.HtmlConverter;
 import com.fsck.k9.mail.internet.MessageExtractor;
 import com.fsck.k9.mail.internet.MimeHeader;
 import com.fsck.k9.mail.internet.MimeUtility;
@@ -26,6 +26,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import de.fau.cs.mad.smile.android.R;
 
 import static com.fsck.k9.mail.internet.MimeUtility.getHeaderParameter;
 import static com.fsck.k9.mail.internet.Viewable.Alternative;
@@ -42,7 +44,8 @@ public class LocalMessageExtractor {
     private static final int FILENAME_PREFIX_LENGTH = FILENAME_PREFIX.length();
     private static final String FILENAME_SUFFIX = " ";
     private static final int FILENAME_SUFFIX_LENGTH = FILENAME_SUFFIX.length();
-    private static final OpenPgpResultAnnotation NO_ANNOTATIONS = null;
+    private static final CryptoResultAnnotation NO_ANNOTATIONS = null;
+    private static final List<AttachmentViewInfo> EMPTY_LIST = new ArrayList<>();
 
     private LocalMessageExtractor() {}
     /**
@@ -421,6 +424,9 @@ public class LocalMessageExtractor {
         html.append("</td></tr>");
     }
 
+    /**
+     * Gets called by {@link com.fsck.k9.ui.message.DecodeMessageLoader}
+     */
     public static MessageViewInfo decodeMessageForView(Context context,
             Message message, MessageCryptoAnnotations annotations) throws MessagingException {
 
@@ -430,11 +436,18 @@ public class LocalMessageExtractor {
         // 2. extract viewables/attachments of parts
         ArrayList<MessageViewContainer> containers = new ArrayList<MessageViewContainer>();
         for (Part part : parts) {
-            OpenPgpResultAnnotation pgpAnnotation = annotations.get(part);
+            CryptoResultAnnotation cryptoResultAnnotation = annotations.get(part);
 
             // TODO properly handle decrypted data part - this just replaces the part
-            if (pgpAnnotation != NO_ANNOTATIONS && pgpAnnotation.hasOutputData()) {
-                part = pgpAnnotation.getOutputData();
+            if (cryptoResultAnnotation != NO_ANNOTATIONS && cryptoResultAnnotation.hasOutputData()) {
+                part = cryptoResultAnnotation.getOutputData();
+            }
+
+            if(cryptoResultAnnotation == NO_ANNOTATIONS && MessageDecryptVerifier.isEncryptedPart(part)) {
+                final String text = context.getString(R.string.no_crypto_provider_configured);
+                MessageViewContainer container = new MessageViewContainer(text, part, EMPTY_LIST, cryptoResultAnnotation);
+                containers.add(container);
+                continue;
             }
 
             ArrayList<Part> attachments = new ArrayList<Part>();
@@ -446,7 +459,7 @@ public class LocalMessageExtractor {
             List<AttachmentViewInfo> attachmentInfos = extractAttachmentInfos(context, attachments);
 
             MessageViewContainer messageViewContainer =
-                    new MessageViewContainer(viewable.html, part, attachmentInfos, pgpAnnotation);
+                    new MessageViewContainer(viewable.html, part, attachmentInfos, cryptoResultAnnotation);
 
             containers.add(messageViewContainer);
         }
@@ -479,11 +492,13 @@ public class LocalMessageExtractor {
         Body body = part.getBody();
         if (body instanceof Multipart) {
             Multipart multi = (Multipart) body;
-            if ("multipart/mixed".equals(part.getMimeType())) {
+            if (MimeUtility.isSameMimeType(part.getMimeType(), "multipart/mixed")) {
                 boolean foundSome = false;
+
                 for (BodyPart sub : multi.getBodyParts()) {
                     foundSome |= getCryptSubPieces(sub, parts, annotations);
                 }
+
                 if (!foundSome) {
                     parts.add(part);
                     return true;
@@ -493,6 +508,7 @@ public class LocalMessageExtractor {
                 return true;
             }
         }
+
         return false;
     }
 
@@ -560,7 +576,7 @@ public class LocalMessageExtractor {
         // attachments.
         if (contentDisposition != null &&
                 MimeUtility.getHeaderParameter(contentDisposition, null).matches("^(?i:inline)") &&
-                part.getHeader(MimeHeader.HEADER_CONTENT_ID) != null) {
+                part.getHeader(MimeHeader.HEADER_CONTENT_ID).length > 0) {
             firstClassAttachment = false;
         }
 

@@ -1,10 +1,9 @@
 package com.fsck.k9.service;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.util.Log;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.K9;
@@ -12,6 +11,7 @@ import com.fsck.k9.Preferences;
 import com.fsck.k9.activity.MessageCompose;
 import com.fsck.k9.activity.MessageReference;
 import com.fsck.k9.controller.MessagingController;
+import com.fsck.k9.helper.NotificationHelper;
 import com.fsck.k9.mail.Flag;
 import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mail.RemindMe;
@@ -19,10 +19,11 @@ import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.mailstore.LocalRemindMe;
 import com.fsck.k9.mailstore.LocalStore;
 
-import android.app.PendingIntent;
-import android.content.Context;
-import android.content.Intent;
-import android.util.Log;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Service called by actions in notifications.
@@ -160,7 +161,8 @@ public class NotificationActionService extends CoreService {
             Log.i(K9.LOG_TAG, "NotificationActionService started with startId = " + startId);
 
         final Preferences preferences = Preferences.getPreferences(this);
-        final MessagingController controller = MessagingController.getInstance(getApplication());
+        final MessagingController controller = MessagingController.getInstance(getApplicationContext());
+        final NotificationHelper notificationHelper = NotificationHelper.getInstance(getApplicationContext());
         final Account account = preferences.getAccount(intent.getStringExtra(EXTRA_ACCOUNT));
         final String action = intent.getAction();
         LocalRemindMe localRemindMe = null;
@@ -173,8 +175,9 @@ public class NotificationActionService extends CoreService {
 
         if (account != null) {
             if (READ_ALL_ACTION.equals(action)) {
-                if (K9.DEBUG)
+                if (K9.DEBUG) {
                     Log.i(K9.LOG_TAG, "NotificationActionService marking messages as read");
+                }
 
                 List<MessageReference> refs =
                         intent.getParcelableArrayListExtra(EXTRA_MESSAGE_LIST);
@@ -195,8 +198,9 @@ public class NotificationActionService extends CoreService {
                     }
                 }
             } else if (DELETE_ALL_ACTION.equals(action)) {
-                if (K9.DEBUG)
+                if (K9.DEBUG) {
                     Log.i(K9.LOG_TAG, "NotificationActionService deleting messages");
+                }
 
                 List<MessageReference> refs =
                         intent.getParcelableArrayListExtra(EXTRA_MESSAGE_LIST);
@@ -211,8 +215,9 @@ public class NotificationActionService extends CoreService {
 
                 controller.deleteMessages(messages, null);
             } else if (ARCHIVE_ALL_ACTION.equals(action)) {
-                if (K9.DEBUG)
+                if (K9.DEBUG) {
                     Log.i(K9.LOG_TAG, "NotificationActionService archiving messages");
+                }
 
                 List<MessageReference> refs =
                         intent.getParcelableArrayListExtra(EXTRA_MESSAGE_LIST);
@@ -282,7 +287,7 @@ public class NotificationActionService extends CoreService {
             }
 
             /* there's no point in keeping the notification after the user clicked on it */
-            controller.notifyAccountCancel(this, account);
+            notificationHelper.notifyAccountCancel(this, account);
         } else {
             Log.w(K9.LOG_TAG, "Could not find account for notification action.");
         }

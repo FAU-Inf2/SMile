@@ -5,8 +5,10 @@ import android.net.Uri;
 
 import com.fsck.k9.mail.Part;
 
+import java.io.Serializable;
 
-public class AttachmentViewInfo {
+
+public class AttachmentViewInfo implements Serializable {
     public static final long UNKNOWN_SIZE = -1;
 
     public final String mimeType;

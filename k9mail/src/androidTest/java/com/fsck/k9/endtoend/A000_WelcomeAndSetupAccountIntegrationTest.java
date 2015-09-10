@@ -2,6 +2,7 @@ package com.fsck.k9.endtoend;
 
 import com.fsck.k9.activity.setup.WelcomeMessage;
 import com.fsck.k9.endtoend.pages.WelcomeMessagePage;
+
 import org.junit.Test;
 
 

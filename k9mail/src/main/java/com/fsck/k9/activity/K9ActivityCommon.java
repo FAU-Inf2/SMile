@@ -1,7 +1,5 @@
 package com.fsck.k9.activity;
 
-import java.util.Locale;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
@@ -14,6 +12,8 @@ import android.view.MotionEvent;
 import com.fsck.k9.K9;
 import com.fsck.k9.activity.misc.SwipeGestureDetector;
 import com.fsck.k9.activity.misc.SwipeGestureDetector.OnSwipeGestureListener;
+
+import java.util.Locale;
 
 
 /**
@@ -64,10 +64,8 @@ public class K9ActivityCommon {
         void setupGestureDetector(OnSwipeGestureListener listener);
     }
 
-
     private Activity mActivity;
     private GestureDetector mGestureDetector;
-
 
     private K9ActivityCommon(Activity activity) {
         mActivity = activity;

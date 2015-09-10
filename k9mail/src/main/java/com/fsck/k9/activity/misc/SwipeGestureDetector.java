@@ -1,9 +1,9 @@
 package com.fsck.k9.activity.misc;
 
 import android.content.Context;
-import android.view.MotionEvent;
 import android.view.GestureDetector.OnGestureListener;
 import android.view.GestureDetector.SimpleOnGestureListener;
+import android.view.MotionEvent;
 
 
 public class SwipeGestureDetector extends SimpleOnGestureListener {

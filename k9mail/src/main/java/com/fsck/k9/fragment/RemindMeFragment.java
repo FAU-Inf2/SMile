@@ -1,22 +1,20 @@
 package com.fsck.k9.fragment;
 
-import android.app.ListFragment;
-import android.content.Intent;
-import android.graphics.Rect;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListView;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
-import com.fsck.k9.activity.MessageList;
-import com.fsck.k9.activity.RemindMeAdapter;
+import com.fsck.k9.adapter.RemindMeAdapter;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.mail.Folder;
 import com.fsck.k9.mail.MessagingException;
@@ -30,14 +28,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class RemindMeFragment extends ListFragment {
+import de.fau.cs.mad.smile.android.R;
+
+@Deprecated
+public class RemindMeFragment extends Fragment {
     private static final String ARG_ACCOUNT = "accountUuid";
+
+    private RecyclerView mRecyclerView;
 
     private LocalRemindMe mLocalRemindMe;
     private RemindMeAdapter mAdapter;
     private List<RemindMe> mRemindMeList;
     private Account mAccount;
-
 
     public static RemindMeFragment newInstance(String accountUuid) {
         RemindMeFragment remindMeFragment = new RemindMeFragment();
@@ -52,8 +54,7 @@ public class RemindMeFragment extends ListFragment {
         super.onCreate(savedInstanceState);
 
         mRemindMeList = new ArrayList<RemindMe>();
-        mAdapter = new RemindMeAdapter(getActivity(), mRemindMeList);
-        mAdapter.setNotifyOnChange(true);
+        mAdapter = new RemindMeAdapter(mRemindMeList);
         String accountUuid = getArguments().getString(ARG_ACCOUNT);
         mAccount = Preferences.getPreferences(getActivity()).getAccount(accountUuid);
 
@@ -67,28 +68,18 @@ public class RemindMeFragment extends ListFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = super.onCreateView(inflater, container, savedInstanceState);
-        setListAdapter(mAdapter);
-        return view;
+        View rootView = inflater.inflate(R.layout.remindme_frag, container, false);
+        mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerView);
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
+        mRecyclerView.setLayoutManager(layoutManager);
+        mRecyclerView.setAdapter(mAdapter);
+        return rootView;
     }
 
     @Override
     public void onResume() {
         super.onResume();
         new LoadFollowUp().execute();
-    }
-
-    @Override
-    public void onListItemClick(ListView listView, View view, int position, long id) {
-        Object obj = listView.getItemAtPosition(position);
-
-        if(obj instanceof RemindMe) {
-            RemindMe remindMe = (RemindMe)obj;
-            // TODO: build intent to view Message
-            Intent intent = new Intent(getActivity(), MessageList.class);
-        }
-
-        super.onListItemClick(listView, view, position, id);
     }
 
     public void add(RemindMe remindMe) {
@@ -101,30 +92,28 @@ public class RemindMeFragment extends ListFragment {
         mRemindMeList.clear();
         mRemindMeList.addAll(items);
         mAdapter.notifyDataSetChanged();
-        ListView listView = getListView();
-        listView.invalidate();
     }
 
     public void onSwipeLeftToRight(MotionEvent e1, MotionEvent e2) {
-        RemindMe remindMe = getFollowUpFromListSwipe(e1, e2);
+        /*RemindMe remindMe = getFollowUpFromListSwipe(e1, e2);
 
         if(remindMe != null) {
             Log.d(K9.LOG_TAG, "LeftToRightSwipe, Object: " + remindMe);
             new DeleteFollowUp().execute(remindMe);
-            mAdapter.remove(remindMe);
-        }
+            mRemindMeList.remove(remindMe);
+        }*/
     }
 
     public void onSwipeRightToLeft(MotionEvent e1, MotionEvent e2) {
-        RemindMe remindMe = getFollowUpFromListSwipe(e1, e2);
+       /* RemindMe remindMe = getFollowUpFromListSwipe(e1, e2);
 
         if(remindMe != null) {
             Log.d(K9.LOG_TAG, "RightToLeftSwipe, Object: " + remindMe);
             RemindMeDialog dialog = RemindMeDialog.newInstance(remindMe);
             dialog.show(getFragmentManager(), "mTimeValue");
-        }
+        }*/
     }
-
+/*
     private RemindMe getFollowUpFromListSwipe(MotionEvent e1, MotionEvent e2) {
         int x = (int) e1.getRawX();
         int y = (int) e1.getRawY();
@@ -141,12 +130,12 @@ public class RemindMeFragment extends ListFragment {
             int listY = y - listPosition[1];
 
             int listViewPosition = listView.pointToPosition(listX, listY);
-            return mAdapter.getItem(listViewPosition);
+            return mRemindMeList.get(listViewPosition);
         }
 
         return  null;
     }
-
+*/
     class LoadFollowUp extends AsyncTask<Void, Void, List<RemindMe>> {
 
         @Override

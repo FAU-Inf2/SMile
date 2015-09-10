@@ -16,6 +16,7 @@ import com.fsck.k9.Preferences;
 import com.fsck.k9.activity.MessageReference;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.helper.Utility;
+import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mail.Pusher;
 
 import java.util.Collection;
@@ -145,33 +146,36 @@ public class MailService extends CoreService {
             MessagingController.getInstance(getApplication()).systemStatusChanged();
         }
 
-        if (K9.DEBUG)
+        if (K9.DEBUG) {
             Log.i(K9.LOG_TAG, "MailService.onStart took " + (System.currentTimeMillis() - startTime) + "ms");
+        }
 
 
         // get current Account
-        MessageReference mMessageReference = intent.getParcelableExtra("message_reference");
+        MessageReference messageReference = intent.getParcelableExtra("message_reference");
         final String accountUuid;
-        if (mMessageReference != null) {
-            accountUuid = mMessageReference.getAccountUuid();
-        } else {
+        if (messageReference == null) {
             accountUuid = intent.getStringExtra("account");
+        } else {
+            accountUuid = messageReference.getAccountUuid();
         }
 
-        Account mAccount = Preferences.getPreferences(this).getAccount(accountUuid);
-        if (mAccount == null) {
-            mAccount = Preferences.getPreferences(this).getDefaultAccount();
+        Account account = Preferences.getPreferences(this).getAccount(accountUuid);
+        if (account == null) {
+            account = Preferences.getPreferences(this).getDefaultAccount();
         }
 
-        MessagingController messagingController = MessagingController.getInstance(getApplication());
-        //get current Context
-        Context mContext = this.getBaseContext();
+        Context context = this.getApplication();
+        FeatureStorage featureStorage = null;
 
-        String filesDirectory = this.getFilesDir().getAbsolutePath();
         Log.i(K9.LOG_TAG, "Calling FeatureStorage from MailService.");
-        FeatureStorage featureStorage = new FeatureStorage(mAccount, mContext, messagingController,
-                filesDirectory);
-        featureStorage.pollService();
+
+        try {
+            featureStorage = new FeatureStorage(account, context);
+            featureStorage.pollService();
+        } catch (MessagingException e) {
+            Log.e(K9.LOG_TAG, "failed to synchronize feature storage", e);
+        }
 
         return START_NOT_STICKY;
     }

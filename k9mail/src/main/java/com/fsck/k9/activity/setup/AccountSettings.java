@@ -739,9 +739,14 @@ public class AccountSettings extends K9PreferenceActivity {
         Intent smime = new Intent(SMimeApi.SERVICE_INTENT);
         List<ResolveInfo> activities = packageManager.queryIntentServices(smime, 0);
         mSmimeApp = (ListPreference) findPreference(PREFERENCE_CRYPTO_SMIME_APP);
+
         if(activities.size() > 0) {
             final ArrayList<String> names = new ArrayList<>();
             final ArrayList<String> values = new ArrayList<>();
+            final String none = "None";
+            names.add(none);
+            values.add(none);
+
             for(ResolveInfo ri : activities) {
                 if(ri.serviceInfo != null) {
                     names.add(ri.serviceInfo.loadLabel(packageManager).toString());
@@ -751,12 +756,17 @@ public class AccountSettings extends K9PreferenceActivity {
 
             mSmimeApp.setEntries(names.toArray(new String[names.size()]));
             mSmimeApp.setEntryValues(values.toArray(new String[values.size()]));
+            mSmimeApp.setDefaultValue(none);
+            mSmimeApp.setSummary(none);
 
-            mSmimeApp.setValue(mAccount.getSmimeProvider());
-            int pos = values.indexOf(mAccount.getSmimeProvider());
-            if(pos >= 0) {
-                String name = names.get(pos);
-                mSmimeApp.setSummary(name);
+            final String smimeApp = mAccount.getSmimeProvider();
+            if(smimeApp != null && !smimeApp.equals("")) {
+                mSmimeApp.setValue(smimeApp);
+                int pos = values.indexOf(smimeApp);
+                if (pos >= 0) {
+                    String name = names.get(pos);
+                    mSmimeApp.setSummary(name);
+                }
             }
 
             mSmimeApp.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {

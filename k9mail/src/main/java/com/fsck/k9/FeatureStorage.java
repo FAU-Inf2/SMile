@@ -66,7 +66,9 @@ public class FeatureStorage {
         @Override
         public void folderStatusChanged(Account account, String folderName, int unreadMessageCount) {
             if(account.getSmileStorageFolderName().equals(folderName)) {
-                Log.d(K9.LOG_TAG, "folderStatusChanged in FeatureStorage");
+                if(K9.DEBUG) {
+                    Log.d(K9.LOG_TAG, "folderStatusChanged in FeatureStorage");
+                }
             }
 
             super.folderStatusChanged(account, folderName, unreadMessageCount);

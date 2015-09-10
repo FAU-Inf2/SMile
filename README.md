@@ -21,3 +21,14 @@ Tools and Libraries that we used:
 - [Android Holo ColorPicker](https://github.com/FAU-Inf2/SMile/tree/master/plugins/HoloColorPicker), License: Apache License Version 2.0
 - [OpenPGP API library](https://github.com/FAU-Inf2/SMile/tree/master/plugins/openpgp-api-library), License: Apache License Version 2.0
 - [AndroidSwipeLayout](https://github.com/daimajia/AndroidSwipeLayout), License: MIT
+
+S/MIME How-To
+--------------------------------
+To be able to read and send S/MIME encrypted mails, you have to install our [SMile Cryptographic Extension](https://github.com/FAU-Inf2/SMileCE) and import your certificate there.
+
+- Install SMileCE
+- Import your certificate in SMileCE
+- Open SMile
+- Settings → Account Settings → Cryptographic
+- S/MIME App → Select "SMile Cryptographic Extension"
+- SMile and SMileCE are now connected

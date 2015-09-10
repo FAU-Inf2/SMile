@@ -136,7 +136,9 @@ public class FeatureStorage {
                         currentMessageId.replace(appendText.MESSAGE_ID_MAGIC_STRING, "")) >
                         lastUpdate)  //newer version available
                     return currentMessageId;
-            } catch (Exception e) {}
+            } catch (Exception e) {
+                Log.e(K9.LOG_TAG, "error in FeatureStorage.hasUpdate", e);
+            }
             return null;
         }
 

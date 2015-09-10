@@ -444,7 +444,14 @@ public class LocalMessageExtractor {
             }
 
             if(cryptoResultAnnotation == NO_ANNOTATIONS && MessageDecryptVerifier.isEncryptedPart(part)) {
-                final String text = context.getString(R.string.no_crypto_provider_configured);
+                String text = "";
+
+                if(MessageDecryptVerifier.isSmimeEncryptedPart(part)) {
+                    text = context.getString(R.string.no_crypto_provider_configured, "S/MIME");
+                } else if(MessageDecryptVerifier.isPgpMimeEncryptedPart(part)){
+                    text = context.getString(R.string.no_crypto_provider_configured, "OpenPGP");
+                }
+
                 MessageViewContainer container = new MessageViewContainer(text, part, EMPTY_LIST, cryptoResultAnnotation);
                 containers.add(container);
                 continue;

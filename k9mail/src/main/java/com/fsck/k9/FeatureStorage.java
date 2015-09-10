@@ -28,31 +28,51 @@ import java.util.concurrent.TimeUnit;
 public class FeatureStorage {
     /* Handles saving and parsing information from our features (e.g. follow-up) to the
     * file on the server for cross-platform functionality.*/
-
-    private Account mAccount;
-    private IMAPAppendText appendText;
-    private LocalRemindMe localRemindMe;
     private static ObjectMapper objectMapper;
     private static File localFile;
     private static long lastUpdate = -1; // last time when the local file was parsed
-    private String absolutePath; // absolute path to local files
-    private MessagingController messagingController;
 
-    public FeatureStorage(Account mAccount, Context mContext, MessagingController
-            messagingController, String absolutePath) {
-        this.mAccount = mAccount;
-        this.appendText = new IMAPAppendText(mAccount, mContext, messagingController);
-        this.absolutePath = absolutePath;
-        this.messagingController = messagingController;
-        try {
-            this.localRemindMe = new LocalRemindMe(mAccount.getLocalStore());
-        } catch (Exception e) {
+    private final Account mAccount;
+    private final IMAPAppendText appendText;
+    private final LocalRemindMe localRemindMe;
+    private final String absolutePath; // absolute path to local files
+    private final MessagingController messagingController;
+    private final MessagingListener listener;
 
+    public FeatureStorage(Account account, Context context) throws MessagingException {
+        this.mAccount = account;
+        this.absolutePath = context.getFilesDir().getAbsolutePath();
+        this.messagingController = MessagingController.getInstance(context);
+        this.listener = new MyMessagingListener();
+        this.messagingController.addListener(listener);
+        this.localRemindMe = new LocalRemindMe(account.getLocalStore());
+        this.appendText = new IMAPAppendText(account, context, messagingController);
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        if(this.messagingController != null) {
+            this.messagingController.removeListener(listener);
         }
+
+        super.finalize();
     }
 
     public void pollService() {
         new UpdateAddSaveManager().execute();
+    }
+
+    private static class MyMessagingListener extends MessagingListener {
+        @Override
+        public void folderStatusChanged(Account account, String folderName, int unreadMessageCount) {
+            if(account.getSmileStorageFolderName().equals(folderName)) {
+                if(K9.DEBUG) {
+                    Log.d(K9.LOG_TAG, "folderStatusChanged in FeatureStorage");
+                }
+            }
+
+            super.folderStatusChanged(account, folderName, unreadMessageCount);
+        }
     }
 
     private class UpdateAddSaveManager extends AsyncTask<Void, Void, Void> {
@@ -118,7 +138,9 @@ public class FeatureStorage {
                         currentMessageId.replace(appendText.MESSAGE_ID_MAGIC_STRING, "")) >
                         lastUpdate)  //newer version available
                     return currentMessageId;
-            } catch (Exception e) {}
+            } catch (Exception e) {
+                Log.e(K9.LOG_TAG, "error in FeatureStorage.hasUpdate", e);
+            }
             return null;
         }
 

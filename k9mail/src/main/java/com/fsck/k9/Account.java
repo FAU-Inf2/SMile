@@ -185,7 +185,7 @@ public class Account implements BaseAccount, StoreConfig {
     private boolean mNotifySelfNewMail;
     private String mInboxFolderName;
     private String mDraftsFolderName;
-    private String mSmileStorageFolderName = "SmileStorage"; //TODO
+    private String mSmileStorageFolderName = "SmileStorage"; // TODO: add to preferences
     private String mRemindMeFolderName = "RemindMe";
     private String mSentFolderName;
     private String mTrashFolderName;
@@ -1082,7 +1082,6 @@ public class Account implements BaseAccount, StoreConfig {
     public synchronized String getSmileStorageFolderName() {
         return mSmileStorageFolderName;
     }
-
 
     public synchronized String getRemindMeFolderName() {
         return mRemindMeFolderName;

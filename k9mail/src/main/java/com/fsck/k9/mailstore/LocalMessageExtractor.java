@@ -445,7 +445,7 @@ public class LocalMessageExtractor {
 
             if(cryptoResultAnnotation == NO_ANNOTATIONS && MessageDecryptVerifier.isEncryptedPart(part)) {
                 String text = "";
-                
+
                 if(MessageDecryptVerifier.isSmimeEncryptedPart(part)) {
                     text = context.getString(R.string.no_crypto_provider_configured, "S/MIME");
                 } else if(MessageDecryptVerifier.isPgpMimeEncryptedPart(part)){

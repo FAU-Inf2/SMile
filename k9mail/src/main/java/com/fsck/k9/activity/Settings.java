@@ -16,7 +16,7 @@ import com.fsck.k9.fragment.SmilePreferenceFragment;
 
 import de.fau.cs.mad.smile.android.R;
 
-public class Settings extends Activity implements GlobalPreferences.GlobalPreferencesCallback {
+public class Settings extends SmileActivity implements GlobalPreferences.GlobalPreferencesCallback {
     private final static String EDIT_ACCOUNT_ACTION = "EDIT_ACCOUNT";
     private final static String ACCOUNT_EXTRA = "account";
 
@@ -35,8 +35,6 @@ public class Settings extends Activity implements GlobalPreferences.GlobalPrefer
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
-
-        setContentView(R.layout.smile);
 
         final Intent intent = getIntent();
         final String action = intent.getAction();

@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (C) 2008 The Android Open Source Project
+<?xml version="1.0" encoding="utf-8"?><!-- Copyright (C) 2008 The Android Open Source Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -23,342 +22,280 @@
   can be displayed after the device has been rotated.
 -->
 
-<PreferenceScreen
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     android:key="main">
 
-    <PreferenceScreen
-        android:title="@string/account_settings_general_title"
-        android:key="account_settings">
+    <PreferenceCategory
+        android:key="account_settings"
+        android:title="@string/account_settings_general_title">
 
         <EditTextPreference
-            android:persistent="false"
+            android:dialogTitle="@string/account_settings_description_label"
             android:key="account_description"
+            android:persistent="false"
             android:singleLine="true"
-            android:title="@string/account_settings_description_label"
             android:summary=""
-            android:dialogTitle="@string/account_settings_description_label" />
+            android:title="@string/account_settings_description_label" />
 
         <CheckBoxPreference
-            android:persistent="false"
             android:key="account_default"
-            android:title="@string/account_settings_default_label"
-            android:summary="@string/account_settings_default_summary" />
+            android:persistent="false"
+            android:summary="@string/account_settings_default_summary"
+            android:title="@string/account_settings_default_label" />
 
         <Preference
-            android:persistent="false"
             android:key="chip_color"
+            android:persistent="false"
             android:singleLine="true"
-            android:title="@string/account_settings_color_label"
-            android:summary="@string/account_settings_color_summary" />
+            android:summary="@string/account_settings_color_summary"
+            android:title="@string/account_settings_color_label" />
 
-    </PreferenceScreen>
+    </PreferenceCategory>
 
-    <PreferenceScreen
-        android:title="@string/account_settings_reading_mail"
-        android:key="reading_mail">
-
-        <ListPreference
-            android:persistent="false"
-            android:key="show_pictures_enum"
-            android:title="@string/account_settings_show_pictures_label"
-            android:entries="@array/account_settings_show_pictures_entries"
-            android:entryValues="@array/account_settings_show_pictures_values"
-            android:dialogTitle="@string/account_settings_show_pictures_label" />
-
-        <CheckBoxPreference
-            android:persistent="false"
-            android:key="mark_message_as_read_on_view"
-            android:title="@string/account_settings_mark_message_as_read_on_view_label"
-            android:summary="@string/account_settings_mark_message_as_read_on_view_summary" />
-
-    </PreferenceScreen>
+    <ListPreference
+        android:dialogTitle="@string/account_settings_show_pictures_label"
+        android:entries="@array/account_settings_show_pictures_entries"
+        android:entryValues="@array/account_settings_show_pictures_values"
+        android:key="show_pictures_enum"
+        android:persistent="false"
+        android:title="@string/account_settings_show_pictures_label" />
 
     <PreferenceScreen
-        android:title="@string/account_settings_sync"
-        android:key="incoming_prefs">
+        android:key="incoming_prefs"
+        android:title="@string/account_settings_sync">
 
         <ListPreference
-            android:persistent="false"
-            android:key="account_display_count"
-            android:title="@string/account_settings_mail_display_count_label"
+            android:dialogTitle="@string/account_settings_mail_display_count_label"
             android:entries="@array/account_settings_display_count_entries"
             android:entryValues="@array/account_settings_display_count_values"
-            android:dialogTitle="@string/account_settings_mail_display_count_label" />
+            android:key="account_display_count"
+            android:persistent="false"
+            android:title="@string/account_settings_mail_display_count_label" />
 
         <ListPreference
-            android:persistent="false"
-            android:key="account_message_age"
-            android:title="@string/account_settings_message_age_label"
+            android:dialogTitle="@string/account_settings_message_age_label"
             android:entries="@array/account_settings_message_age_entries"
             android:entryValues="@array/account_settings_message_age_values"
-            android:dialogTitle="@string/account_settings_message_age_label" />
+            android:key="account_message_age"
+            android:persistent="false"
+            android:title="@string/account_settings_message_age_label" />
 
         <ListPreference
-            android:persistent="false"
-            android:key="account_autodownload_size"
-            android:title="@string/account_settings_autodownload_message_size_label"
+            android:dialogTitle="@string/account_settings_autodownload_message_size_label"
             android:entries="@array/account_settings_autodownload_message_size_entries"
             android:entryValues="@array/account_settings_autodownload_message_size_values"
-            android:dialogTitle="@string/account_settings_autodownload_message_size_label" />
+            android:key="account_autodownload_size"
+            android:persistent="false"
+            android:title="@string/account_settings_autodownload_message_size_label" />
 
         <ListPreference
-            android:persistent="false"
-            android:key="account_check_frequency"
-            android:title="@string/account_settings_mail_check_frequency_label"
+            android:dialogTitle="@string/account_settings_mail_check_frequency_label"
             android:entries="@array/account_settings_check_frequency_entries"
             android:entryValues="@array/account_settings_check_frequency_values"
-            android:dialogTitle="@string/account_settings_mail_check_frequency_label" />
+            android:key="account_check_frequency"
+            android:persistent="false"
+            android:title="@string/account_settings_mail_check_frequency_label" />
 
         <ListPreference
-            android:persistent="false"
-            android:key="folder_sync_mode"
-            android:title="@string/account_settings_folder_sync_mode_label"
+            android:dialogTitle="@string/account_settings_folder_sync_mode_label"
             android:entries="@array/account_settings_folder_sync_mode_entries"
             android:entryValues="@array/account_settings_folder_sync_mode_values"
-            android:dialogTitle="@string/account_settings_folder_sync_mode_label" />
+            android:key="folder_sync_mode"
+            android:persistent="false"
+            android:title="@string/account_settings_folder_sync_mode_label" />
 
         <ListPreference
-            android:persistent="false"
-            android:key="folder_push_mode"
-            android:title="@string/account_settings_folder_push_mode_label"
+            android:dialogTitle="@string/account_settings_folder_push_mode_label"
             android:entries="@array/account_settings_folder_push_mode_entries"
             android:entryValues="@array/account_settings_folder_push_mode_values"
-            android:dialogTitle="@string/account_settings_folder_push_mode_label" />
+            android:key="folder_push_mode"
+            android:persistent="false"
+            android:title="@string/account_settings_folder_push_mode_label" />
 
         <CheckBoxPreference
-            android:persistent="false"
-            android:key="account_sync_remote_deletetions"
-            android:title="@string/account_settings_sync_remote_deletetions_label"
             android:defaultValue="true"
-            android:summary="@string/account_settings_sync_remote_deletetions_summary" />
+            android:key="account_sync_remote_deletetions"
+            android:persistent="false"
+            android:summary="@string/account_settings_sync_remote_deletetions_summary"
+            android:title="@string/account_settings_sync_remote_deletetions_label" />
 
         <ListPreference
-            android:persistent="false"
-            android:key="delete_policy"
-            android:title="@string/account_setup_incoming_delete_policy_label"
+            android:dialogTitle="@string/account_setup_incoming_delete_policy_label"
             android:entries="@array/account_setup_delete_policy_entries"
             android:entryValues="@array/account_setup_delete_policy_values"
-            android:dialogTitle="@string/account_setup_incoming_delete_policy_label" />
+            android:key="delete_policy"
+            android:persistent="false"
+            android:title="@string/account_setup_incoming_delete_policy_label" />
 
         <ListPreference
-            android:persistent="false"
-            android:key="expunge_policy"
-            android:title="@string/account_setup_expunge_policy_label"
+            android:dialogTitle="@string/account_setup_expunge_policy_label"
             android:entries="@array/account_setup_expunge_policy_entries"
             android:entryValues="@array/account_setup_expunge_policy_values"
-            android:dialogTitle="@string/account_setup_expunge_policy_label" />
+            android:key="expunge_policy"
+            android:persistent="false"
+            android:title="@string/account_setup_expunge_policy_label" />
 
         <PreferenceScreen
             android:key="incoming"
-            android:title="@string/account_settings_incoming_label"
-            android:summary="@string/account_settings_incoming_summary" />
-
-        <PreferenceScreen
-            android:key="push_advanced"
-            android:title="@string/account_settings_push_advanced_title">
-
-            <CheckBoxPreference
-                android:persistent="false"
-                android:key="push_poll_on_connect"
-                android:title="@string/push_poll_on_connect_label" />
-
-            <ListPreference
-                android:persistent="false"
-                android:key="max_push_folders"
-                android:title="@string/account_setup_push_limit_label"
-                android:entries="@array/account_settings_push_limit_entries"
-                android:entryValues="@array/account_settings_push_limit_values" />
-
-            <ListPreference
-                android:persistent="false"
-                android:key="idle_refresh_period"
-                android:title="@string/idle_refresh_period_label"
-                android:entries="@array/idle_refresh_period_entries"
-                android:entryValues="@array/idle_refresh_period_values" />
-
-        </PreferenceScreen>
+            android:summary="@string/account_settings_incoming_summary"
+            android:title="@string/account_settings_incoming_label" />
 
     </PreferenceScreen>
 
     <PreferenceScreen
-        android:title="@string/account_settings_composition"
-        android:key="composing">
+        android:key="composing"
+        android:title="@string/account_settings_composition">
 
         <PreferenceScreen
             android:key="composition"
             android:summary="@string/account_settings_composition_summary"
             android:title="@string/account_settings_composition_label" />
 
-        <PreferenceScreen
-            android:key="manage_identities"
-            android:title="@string/account_settings_identities_label"
-            android:summary="@string/account_settings_identities_summary" />
-
         <ListPreference
-            android:persistent="false"
             android:key="message_format"
+            android:persistent="false"
             android:title="@string/account_settings_message_format_label"
             android:entries="@array/account_settings_message_format_entries"
             android:entryValues="@array/account_settings_message_format_values" />
 
         <CheckBoxPreference
+            android:key="message_read_receipt"
             android:persistent="false"
-            android:key="always_show_cc_bcc"
-            android:title="@string/account_settings_always_show_cc_bcc_label" />
-
-        <CheckBoxPreference
-        android:persistent="false"
-        android:key="message_read_receipt"
-        android:title="@string/account_settings_message_read_receipt_label"
-        android:summary="@string/account_settings_message_read_receipt_summary" />
+            android:summary="@string/account_settings_message_read_receipt_summary"
+            android:title="@string/account_settings_message_read_receipt_label" />
 
         <ListPreference
-            android:persistent="false"
             android:key="quote_style"
+            android:persistent="false"
             android:title="@string/account_settings_quote_style_label"
             android:entries="@array/account_settings_quote_style_entries"
             android:entryValues="@array/account_settings_quote_style_values" />
 
         <CheckBoxPreference
-            android:persistent="false"
             android:key="default_quoted_text_shown"
+            android:persistent="false"
             android:title="@string/account_settings_default_quoted_text_shown_label"
-            android:defaultValue="true"
-            android:summary="@string/account_settings_default_quoted_text_shown_summary" />
-
-        <CheckBoxPreference
-            android:persistent="false"
-            android:key="reply_after_quote"
-            android:title="@string/account_settings_reply_after_quote_label"
-            android:defaultValue="false"
-            android:summary="@string/account_settings_reply_after_quote_summary" />
-
-        <CheckBoxPreference
-            android:persistent="false"
-            android:key="strip_signature"
-            android:title="@string/account_settings_strip_signature_label"
-            android:defaultValue="true"
-            android:summary="@string/account_settings_strip_signature_summary" />
+            android:summary="@string/account_settings_default_quoted_text_shown_summary"
+            android:defaultValue="true" />
 
         <EditTextPreference
-            android:persistent="false"
+            android:dialogTitle="@string/account_settings_quote_prefix_label"
             android:key="account_quote_prefix"
+            android:persistent="false"
             android:singleLine="true"
-            android:title="@string/account_settings_quote_prefix_label"
             android:summary=""
-            android:dialogTitle="@string/account_settings_quote_prefix_label" />
+            android:title="@string/account_settings_quote_prefix_label" />
 
         <PreferenceScreen
             android:key="outgoing"
-            android:title="@string/account_settings_outgoing_label"
-            android:summary="@string/account_settings_outgoing_summary" />
+            android:summary="@string/account_settings_outgoing_summary"
+            android:title="@string/account_settings_outgoing_label" />
 
     </PreferenceScreen>
 
     <PreferenceScreen
-        android:title="@string/account_settings_folders"
-        android:key="folders">
+        android:key="folders"
+        android:title="@string/account_settings_folders">
 
         <ListPreference
-            android:persistent="false"
             android:key="account_setup_auto_expand_folder"
-            android:title="@string/account_setup_auto_expand_folder"
-            android:summary="" />
+            android:persistent="false"
+            android:summary=""
+            android:title="@string/account_setup_auto_expand_folder" />
 
         <ListPreference
-            android:persistent="false"
-            android:key="folder_display_mode"
-            android:title="@string/account_settings_folder_display_mode_label"
+            android:dialogTitle="@string/account_settings_folder_display_mode_label"
             android:entries="@array/account_settings_folder_display_mode_entries"
             android:entryValues="@array/account_settings_folder_display_mode_values"
-            android:dialogTitle="@string/account_settings_folder_display_mode_label" />
+            android:key="folder_display_mode"
+            android:persistent="false"
+            android:title="@string/account_settings_folder_display_mode_label" />
 
         <ListPreference
-            android:persistent="false"
-            android:key="folder_target_mode"
-            android:title="@string/account_settings_folder_target_mode_label"
+            android:dialogTitle="@string/account_settings_folder_target_mode_label"
             android:entries="@array/account_settings_folder_target_mode_entries"
             android:entryValues="@array/account_settings_folder_target_mode_values"
-            android:dialogTitle="@string/account_settings_folder_target_mode_label" />
+            android:key="folder_target_mode"
+            android:persistent="false"
+            android:title="@string/account_settings_folder_target_mode_label" />
 
         <ListPreference
-            android:persistent="false"
-            android:key="searchable_folders"
-            android:title="@string/account_settings_searchable_label"
+            android:dialogTitle="@string/account_settings_searchable_label"
             android:entries="@array/account_settings_searchable_entries"
             android:entryValues="@array/account_settings_searchable_values"
-            android:dialogTitle="@string/account_settings_searchable_label" />
+            android:key="searchable_folders"
+            android:persistent="false"
+            android:title="@string/account_settings_searchable_label" />
 
         <ListPreference
-            android:persistent="false"
+            android:dialogTitle="@string/archive_folder_label"
             android:key="archive_folder"
-            android:title="@string/archive_folder_label"
-            android:dialogTitle="@string/archive_folder_label" />
+            android:persistent="false"
+            android:title="@string/archive_folder_label" />
 
         <ListPreference
-            android:persistent="false"
+            android:dialogTitle="@string/drafts_folder_label"
             android:key="drafts_folder"
-            android:title="@string/drafts_folder_label"
-            android:dialogTitle="@string/drafts_folder_label" />
+            android:persistent="false"
+            android:title="@string/drafts_folder_label" />
 
         <ListPreference
-            android:persistent="false"
+            android:dialogTitle="@string/sent_folder_label"
             android:key="sent_folder"
-            android:title="@string/sent_folder_label"
-            android:dialogTitle="@string/sent_folder_label" />
+            android:persistent="false"
+            android:title="@string/sent_folder_label" />
 
         <ListPreference
-            android:persistent="false"
+            android:dialogTitle="@string/spam_folder_label"
             android:key="spam_folder"
-            android:title="@string/spam_folder_label"
-            android:dialogTitle="@string/spam_folder_label" />
-        <ListPreference
             android:persistent="false"
+            android:title="@string/spam_folder_label" />
+        <ListPreference
+            android:dialogTitle="@string/trash_folder_label"
             android:key="trash_folder"
-            android:title="@string/trash_folder_label"
-            android:dialogTitle="@string/trash_folder_label" />
+            android:persistent="false"
+            android:title="@string/trash_folder_label" />
 
     </PreferenceScreen>
+
     <PreferenceScreen
-        android:title="@string/account_settings_storage_title"
-        android:key="storage_provider">
+        android:key="storage_provider"
+        android:title="@string/account_settings_storage_title">
 
         <ListPreference
-            android:persistent="false"
-            android:key="local_storage_provider"
-            android:title="@string/local_storage_provider_label"
             android:dialogTitle="@string/local_storage_provider_label"
-            />
+            android:key="local_storage_provider"
+            android:persistent="false"
+            android:title="@string/local_storage_provider_label" />
     </PreferenceScreen>
 
     <PreferenceScreen
-        android:title="@string/notifications_title"
-        android:key="notifications">
+        android:key="notifications"
+        android:title="@string/notifications_title">
 
         <CheckBoxPreference
-            android:persistent="false"
-            android:key="account_notify"
-            android:title="@string/account_settings_notify_label"
             android:defaultValue="true"
-            android:summary="@string/account_settings_notify_summary" />
+            android:key="account_notify"
+            android:persistent="false"
+            android:summary="@string/account_settings_notify_summary"
+            android:title="@string/account_settings_notify_label" />
 
         <ListPreference
-            android:persistent="false"
-            android:key="folder_notify_new_mail_mode"
             android:dependency="account_notify"
-            android:title="@string/account_settings_folder_notify_new_mail_mode_label"
+            android:dialogTitle="@string/account_settings_folder_notify_new_mail_mode_label"
             android:entries="@array/account_settings_folder_notify_new_mail_mode_entries"
             android:entryValues="@array/account_settings_folder_notify_new_mail_mode_values"
-            android:dialogTitle="@string/account_settings_folder_notify_new_mail_mode_label" />
+            android:key="folder_notify_new_mail_mode"
+            android:persistent="false"
+            android:title="@string/account_settings_folder_notify_new_mail_mode_label" />
 
         <CheckBoxPreference
-            android:persistent="false"
-            android:key="account_notify_self"
-            android:dependency="account_notify"
-            android:title="@string/account_settings_notify_self_label"
             android:defaultValue="true"
-            android:summary="@string/account_settings_notify_self_summary" />
+            android:dependency="account_notify"
+            android:key="account_notify_self"
+            android:persistent="false"
+            android:summary="@string/account_settings_notify_self_summary"
+            android:title="@string/account_settings_notify_self_label" />
 
         <!--
           We can't disable persisting the ringtone value to SharedPreferences
@@ -367,89 +304,89 @@
           See com.fsck.k9.activity.setup.AccountSettings
         -->
         <RingtonePreference
+            android:defaultValue="content://settings/system/notification_sound"
             android:dependency="account_notify"
             android:key="account_ringtone"
-            android:title="@string/account_settings_ringtone"
             android:ringtoneType="notification"
-            android:defaultValue="content://settings/system/notification_sound" />
+            android:title="@string/account_settings_ringtone" />
 
         <CheckBoxPreference
-            android:persistent="false"
+            android:defaultValue="false"
             android:dependency="account_notify"
             android:key="account_vibrate"
-            android:defaultValue="false"
-            android:title="@string/account_settings_vibrate_enable"
-            android:summary="@string/account_settings_vibrate_summary" />
+            android:persistent="false"
+            android:summary="@string/account_settings_vibrate_summary"
+            android:title="@string/account_settings_vibrate_enable" />
 
         <ListPreference
-            android:persistent="false"
-            android:layout="?android:attr/preferenceLayoutChild"
             android:dependency="account_vibrate"
-            android:key="account_vibrate_pattern"
-            android:title="@string/account_settings_vibrate_pattern_label"
+            android:dialogTitle="@string/account_settings_vibrate_pattern_label"
             android:entries="@array/account_settings_vibrate_pattern_entries"
             android:entryValues="@array/account_settings_vibrate_pattern_values"
-            android:dialogTitle="@string/account_settings_vibrate_pattern_label" />
+            android:key="account_vibrate_pattern"
+            android:layout="?android:attr/preferenceLayoutChild"
+            android:persistent="false"
+            android:title="@string/account_settings_vibrate_pattern_label" />
 
         <ListPreference
-            android:persistent="false"
-            android:layout="?android:attr/preferenceLayoutChild"
             android:dependency="account_vibrate"
-            android:key="account_vibrate_times"
-            android:title="@string/account_settings_vibrate_times"
+            android:dialogTitle="@string/account_settings_vibrate_times"
             android:entries="@array/account_settings_vibrate_times_label"
             android:entryValues="@array/account_settings_vibrate_times_label"
-            android:dialogTitle="@string/account_settings_vibrate_times" />
+            android:key="account_vibrate_times"
+            android:layout="?android:attr/preferenceLayoutChild"
+            android:persistent="false"
+            android:title="@string/account_settings_vibrate_times" />
 
         <CheckBoxPreference
-            android:persistent="false"
-            android:key="account_led"
+            android:defaultValue="true"
             android:dependency="account_notify"
-            android:title="@string/account_settings_led_label"
+            android:key="account_led"
+            android:persistent="false"
             android:summary="@string/account_settings_led_summary"
-            android:defaultValue="true" />
+            android:title="@string/account_settings_led_label" />
 
         <Preference
-            android:persistent="false"
             android:key="led_color"
+            android:persistent="false"
             android:singleLine="true"
-            android:title="@string/account_settings_led_color_label"
-            android:summary="@string/account_settings_led_color_summary" />
+            android:summary="@string/account_settings_led_color_summary"
+            android:title="@string/account_settings_led_color_label" />
 
         <CheckBoxPreference
-            android:persistent="false"
+            android:defaultValue="true"
             android:key="account_notify_sync"
-            android:title="@string/account_settings_notify_sync_label"
-            android:defaultValue="true"
-            android:summary="@string/account_settings_notify_sync_summary" />
+            android:persistent="false"
+            android:summary="@string/account_settings_notify_sync_summary"
+            android:title="@string/account_settings_notify_sync_label" />
 
         <CheckBoxPreference
-            android:persistent="false"
-            android:key="notification_opens_unread"
-            android:title="@string/account_settings_notification_opens_unread_label"
             android:defaultValue="true"
-            android:summary="@string/account_settings_notification_opens_unread_summary" />
+            android:key="notification_opens_unread"
+            android:persistent="false"
+            android:summary="@string/account_settings_notification_opens_unread_summary"
+            android:title="@string/account_settings_notification_opens_unread_label" />
 
     </PreferenceScreen>
 
-    <PreferenceScreen
-            android:title="@string/account_settings_search"
-            android:key="search">
+    <PreferenceCategory
+        android:key="search"
+        android:title="@string/account_settings_search">
 
         <CheckBoxPreference
             android:key="remote_search_enabled"
-            android:title="@string/account_settings_remote_search_enabled"
+            android:persistent="false"
             android:summary="@string/account_settings_remote_search_enabled_summary"
-            android:persistent="false"/>
+            android:title="@string/account_settings_remote_search_enabled" />
 
         <ListPreference
-            android:persistent="false"
+            android:dependency="remote_search_enabled"
+            android:dialogTitle="@string/account_settings_remote_search_num_label"
             android:entries="@array/account_settings_remote_search_num_results_entries"
             android:entryValues="@array/account_settings_remote_search_num_results_values"
             android:key="account_remote_search_num_results"
-            android:title="@string/account_settings_remote_search_num_label"
-            android:dialogTitle="@string/account_settings_remote_search_num_label"
-            android:dependency="remote_search_enabled"/>
+            android:persistent="false"
+            android:title="@string/account_settings_remote_search_num_label" />
 
         <!-- Temporarily removed
         <CheckBoxPreference
@@ -460,37 +397,36 @@
             android:dependency="remote_search_enabled"/>
         -->
 
-    </PreferenceScreen>
+    </PreferenceCategory>
 
-    <PreferenceScreen
-        android:title="@string/account_settings_crypto"
-        android:key="crypto">
+    <PreferenceCategory
+        android:key="crypto"
+        android:title="@string/account_settings_crypto">
 
         <org.openintents.openpgp.util.OpenPgpAppPreference
-            android:persistent="false"
             android:key="crypto_app"
+            android:persistent="false"
             android:title="@string/account_settings_crypto_app" />
 
         <org.openintents.openpgp.util.OpenPgpKeyPreference
-            android:persistent="false"
             android:key="crypto_key"
+            android:persistent="false"
             android:title="@string/account_settings_crypto_key" />
 
         <ListPreference
-            android:persistent="false"
             android:key="smime_app"
-            android:title="@string/smime_app"
-            />
+            android:persistent="false"
+            android:title="@string/smime_app" />
 
         <ListPreference
-            android:persistent="false"
-            android:key="default_crypto"
+            android:defaultValue="None"
             android:entries="@array/default_crypto_entries"
             android:entryValues="@array/default_crypto_entries"
-            android:defaultValue="None"
+            android:key="default_crypto"
+            android:persistent="false"
             android:summary="%s"
-            android:title="@string/default_crypto_title"/>
+            android:title="@string/default_crypto_title" />
 
-    </PreferenceScreen>
+    </PreferenceCategory>
 
 </PreferenceScreen>

@@ -15,6 +15,7 @@ import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
+import android.preference.PreferenceCategory;
 import android.preference.PreferenceScreen;
 import android.preference.RingtonePreference;
 import android.util.Log;
@@ -73,9 +74,7 @@ public class AccountSettings extends K9PreferenceActivity {
     private static final String PREFERENCE_SCREEN_SEARCH = "search";
 
     private static final String PREFERENCE_DESCRIPTION = "account_description";
-    private static final String PREFERENCE_MARK_MESSAGE_AS_READ_ON_VIEW = "mark_message_as_read_on_view";
     private static final String PREFERENCE_COMPOSITION = "composition";
-    private static final String PREFERENCE_MANAGE_IDENTITIES = "manage_identities";
     private static final String PREFERENCE_FREQUENCY = "account_check_frequency";
     private static final String PREFERENCE_DISPLAY_COUNT = "account_display_count";
     private static final String PREFERENCE_DEFAULT = "account_default";
@@ -112,8 +111,6 @@ public class AccountSettings extends K9PreferenceActivity {
     private static final String PREFERENCE_QUOTE_PREFIX = "account_quote_prefix";
     private static final String PREFERENCE_QUOTE_STYLE = "quote_style";
     private static final String PREFERENCE_DEFAULT_QUOTED_TEXT_SHOWN = "default_quoted_text_shown";
-    private static final String PREFERENCE_REPLY_AFTER_QUOTE = "reply_after_quote";
-    private static final String PREFERENCE_STRIP_SIGNATURE = "strip_signature";
     private static final String PREFERENCE_SYNC_REMOTE_DELETIONS = "account_sync_remote_deletetions";
     private static final String PREFERENCE_CRYPTO = "crypto";
     private static final String PREFERENCE_CRYPTO_APP = "crypto_app";
@@ -129,7 +126,6 @@ public class AccountSettings extends K9PreferenceActivity {
     private static final String PREFERENCE_SENT_FOLDER = "sent_folder";
     private static final String PREFERENCE_SPAM_FOLDER = "spam_folder";
     private static final String PREFERENCE_TRASH_FOLDER = "trash_folder";
-    private static final String PREFERENCE_ALWAYS_SHOW_CC_BCC = "always_show_cc_bcc";
 
     private static final String PREFERENCE_CRYPTO_SMIME_APP = "smime_app";
 
@@ -144,7 +140,6 @@ public class AccountSettings extends K9PreferenceActivity {
     private PreferenceScreen mComposingScreen;
 
     private EditTextPreference mAccountDescription;
-    private CheckBoxPreference mMarkMessageAsReadOnView;
     private ListPreference mCheckFrequency;
     private ListPreference mDisplayCount;
     private ListPreference mMessageAge;
@@ -177,17 +172,12 @@ public class AccountSettings extends K9PreferenceActivity {
     private ListPreference mQuoteStyle;
     private EditTextPreference mAccountQuotePrefix;
     private CheckBoxPreference mAccountDefaultQuotedTextShown;
-    private CheckBoxPreference mReplyAfterQuote;
-    private CheckBoxPreference mStripSignature;
     private CheckBoxPreference mSyncRemoteDeletions;
-    private CheckBoxPreference mPushPollOnConnect;
-    private ListPreference mIdleRefreshPeriod;
-    private ListPreference mMaxPushFolders;
     private boolean mHasCrypto = false;
     private OpenPgpAppPreference mCryptoApp;
     private OpenPgpKeyPreference mCryptoKey;
 
-    private PreferenceScreen mSearchScreen;
+    private PreferenceCategory mSearchScreen;
     private CheckBoxPreference mCloudSearchEnabled;
     private ListPreference mRemoteSearchNumResults;
     /*
@@ -202,7 +192,6 @@ public class AccountSettings extends K9PreferenceActivity {
     private ListPreference mSentFolder;
     private ListPreference mSpamFolder;
     private ListPreference mTrashFolder;
-    private CheckBoxPreference mAlwaysShowCcBcc;
 
     private ListPreference mSmimeApp;
     private ListPreference defaultCryptoProvider;
@@ -247,9 +236,6 @@ public class AccountSettings extends K9PreferenceActivity {
             }
         });
 
-        mMarkMessageAsReadOnView = (CheckBoxPreference) findPreference(PREFERENCE_MARK_MESSAGE_AS_READ_ON_VIEW);
-        mMarkMessageAsReadOnView.setChecked(mAccount.isMarkMessageAsReadOnView());
-
         mMessageFormat = (ListPreference) findPreference(PREFERENCE_MESSAGE_FORMAT);
         mMessageFormat.setValue(mAccount.getMessageFormat().name());
         mMessageFormat.setSummary(mMessageFormat.getEntry());
@@ -262,9 +248,6 @@ public class AccountSettings extends K9PreferenceActivity {
                 return false;
             }
         });
-
-        mAlwaysShowCcBcc = (CheckBoxPreference) findPreference(PREFERENCE_ALWAYS_SHOW_CC_BCC);
-        mAlwaysShowCcBcc.setChecked(mAccount.isAlwaysShowCcBcc());
 
         mMessageReadReceipt = (CheckBoxPreference) findPreference(PREFERENCE_MESSAGE_READ_RECEIPT);
         mMessageReadReceipt.setChecked(mAccount.isMessageReadReceiptAlways());
@@ -285,12 +268,6 @@ public class AccountSettings extends K9PreferenceActivity {
         mAccountDefaultQuotedTextShown = (CheckBoxPreference) findPreference(PREFERENCE_DEFAULT_QUOTED_TEXT_SHOWN);
         mAccountDefaultQuotedTextShown.setChecked(mAccount.isDefaultQuotedTextShown());
 
-        mReplyAfterQuote = (CheckBoxPreference) findPreference(PREFERENCE_REPLY_AFTER_QUOTE);
-        mReplyAfterQuote.setChecked(mAccount.isReplyAfterQuote());
-
-        mStripSignature = (CheckBoxPreference) findPreference(PREFERENCE_STRIP_SIGNATURE);
-        mStripSignature.setChecked(mAccount.isStripSignature());
-
         mComposingScreen = (PreferenceScreen) findPreference(PREFERENCE_SCREEN_COMPOSING);
 
         Preference.OnPreferenceChangeListener quoteStyleListener = new Preference.OnPreferenceChangeListener() {
@@ -299,16 +276,16 @@ public class AccountSettings extends K9PreferenceActivity {
                 final QuoteStyle style = QuoteStyle.valueOf(newValue.toString());
                 int index = mQuoteStyle.findIndexOfValue(newValue.toString());
                 mQuoteStyle.setSummary(mQuoteStyle.getEntries()[index]);
+
                 if (style == QuoteStyle.PREFIX) {
                     mComposingScreen.addPreference(mAccountQuotePrefix);
-                    mComposingScreen.addPreference(mReplyAfterQuote);
                 } else if (style == QuoteStyle.HEADER) {
                     mComposingScreen.removePreference(mAccountQuotePrefix);
-                    mComposingScreen.removePreference(mReplyAfterQuote);
                 }
                 return true;
             }
         };
+
         mQuoteStyle = (ListPreference) findPreference(PREFERENCE_QUOTE_STYLE);
         mQuoteStyle.setValue(mAccount.getQuoteStyle().name());
         mQuoteStyle.setSummary(mQuoteStyle.getEntry());
@@ -513,7 +490,7 @@ public class AccountSettings extends K9PreferenceActivity {
 
         // IMAP-specific preferences
 
-        mSearchScreen = (PreferenceScreen) findPreference(PREFERENCE_SCREEN_SEARCH);
+        mSearchScreen = (PreferenceCategory) findPreference(PREFERENCE_SCREEN_SEARCH);
 
         mCloudSearchEnabled = (CheckBoxPreference) findPreference(PREFERENCE_CLOUD_SEARCH_ENABLED);
         mRemoteSearchNumResults = (ListPreference) findPreference(PREFERENCE_REMOTE_SEARCH_NUM_RESULTS);
@@ -527,41 +504,13 @@ public class AccountSettings extends K9PreferenceActivity {
         );
         //mRemoteSearchFullText = (CheckBoxPreference) findPreference(PREFERENCE_REMOTE_SEARCH_FULL_TEXT);
 
-        mPushPollOnConnect = (CheckBoxPreference) findPreference(PREFERENCE_PUSH_POLL_ON_CONNECT);
-        mIdleRefreshPeriod = (ListPreference) findPreference(PREFERENCE_IDLE_REFRESH_PERIOD);
-        mMaxPushFolders = (ListPreference) findPreference(PREFERENCE_MAX_PUSH_FOLDERS);
         if (mIsPushCapable) {
-            mPushPollOnConnect.setChecked(mAccount.isPushPollOnConnect());
-
             mCloudSearchEnabled.setChecked(mAccount.allowRemoteSearch());
             String searchNumResults = Integer.toString(mAccount.getRemoteSearchNumResults());
             mRemoteSearchNumResults.setValue(searchNumResults);
             updateRemoteSearchLimit(searchNumResults);
             //mRemoteSearchFullText.setChecked(mAccount.isRemoteSearchFullText());
 
-            mIdleRefreshPeriod.setValue(String.valueOf(mAccount.getIdleRefreshMinutes()));
-            mIdleRefreshPeriod.setSummary(mIdleRefreshPeriod.getEntry());
-            mIdleRefreshPeriod.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    final String summary = newValue.toString();
-                    int index = mIdleRefreshPeriod.findIndexOfValue(summary);
-                    mIdleRefreshPeriod.setSummary(mIdleRefreshPeriod.getEntries()[index]);
-                    mIdleRefreshPeriod.setValue(summary);
-                    return false;
-                }
-            });
-
-            mMaxPushFolders.setValue(String.valueOf(mAccount.getMaxPushFolders()));
-            mMaxPushFolders.setSummary(mMaxPushFolders.getEntry());
-            mMaxPushFolders.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    final String summary = newValue.toString();
-                    int index = mMaxPushFolders.findIndexOfValue(summary);
-                    mMaxPushFolders.setSummary(mMaxPushFolders.getEntries()[index]);
-                    mMaxPushFolders.setValue(summary);
-                    return false;
-                }
-            });
             mPushMode = (ListPreference) findPreference(PREFERENCE_PUSH_MODE);
             mPushMode.setValue(mAccount.getFolderPushMode().name());
             mPushMode.setSummary(mPushMode.getEntry());
@@ -670,14 +619,6 @@ public class AccountSettings extends K9PreferenceActivity {
         new Preference.OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference preference) {
                 onCompositionSettings();
-                return true;
-            }
-        });
-
-        findPreference(PREFERENCE_MANAGE_IDENTITIES).setOnPreferenceClickListener(
-        new Preference.OnPreferenceClickListener() {
-            public boolean onPreferenceClick(Preference preference) {
-                onManageIdentities();
                 return true;
             }
         });
@@ -826,7 +767,6 @@ public class AccountSettings extends K9PreferenceActivity {
         }
 
         mAccount.setDescription(mAccountDescription.getText());
-        mAccount.setMarkMessageAsReadOnView(mMarkMessageAsReadOnView.isChecked());
         mAccount.setNotifyNewMail(mAccountNotify.isChecked());
         mAccount.setFolderNotifyNewMailMode(FolderMode.valueOf(mAccountNotifyNewMailMode.getValue()));
         mAccount.setNotifySelfNewMail(mAccountNotifySelf.isChecked());
@@ -836,6 +776,7 @@ public class AccountSettings extends K9PreferenceActivity {
         if (mAccount.isSearchByDateCapable()) {
             mAccount.setMaximumPolledMessageAge(Integer.parseInt(mMessageAge.getValue()));
         }
+
         mAccount.getNotificationSetting().setVibrate(mAccountVibrate.isChecked());
         mAccount.getNotificationSetting().setVibratePattern(Integer.parseInt(mAccountVibratePattern.getValue()));
         mAccount.getNotificationSetting().setVibrateTimes(Integer.parseInt(mAccountVibrateTimes.getValue()));
@@ -846,17 +787,17 @@ public class AccountSettings extends K9PreferenceActivity {
         if (mIsExpungeCapable) {
             mAccount.setExpungePolicy(Expunge.valueOf(mExpungePolicy.getValue()));
         }
+
         mAccount.setSyncRemoteDeletions(mSyncRemoteDeletions.isChecked());
         mAccount.setSearchableFolders(Searchable.valueOf(mSearchableFolders.getValue()));
         mAccount.setMessageFormat(MessageFormat.valueOf(mMessageFormat.getValue()));
-        mAccount.setAlwaysShowCcBcc(mAlwaysShowCcBcc.isChecked());
+        mAccount.setAlwaysShowCcBcc(false);
         mAccount.setMessageReadReceipt(mMessageReadReceipt.isChecked());
         mAccount.setQuoteStyle(QuoteStyle.valueOf(mQuoteStyle.getValue()));
         mAccount.setQuotePrefix(mAccountQuotePrefix.getText());
         mAccount.setDefaultQuotedTextShown(mAccountDefaultQuotedTextShown.isChecked());
-        mAccount.setReplyAfterQuote(mReplyAfterQuote.isChecked());
-        mAccount.setStripSignature(mStripSignature.isChecked());
         mAccount.setLocalStorageProviderId(mLocalStorageProvider.getValue());
+
         if (mHasCrypto) {
             mAccount.setPgpApp(mCryptoApp.getValue());
             mAccount.setPgpKey(mCryptoKey.getValue());
@@ -864,10 +805,12 @@ public class AccountSettings extends K9PreferenceActivity {
 
         // In webdav account we use the exact folder name also for inbox,
         // since it varies because of internationalization
-        if (mAccount.getStoreUri().startsWith("webdav"))
+        if (mAccount.getStoreUri().startsWith("webdav")) {
             mAccount.setAutoExpandFolderName(mAutoExpandFolder.getValue());
-        else
+        }
+        else {
             mAccount.setAutoExpandFolderName(reverseTranslateFolder(mAutoExpandFolder.getValue()));
+        }
 
         if (mIsMoveCapable) {
             mAccount.setArchiveFolderName(mArchiveFolder.getValue());
@@ -879,9 +822,9 @@ public class AccountSettings extends K9PreferenceActivity {
 
         //IMAP stuff
         if (mIsPushCapable) {
-            mAccount.setPushPollOnConnect(mPushPollOnConnect.isChecked());
-            mAccount.setIdleRefreshMinutes(Integer.parseInt(mIdleRefreshPeriod.getValue()));
-            mAccount.setMaxPushFolders(Integer.parseInt(mMaxPushFolders.getValue()));
+            mAccount.setPushPollOnConnect(true);
+            mAccount.setIdleRefreshMinutes(24); // TODO: move to constants, strings or something like that
+            mAccount.setMaxPushFolders(10);
             mAccount.setAllowRemoteSearch(mCloudSearchEnabled.isChecked());
             mAccount.setRemoteSearchNumResults(Integer.parseInt(mRemoteSearchNumResults.getValue()));
             //mAccount.setRemoteSearchFullText(mRemoteSearchFullText.isChecked());

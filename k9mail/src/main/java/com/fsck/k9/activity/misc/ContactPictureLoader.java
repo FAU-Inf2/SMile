@@ -13,6 +13,8 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v4.util.LruCache;
 import android.text.TextUtils;
 import android.widget.QuickContactBadge;
@@ -127,8 +129,11 @@ public class ContactPictureLoader {
     public void loadContactPicture(Address address, QuickContactBadge badge) {
         Bitmap bitmap = getBitmapFromCache(address);
         if (bitmap != null) {
+            RoundedBitmapDrawable roundedBitmapDrawable;
+            roundedBitmapDrawable = RoundedBitmapDrawableFactory.create(mContext.getResources(), bitmap);
+            roundedBitmapDrawable.setCornerRadius(Math.max(bitmap.getWidth(), bitmap.getHeight()) / 2.0f);
             // The picture was found in the bitmap cache
-            badge.setImageBitmap(bitmap);
+            badge.setImageDrawable(roundedBitmapDrawable);
         } else if (cancelPotentialWork(address, badge)) {
             // Query the contacts database in a background thread and try to load the contact
             // picture, if there is one.
@@ -304,7 +309,6 @@ public class ContactPictureLoader {
             if (bitmap == null) {
                 bitmap = calculateFallbackBitmap(mAddress);
             }
-
             // Save the picture of the contact with that email address in the bitmap cache
             addBitmapToCache(mAddress, bitmap);
 
@@ -316,7 +320,11 @@ public class ContactPictureLoader {
             if (mQuickContactBadgeReference != null) {
                 QuickContactBadge badge = mQuickContactBadgeReference.get();
                 if (badge != null && getContactPictureRetrievalTask(badge) == this) {
-                    badge.setImageBitmap(bitmap);
+                    RoundedBitmapDrawable roundedBitmapDrawable;
+                    roundedBitmapDrawable = RoundedBitmapDrawableFactory.create(mContext.getResources(), bitmap);
+                    roundedBitmapDrawable.setCornerRadius(Math.max(bitmap.getWidth(), bitmap.getHeight()) / 2.0f);
+                    //badge.setImageBitmap(bitmap);
+                    badge.setImageDrawable(roundedBitmapDrawable);
                 }
             }
         }
@@ -337,7 +345,7 @@ public class ContactPictureLoader {
 
         public AsyncDrawable(Resources res, Bitmap bitmap, ContactPictureRetrievalTask task) {
             super(res, bitmap);
-            mAsyncTaskReference = new WeakReference<ContactPictureRetrievalTask>(task);
+            mAsyncTaskReference = new WeakReference<>(task);
         }
 
         public ContactPictureRetrievalTask getContactPictureRetrievalTask() {

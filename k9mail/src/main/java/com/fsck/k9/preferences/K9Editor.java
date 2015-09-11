@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-public class Editor implements android.content.SharedPreferences.Editor {
+public class K9Editor implements android.content.SharedPreferences.Editor {
     private Storage storage;
     private Map<String, String> changes = new HashMap<String, String>();
     private List<String> removals = new ArrayList<String>();
@@ -19,7 +19,7 @@ public class Editor implements android.content.SharedPreferences.Editor {
 
     Map<String, String> snapshot = new HashMap<String, String>();
 
-    protected Editor(Storage storage) {
+    protected K9Editor(Storage storage) {
         this.storage = storage;
         snapshot.putAll(storage.getAll());
     }

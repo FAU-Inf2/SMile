@@ -281,7 +281,7 @@ public class AccountSettings {
             super(defaultValue);
 
             Map<Integer, String> mapping = new HashMap<Integer, String>();
-            String[] values = K9.app.getResources().getStringArray(resId);
+            String[] values = K9.getApplication().getResources().getStringArray(resId);
             for (String value : values) {
                 int intValue = Integer.parseInt(value);
                 mapping.put(intValue, value);
@@ -318,7 +318,7 @@ public class AccountSettings {
             super(defaultValue);
 
             Map<String, String> mapping = new HashMap<String, String>();
-            String[] values = K9.app.getResources().getStringArray(resId);
+            String[] values = K9.getApplication().getResources().getStringArray(resId);
             for (String value : values) {
                 mapping.put(value, value);
             }
@@ -364,12 +364,12 @@ public class AccountSettings {
 
         @Override
         public Object getDefaultValue() {
-            return StorageManager.getInstance(K9.app).getDefaultProviderId();
+            return StorageManager.getInstance(K9.getApplication()).getDefaultProviderId();
         }
 
         @Override
         public Object fromString(String value) {
-            StorageManager storageManager = StorageManager.getInstance(K9.app);
+            StorageManager storageManager = StorageManager.getInstance(K9.getApplication());
             Map<String, String> providers = storageManager.getAvailableProviders();
             if (providers.containsKey(value)) {
                 return value;

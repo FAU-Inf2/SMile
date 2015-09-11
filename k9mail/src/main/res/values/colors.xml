@@ -2,10 +2,16 @@
 <resources>
     <color name="message_list_item_footer_background">#eeeeee</color>
     
-    <color name="openpgp_red">#CC0000</color>
-    <color name="openpgp_orange">#FF8800</color>
-    <color name="openpgp_green">#669900</color>
+    <color name="openpgp_red">@color/red</color>
+    <color name="openpgp_orange">@color/orange</color>
+    <color name="openpgp_green">@color/green</color>
     <color name="openpgp_blue">#336699</color>
     <color name="crypto_sidebar">#D8D8D8</color>
+
+    <color name="blue">#0099CC</color>
+    <color name="green">#669900</color>
+    <color name="orange">#FF8800</color>
+    <color name="red">#CC0000</color>
+    <color name="purple">#9933CC</color>
 
 </resources>

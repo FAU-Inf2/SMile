@@ -85,7 +85,7 @@ public class IdentitySettings {
 
         @Override
         public Object getDefaultValue() {
-            return K9.app.getResources().getString(R.string.default_signature);
+            return K9.getApplication().getResources().getString(R.string.default_signature);
         }
 
         @Override

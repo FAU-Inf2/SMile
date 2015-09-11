@@ -699,7 +699,7 @@ public class MessageProvider extends ContentProvider {
 
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
-        if (K9.app == null) {
+        if (K9.getApplication() == null) {
             return 0;
         }
 
@@ -755,7 +755,7 @@ public class MessageProvider extends ContentProvider {
 
     @Override
     public String getType(Uri uri) {
-        if (K9.app == null) {
+        if (K9.getApplication() == null) {
             return null;
         }
 
@@ -768,7 +768,7 @@ public class MessageProvider extends ContentProvider {
 
     @Override
     public Uri insert(Uri uri, ContentValues values) {
-        if (K9.app == null) {
+        if (K9.getApplication() == null) {
             return null;
         }
 
@@ -782,7 +782,7 @@ public class MessageProvider extends ContentProvider {
     @Override
     public Cursor query(final Uri uri, final String[] projection, final String selection,
                         final String[] selectionArgs, final String sortOrder) {
-        if (K9.app == null) {
+        if (K9.getApplication() == null) {
             return null;
         }
 
@@ -813,7 +813,7 @@ public class MessageProvider extends ContentProvider {
 
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        if (K9.app == null) {
+        if (K9.getApplication() == null) {
             return 0;
         }
 

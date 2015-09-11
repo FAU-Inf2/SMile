@@ -303,8 +303,8 @@ public class Storage implements SharedPreferences {
     }
 
     //@Override
-    public com.fsck.k9.preferences.Editor edit() {
-        return new com.fsck.k9.preferences.Editor(this);
+    public K9Editor edit() {
+        return new K9Editor(this);
     }
 
     //@Override

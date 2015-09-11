@@ -93,9 +93,6 @@ public class AccountSettings extends K9PreferenceActivity {
     private static final String PREFERENCE_DISPLAY_MODE = "folder_display_mode";
     private static final String PREFERENCE_SYNC_MODE = "folder_sync_mode";
     private static final String PREFERENCE_PUSH_MODE = "folder_push_mode";
-    private static final String PREFERENCE_PUSH_POLL_ON_CONNECT = "push_poll_on_connect";
-    private static final String PREFERENCE_MAX_PUSH_FOLDERS = "max_push_folders";
-    private static final String PREFERENCE_IDLE_REFRESH_PERIOD = "idle_refresh_period";
     private static final String PREFERENCE_TARGET_MODE = "folder_target_mode";
     private static final String PREFERENCE_DELETE_POLICY = "delete_policy";
     private static final String PREFERENCE_EXPUNGE_POLICY = "expunge_policy";

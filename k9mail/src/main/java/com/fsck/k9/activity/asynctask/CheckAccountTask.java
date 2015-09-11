@@ -117,7 +117,7 @@ public class CheckAccountTask extends AsyncTask<Void, Integer, Void> {
             publishProgress(R.string.account_setup_check_settings_check_outgoing_msg);
         }
 
-        Transport transport = Transport.getInstance(K9.app, account);
+        Transport transport = Transport.getInstance(K9.getApplication(), account);
         transport.close();
         transport.open();
         transport.close();

@@ -765,4 +765,12 @@
         <item>OpenPGP</item>
         <item>S/MIME</item>
     </string-array>
+
+    <integer-array name="account_colors">
+        <item>@color/blue</item>
+        <item>@color/green</item>
+        <item>@color/orange</item>
+        <item>@color/red</item>
+        <item>@color/purple</item>
+    </integer-array>
 </resources>

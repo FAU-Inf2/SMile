@@ -1,8 +1,5 @@
 package com.fsck.k9.controller;
 
-import android.app.KeyguardManager;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -12,36 +9,16 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.PowerManager;
 import android.os.Process;
-import android.support.annotation.Nullable;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.TaskStackBuilder;
-import android.text.SpannableStringBuilder;
-import android.text.TextUtils;
-import android.text.style.TextAppearanceSpan;
 import android.util.Log;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.Account.DeletePolicy;
 import com.fsck.k9.Account.Expunge;
 import com.fsck.k9.AccountStats;
-import com.fsck.k9.BaseAccount;
 import com.fsck.k9.K9;
 import com.fsck.k9.K9.Intents;
-import com.fsck.k9.K9.NotificationHideSubject;
-import com.fsck.k9.K9.NotificationQuickDelete;
-import com.fsck.k9.NotificationSetting;
 import com.fsck.k9.Preferences;
-import com.fsck.k9.activity.Accounts;
-import com.fsck.k9.activity.FolderList;
-import com.fsck.k9.activity.MessageList;
-import com.fsck.k9.activity.MessageReference;
-import com.fsck.k9.activity.NotificationDeleteConfirmation;
-import com.fsck.k9.activity.setup.AccountSetupCheckSettings.CheckDirection;
-import com.fsck.k9.activity.setup.AccountSetupIncoming;
-import com.fsck.k9.activity.setup.AccountSetupOutgoing;
 import com.fsck.k9.cache.EmailProviderCache;
-import com.fsck.k9.helper.Contacts;
-import com.fsck.k9.helper.MessageHelper;
 import com.fsck.k9.helper.NotificationHelper;
 import com.fsck.k9.mail.Address;
 import com.fsck.k9.mail.CertificateValidationException;
@@ -79,7 +56,6 @@ import com.fsck.k9.search.LocalSearch;
 import com.fsck.k9.search.SearchAccount;
 import com.fsck.k9.search.SearchSpecification;
 import com.fsck.k9.search.SqlQueryBuilder;
-import com.fsck.k9.service.NotificationActionService;
 
 import java.io.CharArrayWriter;
 import java.io.PrintWriter;
@@ -93,7 +69,6 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -101,7 +76,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -2775,7 +2749,7 @@ public class MessagingController implements Runnable {
             if (K9.DEBUG)
                 Log.i(K9.LOG_TAG, "Scanning folder '" + account.getOutboxFolderName() + "' (" + ((LocalFolder) localFolder).getId() + ") for messages to send");
 
-            Transport transport = Transport.getInstance(K9.app, account);
+            Transport transport = Transport.getInstance(K9.getApplication(), account);
             for (Message message : localMessages) {
                 if (message.isSet(Flag.DELETED)) {
                     message.destroy();

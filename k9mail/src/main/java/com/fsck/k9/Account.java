@@ -4,8 +4,8 @@ package com.fsck.k9;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.net.Uri;
 import android.support.annotation.StringRes;
 import android.util.Log;
@@ -121,13 +121,7 @@ public class Account implements BaseAccount, StoreConfig {
      * http://developer.android.com/design/style/color.html
      * Note: Order does matter, it's the order in which they will be picked.
      */
-    public static final Integer[] PREDEFINED_COLORS = new Integer[] {
-            Color.parseColor("#0099CC"),    // blue
-            Color.parseColor("#669900"),    // green
-            Color.parseColor("#FF8800"),    // orange
-            Color.parseColor("#CC0000"),    // red
-            Color.parseColor("#9933CC")     // purple
-    };
+    public static final int[] PREDEFINED_COLORS;
 
     public enum SortType {
         SORT_DATE(R.string.sort_earliest_first, R.string.sort_latest_first, false),
@@ -161,6 +155,12 @@ public class Account implements BaseAccount, StoreConfig {
     public static final boolean DEFAULT_SORT_ASCENDING = false;
     public static final String NO_OPENPGP_PROVIDER = "";
     public static final long NO_OPENPGP_KEY = 0;
+
+    static {
+        Context context = K9.getApplication();
+        Resources resources = context.getResources();
+        PREDEFINED_COLORS = resources.getIntArray(R.array.account_colors);
+    }
 
     private DeletePolicy mDeletePolicy = DeletePolicy.NEVER;
 
@@ -358,8 +358,11 @@ public class Account implements BaseAccount, StoreConfig {
     private int pickColor(Context context) {
         List<Account> accounts = Preferences.getPreferences(context).getAccounts();
 
-        List<Integer> availableColors = new ArrayList<Integer>(PREDEFINED_COLORS.length);
-        Collections.addAll(availableColors, PREDEFINED_COLORS);
+        List<Integer> availableColors = new ArrayList<>(PREDEFINED_COLORS.length);
+
+        for (int color : PREDEFINED_COLORS) {
+            availableColors.add(color);
+        }
 
         for (Account account : accounts) {
             Integer color = account.getChipColor();
@@ -387,7 +390,7 @@ public class Account implements BaseAccount, StoreConfig {
         SharedPreferences prefs = preferences.getPreferences();
 
         mStoreUri = Base64.decode(prefs.getString(mUuid + ".storeUri", null));
-        mLocalStorageProviderId = prefs.getString(mUuid + ".localStorageProvider", StorageManager.getInstance(K9.app).getDefaultProviderId());
+        mLocalStorageProviderId = prefs.getString(mUuid + ".localStorageProvider", StorageManager.getInstance(K9.getApplication()).getDefaultProviderId());
         mTransportUri = Base64.decode(prefs.getString(mUuid + ".transportUri", null));
         mDescription = prefs.getString(mUuid + ".description", null);
         mAlwaysBcc = prefs.getString(mUuid + ".alwaysBcc", mAlwaysBcc);
@@ -1316,11 +1319,11 @@ public class Account implements BaseAccount, StoreConfig {
     }
 
     public LocalStore getLocalStore() throws MessagingException {
-        return LocalStore.getInstance(this, K9.app);
+        return LocalStore.getInstance(this, K9.getApplication());
     }
 
     public Store getRemoteStore() throws MessagingException {
-        return RemoteStore.getInstance(K9.app, this);
+        return RemoteStore.getInstance(K9.getApplication(), this);
     }
 
     // It'd be great if this actually went into the store implementation

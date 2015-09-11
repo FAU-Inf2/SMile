@@ -7,7 +7,7 @@ import android.util.Log;
 
 import com.fsck.k9.mail.store.RemoteStore;
 import com.fsck.k9.mailstore.LocalStore;
-import com.fsck.k9.preferences.Editor;
+import com.fsck.k9.preferences.K9Editor;
 import com.fsck.k9.preferences.Storage;
 
 import java.util.ArrayList;
@@ -43,7 +43,7 @@ public class Preferences {
         mContext = context;
         if (mStorage.isEmpty()) {
             Log.i(K9.LOG_TAG, "Preferences storage is zero-size, importing from Android-style preferences");
-            Editor editor = mStorage.edit();
+            K9Editor editor = mStorage.edit();
             editor.copy(context.getSharedPreferences("AndroidMail.Main", Context.MODE_PRIVATE));
             editor.commit();
         }

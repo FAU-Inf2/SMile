@@ -49,6 +49,7 @@ import de.fau.cs.mad.smile.android.BuildConfig;
 import de.fau.cs.mad.smile.android.R;
 
 public class K9 extends Application {
+
     /**
      * Components that are interested in knowing when the K9 instance is
      * available and ready (Android invokes Application.onCreate() after other
@@ -66,7 +67,7 @@ public class K9 extends Application {
         void initializeComponent(Application application);
     }
 
-    public static Application app = null;
+    private static Application app = null;
     public static File tempDirectory;
     public static final String LOG_TAG = "k9";
 
@@ -93,13 +94,13 @@ public class K9 extends Application {
      *
      * @see ApplicationAware
      */
-    private static final List<ApplicationAware> observers = new ArrayList<ApplicationAware>();
+    private static final List<ApplicationAware> observers = new ArrayList<>();
 
     /**
      * This will be {@code true} once the initialization is complete and {@link #notifyObservers()}
      * was called.
      * Afterwards calls to {@link #registerApplicationAware(com.fsck.k9.K9.ApplicationAware)} will
-     * immediately call {@link com.fsck.k9.K9.ApplicationAware#initializeComponent(K9)} for the
+     * immediately call {@link com.fsck.k9.K9.ApplicationAware#initializeComponent(Application)} for the
      * supplied argument.
      */
     private static boolean sInitialized = false;
@@ -329,8 +330,6 @@ public class K9 extends Application {
     public static final int NOTIFICATION_LED_BLINK_SLOW = 0;
     public static final int NOTIFICATION_LED_BLINK_FAST = 1;
 
-
-
     public static final int NOTIFICATION_LED_FAILURE_COLOR = 0xffff0000;
 
     // Must not conflict with an account number
@@ -339,7 +338,6 @@ public class K9 extends Application {
     public static final int CERTIFICATE_EXCEPTION_NOTIFICATION_INCOMING = -2000;
     public static final int CERTIFICATE_EXCEPTION_NOTIFICATION_OUTGOING = -2500;
     public static final int CONNECTIVITY_ID = -3;
-
 
     public static class Intents {
 
@@ -366,6 +364,10 @@ public class K9 extends Application {
              */
             public static final String EXTRA_FROM = BuildConfig.APPLICATION_ID + ".intent.extra.SENDER";
         }
+    }
+
+    public static Application getApplication() {
+        return app;
     }
 
     /**
@@ -655,7 +657,7 @@ public class K9 extends Application {
 
     /**
      * Loads the last known database version of the accounts' databases from a
-     * {@link SharedPreference}.
+     * {@link SharedPreferences}.
      *
      * <p>
      * If the stored version matches {@link LocalStore#DB_VERSION} we know that the databases are

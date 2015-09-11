@@ -14,7 +14,7 @@ import java.util.TreeMap;
 
 /*
  * TODO:
- * - use the default values defined in GlobalSettings and AccountSettings when creating new
+ * - use the default values defined in GlobalSettings and AccountPreferences when creating new
  *   accounts
  * - think of a better way to validate enums than to use the resource arrays (i.e. get rid of
  *   ResourceArrayValidator); maybe even use the settings description for the settings UI

@@ -1,6 +1,7 @@
 package com.fsck.k9.activity.setup;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -31,7 +32,7 @@ public class AccountSetupComposition extends K9Activity {
     private RadioButton mAccountSignatureAfterLocation;
     private LinearLayout mAccountSignatureLayout;
 
-    public static void actionEditCompositionSettings(Activity context, Account account) {
+    public static void actionEditCompositionSettings(Context context, Account account) {
         Intent i = new Intent(context, AccountSetupComposition.class);
         i.setAction(Intent.ACTION_EDIT);
         i.putExtra(EXTRA_ACCOUNT, account.getUuid());

@@ -92,7 +92,7 @@ public class AccountSetupIncoming extends K9Activity implements OnClickListener 
         context.startActivity(i);
     }
 
-    public static void actionEditIncomingSettings(Activity context, Account account) {
+    public static void actionEditIncomingSettings(Context context, Account account) {
         context.startActivity(intentActionEditIncomingSettings(context, account));
     }
 

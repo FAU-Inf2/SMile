@@ -1,20 +1,12 @@
-package com.fsck.k9.activity;
+package com.fsck.k9.fragment;
 
-import android.os.Bundle;
 import android.preference.ListPreference;
-import android.preference.Preference;
-import android.preference.PreferenceActivity;
+import android.preference.PreferenceFragment;
 
-import com.fsck.k9.K9;
+import com.fsck.k9.activity.K9PreferenceActivity.PreferenceChangeListener;
 
+public class SmilePreferenceFragment extends PreferenceFragment {
 
-public class K9PreferenceActivity extends PreferenceActivity {
-    @Override
-    public void onCreate(Bundle icicle) {
-        K9ActivityCommon.setLanguage(this, K9.getK9Language());
-        setTheme(K9.getK9ThemeResourceId());
-        super.onCreate(icicle);
-    }
 
     /**
      * Set up the {@link ListPreference} instance identified by {@code key}.
@@ -54,28 +46,5 @@ public class K9PreferenceActivity extends PreferenceActivity {
         prefView.setValue(value);
         prefView.setSummary(prefView.getEntry());
         prefView.setOnPreferenceChangeListener(new PreferenceChangeListener(prefView));
-    }
-
-    /**
-     * This class handles value changes of the {@link ListPreference} objects.
-     */
-    public static class PreferenceChangeListener implements Preference.OnPreferenceChangeListener {
-        private ListPreference mPrefView;
-
-        public PreferenceChangeListener(final ListPreference prefView) {
-            this.mPrefView = prefView;
-        }
-
-        /**
-         * Show the preference value in the preference summary field.
-         */
-        @Override
-        public boolean onPreferenceChange(final Preference preference, final Object newValue) {
-            final String summary = newValue.toString();
-            final int index = mPrefView.findIndexOfValue(summary);
-            mPrefView.setSummary(mPrefView.getEntries()[index]);
-            mPrefView.setValue(summary);
-            return false;
-        }
     }
 }

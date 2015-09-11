@@ -29,9 +29,9 @@ import com.fsck.k9.Account.SortType;
 import com.fsck.k9.K9;
 import com.fsck.k9.K9.SplitViewMode;
 import com.fsck.k9.Preferences;
-import com.fsck.k9.activity.setup.AccountSettings;
+import com.fsck.k9.activity.setup.AccountPreferences;
 import com.fsck.k9.activity.setup.FolderSettings;
-import com.fsck.k9.activity.setup.Prefs;
+import com.fsck.k9.activity.setup.GlobalPreferences;
 import com.fsck.k9.crypto.PgpData;
 import com.fsck.k9.fragment.MessageListFragment;
 import com.fsck.k9.fragment.MessageListFragmentListener;
@@ -775,11 +775,11 @@ public class MessageList extends K9Activity
     }
 
     private void onEditPrefs() {
-        Prefs.actionPrefs(this);
+        Settings.actionPreferences(this);
     }
 
     private void onEditAccount() {
-        AccountSettings.actionSettings(this, mAccount);
+        Settings.actionAccountPreferences(this, mAccount);
     }
 
     @Override
@@ -796,12 +796,12 @@ public class MessageList extends K9Activity
                 goBack();
                 return true;
             }
-            /*case R.id.newui: {
+            case R.id.newui: {
                 Intent intent = Messages.intentDisplaySearch(this, mSearch);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
                 return true;
-            }*/
+            }
             case R.id.compose: {
                 mMessageListFragment.onCompose();
                 return true;

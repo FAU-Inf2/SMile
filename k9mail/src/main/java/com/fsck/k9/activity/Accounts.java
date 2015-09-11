@@ -54,9 +54,9 @@ import com.fsck.k9.activity.asynctask.MoveAccountTask;
 import com.fsck.k9.activity.listener.AccountsActivityListener;
 import com.fsck.k9.activity.listener.ActivityListener;
 import com.fsck.k9.activity.misc.NonConfigurationInstance;
-import com.fsck.k9.activity.setup.AccountSettings;
+import com.fsck.k9.activity.setup.AccountPreferences;
 import com.fsck.k9.activity.setup.AccountSetupBasics;
-import com.fsck.k9.activity.setup.Prefs;
+import com.fsck.k9.activity.setup.GlobalPreferences;
 import com.fsck.k9.activity.setup.WelcomeMessage;
 import com.fsck.k9.adapter.AccountsAdapter;
 import com.fsck.k9.controller.MessagingController;
@@ -462,7 +462,7 @@ public class Accounts extends K9Activity implements OnItemClickListener {
     }
 
     private void onEditPrefs() {
-        Prefs.actionPrefs(this);
+        Settings.actionPreferences(this);
     }
 
     /*
@@ -890,7 +890,7 @@ public class Accounts extends K9Activity implements OnItemClickListener {
     }
 
     private void onEditAccount(Account account) {
-        AccountSettings.actionSettings(this, account);
+        Settings.actionAccountPreferences(this, account);
     }
 
     @Override

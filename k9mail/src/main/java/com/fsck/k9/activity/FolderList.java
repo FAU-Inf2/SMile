@@ -26,11 +26,11 @@ import com.fsck.k9.AccountStats;
 import com.fsck.k9.BaseAccount;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
+import com.fsck.k9.activity.setup.AccountPreferences;
 import com.fsck.k9.holder.FolderInfoHolder;
 import com.fsck.k9.activity.listener.ActivityListener;
-import com.fsck.k9.activity.setup.AccountSettings;
 import com.fsck.k9.activity.setup.FolderSettings;
-import com.fsck.k9.activity.setup.Prefs;
+import com.fsck.k9.activity.setup.GlobalPreferences;
 import com.fsck.k9.adapter.FolderAdapter;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.controller.MessagingListener;
@@ -366,11 +366,11 @@ public final class FolderList extends K9Activity {
     }
 
     private final void onEditPrefs() {
-        Prefs.actionPrefs(this);
+        Settings.actionPreferences(this);
     }
 
     private final void onEditAccount() {
-        AccountSettings.actionSettings(this, mAccount);
+        Settings.actionAccountPreferences(this, mAccount);
     }
 
     private final void onAccounts() {

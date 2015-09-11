@@ -1,8 +1,12 @@
 package com.fsck.k9.activity;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 
@@ -14,7 +18,8 @@ import de.fau.cs.mad.smile.android.R;
 /**
  * Dialog displaying a color picker.
  */
-public class ColorPickerDialog extends AlertDialog {
+public class ColorPickerDialog extends DialogFragment {
+    private final static String ARG_COLOR = "color";
 
     /**
      * The interface users of {@link ColorPickerDialog} have to implement to learn the selected
@@ -30,32 +35,46 @@ public class ColorPickerDialog extends AlertDialog {
         void colorChanged(int color);
     }
 
-    OnColorChangedListener mColorChangedListener;
-    ColorPicker mColorPicker;
+    public static ColorPickerDialog newInstance(OnColorChangedListener listener, int color) {
+        Bundle args = new Bundle();
+        args.putInt(ARG_COLOR, color);
+        ColorPickerDialog dialog = new ColorPickerDialog();
+        dialog.setArguments(args);
+        dialog.setColorChangedListener(listener);
+        return dialog;
+    }
 
-    public ColorPickerDialog(Context context, OnColorChangedListener listener, int color) {
-        super(context);
-        mColorChangedListener = listener;
+    private OnColorChangedListener mColorChangedListener;
+    private ColorPicker mColorPicker;
 
+    private void setColorChangedListener(OnColorChangedListener mColorChangedListener) {
+        this.mColorChangedListener = mColorChangedListener;
+    }
+
+    @NonNull
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        Context context = getActivity();
+        final int color = savedInstanceState.getInt(ARG_COLOR);
         View view = LayoutInflater.from(context).inflate(R.layout.color_picker_dialog, null);
 
         mColorPicker = (ColorPicker) view.findViewById(R.id.color_picker);
         mColorPicker.setColor(color);
 
-        setView(view);
-
-        setButton(BUTTON_POSITIVE, context.getString(R.string.okay_action),
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setView(view);
+        builder.setPositiveButton(R.string.okay_action,
                 new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                if (mColorChangedListener != null) {
-                    mColorChangedListener.colorChanged(mColorPicker.getColor());
-                }
-            }
-        });
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (mColorChangedListener != null) {
+                            mColorChangedListener.colorChanged(mColorPicker.getColor());
+                        }
+                    }
+                });
+        builder.setNegativeButton(R.string.cancel_action, null);
 
-        setButton(BUTTON_NEGATIVE, context.getString(R.string.cancel_action),
-                (OnClickListener) null);
+        return builder.create();
     }
 
     /**

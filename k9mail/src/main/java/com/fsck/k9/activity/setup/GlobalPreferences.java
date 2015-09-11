@@ -1,5 +1,6 @@
 package com.fsck.k9.activity.setup;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -10,21 +11,24 @@ import android.preference.CheckBoxPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
+import android.preference.PreferenceCategory;
 import android.preference.PreferenceScreen;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.Toast;
 
+import com.fsck.k9.Account;
 import com.fsck.k9.K9;
 import com.fsck.k9.K9.NotificationHideSubject;
 import com.fsck.k9.K9.NotificationQuickDelete;
 import com.fsck.k9.K9.SplitViewMode;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.activity.ColorPickerDialog;
-import com.fsck.k9.activity.K9PreferenceActivity;
-import com.fsck.k9.controller.MessagingController;
+import com.fsck.k9.fragment.SmilePreferenceFragment;
 import com.fsck.k9.helper.FileBrowserHelper;
 import com.fsck.k9.helper.FileBrowserHelper.FileBrowserFailOverCallback;
 import com.fsck.k9.helper.NotificationHelper;
+import com.fsck.k9.preferences.AccountPreference;
 import com.fsck.k9.preferences.CheckBoxListPreference;
 import com.fsck.k9.preferences.TimePickerPreference;
 import com.fsck.k9.service.MailService;
@@ -39,7 +43,11 @@ import java.util.Set;
 import de.fau.cs.mad.smile.android.R;
 
 
-public class Prefs extends K9PreferenceActivity {
+public class GlobalPreferences extends SmilePreferenceFragment {
+
+    public interface GlobalPreferencesCallback {
+        void onAccountClick(Account account);
+    }
 
     /**
      * Immutable empty {@link CharSequence} array
@@ -77,13 +85,6 @@ public class Prefs extends K9PreferenceActivity {
 
     private static final int ACTIVITY_CHOOSE_FOLDER = 1;
 
-    // Named indices for the mVisibleRefileActions field
-    private static final int VISIBLE_REFILE_ACTIONS_DELETE = 0;
-    private static final int VISIBLE_REFILE_ACTIONS_ARCHIVE = 1;
-    private static final int VISIBLE_REFILE_ACTIONS_MOVE = 2;
-    private static final int VISIBLE_REFILE_ACTIONS_COPY = 3;
-    private static final int VISIBLE_REFILE_ACTIONS_SPAM = 4;
-
     private ListPreference mLanguage;
     private ListPreference mTheme;
     private CheckBoxListPreference mVolumeNavigation;
@@ -106,17 +107,46 @@ public class Prefs extends K9PreferenceActivity {
 
     private CheckBoxPreference mThreadedView;
     private ListPreference mSplitViewMode;
+    private GlobalPreferencesCallback callback;
+    private Context mContext;
 
-    public static void actionPrefs(Context context) {
-        Intent i = new Intent(context, Prefs.class);
-        context.startActivity(i);
+    public static GlobalPreferences newInstance(GlobalPreferencesCallback callback) {
+        GlobalPreferences preferences = new GlobalPreferences();
+        preferences.setCallback(callback);
+        return preferences;
+    }
+
+    private static String themeIdToName(K9.Theme theme) {
+        switch (theme) {
+            case DARK:
+                return "dark";
+            case USE_GLOBAL:
+                return "global";
+            default:
+                return "light";
+        }
+    }
+
+    private static K9.Theme themeNameToId(String theme) {
+        if (TextUtils.equals(theme, "dark")) {
+            return K9.Theme.DARK;
+        } else if (TextUtils.equals(theme, "global")) {
+            return K9.Theme.USE_GLOBAL;
+        } else {
+            return K9.Theme.LIGHT;
+        }
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        mContext = getActivity();
         addPreferencesFromResource(R.xml.global_preferences);
+        PreferenceCategory category = (PreferenceCategory) findPreference("accounts");
+        List<Account> accounts = Preferences.getPreferences(mContext).getAccounts();
+        for(Account account : accounts) {
+            category.addPreference(new AccountPreference(mContext, account, new OnAccountPreferenceClickListener()));
+        }
 
         mLanguage = (ListPreference) findPreference(PREFERENCE_LANGUAGE);
         List<CharSequence> entryVector = new ArrayList<>(Arrays.asList(mLanguage.getEntries()));
@@ -132,35 +162,35 @@ public class Prefs extends K9PreferenceActivity {
         }
 
         initListPreference(mLanguage, K9.getK9Language(),
-                           entryVector.toArray(EMPTY_CHAR_SEQUENCE_ARRAY),
-                           entryValueVector.toArray(EMPTY_CHAR_SEQUENCE_ARRAY));
+                entryVector.toArray(EMPTY_CHAR_SEQUENCE_ARRAY),
+                entryValueVector.toArray(EMPTY_CHAR_SEQUENCE_ARRAY));
 
         mTheme = setupListPreference(PREFERENCE_THEME, themeIdToName(K9.getK9Theme()));
         findPreference(PREFERENCE_FONT_SIZE).setOnPreferenceClickListener(
-        new Preference.OnPreferenceClickListener() {
-            public boolean onPreferenceClick(Preference preference) {
-                onFontSizeSettings();
-                return true;
-            }
-        });
+                new Preference.OnPreferenceClickListener() {
+                    public boolean onPreferenceClick(Preference preference) {
+                        onFontSizeSettings();
+                        return true;
+                    }
+                });
 
-        mVolumeNavigation = (CheckBoxListPreference)findPreference(PREFERENCE_VOLUME_NAVIGATION);
+        mVolumeNavigation = (CheckBoxListPreference) findPreference(PREFERENCE_VOLUME_NAVIGATION);
         mVolumeNavigation.setItems(new CharSequence[]{getString(R.string.volume_navigation_message), getString(R.string.volume_navigation_list)});
-        mVolumeNavigation.setCheckedItems(new boolean[] {K9.useVolumeKeysForNavigationEnabled(), K9.useVolumeKeysForListNavigationEnabled()});
+        mVolumeNavigation.setCheckedItems(new boolean[]{K9.useVolumeKeysForNavigationEnabled(), K9.useVolumeKeysForListNavigationEnabled()});
 
-        mStartIntegratedInbox = (CheckBoxPreference)findPreference(PREFERENCE_START_INTEGRATED_INBOX);
+        mStartIntegratedInbox = (CheckBoxPreference) findPreference(PREFERENCE_START_INTEGRATED_INBOX);
         mStartIntegratedInbox.setChecked(K9.startIntegratedInbox());
 
         mNotificationHideSubject = setupListPreference(PREFERENCE_NOTIFICATION_HIDE_SUBJECT,
                 K9.getNotificationHideSubject().toString());
 
         mPreviewLines = setupListPreference(PREFERENCE_MESSAGELIST_PREVIEW_LINES,
-                                            Integer.toString(K9.messageListPreviewLines()));
+                Integer.toString(K9.messageListPreviewLines()));
 
-        mShowCorrespondentNames = (CheckBoxPreference)findPreference(PREFERENCE_MESSAGELIST_SHOW_CORRESPONDENT_NAMES);
+        mShowCorrespondentNames = (CheckBoxPreference) findPreference(PREFERENCE_MESSAGELIST_SHOW_CORRESPONDENT_NAMES);
         mShowCorrespondentNames.setChecked(K9.showCorrespondentNames());
 
-        mChangeContactNameColor = (CheckBoxPreference)findPreference(PREFERENCE_MESSAGELIST_CONTACT_NAME_COLOR);
+        mChangeContactNameColor = (CheckBoxPreference) findPreference(PREFERENCE_MESSAGELIST_CONTACT_NAME_COLOR);
         mChangeContactNameColor.setChecked(K9.changeContactNameColor());
 
         mThreadedView = (CheckBoxPreference) findPreference(PREFERENCE_THREADED_VIEW);
@@ -186,7 +216,7 @@ public class Prefs extends K9PreferenceActivity {
             }
         });
 
-        mFixedWidth = (CheckBoxPreference)findPreference(PREFERENCE_MESSAGEVIEW_FIXEDWIDTH);
+        mFixedWidth = (CheckBoxPreference) findPreference(PREFERENCE_MESSAGEVIEW_FIXEDWIDTH);
         mFixedWidth.setChecked(K9.messageViewFixedWidthFont());
 
         mReturnToList = (CheckBoxPreference) findPreference(PREFERENCE_MESSAGEVIEW_RETURN_TO_LIST);
@@ -229,71 +259,59 @@ public class Prefs extends K9PreferenceActivity {
         }
 
         mLockScreenNotificationVisibility = setupListPreference(PREFERENCE_LOCK_SCREEN_NOTIFICATION_VISIBILITY,
-            K9.getLockScreenNotificationVisibility().toString());
+                K9.getLockScreenNotificationVisibility().toString());
         if (!NotificationHelper.platformSupportsLockScreenNotifications()) {
             ((PreferenceScreen) findPreference("notification_preferences"))
-                .removePreference(mLockScreenNotificationVisibility);
+                    .removePreference(mLockScreenNotificationVisibility);
             mLockScreenNotificationVisibility = null;
         }
 
-        mDebugLogging = (CheckBoxPreference)findPreference(PREFERENCE_DEBUG_LOGGING);
+        mDebugLogging = (CheckBoxPreference) findPreference(PREFERENCE_DEBUG_LOGGING);
         mDebugLogging.setChecked(K9.DEBUG);
 
         mAttachmentPathPreference = findPreference(PREFERENCE_ATTACHMENT_DEF_PATH);
         mAttachmentPathPreference.setSummary(K9.getAttachmentDefaultPath());
         mAttachmentPathPreference
-        .setOnPreferenceClickListener(new OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                FileBrowserHelper
-                .getInstance()
-                .showFileBrowserActivity(Prefs.this,
-                                         new File(K9.getAttachmentDefaultPath()),
-                                         ACTIVITY_CHOOSE_FOLDER, callback);
+                .setOnPreferenceClickListener(new OnPreferenceClickListener() {
+                    FileBrowserFailOverCallback callback = new FileBrowserFailOverCallback() {
 
-                return true;
-            }
+                        @Override
+                        public void onPathEntered(String path) {
+                            mAttachmentPathPreference.setSummary(path);
+                            K9.setAttachmentDefaultPath(path);
+                        }
 
-            FileBrowserFailOverCallback callback = new FileBrowserFailOverCallback() {
+                        @Override
+                        public void onCancel() {
+                            // canceled, do nothing
+                        }
+                    };
 
-                @Override
-                public void onPathEntered(String path) {
-                    mAttachmentPathPreference.setSummary(path);
-                    K9.setAttachmentDefaultPath(path);
-                }
+                    @Override
+                    public boolean onPreferenceClick(Preference preference) {
+                        FileBrowserHelper
+                                .getInstance()
+                                .showFileBrowserActivity(getActivity(),
+                                        new File(K9.getAttachmentDefaultPath()),
+                                        ACTIVITY_CHOOSE_FOLDER, callback);
 
-                @Override
-                public void onCancel() {
-                    // canceled, do nothing
-                }
-            };
-        });
+                        return true;
+                    }
+                });
 
         mSplitViewMode = (ListPreference) findPreference(PREFERENCE_SPLITVIEW_MODE);
         initListPreference(mSplitViewMode, K9.getSplitViewMode().name(),
                 mSplitViewMode.getEntries(), mSplitViewMode.getEntryValues());
     }
 
-    private static String themeIdToName(K9.Theme theme) {
-        switch (theme) {
-            case DARK: return "dark";
-            case USE_GLOBAL: return "global";
-            default: return "light";
-        }
-    }
-
-    private static K9.Theme themeNameToId(String theme) {
-        if (TextUtils.equals(theme, "dark")) {
-            return K9.Theme.DARK;
-        } else if (TextUtils.equals(theme, "global")) {
-            return K9.Theme.USE_GLOBAL;
-        } else {
-            return K9.Theme.LIGHT;
-        }
+    @Override
+    public void onPause() {
+        saveSettings();
+        super.onPause();
     }
 
     private void saveSettings() {
-        SharedPreferences preferences = Preferences.getPreferences(this).getPreferences();
+        SharedPreferences preferences = Preferences.getPreferences(mContext).getPreferences();
 
         K9.setK9Language(mLanguage.getValue());
         K9.setK9Theme(themeNameToId(mTheme.getValue()));
@@ -344,9 +362,9 @@ public class Prefs extends K9PreferenceActivity {
                     NotificationQuickDelete.valueOf(mNotificationQuickDelete.getValue()));
         }
 
-        if(mLockScreenNotificationVisibility != null) {
+        if (mLockScreenNotificationVisibility != null) {
             K9.setLockScreenNotificationVisibility(
-                K9.LockScreenNotificationVisibility.valueOf(mLockScreenNotificationVisibility.getValue()));
+                    K9.LockScreenNotificationVisibility.valueOf(mLockScreenNotificationVisibility.getValue()));
         }
 
         K9.setSplitViewMode(SplitViewMode.valueOf(mSplitViewMode.getValue()));
@@ -354,7 +372,7 @@ public class Prefs extends K9PreferenceActivity {
         boolean needsRefresh = K9.setBackgroundOps(K9.BACKGROUND_OPS.WHEN_CHECKED_AUTO_SYNC);
 
         if (!K9.DEBUG && mDebugLogging.isChecked()) {
-            Toast.makeText(this, R.string.debug_logging_enabled, Toast.LENGTH_LONG).show();
+            Toast.makeText(mContext, R.string.debug_logging_enabled, Toast.LENGTH_LONG).show();
         }
 
         K9.DEBUG = mDebugLogging.isChecked();
@@ -367,47 +385,57 @@ public class Prefs extends K9PreferenceActivity {
         editor.commit();
 
         if (needsRefresh) {
-            MailService.actionReset(this, null);
+            MailService.actionReset(mContext, null);
         }
-    }
-
-    @Override
-    protected void onPause() {
-        saveSettings();
-        super.onPause();
     }
 
     private void onFontSizeSettings() {
-        FontSizeSettings.actionEditSettings(this);
+        FontSizeSettings.actionEditSettings(mContext);
     }
 
     private void onChooseContactNameColor() {
-        new ColorPickerDialog(this, new ColorPickerDialog.OnColorChangedListener() {
-            public void colorChanged(int color) {
-                K9.setContactNameColor(color);
-            }
-        },
-        K9.getContactNameColor()).show();
+        ColorPickerDialog dialog = ColorPickerDialog.newInstance(
+                new ColorPickerDialog.OnColorChangedListener() {
+                    public void colorChanged(int color) {
+                        K9.setContactNameColor(color);
+                    }
+                }, K9.getContactNameColor());
+
+        dialog.show(getFragmentManager(), "colorPicker");
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
-        case ACTIVITY_CHOOSE_FOLDER:
-            if (resultCode == RESULT_OK && data != null) {
-                // obtain the filename
-                Uri fileUri = data.getData();
-                if (fileUri != null) {
-                    String filePath = fileUri.getPath();
-                    if (filePath != null) {
-                        mAttachmentPathPreference.setSummary(filePath.toString());
-                        K9.setAttachmentDefaultPath(filePath.toString());
+            case ACTIVITY_CHOOSE_FOLDER:
+                if (resultCode == Activity.RESULT_OK && data != null) {
+                    // obtain the filename
+                    Uri fileUri = data.getData();
+                    if (fileUri != null) {
+                        String filePath = fileUri.getPath();
+                        if (filePath != null) {
+                            mAttachmentPathPreference.setSummary(filePath);
+                            K9.setAttachmentDefaultPath(filePath);
+                        }
                     }
                 }
-            }
-            break;
+                break;
         }
 
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    public void setCallback(GlobalPreferencesCallback callback) {
+        this.callback = callback;
+    }
+
+    private class OnAccountPreferenceClickListener implements OnPreferenceClickListener {
+        @Override
+        public boolean onPreferenceClick(Preference preference) {
+            AccountPreference accountPreference = (AccountPreference)preference;
+            Log.d(K9.LOG_TAG, "found acc pref: " + accountPreference.getAccount());
+            callback.onAccountClick(accountPreference.getAccount());
+            return false;
+        }
     }
 }

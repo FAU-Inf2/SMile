@@ -338,7 +338,7 @@ public class SettingsExporter {
                 SettingsDescription setting = versionedSetting.get(highestVersion);
 
                 if (setting != null) {
-                    // Only export account settings that can be found in AccountSettings.SETTINGS
+                    // Only export account settings that can be found in AccountPreferences.SETTINGS
                     try {
                         Object value = setting.fromString(valueString);
                         String pretty = setting.toPrettyString(value);

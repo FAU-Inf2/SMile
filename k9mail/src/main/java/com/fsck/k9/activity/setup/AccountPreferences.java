@@ -1,7 +1,6 @@
-
 package com.fsck.k9.activity.setup;
 
-import android.app.Dialog;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -32,11 +31,9 @@ import com.fsck.k9.K9;
 import com.fsck.k9.NotificationSetting;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.activity.ChooseFolder;
-import com.fsck.k9.activity.ChooseIdentity;
 import com.fsck.k9.activity.ColorPickerDialog;
-import com.fsck.k9.activity.K9PreferenceActivity;
-import com.fsck.k9.activity.ManageIdentities;
 import com.fsck.k9.crypto.OpenPgpApiHelper;
+import com.fsck.k9.fragment.SmilePreferenceFragment;
 import com.fsck.k9.mail.Folder;
 import com.fsck.k9.mail.Store;
 import com.fsck.k9.mailstore.LocalFolder;
@@ -57,15 +54,10 @@ import de.fau.cs.mad.smile.android.R;
 import de.fau.cs.mad.smime_api.SMimeApi;
 
 
-public class AccountSettings extends K9PreferenceActivity {
+public class AccountPreferences extends SmilePreferenceFragment {
     private static final String EXTRA_ACCOUNT = "account";
 
-    private static final int DIALOG_COLOR_PICKER_ACCOUNT = 1;
-    private static final int DIALOG_COLOR_PICKER_LED = 2;
-
-    private static final int SELECT_AUTO_EXPAND_FOLDER = 1;
-
-    private static final int ACTIVITY_MANAGE_IDENTITIES = 2;
+    private static final int SELECT_AUTO_EXPAND_FOLDER = 100;
 
     private static final String PREFERENCE_SCREEN_MAIN = "main";
     private static final String PREFERENCE_SCREEN_COMPOSING = "composing";
@@ -125,7 +117,6 @@ public class AccountSettings extends K9PreferenceActivity {
     private static final String PREFERENCE_TRASH_FOLDER = "trash_folder";
 
     private static final String PREFERENCE_CRYPTO_SMIME_APP = "smime_app";
-
 
     private Account mAccount;
     private boolean mIsMoveCapable = false;
@@ -193,19 +184,24 @@ public class AccountSettings extends K9PreferenceActivity {
     private ListPreference mSmimeApp;
     private ListPreference defaultCryptoProvider;
 
+    private Context mContext;
 
-    public static void actionSettings(Context context, Account account) {
-        Intent i = new Intent(context, AccountSettings.class);
-        i.putExtra(EXTRA_ACCOUNT, account.getUuid());
-        context.startActivity(i);
+    public static AccountPreferences newInstance(Account account) {
+        Bundle args = new Bundle();
+        args.putString(EXTRA_ACCOUNT, account.getUuid());
+        AccountPreferences settings = new AccountPreferences();
+        settings.setArguments(args);
+        return settings;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mContext = getActivity();
 
-        String accountUuid = getIntent().getStringExtra(EXTRA_ACCOUNT);
-        mAccount = Preferences.getPreferences(this).getAccount(accountUuid);
+        Bundle args = getArguments();
+        String accountUuid = args.getString(EXTRA_ACCOUNT);
+        mAccount = Preferences.getPreferences(mContext).getAccount(accountUuid);
 
         try {
             final Store store = mAccount.getRemoteStore();
@@ -409,7 +405,6 @@ public class AccountSettings extends K9PreferenceActivity {
         });
 
 
-
         mMessageAge = (ListPreference) findPreference(PREFERENCE_MESSAGE_AGE);
 
         if (!mAccount.isSearchByDateCapable()) {
@@ -444,7 +439,7 @@ public class AccountSettings extends K9PreferenceActivity {
 
         mAccountDefault = (CheckBoxPreference) findPreference(PREFERENCE_DEFAULT);
         mAccountDefault.setChecked(
-            mAccount.equals(Preferences.getPreferences(this).getDefaultAccount()));
+                mAccount.equals(Preferences.getPreferences(mContext).getDefaultAccount()));
 
         mAccountShowPictures = (ListPreference) findPreference(PREFERENCE_SHOW_PICTURES);
         mAccountShowPictures.setValue("" + mAccount.getShowPictures());
@@ -463,7 +458,7 @@ public class AccountSettings extends K9PreferenceActivity {
         mLocalStorageProvider = (ListPreference) findPreference(PREFERENCE_LOCAL_STORAGE_PROVIDER);
         {
             final Map<String, String> providers;
-            providers = StorageManager.getInstance(this).getAvailableProviders();
+            providers = StorageManager.getInstance(mContext).getAvailableProviders();
             int i = 0;
             final String[] providerLabels = new String[providers.size()];
             final String[] providerIds = new String[providers.size()];
@@ -492,12 +487,12 @@ public class AccountSettings extends K9PreferenceActivity {
         mCloudSearchEnabled = (CheckBoxPreference) findPreference(PREFERENCE_CLOUD_SEARCH_ENABLED);
         mRemoteSearchNumResults = (ListPreference) findPreference(PREFERENCE_REMOTE_SEARCH_NUM_RESULTS);
         mRemoteSearchNumResults.setOnPreferenceChangeListener(
-            new OnPreferenceChangeListener() {
-                public boolean onPreferenceChange(Preference pref, Object newVal) {
-                    updateRemoteSearchLimit((String)newVal);
-                    return true;
+                new OnPreferenceChangeListener() {
+                    public boolean onPreferenceChange(Preference pref, Object newVal) {
+                        updateRemoteSearchLimit((String) newVal);
+                        return true;
+                    }
                 }
-            }
         );
         //mRemoteSearchFullText = (CheckBoxPreference) findPreference(PREFERENCE_REMOTE_SEARCH_FULL_TEXT);
 
@@ -591,7 +586,7 @@ public class AccountSettings extends K9PreferenceActivity {
         mAccountLed = (CheckBoxPreference) findPreference(PREFERENCE_NOTIFICATION_LED);
         mAccountLed.setChecked(mAccount.getNotificationSetting().isLed());
 
-        mNotificationOpensUnread = (CheckBoxPreference)findPreference(PREFERENCE_NOTIFICATION_OPENS_UNREAD);
+        mNotificationOpensUnread = (CheckBoxPreference) findPreference(PREFERENCE_NOTIFICATION_OPENS_UNREAD);
         mNotificationOpensUnread.setChecked(mAccount.goToUnreadMessageSearch());
 
         new PopulateFolderPrefsTask().execute();
@@ -613,31 +608,31 @@ public class AccountSettings extends K9PreferenceActivity {
         });
 
         findPreference(PREFERENCE_COMPOSITION).setOnPreferenceClickListener(
-        new Preference.OnPreferenceClickListener() {
-            public boolean onPreferenceClick(Preference preference) {
-                onCompositionSettings();
-                return true;
-            }
-        });
+                new Preference.OnPreferenceClickListener() {
+                    public boolean onPreferenceClick(Preference preference) {
+                        onCompositionSettings();
+                        return true;
+                    }
+                });
 
         findPreference(PREFERENCE_INCOMING).setOnPreferenceClickListener(
-        new Preference.OnPreferenceClickListener() {
-            public boolean onPreferenceClick(Preference preference) {
-                mIncomingChanged = true;
-                onIncomingSettings();
-                return true;
-            }
-        });
+                new Preference.OnPreferenceClickListener() {
+                    public boolean onPreferenceClick(Preference preference) {
+                        mIncomingChanged = true;
+                        onIncomingSettings();
+                        return true;
+                    }
+                });
 
         findPreference(PREFERENCE_OUTGOING).setOnPreferenceClickListener(
-        new Preference.OnPreferenceClickListener() {
-            public boolean onPreferenceClick(Preference preference) {
-                onOutgoingSettings();
-                return true;
-            }
-        });
+                new Preference.OnPreferenceClickListener() {
+                    public boolean onPreferenceClick(Preference preference) {
+                        onOutgoingSettings();
+                        return true;
+                    }
+                });
 
-        mHasCrypto = OpenPgpUtils.isAvailable(this);
+        mHasCrypto = OpenPgpUtils.isAvailable(mContext);
         if (mHasCrypto) {
             mCryptoApp = (OpenPgpAppPreference) findPreference(PREFERENCE_CRYPTO_APP);
             mCryptoKey = (OpenPgpKeyPreference) findPreference(PREFERENCE_CRYPTO_KEY);
@@ -673,20 +668,20 @@ public class AccountSettings extends K9PreferenceActivity {
             mCryptoKey.setSummary(R.string.account_settings_no_openpgp_provider_installed);
         }
 
-        PackageManager packageManager = getPackageManager();
+        PackageManager packageManager = mContext.getPackageManager();
         Intent smime = new Intent(SMimeApi.SERVICE_INTENT);
         List<ResolveInfo> activities = packageManager.queryIntentServices(smime, 0);
         mSmimeApp = (ListPreference) findPreference(PREFERENCE_CRYPTO_SMIME_APP);
 
-        if(activities.size() > 0) {
+        if (activities.size() > 0) {
             final ArrayList<String> names = new ArrayList<>();
             final ArrayList<String> values = new ArrayList<>();
             final String none = "None";
             names.add(none);
             values.add(none);
 
-            for(ResolveInfo ri : activities) {
-                if(ri.serviceInfo != null) {
+            for (ResolveInfo ri : activities) {
+                if (ri.serviceInfo != null) {
                     names.add(ri.serviceInfo.loadLabel(packageManager).toString());
                     values.add(ri.serviceInfo.packageName);
                 }
@@ -698,7 +693,7 @@ public class AccountSettings extends K9PreferenceActivity {
             mSmimeApp.setSummary(none);
 
             final String smimeApp = mAccount.getSmimeProvider();
-            if(smimeApp != null && !smimeApp.equals("")) {
+            if (smimeApp != null && !smimeApp.equals("")) {
                 mSmimeApp.setValue(smimeApp);
                 int pos = values.indexOf(smimeApp);
                 if (pos >= 0) {
@@ -724,7 +719,7 @@ public class AccountSettings extends K9PreferenceActivity {
         }
 
         defaultCryptoProvider = (ListPreference) findPreference("default_crypto");
-        if(defaultCryptoProvider != null) {
+        if (defaultCryptoProvider != null) {
             defaultCryptoProvider.setValue(mAccount.getDefaultCryptoProvider());
             defaultCryptoProvider.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
                 @Override
@@ -736,6 +731,12 @@ public class AccountSettings extends K9PreferenceActivity {
                 }
             });
         }
+    }
+
+    @Override
+    public void onPause() {
+        saveSettings();
+        super.onPause();
     }
 
     private void removeListEntry(ListPreference listPreference, String remove) {
@@ -760,7 +761,7 @@ public class AccountSettings extends K9PreferenceActivity {
 
     private void saveSettings() {
         if (mAccountDefault.isChecked()) {
-            Preferences.getPreferences(this).setDefaultAccount(mAccount);
+            Preferences.getPreferences(mContext).setDefaultAccount(mAccount);
         }
 
         mAccount.setDescription(mAccountDescription.getText());
@@ -804,8 +805,7 @@ public class AccountSettings extends K9PreferenceActivity {
         // since it varies because of internationalization
         if (mAccount.getStoreUri().startsWith("webdav")) {
             mAccount.setAutoExpandFolderName(mAutoExpandFolder.getValue());
-        }
-        else {
+        } else {
             mAccount.setAutoExpandFolderName(reverseTranslateFolder(mAutoExpandFolder.getValue()));
         }
 
@@ -854,11 +854,11 @@ public class AccountSettings extends K9PreferenceActivity {
             }
 
             if (needsRefresh && needsPushRestart) {
-                MailService.actionReset(this, null);
+                MailService.actionReset(mContext, null);
             } else if (needsRefresh) {
-                MailService.actionReschedulePoll(this, null);
+                MailService.actionReschedulePoll(mContext, null);
             } else if (needsPushRestart) {
-                MailService.actionRestartPushers(this, null);
+                MailService.actionRestartPushers(mContext, null);
             }
         }
 
@@ -866,7 +866,7 @@ public class AccountSettings extends K9PreferenceActivity {
         mAccount.setDefaultCryptoProvider(defaultCryptoProvider.getValue());
 
         // TODO: refresh folder list here
-        mAccount.save(Preferences.getPreferences(this));
+        mAccount.save(Preferences.getPreferences(mContext));
     }
 
     @Override
@@ -874,98 +874,56 @@ public class AccountSettings extends K9PreferenceActivity {
         if (mCryptoKey != null && mCryptoKey.handleOnActivityResult(requestCode, resultCode, data)) {
             return;
         }
-        if (resultCode == RESULT_OK) {
+
+        if (resultCode == Activity.RESULT_OK) {
             switch (requestCode) {
-            case SELECT_AUTO_EXPAND_FOLDER:
-                mAutoExpandFolder.setSummary(translateFolder(data.getStringExtra(ChooseFolder.EXTRA_NEW_FOLDER)));
-                break;
+                case SELECT_AUTO_EXPAND_FOLDER:
+                    mAutoExpandFolder.setSummary(translateFolder(data.getStringExtra(ChooseFolder.EXTRA_NEW_FOLDER)));
+                    break;
             }
         }
+
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    @Override
-    protected void onPause() {
-        saveSettings();
-        super.onPause();
-    }
-
     private void onCompositionSettings() {
-        AccountSetupComposition.actionEditCompositionSettings(this, mAccount);
-    }
-
-    private void onManageIdentities() {
-        Intent intent = new Intent(this, ManageIdentities.class);
-        intent.putExtra(ChooseIdentity.EXTRA_ACCOUNT, mAccount.getUuid());
-        startActivityForResult(intent, ACTIVITY_MANAGE_IDENTITIES);
+        AccountSetupComposition.actionEditCompositionSettings(mContext, mAccount);
     }
 
     private void onIncomingSettings() {
-        AccountSetupIncoming.actionEditIncomingSettings(this, mAccount);
+        AccountSetupIncoming.actionEditIncomingSettings(mContext, mAccount);
     }
 
     private void onOutgoingSettings() {
-        AccountSetupOutgoing.actionEditOutgoingSettings(this, mAccount);
+        AccountSetupOutgoing.actionEditOutgoingSettings(mContext, mAccount);
     }
 
     public void onChooseChipColor() {
-        showDialog(DIALOG_COLOR_PICKER_ACCOUNT);
+        ColorPickerDialog dialog = ColorPickerDialog.newInstance(
+                new ColorPickerDialog.OnColorChangedListener() {
+                    public void colorChanged(int color) {
+                        mAccount.setChipColor(color);
+                    }
+                },
+                mAccount.getChipColor());
+
+        dialog.show(getFragmentManager(), "colorPicker");
     }
 
     public void onChooseLedColor() {
-        showDialog(DIALOG_COLOR_PICKER_LED);
-    }
+        ColorPickerDialog dialog = ColorPickerDialog.newInstance(
+                new ColorPickerDialog.OnColorChangedListener() {
+                    public void colorChanged(int color) {
+                        mAccount.getNotificationSetting().setLedColor(color);
+                    }
+                },
+                mAccount.getNotificationSetting().getLedColor());
 
-    @Override
-    public Dialog onCreateDialog(int id) {
-        Dialog dialog = null;
-
-        switch (id) {
-            case DIALOG_COLOR_PICKER_ACCOUNT: {
-                dialog = new ColorPickerDialog(this,
-                        new ColorPickerDialog.OnColorChangedListener() {
-                            public void colorChanged(int color) {
-                                mAccount.setChipColor(color);
-                            }
-                        },
-                        mAccount.getChipColor());
-
-                break;
-            }
-            case DIALOG_COLOR_PICKER_LED: {
-                dialog = new ColorPickerDialog(this,
-                        new ColorPickerDialog.OnColorChangedListener() {
-                            public void colorChanged(int color) {
-                                mAccount.getNotificationSetting().setLedColor(color);
-                            }
-                        },
-                        mAccount.getNotificationSetting().getLedColor());
-
-                break;
-            }
-        }
-
-        return dialog;
-    }
-
-    @Override
-    public void onPrepareDialog(int id, Dialog dialog) {
-        switch (id) {
-            case DIALOG_COLOR_PICKER_ACCOUNT: {
-                ColorPickerDialog colorPicker = (ColorPickerDialog) dialog;
-                colorPicker.setColor(mAccount.getChipColor());
-                break;
-            }
-            case DIALOG_COLOR_PICKER_LED: {
-                ColorPickerDialog colorPicker = (ColorPickerDialog) dialog;
-                colorPicker.setColor(mAccount.getNotificationSetting().getLedColor());
-                break;
-            }
-        }
+        dialog.show(getFragmentManager(), "colorPicker");
     }
 
     public void onChooseAutoExpandFolder() {
-        Intent selectIntent = new Intent(this, ChooseFolder.class);
+        Intent selectIntent = new Intent(mContext, ChooseFolder.class);
         selectIntent.putExtra(ChooseFolder.EXTRA_ACCOUNT, mAccount.getUuid());
 
         selectIntent.putExtra(ChooseFolder.EXTRA_CUR_FOLDER, mAutoExpandFolder.getSummary());
@@ -993,14 +951,15 @@ public class AccountSettings extends K9PreferenceActivity {
 
     private void doVibrateTest(Preference preference) {
         // Do the vibration to show the user what it's like.
-        Vibrator vibrate = (Vibrator)preference.getContext().getSystemService(Context.VIBRATOR_SERVICE);
+        Vibrator vibrate = (Vibrator) preference.getContext().getSystemService(Context.VIBRATOR_SERVICE);
         vibrate.vibrate(NotificationSetting.getVibration(
-                            Integer.parseInt(mAccountVibratePattern.getValue()),
-                            Integer.parseInt(mAccountVibrateTimes.getValue())), -1);
+                Integer.parseInt(mAccountVibratePattern.getValue()),
+                Integer.parseInt(mAccountVibrateTimes.getValue())), -1);
     }
 
     /**
      * Remote search result limit summary contains the current limit.  On load or change, update this value.
+     *
      * @param maxResults Search limit to update the summary with.
      */
     private void updateRemoteSearchLimit(String maxResults) {
@@ -1014,7 +973,7 @@ public class AccountSettings extends K9PreferenceActivity {
     }
 
     private class PopulateFolderPrefsTask extends AsyncTask<Void, Void, Void> {
-        List <? extends Folder > folders = new LinkedList<LocalFolder>();
+        List<? extends Folder> folders = new LinkedList<LocalFolder>();
         String[] allFolderValues;
         String[] allFolderLabels;
 
@@ -1028,7 +987,7 @@ public class AccountSettings extends K9PreferenceActivity {
 
             // TODO: In the future the call above should be changed to only return remote folders.
             // For now we just remove the Outbox folder if present.
-            Iterator <? extends Folder > iter = folders.iterator();
+            Iterator<? extends Folder> iter = folders.iterator();
             while (iter.hasNext()) {
                 Folder folder = iter.next();
                 if (mAccount.getOutboxFolderName().equals(folder.getName())) {
@@ -1053,17 +1012,17 @@ public class AccountSettings extends K9PreferenceActivity {
 
         @Override
         protected void onPreExecute() {
-            mAutoExpandFolder = (ListPreference)findPreference(PREFERENCE_AUTO_EXPAND_FOLDER);
+            mAutoExpandFolder = (ListPreference) findPreference(PREFERENCE_AUTO_EXPAND_FOLDER);
             mAutoExpandFolder.setEnabled(false);
-            mArchiveFolder = (ListPreference)findPreference(PREFERENCE_ARCHIVE_FOLDER);
+            mArchiveFolder = (ListPreference) findPreference(PREFERENCE_ARCHIVE_FOLDER);
             mArchiveFolder.setEnabled(false);
-            mDraftsFolder = (ListPreference)findPreference(PREFERENCE_DRAFTS_FOLDER);
+            mDraftsFolder = (ListPreference) findPreference(PREFERENCE_DRAFTS_FOLDER);
             mDraftsFolder.setEnabled(false);
-            mSentFolder = (ListPreference)findPreference(PREFERENCE_SENT_FOLDER);
+            mSentFolder = (ListPreference) findPreference(PREFERENCE_SENT_FOLDER);
             mSentFolder.setEnabled(false);
-            mSpamFolder = (ListPreference)findPreference(PREFERENCE_SPAM_FOLDER);
+            mSpamFolder = (ListPreference) findPreference(PREFERENCE_SPAM_FOLDER);
             mSpamFolder.setEnabled(false);
-            mTrashFolder = (ListPreference)findPreference(PREFERENCE_TRASH_FOLDER);
+            mTrashFolder = (ListPreference) findPreference(PREFERENCE_TRASH_FOLDER);
             mTrashFolder.setEnabled(false);
 
             if (!mIsMoveCapable) {

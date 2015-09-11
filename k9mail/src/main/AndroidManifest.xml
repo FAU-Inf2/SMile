@@ -94,11 +94,10 @@
         </activity>
 
         <activity
-            android:name="com.fsck.k9.activity.setup.Prefs"
+            android:name="com.fsck.k9.activity.Settings"
             android:configChanges="locale"
             android:excludeFromRecents="true"
-            android:label="@string/prefs_title"
-            android:taskAffinity="${applicationId}.activity.setup.Prefs"/>
+            android:label="@string/prefs_title" />
 
         <activity
             android:name="com.fsck.k9.activity.setup.WelcomeMessage"
@@ -183,7 +182,7 @@
             android:label="@string/account_setup_check_settings_title"/>
 
         <activity
-            android:name="com.fsck.k9.activity.setup.AccountSettings"
+            android:name="com.fsck.k9.activity.setup.AccountPreferences"
             android:configChanges="locale"
             android:label="@string/account_settings_title_fmt"/>
 

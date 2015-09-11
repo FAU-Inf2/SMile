@@ -301,7 +301,7 @@
           We can't disable persisting the ringtone value to SharedPreferences
           because it's needed to actually access the value.
 
-          See com.fsck.k9.activity.setup.AccountSettings
+          See com.fsck.k9.activity.setup.AccountPreferencesces
         -->
         <RingtonePreference
             android:defaultValue="content://settings/system/notification_sound"

@@ -13,6 +13,7 @@ import com.fsck.k9.Account;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.activity.K9PreferenceActivity;
+import com.fsck.k9.fragment.SmilePreferenceFragment;
 import com.fsck.k9.holder.FolderInfoHolder;
 import com.fsck.k9.mail.Folder;
 import com.fsck.k9.mail.Folder.FolderClass;
@@ -24,7 +25,7 @@ import com.fsck.k9.service.MailService;
 
 import de.fau.cs.mad.smile.android.R;
 
-public class FolderSettings extends K9PreferenceActivity {
+public class FolderPreferences extends SmilePreferenceFragment {
 
     private static final String EXTRA_FOLDER_NAME = "com.fsck.k9.folderName";
     private static final String EXTRA_ACCOUNT = "com.fsck.k9.account";
@@ -45,21 +46,26 @@ public class FolderSettings extends K9PreferenceActivity {
     private ListPreference mSyncClass;
     private ListPreference mPushClass;
     private ListPreference mNotifyClass;
+    private Context mContext;
 
-    public static void actionSettings(Context context, Account account, String folderName) {
-        Intent i = new Intent(context, FolderSettings.class);
-        i.putExtra(EXTRA_FOLDER_NAME, folderName);
-        i.putExtra(EXTRA_ACCOUNT, account.getUuid());
-        context.startActivity(i);
+    public static FolderPreferences newInstance(Account account, String folderName) {
+        Bundle args = new Bundle();
+        args.putString(EXTRA_FOLDER_NAME, folderName);
+        args.putString(EXTRA_ACCOUNT, account.getUuid());
+        FolderPreferences preferences = new FolderPreferences();
+        preferences.setArguments(args);
+        return preferences;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mContext = getActivity();
 
-        String folderName = (String)getIntent().getSerializableExtra(EXTRA_FOLDER_NAME);
-        String accountUuid = getIntent().getStringExtra(EXTRA_ACCOUNT);
-        Account mAccount = Preferences.getPreferences(this).getAccount(accountUuid);
+        Bundle args = getArguments();
+        String folderName = args.getString(EXTRA_FOLDER_NAME);
+        String accountUuid = args.getString(EXTRA_ACCOUNT);
+        Account mAccount = Preferences.getPreferences(mContext).getAccount(accountUuid);
 
         try {
             LocalStore localStore = mAccount.getLocalStore();
@@ -80,7 +86,7 @@ public class FolderSettings extends K9PreferenceActivity {
 
         addPreferencesFromResource(R.xml.folder_settings_preferences);
 
-        String displayName = FolderInfoHolder.getDisplayName(this, mAccount, mFolder.getName());
+        String displayName = FolderInfoHolder.getDisplayName(mContext, mAccount, mFolder.getName());
         Preference category = findPreference(PREFERENCE_TOP_CATERGORY);
         category.setTitle(displayName);
 
@@ -162,7 +168,7 @@ public class FolderSettings extends K9PreferenceActivity {
 
         if (oldPushClass != newPushClass
                 || (newPushClass != FolderClass.NO_CLASS && oldDisplayClass != newDisplayClass)) {
-            MailService.actionRestartPushers(getApplication(), null);
+            MailService.actionRestartPushers(mContext, null);
         }
     }
 

@@ -187,7 +187,7 @@
             android:label="@string/account_settings_title_fmt"/>
 
         <activity
-            android:name="com.fsck.k9.activity.setup.FolderSettings"
+            android:name="com.fsck.k9.activity.setup.FolderPreferences"
             android:configChanges="locale"
             android:label="@string/folder_settings_title"
             android:theme="@android:style/Theme.Dialog"/>

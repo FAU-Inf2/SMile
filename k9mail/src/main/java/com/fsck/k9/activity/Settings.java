@@ -6,7 +6,6 @@ import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatDelegate;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.Preferences;
@@ -18,7 +17,9 @@ import de.fau.cs.mad.smile.android.R;
 
 public class Settings extends SmileActivity implements GlobalPreferences.GlobalPreferencesCallback {
     private final static String EDIT_ACCOUNT_ACTION = "EDIT_ACCOUNT";
+    private static final String EDIT_FOLDER_ACTION = "EDIT_FOLDER";
     private final static String ACCOUNT_EXTRA = "account";
+    private final static String FOLDER_EXTRA = "folder";
 
     public static void actionPreferences(Context context) {
         Intent intent = new Intent(context, Settings.class);
@@ -29,6 +30,14 @@ public class Settings extends SmileActivity implements GlobalPreferences.GlobalP
         Intent intent = new Intent(context, Settings.class);
         intent.setAction(EDIT_ACCOUNT_ACTION);
         intent.putExtra(ACCOUNT_EXTRA, account.getUuid());
+        context.startActivity(intent);
+    }
+
+    public static void actionFolderPreferences(Context context, Account account, String folderName) {
+        Intent intent = new Intent(context, Settings.class);
+        intent.setAction(EDIT_FOLDER_ACTION);
+        intent.putExtra(ACCOUNT_EXTRA, account.getUuid());
+        intent.putExtra(FOLDER_EXTRA, folderName);
         context.startActivity(intent);
     }
 
@@ -46,6 +55,11 @@ public class Settings extends SmileActivity implements GlobalPreferences.GlobalP
             final String accountUuid = intent.getStringExtra(ACCOUNT_EXTRA);
             Account account = Preferences.getPreferences(this).getAccount(accountUuid);
             onAccountClick(account);
+        } else if (action.equals(EDIT_FOLDER_ACTION)) {
+            final String accountUuid = intent.getStringExtra(ACCOUNT_EXTRA);
+            Account account = Preferences.getPreferences(this).getAccount(accountUuid);
+            final String folderName = intent.getStringExtra(FOLDER_EXTRA);
+            //onFolderClick(account);
         }
     }
 

@@ -26,11 +26,9 @@ import com.fsck.k9.AccountStats;
 import com.fsck.k9.BaseAccount;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
-import com.fsck.k9.activity.setup.AccountPreferences;
+import com.fsck.k9.activity.setup.FolderPreferences;
 import com.fsck.k9.holder.FolderInfoHolder;
 import com.fsck.k9.activity.listener.ActivityListener;
-import com.fsck.k9.activity.setup.FolderSettings;
-import com.fsck.k9.activity.setup.GlobalPreferences;
 import com.fsck.k9.adapter.FolderAdapter;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.controller.MessagingListener;
@@ -437,11 +435,7 @@ public final class FolderList extends K9Activity {
                 onRefresh(REFRESH_REMOTE);
                 return true;
 
-            case R.id.account_settings:
-                onEditAccount();
-                return true;
-
-            case R.id.app_settings:
+            case R.id.settings:
                 onEditPrefs();
                 return true;
 
@@ -546,7 +540,7 @@ public final class FolderList extends K9Activity {
                 checkMail(folder);
                 break;
             case R.id.folder_settings:
-                FolderSettings.actionSettings(this, mAccount, folder.name);
+                Settings.actionFolderPreferences(this, mAccount, folder.name);
                 break;
         }
 

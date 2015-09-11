@@ -29,9 +29,7 @@ import com.fsck.k9.Account.SortType;
 import com.fsck.k9.K9;
 import com.fsck.k9.K9.SplitViewMode;
 import com.fsck.k9.Preferences;
-import com.fsck.k9.activity.setup.AccountPreferences;
-import com.fsck.k9.activity.setup.FolderSettings;
-import com.fsck.k9.activity.setup.GlobalPreferences;
+import com.fsck.k9.activity.setup.FolderPreferences;
 import com.fsck.k9.crypto.PgpData;
 import com.fsck.k9.fragment.MessageListFragment;
 import com.fsck.k9.fragment.MessageListFragmentListener;
@@ -848,12 +846,8 @@ public class MessageList extends K9Activity
                 mMessageListFragment.selectAll();
                 return true;
             }
-            case R.id.app_settings: {
+            case R.id.settings: {
                 onEditPrefs();
-                return true;
-            }
-            case R.id.account_settings: {
-                onEditAccount();
                 return true;
             }
             case R.id.search: {
@@ -959,12 +953,6 @@ public class MessageList extends K9Activity
                 mMessageListFragment.onSendPendingMessages();
                 return true;
             }
-            case R.id.folder_settings: {
-                if (mFolderName != null) {
-                    FolderSettings.actionSettings(this, mAccount, mFolderName);
-                }
-                return true;
-            }
             case R.id.expunge: {
                 mMessageListFragment.onExpunge();
                 return true;
@@ -1006,15 +994,7 @@ public class MessageList extends K9Activity
         }
 
         // Set visibility of account/folder settings menu items
-        if (mMessageListFragment == null) {
-            menu.findItem(R.id.account_settings).setVisible(false);
-            menu.findItem(R.id.folder_settings).setVisible(false);
-        } else {
-            menu.findItem(R.id.account_settings).setVisible(
-                    mMessageListFragment.isSingleAccountMode());
-            menu.findItem(R.id.folder_settings).setVisible(
-                    mMessageListFragment.isSingleFolderMode());
-        }
+        menu.findItem(R.id.settings).setVisible(true);
 
         /*
          * Set visibility of menu items related to the message view

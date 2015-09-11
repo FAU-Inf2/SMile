@@ -16,8 +16,9 @@ import android.widget.SearchView;
 import com.fsck.k9.Account;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.activity.MessageList;
+import com.fsck.k9.activity.Settings;
 import com.fsck.k9.holder.FolderInfoHolder;
-import com.fsck.k9.activity.setup.FolderSettings;
+import com.fsck.k9.activity.setup.FolderPreferences;
 import com.fsck.k9.adapter.FolderAdapter;
 import com.fsck.k9.search.LocalSearch;
 
@@ -81,7 +82,7 @@ public final class FolderListFragment extends ListFragment {
 
         switch (item.getItemId()) {
             case R.id.folder_settings:
-                FolderSettings.actionSettings(getActivity(), mAccount, folder.name);
+                Settings.actionFolderPreferences(getActivity(), mAccount, folder.name);
                 break;
         }
 

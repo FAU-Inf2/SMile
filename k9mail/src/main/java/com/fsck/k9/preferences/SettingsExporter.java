@@ -485,7 +485,7 @@ public class SettingsExporter {
                 SettingsDescription setting = versionedSetting.get(highestVersion);
 
                 if (setting != null) {
-                    // Only write settings that have an entry in FolderSettings.SETTINGS
+                    // Only write settings that have an entry in FolderPreferences.SETTINGS
                     try {
                         Object value = setting.fromString(valueString);
                         String outputValue = setting.toPrettyString(value);

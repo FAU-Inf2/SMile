@@ -190,7 +190,7 @@ public class RemindMeList extends SmileActivity
         Log.i(K9.LOG_TAG, "RemindMeList.onDialogClick");
         currentRemindMe = dialog.getRemindMe();
 
-        if(currentRemindMe.getRemindInterval() == RemindMe.RemindInterval.CUSTOM) {
+        if(currentRemindMe.getRemindMeInterval() == RemindMe.RemindMeInterval.CUSTOM) {
             onDateSetCalled = false;
             onTimeSetCalled = false;
 
@@ -208,12 +208,12 @@ public class RemindMeList extends SmileActivity
             RemindMeDatePickerDialog datePickerDialog = RemindMeDatePickerDialog.newInstance(this);
             datePickerDialog.show(ft, datePickerTag);
         } else {
-            currentRemindMe.setRemindTime(getDelay(currentRemindMe.getRemindInterval()));
+            currentRemindMe.setRemindTime(getDelay(currentRemindMe.getRemindMeInterval()));
             remindMeFragment.add(currentRemindMe);
         }
     }
 
-    private Date getDelay(RemindMe.RemindInterval interval) {
+    private Date getDelay(RemindMe.RemindMeInterval interval) {
         DateTime delay = DateTime.now();
 
         switch (interval) {

@@ -8,8 +8,15 @@ import android.content.Context;
 import android.preference.DialogPreference;
 import android.text.format.DateFormat;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.widget.TimePicker;
+
+import com.fsck.k9.K9;
+
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import java.util.Locale;
 
@@ -20,26 +27,12 @@ public class TimePickerPreference extends DialogPreference implements
     TimePicker.OnTimeChangedListener {
 
     /**
-     * The validation expression for this preference
-     */
-    public static final String VALIDATION_EXPRESSION = "[0-2]*[0-9]:[0-5]*[0-9]";
-
-    /**
      * The default value for this preference
      */
     private String defaultValue;
-    /**
-     * Store the original value, in case the user
-     * chooses to abort the {@link DialogPreference}
-     * after making a change.
-     */
-    private int originalHour = 0;
-    /**
-     * Store the original value, in case the user
-     * chooses to abort the {@link DialogPreference}
-     * after making a change.
-     */
-    private int originalMinute = 0;
+    private DateTime defaultTime;
+    private DateTime originalValue;
+
     /**
      * @param context
      * @param attrs
@@ -74,16 +67,16 @@ public class TimePickerPreference extends DialogPreference implements
      */
     @Override
     protected View onCreateDialogView() {
-
         TimePicker tp = new TimePicker(getContext());
         tp.setIs24HourView(DateFormat.is24HourFormat(getContext()));
-        tp.setOnTimeChangedListener(this);
-        originalHour = getHour();
-        originalMinute = getMinute();
-        if (originalHour >= 0 && originalMinute >= 0) {
-            tp.setCurrentHour(originalHour);
-            tp.setCurrentMinute(originalMinute);
+        originalValue = getTime();
+        if(originalValue != null) {
+            final int hour = originalValue.getHourOfDay();
+            final int minute = originalValue.getMinuteOfHour();
+            tp.setCurrentHour(hour);
+            tp.setCurrentMinute(minute);
         }
+        tp.setOnTimeChangedListener(this);
 
         return tp;
     }
@@ -94,9 +87,9 @@ public class TimePickerPreference extends DialogPreference implements
      */
     @Override
     public void onTimeChanged(final TimePicker view, final int hour, final int minute) {
-
-        persistString(String.format(Locale.US, "%02d:%02d", hour, minute));
-        callChangeListener(String.format(Locale.US, "%02d:%02d", hour, minute));
+        DateTime newDate = getTime();
+        newDate = newDate.withHourOfDay(hour).withMinuteOfHour(minute);
+        persistTime(newDate);
     }
 
     /**
@@ -105,11 +98,10 @@ public class TimePickerPreference extends DialogPreference implements
      */
     @Override
     protected void onDialogClosed(boolean positiveResult) {
-
         if (!positiveResult) {
-            persistString(String.format(Locale.US, "%02d:%02d", originalHour, originalMinute));
-            callChangeListener(String.format(Locale.US, "%02d:%02d", originalHour, originalMinute));
+            persistTime(originalValue);
         }
+
         super.onDialogClosed(positiveResult);
     }
 
@@ -126,50 +118,39 @@ public class TimePickerPreference extends DialogPreference implements
             return;
         }
 
-        if (!((String) defaultValue).matches(VALIDATION_EXPRESSION)) {
+        final String time = (String)defaultValue;
+        DateTimeFormatter formatter = getDateTimeFormatter();
+
+        try {
+            defaultTime = formatter.parseDateTime(time);
+        } catch (IllegalArgumentException e) {
+            Log.e(K9.LOG_TAG, "failed to parse DateTime in TimePickerPreference.setDefaultValue", e);
             return;
         }
 
-        this.defaultValue = (String) defaultValue;
+        this.defaultValue = time;
     }
 
-    /**
-     * Get the hour value (in 24 hour time)
-     *
-     * @return The hour value, will be 0 to 23 (inclusive) or -1 if illegal
-     */
-    private int getHour() {
-        String time = getTime();
-        if (time == null || !time.matches(VALIDATION_EXPRESSION)) {
-            return -1;
+    public DateTime getTime() {
+        final String time = getPersistedString(this.defaultValue);
+        DateTimeFormatter formatter = getDateTimeFormatter();
+
+        try {
+            return formatter.parseDateTime(time);
+        } catch (IllegalArgumentException e) {
+            return defaultTime;
         }
-
-        return Integer.parseInt(time.split(":")[0]);
     }
 
-    /**
-     * Get the minute value
-     *
-     * @return the minute value, will be 0 to 59 (inclusive) or -1 if illegal
-     */
-    private int getMinute() {
-        String time = getTime();
-        if (time == null || !time.matches(VALIDATION_EXPRESSION)) {
-            return -1;
-        }
-
-        return Integer.parseInt(time.split(":")[1]);
+    public static DateTimeFormatter getDateTimeFormatter() {
+        return DateTimeFormat.forPattern("H:m").withLocale(Locale.US);
     }
 
-    /**
-     * Get the time. It is only legal, if it matches
-     * {@link #VALIDATION_EXPRESSION}.
-     *
-     * @return the time as hh:mm
-     */
-    public String getTime() {
-        return getPersistedString(this.defaultValue);
+    private void persistTime(DateTime time) {
+        DateTimeFormatter formatter = getDateTimeFormatter();
+        String persistTime = formatter.print(time);
+        persistString(persistTime);
+        callChangeListener(persistTime);
     }
-
 }
 

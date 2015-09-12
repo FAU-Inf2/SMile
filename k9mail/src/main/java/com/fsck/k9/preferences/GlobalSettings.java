@@ -544,9 +544,7 @@ public class GlobalSettings {
 
         @Override
         public Object fromString(String value) throws InvalidSettingValueException {
-            if (!value.matches(TimePickerPreference.VALIDATION_EXPRESSION)) {
-                throw new InvalidSettingValueException();
-            }
+            TimePickerPreference.getDateTimeFormatter().parseDateTime(value);
             return value;
         }
     }

@@ -1,7 +1,5 @@
 package com.fsck.k9.activity.setup;
 
-import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
@@ -11,7 +9,6 @@ import android.preference.Preference;
 import com.fsck.k9.FontSizes;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
-import com.fsck.k9.activity.K9PreferenceActivity;
 import com.fsck.k9.fragment.SmilePreferenceFragment;
 
 import de.fau.cs.mad.smile.android.R;
@@ -22,7 +19,7 @@ import de.fau.cs.mad.smile.android.R;
  *
  * @see FontSizes
  */
-public class FontSizeSettings extends SmilePreferenceFragment {
+public class FontSizePreferences extends SmilePreferenceFragment {
     /*
      * Keys of the preferences defined in res/xml/font_preferences.xml
      */
@@ -63,8 +60,8 @@ public class FontSizeSettings extends SmilePreferenceFragment {
     private static final int FONT_PERCENT_MIN = 40;
     private static final int FONT_PERCENT_MAX = 250;
 
-    public static FontSizeSettings newInstance() {
-        FontSizeSettings settings = new FontSizeSettings();
+    public static FontSizePreferences newInstance() {
+        FontSizePreferences settings = new FontSizePreferences();
         return settings;
     }
 

@@ -3,7 +3,7 @@ import java.util.Date;
 
 public class RemindMe {
 
-    public enum RemindInterval {
+    public enum RemindMeInterval {
         LATER,
         EVENING,
         TOMORROW,
@@ -17,7 +17,7 @@ public class RemindMe {
     private long folderId;
     private String uid;
     private String messageId;
-    private RemindInterval remindInterval;
+    private RemindMeInterval remindMeInterval;
     private Date lastModified;
     private Date seen;
 
@@ -122,12 +122,12 @@ public class RemindMe {
         this.messageId = messageId;
     }
 
-    public RemindInterval getRemindInterval() {
-        return remindInterval;
+    public RemindMeInterval getRemindMeInterval() {
+        return remindMeInterval;
     }
 
-    public void setRemindInterval(RemindInterval remindInterval) {
-        this.remindInterval = remindInterval;
+    public void setRemindMeInterval(RemindMeInterval remindMeInterval) {
+        this.remindMeInterval = remindMeInterval;
     }
 
     public Date getLastModified() {

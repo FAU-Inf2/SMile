@@ -101,27 +101,27 @@ public class RemindMeDialog extends DialogFragment {
             switch (iconResourceId) {
                 case R.drawable.ic_remindme_later_today:
                     Log.d(K9.LOG_TAG, "later today was clicked");
-                    remindMe.setRemindInterval(RemindMe.RemindInterval.LATER);
+                    remindMe.setRemindMeInterval(RemindMe.RemindMeInterval.LATER);
                     break;
                 case R.drawable.ic_remindme_this_evening:
                     Log.d(K9.LOG_TAG, "this evening was clicked");
-                    remindMe.setRemindInterval(RemindMe.RemindInterval.EVENING);
+                    remindMe.setRemindMeInterval(RemindMe.RemindMeInterval.EVENING);
                     break;
                 case R.drawable.ic_remindme_tomorrow:
                     Log.d(K9.LOG_TAG, "tomorrow was clicked");
-                    remindMe.setRemindInterval(RemindMe.RemindInterval.TOMORROW);
+                    remindMe.setRemindMeInterval(RemindMe.RemindMeInterval.TOMORROW);
                     break;
                 case R.drawable.ic_remindme_next_week:
                     Log.d(K9.LOG_TAG, "next week was clicked");
-                    remindMe.setRemindInterval(RemindMe.RemindInterval.NEXT_WEEK);
+                    remindMe.setRemindMeInterval(RemindMe.RemindMeInterval.NEXT_WEEK);
                     break;
                 case R.drawable.ic_remindme_next_month:
                     Log.d(K9.LOG_TAG, "next month was clicked");
-                    remindMe.setRemindInterval(RemindMe.RemindInterval.NEXT_MONTH);
+                    remindMe.setRemindMeInterval(RemindMe.RemindMeInterval.NEXT_MONTH);
                     break;
                 case R.drawable.ic_remindme_custom:
                     Log.d(K9.LOG_TAG, "custom was clicked");
-                    remindMe.setRemindInterval(RemindMe.RemindInterval.CUSTOM);
+                    remindMe.setRemindMeInterval(RemindMe.RemindMeInterval.CUSTOM);
                     break;
             }
 

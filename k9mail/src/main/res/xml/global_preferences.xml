@@ -97,17 +97,30 @@
             android:persistent="false"
             android:title="@string/global_settings_remindme_times_label">
             <com.fsck.k9.preferences.TimeSpanPreference
-                android:key="remindme_time_short"
+                android:icon="@drawable/ic_remindme_later_today"
+                android:key="remindme_time_later"
                 android:persistent="false"
-                android:title="@string/global_settings_remindme_time_short_label" />
-            <com.fsck.k9.preferences.TimeSpanPreference
-                android:key="remindme_time_medium"
+                android:title="@string/global_settings_remindme_time_later_label" />
+            <com.fsck.k9.preferences.TimePickerPreference
+                android:icon="@drawable/ic_remindme_this_evening"
+                android:key="remindme_time_evening"
                 android:persistent="false"
-                android:title="@string/global_settings_remindme_time_medium_label" />
-            <com.fsck.k9.preferences.TimeSpanPreference
-                android:key="remindme_time_long"
+                android:title="@string/global_settings_remindme_time_evening_label" />
+            <com.fsck.k9.preferences.TimePickerPreference
+                android:icon="@drawable/ic_remindme_tomorrow"
+                android:key="remindme_time_tomorrow"
                 android:persistent="false"
-                android:title="@string/global_settings_remindme_time_long_label" />
+                android:title="@string/global_settings_remindme_time_tomorrow_label" />
+            <com.fsck.k9.preferences.TimePickerPreference
+                android:icon="@drawable/ic_remindme_next_week"
+                android:key="remindme_time_next_week"
+                android:persistent="false"
+                android:title="@string/global_settings_remindme_time_next_week_label" />
+            <com.fsck.k9.preferences.TimePickerPreference
+                android:icon="@drawable/ic_remindme_next_month"
+                android:key="remindme_time_next_month"
+                android:persistent="false"
+                android:title="@string/global_settings_remindme_time_next_month_label" />
         </PreferenceScreen>
 
     </PreferenceCategory>

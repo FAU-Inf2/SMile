@@ -2,7 +2,6 @@
 package com.fsck.k9.activity.setup;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.preference.SwitchPreference;
 import android.preference.ListPreference;
@@ -12,7 +11,6 @@ import android.util.Log;
 import com.fsck.k9.Account;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
-import com.fsck.k9.activity.K9PreferenceActivity;
 import com.fsck.k9.fragment.SmilePreferenceFragment;
 import com.fsck.k9.holder.FolderInfoHolder;
 import com.fsck.k9.mail.Folder;
@@ -84,7 +82,7 @@ public class FolderPreferences extends SmilePreferenceFragment {
             Log.e(K9.LOG_TAG, "Could not get remote store", e);
         }
 
-        addPreferencesFromResource(R.xml.folder_settings_preferences);
+        addPreferencesFromResource(R.xml.folder_preferences);
 
         String displayName = FolderInfoHolder.getDisplayName(mContext, mAccount, mFolder.getName());
         Preference category = findPreference(PREFERENCE_TOP_CATERGORY);

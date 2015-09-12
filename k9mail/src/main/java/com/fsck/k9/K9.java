@@ -28,14 +28,23 @@ import com.fsck.k9.mail.Address;
 import com.fsck.k9.mail.K9MailLib;
 import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.MessagingException;
+import com.fsck.k9.mail.RemindMe.RemindMeInterval;
 import com.fsck.k9.mail.internet.BinaryTempFileBody;
 import com.fsck.k9.mail.ssl.LocalKeyStore;
 import com.fsck.k9.mailstore.LocalStore;
+import com.fsck.k9.preferences.TimePickerPreference;
 import com.fsck.k9.provider.UnreadWidgetProvider;
 import com.fsck.k9.service.BootReceiver;
 import com.fsck.k9.service.MailService;
 import com.fsck.k9.service.ShutdownReceiver;
 import com.fsck.k9.service.StorageGoneReceiver;
+
+import net.danlew.android.joda.JodaTimeAndroid;
+
+import org.joda.time.DateTime;
+import org.joda.time.Interval;
+import org.joda.time.Period;
+import org.joda.time.format.DateTimeFormatter;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -49,6 +58,24 @@ import de.fau.cs.mad.smile.android.BuildConfig;
 import de.fau.cs.mad.smile.android.R;
 
 public class K9 extends Application {
+    private static HashMap<RemindMeInterval, DateTime> remindMeTimes;
+
+    static {
+        remindMeTimes = new HashMap<>(RemindMeInterval.values().length);
+        Context context = getApplication();
+
+        if(context != null) {
+            JodaTimeAndroid.init(context);
+        }
+    }
+
+    public static DateTime getRemindMeTime(RemindMeInterval interval) {
+        return remindMeTimes.get(interval);
+    }
+
+    public static void setRemindMeTime(RemindMeInterval interval, DateTime time) {
+        remindMeTimes.put(interval, time);
+    }
 
     /**
      * Components that are interested in knowing when the K9 instance is
@@ -243,8 +270,8 @@ public class K9 extends Application {
     private static boolean mAutofitWidth;
     private static boolean mQuietTimeEnabled = false;
     private static boolean mNotificationDuringQuietTimeEnabled = true;
-    private static String mQuietTimeStarts = null;
-    private static String mQuietTimeEnds = null;
+    private static DateTime mQuietTimeStarts = null;
+    private static DateTime mQuietTimeEnds = null;
     private static String mAttachmentDefaultPath = "";
     private static boolean mWrapFolderNames = false;
     private static boolean mHideUserAgent = false;
@@ -477,10 +504,20 @@ public class K9 extends Application {
         editor.putBoolean("useVolumeKeysForNavigation", mUseVolumeKeysForNavigation);
         editor.putBoolean("useVolumeKeysForListNavigation", mUseVolumeKeysForListNavigation);
         editor.putBoolean("autofitWidth", mAutofitWidth);
+
+        DateTimeFormatter formatter = TimePickerPreference.getDateTimeFormatter();
+        String persistTime = formatter.print(getRemindMeTime(RemindMeInterval.EVENING));
+        editor.putString("remindme_evening", persistTime);
+        persistTime = formatter.print(getRemindMeTime(RemindMeInterval.TOMORROW));
+        editor.putString("remindme_tomorrow", persistTime);
+
         editor.putBoolean("quietTimeEnabled", mQuietTimeEnabled);
         editor.putBoolean("notificationDuringQuietTimeEnabled", mNotificationDuringQuietTimeEnabled);
-        editor.putString("quietTimeStarts", mQuietTimeStarts);
-        editor.putString("quietTimeEnds", mQuietTimeEnds);
+
+        persistTime = formatter.print(mQuietTimeStarts);
+        editor.putString("quietTimeStarts", persistTime);
+        persistTime = formatter.print(mQuietTimeEnds);
+        editor.putString("quietTimeEnds", persistTime);
 
         editor.putBoolean("startIntegratedInbox", mStartIntegratedInbox);
         editor.putBoolean("measureAccounts", mMeasureAccounts);
@@ -696,6 +733,7 @@ public class K9 extends Application {
             DEBUG = true;
             Log.i(K9.LOG_TAG, "Debugger attached; enabling debug logging.");
         }
+
         DEBUG_SENSITIVE = sprefs.getBoolean("enableSensitiveLogging", false);
         mAnimations = sprefs.getBoolean("animations", true);
         mGesturesEnabled = sprefs.getBoolean("gesturesEnabled", false);
@@ -712,10 +750,18 @@ public class K9 extends Application {
 
         mAutofitWidth = sprefs.getBoolean("autofitWidth", true);
 
+        DateTimeFormatter formatter = TimePickerPreference.getDateTimeFormatter();
+        String time = sprefs.getString("remindme_evening", "17:00");
+        remindMeTimes.put(RemindMeInterval.EVENING, formatter.parseDateTime(time));
+        time = sprefs.getString("remindme_tomorrow", "08:30");
+        remindMeTimes.put(RemindMeInterval.TOMORROW, formatter.parseDateTime(time));
+
         mQuietTimeEnabled = sprefs.getBoolean("quietTimeEnabled", false);
         mNotificationDuringQuietTimeEnabled = sprefs.getBoolean("notificationDuringQuietTimeEnabled", true);
-        mQuietTimeStarts = sprefs.getString("quietTimeStarts", "21:00");
-        mQuietTimeEnds = sprefs.getString("quietTimeEnds", "7:00");
+        time = sprefs.getString("quietTimeStarts", "21:00");
+        mQuietTimeStarts = formatter.parseDateTime(time);
+        time = sprefs.getString("quietTimeEnds", "7:00");
+        mQuietTimeEnds = formatter.parseDateTime(time);
 
         mShowCorrespondentNames = sprefs.getBoolean("showCorrespondentNames", true);
         mShowContactName = sprefs.getBoolean("showContactName", false);
@@ -989,19 +1035,19 @@ public class K9 extends Application {
         mNotificationDuringQuietTimeEnabled = notificationDuringQuietTimeEnabled;
     }
 
-    public static String getQuietTimeStarts() {
+    public static DateTime getQuietTimeStarts() {
         return mQuietTimeStarts;
     }
 
-    public static void setQuietTimeStarts(String quietTimeStarts) {
+    public static void setQuietTimeStarts(DateTime quietTimeStarts) {
         mQuietTimeStarts = quietTimeStarts;
     }
 
-    public static String getQuietTimeEnds() {
+    public static DateTime getQuietTimeEnds() {
         return mQuietTimeEnds;
     }
 
-    public static void setQuietTimeEnds(String quietTimeEnds) {
+    public static void setQuietTimeEnds(DateTime quietTimeEnds) {
         mQuietTimeEnds = quietTimeEnds;
     }
 
@@ -1013,10 +1059,10 @@ public class K9 extends Application {
 
         Time time = new Time();
         time.setToNow();
-        Integer startHour = Integer.parseInt(mQuietTimeStarts.split(":")[0]);
-        Integer startMinute = Integer.parseInt(mQuietTimeStarts.split(":")[1]);
-        Integer endHour = Integer.parseInt(mQuietTimeEnds.split(":")[0]);
-        Integer endMinute = Integer.parseInt(mQuietTimeEnds.split(":")[1]);
+        Integer startHour = mQuietTimeStarts.getHourOfDay();
+        Integer startMinute = mQuietTimeStarts.getMinuteOfHour();
+        Integer endHour = mQuietTimeEnds.getHourOfDay();
+        Integer endMinute = mQuietTimeEnds.getMinuteOfHour();
 
         Integer now = (time.hour * 60) + time.minute;
         Integer quietStarts = startHour * 60 + startMinute;

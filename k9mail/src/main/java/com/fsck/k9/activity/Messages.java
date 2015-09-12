@@ -1,7 +1,6 @@
 package com.fsck.k9.activity;
 
 import android.app.DatePickerDialog;
-import android.app.DialogFragment;
 import android.app.SearchManager;
 import android.app.TimePickerDialog;
 import android.content.Context;
@@ -291,7 +290,7 @@ public class Messages extends SmileActivity
         Log.i(K9.LOG_TAG, "RemindMeList.onDialogClick");
         currentRemindMe = dialog.getRemindMe();
 
-        if(currentRemindMe.getRemindInterval() == RemindMe.RemindInterval.CUSTOM) {
+        if(currentRemindMe.getRemindMeInterval() == RemindMe.RemindMeInterval.CUSTOM) {
             onDateSetCalled = false;
             onTimeSetCalled = false;
 
@@ -309,12 +308,12 @@ public class Messages extends SmileActivity
             RemindMeDatePickerDialog datePickerDialog = RemindMeDatePickerDialog.newInstance(this);
             datePickerDialog.show(ft, datePickerTag);
         } else {
-            currentRemindMe.setRemindTime(getDelay(currentRemindMe.getRemindInterval()));
+            currentRemindMe.setRemindTime(getDelay(currentRemindMe.getRemindMeInterval()));
             messageFragment.add(currentRemindMe);
         }
     }
 
-    private Date getDelay(RemindMe.RemindInterval interval) {
+    private Date getDelay(RemindMe.RemindMeInterval interval) {
         DateTime delay = DateTime.now();
 
         switch (interval) {

@@ -1173,12 +1173,15 @@ Please submit bug reports, contribute new features and ask questions at
     <string name="material">MD</string>
     <string name="smime_app">S/MIME App</string>
     <string name="account_settings_smime_app_not_found">No compatible S/MIME App installed.</string>
-    <string name="global_settings_remindme_times_label">RemindME times</string>
-    <string name="global_settings_remindme_time_short_label">short timespan</string>
-    <string name="global_settings_remindme_time_medium_label">medium timespan</string>
-    <string name="global_settings_remindme_time_long_label">long timespan</string>
+
+    <string name="global_settings_remindme_times_label">RemindME! times</string>
+    <string name="global_settings_remindme_time_later_label">later today</string>
+    <string name="global_settings_remindme_time_evening_label">evening</string>
+    <string name="global_settings_remindme_time_tomorrow_label">tomorrow</string>
+    <string name="global_settings_remindme_time_next_week_label">next week</string>
+    <string name="global_settings_remindme_time_next_month_label">next month</string>
+
     <string name="default_crypto_title">Default crypto protocol</string>
     <string name="no_crypto_provider_configured">This is an %1$s encrypted message and you have not configured a suitable crypto provider.</string>
     <string name="preferences_message_view_title">Message View</string>
-
 </resources>

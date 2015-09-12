@@ -6,6 +6,8 @@ package com.fsck.k9.preferences;
  * @see SettingsDescription#fromString(String)
  * @see SettingsDescription#fromPrettyString(String)
  */
-public class InvalidSettingValueException extends Exception {
+public class InvalidSettingValueException extends IllegalArgumentException {
     private static final long serialVersionUID = 1L;
+
+
 }

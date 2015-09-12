@@ -7,7 +7,6 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.CheckBoxPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
@@ -29,10 +28,21 @@ import com.fsck.k9.fragment.SmilePreferenceFragment;
 import com.fsck.k9.helper.FileBrowserHelper;
 import com.fsck.k9.helper.FileBrowserHelper.FileBrowserFailOverCallback;
 import com.fsck.k9.helper.NotificationHelper;
+import com.fsck.k9.mail.RemindMe;
 import com.fsck.k9.preferences.AccountPreference;
 import com.fsck.k9.preferences.CheckBoxListPreference;
 import com.fsck.k9.preferences.TimePickerPreference;
+import com.fsck.k9.preferences.TimeSpanPreference;
 import com.fsck.k9.service.MailService;
+
+import net.danlew.android.joda.JodaTimeAndroid;
+
+import org.joda.time.DateTime;
+import org.joda.time.Interval;
+import org.joda.time.Period;
+import org.joda.time.PeriodType;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -110,6 +120,11 @@ public class GlobalPreferences extends SmilePreferenceFragment {
     private SwitchPreference mThreadedView;
     private ListPreference mSplitViewMode;
     private GlobalPreferencesCallback callback;
+
+    private TimeSpanPreference remindme_later;
+    private TimePickerPreference remindme_evening;
+    private TimePickerPreference remindme_tomorrow;
+
     private Context mContext;
 
     public static GlobalPreferences newInstance(GlobalPreferencesCallback callback) {
@@ -143,6 +158,8 @@ public class GlobalPreferences extends SmilePreferenceFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = getActivity();
+        JodaTimeAndroid.init(mContext);
+
         addPreferencesFromResource(R.xml.global_preferences);
         PreferenceCategory category = (PreferenceCategory) findPreference("accounts");
         List<Account> accounts = Preferences.getPreferences(mContext).getAccounts();
@@ -218,6 +235,14 @@ public class GlobalPreferences extends SmilePreferenceFragment {
             }
         });
 
+        DateTimeFormatter formatter = DateTimeFormat.shortTime();
+
+        remindme_later = (TimeSpanPreference)findPreference("remindme_time_later");
+        remindme_evening = (TimePickerPreference)findPreference("remindme_time_evening");
+        remindme_evening.setDefaultValue(K9.getRemindMeTime(RemindMe.RemindMeInterval.EVENING).toString(formatter));
+        remindme_tomorrow = (TimePickerPreference)findPreference("remindme_time_tomorrow");
+        remindme_tomorrow.setDefaultValue(K9.getRemindMeTime(RemindMe.RemindMeInterval.TOMORROW).toString(formatter));
+
         mFixedWidth = (SwitchPreference) findPreference(PREFERENCE_MESSAGEVIEW_FIXEDWIDTH);
         mFixedWidth.setChecked(K9.messageViewFixedWidthFont());
 
@@ -230,9 +255,11 @@ public class GlobalPreferences extends SmilePreferenceFragment {
         mDisableNotificationDuringQuietTime = (SwitchPreference) findPreference(
                 PREFERENCE_DISABLE_NOTIFICATION_DURING_QUIET_TIME);
         mDisableNotificationDuringQuietTime.setChecked(!K9.isNotificationDuringQuietTimeEnabled());
+
+
         mQuietTimeStarts = (TimePickerPreference) findPreference(PREFERENCE_QUIET_TIME_STARTS);
         mQuietTimeStarts.setDefaultValue(K9.getQuietTimeStarts());
-        mQuietTimeStarts.setSummary(K9.getQuietTimeStarts());
+        mQuietTimeStarts.setSummary(K9.getQuietTimeStarts().toString(formatter));
         mQuietTimeStarts.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 final String time = (String) newValue;
@@ -242,7 +269,7 @@ public class GlobalPreferences extends SmilePreferenceFragment {
         });
 
         mQuietTimeEnds = (TimePickerPreference) findPreference(PREFERENCE_QUIET_TIME_ENDS);
-        mQuietTimeEnds.setSummary(K9.getQuietTimeEnds());
+        mQuietTimeEnds.setSummary(K9.getQuietTimeEnds().toString(formatter));
         mQuietTimeEnds.setDefaultValue(K9.getQuietTimeEnds());
         mQuietTimeEnds.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             public boolean onPreferenceChange(Preference preference, Object newValue) {
@@ -352,12 +379,15 @@ public class GlobalPreferences extends SmilePreferenceFragment {
         K9.setMessageViewReturnToList(mReturnToList.isChecked());
         K9.setMessageViewShowNext(true);
         K9.setAutofitWidth(true);
-        K9.setQuietTimeEnabled(mQuietTimeEnabled.isChecked());
+        K9.setWrapFolderNames(true);
 
+        K9.setRemindMeTime(RemindMe.RemindMeInterval.EVENING, remindme_evening.getTime());
+        K9.setRemindMeTime(RemindMe.RemindMeInterval.TOMORROW, remindme_tomorrow.getTime());
+
+        K9.setQuietTimeEnabled(mQuietTimeEnabled.isChecked());
         K9.setNotificationDuringQuietTimeEnabled(!mDisableNotificationDuringQuietTime.isChecked());
         K9.setQuietTimeStarts(mQuietTimeStarts.getTime());
         K9.setQuietTimeEnds(mQuietTimeEnds.getTime());
-        K9.setWrapFolderNames(true);
 
         if (mNotificationQuickDelete != null) {
             K9.setNotificationQuickDeleteBehaviour(

@@ -213,7 +213,7 @@ public class AccountPreferences extends SmilePreferenceFragment {
             Log.e(K9.LOG_TAG, "Could not get remote store", e);
         }
 
-        addPreferencesFromResource(R.xml.account_settings_preferences);
+        addPreferencesFromResource(R.xml.account_preferences);
 
         mMainScreen = (PreferenceScreen) findPreference(PREFERENCE_SCREEN_MAIN);
 

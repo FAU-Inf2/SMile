@@ -41,8 +41,6 @@ public class TimeSpanPreference extends DialogPreference {
     protected void onBindDialogView(View view) {
         super.onBindDialogView(view);
         numberPicker = (NumberPicker) view.findViewById(R.id.pref_number_picker);
-        numberPicker.setMinValue(1);
-
         timeUnitSpinner = (Spinner) view.findViewById(R.id.pref_timeunit_spinner);
 
         ArrayList<TimeUnit> timeUnits = new ArrayList<>();
@@ -56,6 +54,7 @@ public class TimeSpanPreference extends DialogPreference {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 mTimeUnit = (TimeUnit) parent.getItemAtPosition(position);
+                populateNumberPicker();
             }
 
             @Override
@@ -64,20 +63,38 @@ public class TimeSpanPreference extends DialogPreference {
             }
         });
 
+        numberPicker.setMinValue(1);
+
+        populateNumberPicker();
+        timeUnitSpinner.setSelection(timeUnits.indexOf(mTimeUnit));
+        timeUnitSpinner.invalidate();
+    }
+
+    private void populateNumberPicker() {
         switch (mTimeUnit) {
             case MINUTE:
-                numberPicker.setMaxValue(360);
+                final int maxValue = 360;
+                final int step = 5;
+                final int numberOfEntries = maxValue/step;
+                numberPicker.setMaxValue(numberOfEntries);
+                String[] values = new String[numberOfEntries];
+
+                for(int i = 5; i <= maxValue; i += step) {
+                    values[(i/step) - 1] = String.valueOf(i);
+                }
+
+                numberPicker.setDisplayedValues(values);
                 break;
             case HOUR:
+                numberPicker.setDisplayedValues(null);
                 numberPicker.setMaxValue(24);
                 break;
             case DAY:
+                numberPicker.setDisplayedValues(null);
                 numberPicker.setMaxValue(7);
         }
 
         numberPicker.setValue(mTimeSpan);
-        timeUnitSpinner.setSelection(timeUnits.indexOf(mTimeUnit));
-        timeUnitSpinner.invalidate();
     }
 
     @Override
@@ -152,7 +169,7 @@ public class TimeSpanPreference extends DialogPreference {
             }
         }
 
-
+        mTimeSpan = myState.timeSpan;
     }
 
     enum TimeUnit {

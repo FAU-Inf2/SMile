@@ -111,7 +111,7 @@ Palun saada infot probleemidest, soovitavatest lisafunktsioonidest ja küsi küs
   <string name="compose_action">Koosta</string>
   <string name="search_action">Otsi</string>
   <string name="search_results">Otsingu tulemused</string>
-  <string name="preferences_action">Sätted</string>
+  <string name="preferences_title">Sätted</string>
   <string name="account_settings_action">Konto sätted</string>
   <string name="folder_settings_action">Kaustade sätted</string>
   <string name="global_settings_action">Üldised sätted</string>

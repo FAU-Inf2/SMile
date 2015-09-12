@@ -112,7 +112,7 @@ Vennligst send feilmeldinger, forbedringer og still spørsmål på
   <string name="compose_action">Skriv</string>
   <string name="search_action">Søk</string>
   <string name="search_results">Søkeresultater</string>
-  <string name="preferences_action">Innstillinger</string>
+  <string name="preferences_title">Innstillinger</string>
   <string name="account_settings_action">Kontoinnstillinger</string>
   <string name="folder_settings_action">Mappeinnstillinger</string>
   <string name="global_settings_action">Globale innstillinger</string>

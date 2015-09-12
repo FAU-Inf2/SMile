@@ -110,7 +110,7 @@ Arazoen berri emateko, ezaugarri berriak gehitzeko eta galderak egiteko
   <string name="compose_action">Idatzi</string>
   <string name="search_action">Bilatu</string>
   <string name="search_results">Bilaketaren emaitzak</string>
-  <string name="preferences_action">Ezarpenak</string>
+  <string name="preferences_title">Ezarpenak</string>
   <string name="account_settings_action">Kontu ezarpenak</string>
   <string name="folder_settings_action">Karpeta ezarpenak</string>
   <string name="global_settings_action">Ezarpen orokorrak</string>

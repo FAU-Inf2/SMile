@@ -109,7 +109,7 @@ Veuillez envoyer les rapports de bogues, suggérer de nouvelles fonctions et pos
   <string name="compose_action">Composer</string>
   <string name="search_action">Rechercher</string>
   <string name="search_results">Résultats de la recherche</string>
-  <string name="preferences_action">Paramètres</string>
+  <string name="preferences_title">Paramètres</string>
   <string name="account_settings_action">Paramètres du compte</string>
   <string name="folder_settings_action">Paramètres du dossier</string>
   <string name="global_settings_action">Paramètres globaux</string>

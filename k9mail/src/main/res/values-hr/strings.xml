@@ -111,7 +111,7 @@ Molimo vas pošaljite izvještaj o manama, učestvujte u novim značajkama i pos
   <string name="compose_action">Sastavi</string>
   <string name="search_action">Pretraži</string>
   <string name="search_results">Rezultati pretraživanja</string>
-  <string name="preferences_action">Podešenja</string>
+  <string name="preferences_title">Podešenja</string>
   <string name="account_settings_action">Postavke računa</string>
   <string name="folder_settings_action">Postavke mape</string>
   <string name="global_settings_action">Općenite postavke</string>

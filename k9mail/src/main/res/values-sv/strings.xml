@@ -111,7 +111,7 @@ Anmäl fel, hjälp till med nya funktioner och ställ frågor på
   <string name="compose_action">Skriv</string>
   <string name="search_action">Sök</string>
   <string name="search_results">Sökresultat</string>
-  <string name="preferences_action">Inställningar</string>
+  <string name="preferences_title">Inställningar</string>
   <string name="account_settings_action">Kontoinställningar</string>
   <string name="folder_settings_action">Mappinställningar</string>
   <string name="global_settings_action">Globala inställningar</string>

@@ -111,7 +111,7 @@ SMile — почтовый клиент для Android.
   <string name="compose_action">Создать</string>
   <string name="search_action">Поиск сообщения</string>
   <string name="search_results">Результаты поиска</string>
-  <string name="preferences_action">Настройки</string>
+  <string name="preferences_title">Настройки</string>
   <string name="account_settings_action">Настройки ящика</string>
   <string name="folder_settings_action">Настройки папки</string>
   <string name="global_settings_action">Настройки приложения</string>

@@ -109,7 +109,7 @@ Por favor, nos envie relatórios de bugs, contribua para novas melhorias e faça
   <string name="compose_action">Escrever</string>
   <string name="search_action">Pesquisar</string>
   <string name="search_results">Resultado da pesquisa</string>
-  <string name="preferences_action">Configurações</string>
+  <string name="preferences_title">Configurações</string>
   <string name="account_settings_action">Configurações de conta</string>
   <string name="folder_settings_action">Configurações de pasta</string>
   <string name="global_settings_action">Configurações gerais</string>

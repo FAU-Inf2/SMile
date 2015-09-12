@@ -111,7 +111,7 @@ Por favor, envía los errores detectados, contribuye con nuevas funcionalidades 
   <string name="compose_action">Redactar</string>
   <string name="search_action">Buscar</string>
   <string name="search_results">Resultados búsqueda</string>
-  <string name="preferences_action">Configuración</string>
+  <string name="preferences_title">Configuración</string>
   <string name="account_settings_action">Configuración de cuenta</string>
   <string name="folder_settings_action">Configuración de carpeta</string>
   <string name="global_settings_action">Configuración global</string>

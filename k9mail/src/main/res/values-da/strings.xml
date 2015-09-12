@@ -107,7 +107,7 @@ Vær venlig at sende fejlrapporter, anmodning om nye funktioner, og spørgsmål 
   <string name="compose_action">Skriv</string>
   <string name="search_action">Søg</string>
   <string name="search_results">Søgeresultater</string>
-  <string name="preferences_action">Indstillinger</string>
+  <string name="preferences_title">Indstillinger</string>
   <string name="account_settings_action">Konto indstillinger</string>
   <string name="folder_settings_action">Mappe indstillinger</string>
   <string name="global_settings_action">Globale indstillinger</string>

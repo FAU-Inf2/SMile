@@ -112,7 +112,7 @@ Virheraportit, osallistuminen projektiin ja kysymykset: Mene osoitteeseen
   <string name="compose_action">Kirjoita</string>
   <string name="search_action">Etsi</string>
   <string name="search_results">Hakutulokset</string>
-  <string name="preferences_action">Asetukset</string>
+  <string name="preferences_title">Asetukset</string>
   <string name="account_settings_action">Tilin asetukset</string>
   <string name="folder_settings_action">Kansion asetukset</string>
   <string name="global_settings_action">Yleiset asetukset</string>

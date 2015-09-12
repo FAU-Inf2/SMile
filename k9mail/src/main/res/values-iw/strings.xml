@@ -92,7 +92,7 @@
   <string name="compose_action">חבר</string>
   <string name="search_action">חפש</string>
   <string name="search_results">תוצאות חיפוש</string>
-  <string name="preferences_action">הגדרות</string>
+  <string name="preferences_title">הגדרות</string>
   <string name="account_settings_action">הגדרות חשבון</string>
   <string name="folder_settings_action">הגדרות תיקייה</string>
   <string name="global_settings_action">הגדרות כלליות</string>

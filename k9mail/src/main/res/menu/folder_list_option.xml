@@ -63,6 +63,6 @@
         android:id="@+id/settings"
         android:icon="?attr/iconActionSettings"
         app:showAsAction="never"
-        android:title="@string/preferences_action" />
+        android:title="@string/preferences_title" />
 
 </menu>

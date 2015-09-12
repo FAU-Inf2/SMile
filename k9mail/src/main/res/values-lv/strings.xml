@@ -112,7 +112,7 @@ Lūdzu sūtiet kļūdu ziņojumus, iesakiet uzlabojumus un uzdodiet jautājumus
   <string name="compose_action">Rakstīt vēstuli</string>
   <string name="search_action">Meklēt</string>
   <string name="search_results">Meklēšanas rezultāti</string>
-  <string name="preferences_action">Iestatījumi</string>
+  <string name="preferences_title">Iestatījumi</string>
   <string name="account_settings_action">Konta iestatījumi</string>
   <string name="folder_settings_action">Mapes iestatījumi</string>
   <string name="global_settings_action">Vispārīgie iestatījumi</string>

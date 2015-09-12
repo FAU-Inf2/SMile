@@ -110,7 +110,7 @@ Si us plau, envia\'ns els errors, contribueix a millorar-lo a
   <string name="compose_action">Redacta</string>
   <string name="search_action">Cerca</string>
   <string name="search_results">Cerca resultats</string>
-  <string name="preferences_action">Configuració</string>
+  <string name="preferences_title">Configuració</string>
   <string name="account_settings_action">Configuració del compte</string>
   <string name="folder_settings_action">Configuració de la carpeta</string>
   <string name="global_settings_action">Configuració global</string>

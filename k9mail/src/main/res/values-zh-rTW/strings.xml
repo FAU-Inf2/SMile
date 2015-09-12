@@ -81,7 +81,7 @@
   <string name="compose_action">新郵件</string>
   <string name="search_action">搜尋</string>
   <string name="search_results">搜尋結果</string>
-  <string name="preferences_action">設定</string>
+  <string name="preferences_title">設定</string>
   <string name="account_settings_action">帳戶設定</string>
   <string name="folder_settings_action">信件匣設定</string>
   <string name="global_settings_action">全域設定</string>

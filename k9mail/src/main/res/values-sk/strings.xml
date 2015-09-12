@@ -111,7 +111,7 @@ Prosím, nahlasujte prípadné chyby, prispievajte novými funkciami a pýtajte 
   <string name="compose_action">Napísať</string>
   <string name="search_action">Vyhľadať</string>
   <string name="search_results">Výsledky vyhľadávania</string>
-  <string name="preferences_action">Nastavenia</string>
+  <string name="preferences_title">Nastavenia</string>
   <string name="account_settings_action">Nastavenia účtu</string>
   <string name="folder_settings_action">Nastavenia priečinku</string>
   <string name="global_settings_action">Všeobecné nastavenia</string>

@@ -112,7 +112,7 @@
   <string name="compose_action">Састави</string>
   <string name="search_action">Тражи</string>
   <string name="search_results">Резултати претраге</string>
-  <string name="preferences_action">Поставке</string>
+  <string name="preferences_title">Поставке</string>
   <string name="account_settings_action">Поставке налога</string>
   <string name="folder_settings_action">Поставке фасцикле</string>
   <string name="global_settings_action">Опште поставке</string>

@@ -110,7 +110,7 @@
   <string name="compose_action">Δημιουργία νέου</string>
   <string name="search_action">Αναζήτηση</string>
   <string name="search_results">Αποτελέσματα αναζήτησης</string>
-  <string name="preferences_action">Ρυθμίσεις</string>
+  <string name="preferences_title">Ρυθμίσεις</string>
   <string name="account_settings_action">Ρυθμίσεις λογαριασμού</string>
   <string name="folder_settings_action">Ρυθμίσεις φακέλου</string>
   <string name="global_settings_action">Γενικές ρυθμίσεις</string>

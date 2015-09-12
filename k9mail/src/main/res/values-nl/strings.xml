@@ -111,7 +111,7 @@ Graag foutrapporten, bijdrage nieuwe functies en vragen stellen op
   <string name="compose_action">Nieuw bericht</string>
   <string name="search_action">Zoeken</string>
   <string name="search_results">Zoekresultaten</string>
-  <string name="preferences_action">Instellingen</string>
+  <string name="preferences_title">Instellingen</string>
   <string name="account_settings_action">Account instellingen</string>
   <string name="folder_settings_action">Mappen instellingen</string>
   <string name="global_settings_action">Algemene instellingen</string>

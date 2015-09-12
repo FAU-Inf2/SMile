@@ -110,7 +110,7 @@ SMile改进的功能包括：
   <string name="compose_action">新邮件</string>
   <string name="search_action">搜索</string>
   <string name="search_results">搜索结果</string>
-  <string name="preferences_action">设置</string>
+  <string name="preferences_title">设置</string>
   <string name="account_settings_action">账户设置</string>
   <string name="folder_settings_action">文件夹设置</string>
   <string name="global_settings_action">全局设置</string>

@@ -111,7 +111,7 @@ Lütfen hata raporlarınızı, istediğiniz yeni özellikleri ve sorularınızı
   <string name="compose_action">Oluştur</string>
   <string name="search_action">Arama</string>
   <string name="search_results">Arama Sonuçları</string>
-  <string name="preferences_action">Ayarlar</string>
+  <string name="preferences_title">Ayarlar</string>
   <string name="account_settings_action">Hesap Ayarları</string>
   <string name="folder_settings_action">Klasör Ayarları</string>
   <string name="global_settings_action">Genel Ayarlar</string>

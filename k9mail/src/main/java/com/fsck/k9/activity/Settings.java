@@ -6,6 +6,10 @@ import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.widget.TextView;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.Preferences;
@@ -15,11 +19,13 @@ import com.fsck.k9.fragment.SmilePreferenceFragment;
 
 import de.fau.cs.mad.smile.android.R;
 
-public class Settings extends SmileActivity implements GlobalPreferences.GlobalPreferencesCallback {
+public class Settings extends AppCompatActivity implements GlobalPreferences.GlobalPreferencesCallback {
     private final static String EDIT_ACCOUNT_ACTION = "EDIT_ACCOUNT";
     private static final String EDIT_FOLDER_ACTION = "EDIT_FOLDER";
     private final static String ACCOUNT_EXTRA = "account";
     private final static String FOLDER_EXTRA = "folder";
+
+    private K9ActivityCommon mBase;
 
     public static void actionPreferences(Context context) {
         Intent intent = new Intent(context, Settings.class);
@@ -43,7 +49,23 @@ public class Settings extends SmileActivity implements GlobalPreferences.GlobalP
 
     @Override
     public void onCreate(Bundle icicle) {
+        mBase = K9ActivityCommon.newInstance(this);
         super.onCreate(icicle);
+
+        setContentView(R.layout.settings);
+        Toolbar toolbar = (Toolbar)findViewById(R.id.toolbar);
+
+        if(toolbar != null) {
+            TextView actionBarTitle = (TextView) toolbar.findViewById(R.id.actionbar_title_first);
+            actionBarTitle.setText(R.string.preferences_title);
+            setSupportActionBar(toolbar);
+        }
+
+        ActionBar actionBar = getSupportActionBar();
+
+        if(actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
 
         final Intent intent = getIntent();
         final String action = intent.getAction();

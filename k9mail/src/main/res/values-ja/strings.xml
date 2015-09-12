@@ -110,7 +110,7 @@ SMile は大多数のメールクライアントと同様に、ほとんどの�
   <string name="compose_action">作成</string>
   <string name="search_action">検索</string>
   <string name="search_results">検索結果</string>
-  <string name="preferences_action">設定</string>
+  <string name="preferences_title">設定</string>
   <string name="account_settings_action">アカウント設定</string>
   <string name="folder_settings_action">フォルダ設定</string>
   <string name="global_settings_action">グローバル設定</string>

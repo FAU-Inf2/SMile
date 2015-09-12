@@ -4,9 +4,25 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.res.Resources;
+import android.content.res.TypedArray;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.ArrayRes;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.util.TypedValue;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.BaseAdapter;
+import android.widget.GridView;
+import android.widget.ImageView;
 
+import com.fsck.k9.K9;
 import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.RemindMe;
 
@@ -52,9 +68,16 @@ public class RemindMeDialog extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setItems(R.array.remindme_default_time_values, new AlertDialogOnClickListener());
-        return builder.create();
+        Context context = getActivity();
+        GridView view = (GridView) LayoutInflater.from(context).inflate(R.layout.remindme_dialog, null);
+        view.setAdapter(new RemindMeIconAdapter(context, R.array.remindme_time_icons));
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setView(view);
+        AlertDialog dialog = builder.create();
+
+        view.setOnItemClickListener(new AlertDialogOnClickListener(dialog));
+        return dialog;
     }
 
     private void setRemindMe(RemindMe remindMe) {
@@ -65,29 +88,89 @@ public class RemindMeDialog extends DialogFragment {
         return remindMe;
     }
 
-    private class AlertDialogOnClickListener implements DialogInterface.OnClickListener {
+    private class AlertDialogOnClickListener implements AdapterView.OnItemClickListener{
+        private final AlertDialog dialog;
+
+        public AlertDialogOnClickListener(AlertDialog dialog) {
+            this.dialog = dialog;
+        }
+
         @Override
-        public void onClick(DialogInterface dialog, int which) {
-            switch(which) {
-                case 0: {
-                    getRemindMe().setRemindInterval(RemindMe.RemindInterval.TEN_MINUTES);
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            int iconResourceId = (int) parent.getItemAtPosition(position);
+            switch (iconResourceId) {
+                case R.drawable.ic_remindme_later_today:
+                    Log.d(K9.LOG_TAG, "later today was clicked");
+                    mListener.onDialogClick();
                     break;
-                }
-                case 1: {
-                    getRemindMe().setRemindInterval(RemindMe.RemindInterval.THIRTY_MINUTES);
+                case R.drawable.ic_remindme_this_evening:
+                    Log.d(K9.LOG_TAG, "this evening was clicked");
                     break;
-                }
-                case 2: {
-                    getRemindMe().setRemindInterval(RemindMe.RemindInterval.TOMORROW);
+                case R.drawable.ic_remindme_tomorrow:
+                    Log.d(K9.LOG_TAG, "tomorrow was clicked");
                     break;
-                }
-                case 3: {
-                    getRemindMe().setRemindInterval(RemindMe.RemindInterval.CUSTOM);
+                case R.drawable.ic_remindme_next_week:
+                    Log.d(K9.LOG_TAG, "next week was clicked");
                     break;
-                }
+                case R.drawable.ic_remindme_next_month:
+                    Log.d(K9.LOG_TAG, "next month was clicked");
+                    break;
+                case R.drawable.ic_remindme_custom:
+                    Log.d(K9.LOG_TAG, "custom was clicked");
+                    break;
             }
 
-            mListener.onDialogClick(RemindMeDialog.this);
+            dialog.dismiss();
+        }
+    }
+
+    static class RemindMeIconAdapter extends BaseAdapter {
+        private final TypedArray icons;
+        private final Context context;
+
+        public RemindMeIconAdapter(Context context, @ArrayRes int icons) {
+            this.context = context;
+            this.icons = context.getResources().obtainTypedArray(icons);
+        }
+
+        @Override
+        public int getCount() {
+            return icons.length();
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return icons.getResourceId(position, -1);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return 0;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            ImageView imageView;
+            if (convertView == null) {
+                // if it's not recycled, initialize some attributes
+                imageView = new ImageView(context);
+                imageView.setBackgroundColor(Color.BLACK);
+                imageView.setColorFilter(Color.RED);
+                Resources resources = context.getResources();
+                DisplayMetrics metrics = resources.getDisplayMetrics();
+                int width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80, metrics);
+                imageView.setLayoutParams(new GridView.LayoutParams(width, width));
+                imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, metrics);
+                imageView.setPadding(padding, padding, padding, padding);
+            } else {
+                imageView = (ImageView) convertView;
+            }
+
+            final int iconId = icons.getResourceId(position, R.drawable.ic_remindme_tomorrow);
+            imageView.setImageResource(iconId);
+            return imageView;
+
         }
     }
 

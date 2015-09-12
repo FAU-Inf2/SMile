@@ -764,6 +764,15 @@
         <item>user defined</item>
     </string-array>
 
+    <array name="remindme_time_icons" translateable="false">
+        <item>@drawable/ic_remindme_later_today</item>
+        <item>@drawable/ic_remindme_this_evening</item>
+        <item>@drawable/ic_remindme_tomorrow</item>
+        <item>@drawable/ic_remindme_next_week</item>
+        <item>@drawable/ic_remindme_next_month</item>
+        <item>@drawable/ic_remindme_custom</item>
+    </array>
+
     <string-array name="default_crypto_entries">
         <item>None</item>
         <item>OpenPGP</item>

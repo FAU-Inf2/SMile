@@ -14,6 +14,7 @@ import android.widget.TextView;
 import com.fsck.k9.Account;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.activity.setup.AccountPreferences;
+import com.fsck.k9.activity.setup.FontSizeSettings;
 import com.fsck.k9.activity.setup.GlobalPreferences;
 import com.fsck.k9.fragment.SmilePreferenceFragment;
 
@@ -88,6 +89,12 @@ public class Settings extends AppCompatActivity implements GlobalPreferences.Glo
     @Override
     public void onAccountClick(Account account) {
         AccountPreferences fragment = AccountPreferences.newInstance(account);
+        loadPreference(fragment);
+    }
+
+    @Override
+    public void onFontSizeSettings() {
+        FontSizeSettings fragment = FontSizeSettings.newInstance();
         loadPreference(fragment);
     }
 

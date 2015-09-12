@@ -48,6 +48,7 @@ public class GlobalPreferences extends SmilePreferenceFragment {
 
     public interface GlobalPreferencesCallback {
         void onAccountClick(Account account);
+        void onFontSizeSettings();
     }
 
     /**
@@ -170,7 +171,7 @@ public class GlobalPreferences extends SmilePreferenceFragment {
         findPreference(PREFERENCE_FONT_SIZE).setOnPreferenceClickListener(
                 new Preference.OnPreferenceClickListener() {
                     public boolean onPreferenceClick(Preference preference) {
-                        onFontSizeSettings();
+                        callback.onFontSizeSettings();
                         return true;
                     }
                 });
@@ -388,10 +389,6 @@ public class GlobalPreferences extends SmilePreferenceFragment {
         if (needsRefresh) {
             MailService.actionReset(mContext, null);
         }
-    }
-
-    private void onFontSizeSettings() {
-        FontSizeSettings.actionEditSettings(mContext);
     }
 
     private void onChooseContactNameColor() {

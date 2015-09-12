@@ -12,6 +12,7 @@ import com.fsck.k9.FontSizes;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.activity.K9PreferenceActivity;
+import com.fsck.k9.fragment.SmilePreferenceFragment;
 
 import de.fau.cs.mad.smile.android.R;
 
@@ -21,7 +22,7 @@ import de.fau.cs.mad.smile.android.R;
  *
  * @see FontSizes
  */
-public class FontSizeSettings extends K9PreferenceActivity {
+public class FontSizeSettings extends SmilePreferenceFragment {
     /*
      * Keys of the preferences defined in res/xml/font_preferences.xml
      */
@@ -62,14 +63,9 @@ public class FontSizeSettings extends K9PreferenceActivity {
     private static final int FONT_PERCENT_MIN = 40;
     private static final int FONT_PERCENT_MAX = 250;
 
-    /**
-     * Start the FontSizeSettings activity.
-     *
-     * @param context The application context.
-     */
-    public static void actionEditSettings(Context context) {
-        Intent i = new Intent(context, FontSizeSettings.class);
-        context.startActivity(i);
+    public static FontSizeSettings newInstance() {
+        FontSizeSettings settings = new FontSizeSettings();
+        return settings;
     }
 
     @Override
@@ -149,7 +145,7 @@ public class FontSizeSettings extends K9PreferenceActivity {
             }
         );
         mMessageViewContentSlider.getOnPreferenceChangeListener().onPreferenceChange(
-                                  mMessageViewContentSlider, mMessageViewContentSlider.getValue());
+                mMessageViewContentSlider, mMessageViewContentSlider.getValue());
 
         mMessageComposeInput = setupListPreference(
                 PREFERENCE_MESSAGE_COMPOSE_INPUT_FONT,
@@ -184,7 +180,7 @@ public class FontSizeSettings extends K9PreferenceActivity {
 
         fontSizes.setMessageComposeInput(Integer.parseInt(mMessageComposeInput.getValue()));
 
-        SharedPreferences preferences = Preferences.getPreferences(this).getPreferences();
+        SharedPreferences preferences = Preferences.getPreferences(getActivity()).getPreferences();
         Editor editor = preferences.edit();
         fontSizes.save(editor);
         editor.commit();
@@ -199,8 +195,8 @@ public class FontSizeSettings extends K9PreferenceActivity {
     }
 
     @Override
-    public void onBackPressed() {
+    public void onPause() {
         saveSettings();
-        super.onBackPressed();
+        super.onPause();
     }
 }

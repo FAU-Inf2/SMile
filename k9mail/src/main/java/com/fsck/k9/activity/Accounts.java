@@ -300,7 +300,7 @@ public class Accounts extends K9Activity implements OnItemClickListener {
         }
 
         String operation = mListener.getOperation(getApplicationContext());
-        operation.trim();
+        operation = operation.trim();
         if (operation.length() < 1) {
             mActionBarSubTitle.setVisibility(View.GONE);
         } else {

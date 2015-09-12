@@ -37,6 +37,10 @@ import com.fsck.k9.ui.messageview.MessageViewFragment;
 import com.fsck.k9.ui.messageview.MessageViewFragmentListener;
 import com.fsck.k9.view.MessageHeader;
 
+import net.danlew.android.joda.JodaTimeAndroid;
+
+import org.joda.time.DateTime;
+
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -98,6 +102,7 @@ public class Messages extends SmileActivity
             return;
         }
 
+        JodaTimeAndroid.init(this);
         handleIntent(getIntent());
 
         FragmentManager fragmentManager = getSupportFragmentManager();
@@ -282,10 +287,9 @@ public class Messages extends SmileActivity
     }
 
     @Override
-    public void onDialogClick(DialogFragment dialog) {
+    public void onDialogClick(RemindMeDialog dialog) {
         Log.i(K9.LOG_TAG, "RemindMeList.onDialogClick");
-        RemindMeDialog dlg = (RemindMeDialog)dialog;
-        currentRemindMe = dlg.getRemindMe();
+        currentRemindMe = dialog.getRemindMe();
 
         if(currentRemindMe.getRemindInterval() == RemindMe.RemindInterval.CUSTOM) {
             onDateSetCalled = false;
@@ -305,20 +309,27 @@ public class Messages extends SmileActivity
             RemindMeDatePickerDialog datePickerDialog = RemindMeDatePickerDialog.newInstance(this);
             datePickerDialog.show(ft, datePickerTag);
         } else {
-            switch (currentRemindMe.getRemindInterval()) {
-                case TEN_MINUTES:
-                    currentRemindMe.setRemindTime(addMinute(new Date(System.currentTimeMillis()), 10));
-                    break;
-                case THIRTY_MINUTES:
-                    currentRemindMe.setRemindTime(addMinute(new Date(System.currentTimeMillis()), 30));
-                    break;
-                case TOMORROW:
-                    currentRemindMe.setRemindTime(addMinute(new Date(System.currentTimeMillis()), 24*60));
-                    break;
-            }
-
+            currentRemindMe.setRemindTime(getDelay(currentRemindMe.getRemindInterval()));
             messageFragment.add(currentRemindMe);
         }
+    }
+
+    private Date getDelay(RemindMe.RemindInterval interval) {
+        DateTime delay = DateTime.now();
+
+        switch (interval) {
+            case LATER:
+                delay.plusMinutes(10);
+                break;
+            case EVENING:
+                delay.plusMinutes(30);
+                break;
+            case TOMORROW:
+                delay.plusDays(1);
+                break;
+        }
+
+        return delay.toDate();
     }
 
     private boolean onTimeSetCalled = false;

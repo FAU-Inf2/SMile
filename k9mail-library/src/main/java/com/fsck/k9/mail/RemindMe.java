@@ -4,10 +4,10 @@ import java.util.Date;
 public class RemindMe {
 
     public enum RemindInterval {
-        TEN_MINUTES,
-        THIRTY_MINUTES,
+        LATER,
+        EVENING,
         TOMORROW,
-        CUSTOM
+        NEXT_WEEK, NEXT_MONTH, CUSTOM
     }
 
     private int id;

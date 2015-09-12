@@ -2,11 +2,9 @@ package com.fsck.k9.activity;
 
 
 import android.app.DatePickerDialog;
-import android.app.DialogFragment;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -188,10 +186,9 @@ public class RemindMeList extends SmileActivity
     }
 
     @Override
-    public void onDialogClick(DialogFragment dialog) {
+    public void onDialogClick(RemindMeDialog dialog) {
         Log.i(K9.LOG_TAG, "RemindMeList.onDialogClick");
-        RemindMeDialog dlg = (RemindMeDialog)dialog;
-        currentRemindMe = dlg.getRemindMe();
+        currentRemindMe = dialog.getRemindMe();
 
         if(currentRemindMe.getRemindInterval() == RemindMe.RemindInterval.CUSTOM) {
             onDateSetCalled = false;
@@ -220,10 +217,10 @@ public class RemindMeList extends SmileActivity
         DateTime delay = DateTime.now();
 
         switch (interval) {
-            case TEN_MINUTES:
+            case LATER:
                 delay.plusMinutes(10);
                 break;
-            case THIRTY_MINUTES:
+            case EVENING:
                 delay.plusMinutes(30);
                 break;
             case TOMORROW:

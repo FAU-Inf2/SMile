@@ -37,7 +37,7 @@
             android:summary=""
             android:title="@string/account_settings_description_label" />
 
-        <CheckBoxPreference
+        <SwitchPreference
             android:key="account_default"
             android:persistent="false"
             android:summary="@string/account_settings_default_summary"
@@ -112,7 +112,7 @@
             android:persistent="false"
             android:title="@string/account_settings_folder_push_mode_label" />
 
-        <CheckBoxPreference
+        <SwitchPreference
             android:defaultValue="true"
             android:key="account_sync_remote_deletetions"
             android:persistent="false"
@@ -158,7 +158,7 @@
             android:entries="@array/account_settings_message_format_entries"
             android:entryValues="@array/account_settings_message_format_values" />
 
-        <CheckBoxPreference
+        <SwitchPreference
             android:key="message_read_receipt"
             android:persistent="false"
             android:summary="@string/account_settings_message_read_receipt_summary"
@@ -171,7 +171,7 @@
             android:entries="@array/account_settings_quote_style_entries"
             android:entryValues="@array/account_settings_quote_style_values" />
 
-        <CheckBoxPreference
+        <SwitchPreference
             android:key="default_quoted_text_shown"
             android:persistent="false"
             android:title="@string/account_settings_default_quoted_text_shown_label"
@@ -273,7 +273,7 @@
         android:key="notifications"
         android:title="@string/notifications_title">
 
-        <CheckBoxPreference
+        <SwitchPreference
             android:defaultValue="true"
             android:key="account_notify"
             android:persistent="false"
@@ -289,7 +289,7 @@
             android:persistent="false"
             android:title="@string/account_settings_folder_notify_new_mail_mode_label" />
 
-        <CheckBoxPreference
+        <SwitchPreference
             android:defaultValue="true"
             android:dependency="account_notify"
             android:key="account_notify_self"
@@ -310,7 +310,7 @@
             android:ringtoneType="notification"
             android:title="@string/account_settings_ringtone" />
 
-        <CheckBoxPreference
+        <SwitchPreference
             android:defaultValue="false"
             android:dependency="account_notify"
             android:key="account_vibrate"
@@ -338,7 +338,7 @@
             android:persistent="false"
             android:title="@string/account_settings_vibrate_times" />
 
-        <CheckBoxPreference
+        <SwitchPreference
             android:defaultValue="true"
             android:dependency="account_notify"
             android:key="account_led"
@@ -353,14 +353,14 @@
             android:summary="@string/account_settings_led_color_summary"
             android:title="@string/account_settings_led_color_label" />
 
-        <CheckBoxPreference
+        <SwitchPreference
             android:defaultValue="true"
             android:key="account_notify_sync"
             android:persistent="false"
             android:summary="@string/account_settings_notify_sync_summary"
             android:title="@string/account_settings_notify_sync_label" />
 
-        <CheckBoxPreference
+        <SwitchPreference
             android:defaultValue="true"
             android:key="notification_opens_unread"
             android:persistent="false"
@@ -373,7 +373,7 @@
         android:key="search"
         android:title="@string/account_settings_search">
 
-        <CheckBoxPreference
+        <SwitchPreference
             android:key="remote_search_enabled"
             android:persistent="false"
             android:summary="@string/account_settings_remote_search_enabled_summary"
@@ -389,7 +389,7 @@
             android:title="@string/account_settings_remote_search_num_label" />
 
         <!-- Temporarily removed
-        <CheckBoxPreference
+        <SwitchPreference
             android:key="account_remote_search_full_text"
             android:title="@string/account_settings_remote_search_full_text"
             android:summary="@string/account_settings_remote_search_full_text_summary"

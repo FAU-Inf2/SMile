@@ -682,8 +682,9 @@
         <item>HTML</item>
         <item>AUTO</item>
     </string-array>
+
     <string-array name="account_settings_remote_search_num_results_entries">
-        <item >@string/account_settings_remote_search_num_results_entries_10</item>
+        <item>@string/account_settings_remote_search_num_results_entries_10</item>
         <item>@string/account_settings_remote_search_num_results_entries_25</item>
         <item>@string/account_settings_remote_search_num_results_entries_50</item>
         <item>@string/account_settings_remote_search_num_results_entries_100</item>
@@ -692,6 +693,7 @@
         <item>@string/account_settings_remote_search_num_results_entries_1000</item>
         <item>@string/account_settings_remote_search_num_results_entries_all</item>
     </string-array>
+
     <string-array name="account_settings_remote_search_num_results_values" translatable="false">
         <item>10</item>
         <item>25</item>
@@ -754,19 +756,21 @@
         <item>NEVER</item>
         <item>WHEN_IN_LANDSCAPE</item>
     </string-array>
+
     <string-array name="remindme_default_time_values">
         <item>10 minutes</item>
         <item>30 minutes</item>
         <item>tomorrow</item>
         <item>user defined</item>
     </string-array>
+
     <string-array name="default_crypto_entries">
         <item>None</item>
         <item>OpenPGP</item>
         <item>S/MIME</item>
     </string-array>
 
-    <integer-array name="account_colors">
+    <integer-array name="account_colors" translatable="false">
         <item>@color/blue</item>
         <item>@color/green</item>
         <item>@color/orange</item>

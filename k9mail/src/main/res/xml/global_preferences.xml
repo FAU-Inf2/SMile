@@ -66,19 +66,19 @@
             android:persistent="false"
             android:title="@string/global_settings_preview_lines_label" />
 
-        <CheckBoxPreference
+        <SwitchPreference
             android:key="messagelist_show_correspondent_names"
             android:persistent="false"
             android:summary="@string/global_settings_show_correspondent_names_summary"
             android:title="@string/global_settings_show_correspondent_names_label" />
 
-        <CheckBoxPreference
+        <SwitchPreference
             android:key="messagelist_contact_name_color"
             android:persistent="false"
             android:summary="@string/global_settings_registered_name_color_default"
             android:title="@string/global_settings_registered_name_color_label" />
 
-        <CheckBoxPreference
+        <SwitchPreference
             android:key="threaded_view"
             android:persistent="false"
             android:summary="@string/global_settings_threaded_view_summary"
@@ -115,7 +115,7 @@
     <PreferenceCategory
         android:key="messageview"
         android:title="@string/preferences_message_view_title">
-        <CheckBoxPreference
+        <SwitchPreference
             android:key="messageview_fixedwidth_font"
             android:persistent="false"
             android:summary="@string/global_settings_messageview_fixedwidth_summary"
@@ -126,7 +126,7 @@
         android:key="interaction_preferences"
         android:title="@string/interaction_preferences">
 
-        <CheckBoxPreference
+        <SwitchPreference
             android:key="start_integrated_inbox"
             android:persistent="false"
             android:title="@string/start_integrated_inbox_title" />
@@ -139,7 +139,7 @@
             android:positiveButtonText="@android:string/ok"
             android:title="@string/volume_navigation_title" />
 
-        <CheckBoxPreference
+        <SwitchPreference
             android:key="messageview_return_to_list"
             android:persistent="false"
             android:summary="@string/global_settings_messageview_return_to_list_summary"
@@ -151,13 +151,13 @@
         android:key="notification_preferences"
         android:title="@string/notifications_title">
 
-        <CheckBoxPreference
+        <SwitchPreference
             android:key="quiet_time_enabled"
             android:persistent="false"
             android:summary="@string/quiet_time_description"
             android:title="@string/quiet_time" />
 
-        <CheckBoxPreference
+        <SwitchPreference
             android:dependency="quiet_time_enabled"
             android:key="disable_notifications_during_quiet_time"
             android:persistent="false"
@@ -213,7 +213,7 @@
             android:persistent="false"
             android:title="@string/settings_attachment_default_path" />
 
-        <CheckBoxPreference
+        <SwitchPreference
             android:key="debug_logging"
             android:persistent="false"
             android:summary="@string/debug_enable_debug_logging_summary"

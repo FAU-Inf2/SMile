@@ -51,11 +51,11 @@ public class Settings extends SmileActivity implements GlobalPreferences.GlobalP
         if(action == null) {
             GlobalPreferences fragment = GlobalPreferences.newInstance(this);
             loadPreference(fragment);
-        } else if (action.equals(EDIT_ACCOUNT_ACTION)) {
+        } else if (EDIT_ACCOUNT_ACTION.equals(action)) {
             final String accountUuid = intent.getStringExtra(ACCOUNT_EXTRA);
             Account account = Preferences.getPreferences(this).getAccount(accountUuid);
             onAccountClick(account);
-        } else if (action.equals(EDIT_FOLDER_ACTION)) {
+        } else if (EDIT_FOLDER_ACTION.equals(action)) {
             final String accountUuid = intent.getStringExtra(ACCOUNT_EXTRA);
             Account account = Preferences.getPreferences(this).getAccount(accountUuid);
             final String folderName = intent.getStringExtra(FOLDER_EXTRA);

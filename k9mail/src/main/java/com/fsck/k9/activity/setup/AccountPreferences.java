@@ -9,7 +9,7 @@ import android.content.pm.ResolveInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Vibrator;
-import android.preference.CheckBoxPreference;
+import android.preference.SwitchPreference;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
@@ -132,14 +132,14 @@ public class AccountPreferences extends SmilePreferenceFragment {
     private ListPreference mDisplayCount;
     private ListPreference mMessageAge;
     private ListPreference mMessageSize;
-    private CheckBoxPreference mAccountDefault;
-    private CheckBoxPreference mAccountNotify;
+    private SwitchPreference mAccountDefault;
+    private SwitchPreference mAccountNotify;
     private ListPreference mAccountNotifyNewMailMode;
-    private CheckBoxPreference mAccountNotifySelf;
+    private SwitchPreference mAccountNotifySelf;
     private ListPreference mAccountShowPictures;
-    private CheckBoxPreference mAccountNotifySync;
-    private CheckBoxPreference mAccountVibrate;
-    private CheckBoxPreference mAccountLed;
+    private SwitchPreference mAccountNotifySync;
+    private SwitchPreference mAccountVibrate;
+    private SwitchPreference mAccountLed;
     private ListPreference mAccountVibratePattern;
     private ListPreference mAccountVibrateTimes;
     private RingtonePreference mAccountRingtone;
@@ -154,25 +154,25 @@ public class AccountPreferences extends SmilePreferenceFragment {
     private Preference mChipColor;
     private Preference mLedColor;
     private boolean mIncomingChanged = false;
-    private CheckBoxPreference mNotificationOpensUnread;
+    private SwitchPreference mNotificationOpensUnread;
     private ListPreference mMessageFormat;
-    private CheckBoxPreference mMessageReadReceipt;
+    private SwitchPreference mMessageReadReceipt;
     private ListPreference mQuoteStyle;
     private EditTextPreference mAccountQuotePrefix;
-    private CheckBoxPreference mAccountDefaultQuotedTextShown;
-    private CheckBoxPreference mSyncRemoteDeletions;
+    private SwitchPreference mAccountDefaultQuotedTextShown;
+    private SwitchPreference mSyncRemoteDeletions;
     private boolean mHasCrypto = false;
     private OpenPgpAppPreference mCryptoApp;
     private OpenPgpKeyPreference mCryptoKey;
 
     private PreferenceCategory mSearchScreen;
-    private CheckBoxPreference mCloudSearchEnabled;
+    private SwitchPreference mCloudSearchEnabled;
     private ListPreference mRemoteSearchNumResults;
     /*
      * Temporarily removed because search results aren't displayed to the user.
      * So this feature is useless.
      */
-    //private CheckBoxPreference mRemoteSearchFullText;
+    //private SwitchPreference mRemoteSearchFullText;
 
     private ListPreference mLocalStorageProvider;
     private ListPreference mArchiveFolder;
@@ -242,7 +242,7 @@ public class AccountPreferences extends SmilePreferenceFragment {
             }
         });
 
-        mMessageReadReceipt = (CheckBoxPreference) findPreference(PREFERENCE_MESSAGE_READ_RECEIPT);
+        mMessageReadReceipt = (SwitchPreference) findPreference(PREFERENCE_MESSAGE_READ_RECEIPT);
         mMessageReadReceipt.setChecked(mAccount.isMessageReadReceiptAlways());
 
         mAccountQuotePrefix = (EditTextPreference) findPreference(PREFERENCE_QUOTE_PREFIX);
@@ -258,7 +258,7 @@ public class AccountPreferences extends SmilePreferenceFragment {
             }
         });
 
-        mAccountDefaultQuotedTextShown = (CheckBoxPreference) findPreference(PREFERENCE_DEFAULT_QUOTED_TEXT_SHOWN);
+        mAccountDefaultQuotedTextShown = (SwitchPreference) findPreference(PREFERENCE_DEFAULT_QUOTED_TEXT_SHOWN);
         mAccountDefaultQuotedTextShown.setChecked(mAccount.isDefaultQuotedTextShown());
 
         mComposingScreen = (PreferenceScreen) findPreference(PREFERENCE_SCREEN_COMPOSING);
@@ -375,7 +375,7 @@ public class AccountPreferences extends SmilePreferenceFragment {
         }
 
 
-        mSyncRemoteDeletions = (CheckBoxPreference) findPreference(PREFERENCE_SYNC_REMOTE_DELETIONS);
+        mSyncRemoteDeletions = (SwitchPreference) findPreference(PREFERENCE_SYNC_REMOTE_DELETIONS);
         mSyncRemoteDeletions.setChecked(mAccount.syncRemoteDeletions());
 
         mSearchableFolders = (ListPreference) findPreference(PREFERENCE_SEARCHABLE_FOLDERS);
@@ -437,7 +437,7 @@ public class AccountPreferences extends SmilePreferenceFragment {
             }
         });
 
-        mAccountDefault = (CheckBoxPreference) findPreference(PREFERENCE_DEFAULT);
+        mAccountDefault = (SwitchPreference) findPreference(PREFERENCE_DEFAULT);
         mAccountDefault.setChecked(
                 mAccount.equals(Preferences.getPreferences(mContext).getDefaultAccount()));
 
@@ -484,7 +484,7 @@ public class AccountPreferences extends SmilePreferenceFragment {
 
         mSearchScreen = (PreferenceCategory) findPreference(PREFERENCE_SCREEN_SEARCH);
 
-        mCloudSearchEnabled = (CheckBoxPreference) findPreference(PREFERENCE_CLOUD_SEARCH_ENABLED);
+        mCloudSearchEnabled = (SwitchPreference) findPreference(PREFERENCE_CLOUD_SEARCH_ENABLED);
         mRemoteSearchNumResults = (ListPreference) findPreference(PREFERENCE_REMOTE_SEARCH_NUM_RESULTS);
         mRemoteSearchNumResults.setOnPreferenceChangeListener(
                 new OnPreferenceChangeListener() {
@@ -494,7 +494,7 @@ public class AccountPreferences extends SmilePreferenceFragment {
                     }
                 }
         );
-        //mRemoteSearchFullText = (CheckBoxPreference) findPreference(PREFERENCE_REMOTE_SEARCH_FULL_TEXT);
+        //mRemoteSearchFullText = (SwitchPreference) findPreference(PREFERENCE_REMOTE_SEARCH_FULL_TEXT);
 
         if (mIsPushCapable) {
             mCloudSearchEnabled.setChecked(mAccount.allowRemoteSearch());
@@ -522,7 +522,7 @@ public class AccountPreferences extends SmilePreferenceFragment {
             mMainScreen.removePreference(mSearchScreen);
         }
 
-        mAccountNotify = (CheckBoxPreference) findPreference(PREFERENCE_NOTIFY);
+        mAccountNotify = (SwitchPreference) findPreference(PREFERENCE_NOTIFY);
         mAccountNotify.setChecked(mAccount.isNotifyNewMail());
 
         mAccountNotifyNewMailMode = (ListPreference) findPreference(PREFERENCE_NOTIFY_NEW_MAIL_MODE);
@@ -538,10 +538,10 @@ public class AccountPreferences extends SmilePreferenceFragment {
             }
         });
 
-        mAccountNotifySelf = (CheckBoxPreference) findPreference(PREFERENCE_NOTIFY_SELF);
+        mAccountNotifySelf = (SwitchPreference) findPreference(PREFERENCE_NOTIFY_SELF);
         mAccountNotifySelf.setChecked(mAccount.isNotifySelfNewMail());
 
-        mAccountNotifySync = (CheckBoxPreference) findPreference(PREFERENCE_NOTIFY_SYNC);
+        mAccountNotifySync = (SwitchPreference) findPreference(PREFERENCE_NOTIFY_SYNC);
         mAccountNotifySync.setChecked(mAccount.isShowOngoing());
 
         mAccountRingtone = (RingtonePreference) findPreference(PREFERENCE_RINGTONE);
@@ -552,7 +552,7 @@ public class AccountPreferences extends SmilePreferenceFragment {
         String currentRingtone = (!mAccount.getNotificationSetting().shouldRing() ? null : mAccount.getNotificationSetting().getRingtone());
         prefs.edit().putString(PREFERENCE_RINGTONE, currentRingtone).commit();
 
-        mAccountVibrate = (CheckBoxPreference) findPreference(PREFERENCE_VIBRATE);
+        mAccountVibrate = (SwitchPreference) findPreference(PREFERENCE_VIBRATE);
         mAccountVibrate.setChecked(mAccount.getNotificationSetting().shouldVibrate());
 
         mAccountVibratePattern = (ListPreference) findPreference(PREFERENCE_VIBRATE_PATTERN);
@@ -583,10 +583,10 @@ public class AccountPreferences extends SmilePreferenceFragment {
             }
         });
 
-        mAccountLed = (CheckBoxPreference) findPreference(PREFERENCE_NOTIFICATION_LED);
+        mAccountLed = (SwitchPreference) findPreference(PREFERENCE_NOTIFICATION_LED);
         mAccountLed.setChecked(mAccount.getNotificationSetting().isLed());
 
-        mNotificationOpensUnread = (CheckBoxPreference) findPreference(PREFERENCE_NOTIFICATION_OPENS_UNREAD);
+        mNotificationOpensUnread = (SwitchPreference) findPreference(PREFERENCE_NOTIFICATION_OPENS_UNREAD);
         mNotificationOpensUnread.setChecked(mAccount.goToUnreadMessageSearch());
 
         new PopulateFolderPrefsTask().execute();

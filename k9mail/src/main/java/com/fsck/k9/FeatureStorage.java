@@ -8,10 +8,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fsck.k9.activity.IMAPAppendText;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.controller.MessagingListener;
+import com.fsck.k9.mail.Folder;
 import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mail.RemindMe;
+import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.mailstore.LocalRemindMe;
+import com.fsck.k9.mailstore.LocalStore;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -32,6 +35,7 @@ public class FeatureStorage {
     private static File localFile;
     private static long lastUpdate = -1; // last time when the local file was parsed
 
+    private final Context mContext;
     private final Account mAccount;
     private final IMAPAppendText appendText;
     private final LocalRemindMe localRemindMe;
@@ -40,6 +44,7 @@ public class FeatureStorage {
     private final MessagingListener listener;
 
     public FeatureStorage(Account account, Context context) throws MessagingException {
+        this.mContext = context;
         this.mAccount = account;
         this.absolutePath = context.getFilesDir().getAbsolutePath();
         this.messagingController = MessagingController.getInstance(context);
@@ -344,6 +349,20 @@ public class FeatureStorage {
             if(!appendText.isNetworkAvailable()) { //no network connection
                 Log.e(K9.LOG_TAG, "No network connection available -- will not synchronize folders.");
                 return;
+            }
+
+            LocalStore store = null;
+
+            try {
+                store = LocalStore.getInstance(mAccount, mContext);
+                LocalFolder folder = new LocalFolder(store, mAccount.getRemindMeFolderName());
+
+                if (!folder.exists()) {
+                    folder.create(Folder.FolderType.HOLDS_MESSAGES);
+                    folder.open(LocalFolder.OPEN_MODE_RO);
+                }
+            } catch (MessagingException e) {
+                Log.e(K9.LOG_TAG, "could not verify that a local RemindME! folder exists", e);
             }
 
             final CountDownLatch latch = new CountDownLatch(1);

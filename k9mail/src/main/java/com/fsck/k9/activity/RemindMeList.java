@@ -6,6 +6,7 @@ import android.app.DialogFragment;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -32,6 +33,10 @@ import com.fsck.k9.mail.RemindMe;
 import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.mailstore.LocalStore;
+
+import net.danlew.android.joda.JodaTimeAndroid;
+
+import org.joda.time.DateTime;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -71,6 +76,7 @@ public class RemindMeList extends SmileActivity
         super.onCreate(savedInstanceState);
         final Intent intent = getIntent();
         handleIntent(intent);
+        JodaTimeAndroid.init(this);
 
         // Enable gesture detection for RemindMeList
         setupGestureDetector(this);
@@ -84,7 +90,7 @@ public class RemindMeList extends SmileActivity
             LocalStore store = LocalStore.getInstance(mAccount, this);
             LocalFolder folder = new LocalFolder(store, mAccount.getRemindMeFolderName());
 
-            // FIXME: probably not the best place
+            // folder should have been created in FeatureStorage, double check
             if (!folder.exists()) {
                 folder.create(Folder.FolderType.HOLDS_MESSAGES);
                 folder.open(LocalFolder.OPEN_MODE_RO);
@@ -126,8 +132,11 @@ public class RemindMeList extends SmileActivity
     @Override
     public Intent getParentActivityIntent() {
         Intent intent = super.getParentActivityIntent();
-        intent.putExtra("account", mAccount.getUuid());
-        intent.putExtra("folder", folderName);
+        if(intent != null) {
+            intent.putExtra("account", mAccount.getUuid());
+            intent.putExtra("folder", folderName);
+        }
+
         return intent;
     }
 
@@ -157,6 +166,7 @@ public class RemindMeList extends SmileActivity
             return;
         }
 
+        JodaTimeAndroid.init(this);
         onTimeSetCalled = true;
 
         Calendar calendar = Calendar.getInstance();
@@ -201,27 +211,27 @@ public class RemindMeList extends SmileActivity
             RemindMeDatePickerDialog datePickerDialog = RemindMeDatePickerDialog.newInstance(this);
             datePickerDialog.show(ft, datePickerTag);
         } else {
-            switch (currentRemindMe.getRemindInterval()) {
-                case TEN_MINUTES:
-                    currentRemindMe.setRemindTime(addMinute(new Date(System.currentTimeMillis()), 10));
-                    break;
-                case THIRTY_MINUTES:
-                    currentRemindMe.setRemindTime(addMinute(new Date(System.currentTimeMillis()), 30));
-                    break;
-                case TOMORROW:
-                    currentRemindMe.setRemindTime(addMinute(new Date(System.currentTimeMillis()), 24*60));
-                    break;
-            }
-
+            currentRemindMe.setRemindTime(getDelay(currentRemindMe.getRemindInterval()));
             remindMeFragment.add(currentRemindMe);
         }
     }
 
-    private final Date addMinute(final Date date, final int minute) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        calendar.add(Calendar.MINUTE, minute);
-        return calendar.getTime();
+    private Date getDelay(RemindMe.RemindInterval interval) {
+        DateTime delay = DateTime.now();
+
+        switch (interval) {
+            case TEN_MINUTES:
+                delay.plusMinutes(10);
+                break;
+            case THIRTY_MINUTES:
+                delay.plusMinutes(30);
+                break;
+            case TOMORROW:
+                delay.plusDays(1);
+                break;
+        }
+
+        return delay.toDate();
     }
 
     @Override

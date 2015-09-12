@@ -4,7 +4,7 @@ package com.fsck.k9.activity.setup;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.preference.CheckBoxPreference;
+import android.preference.SwitchPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.util.Log;
@@ -40,8 +40,8 @@ public class FolderPreferences extends SmilePreferenceFragment {
 
     private LocalFolder mFolder;
 
-    private CheckBoxPreference mInTopGroup;
-    private CheckBoxPreference mIntegrate;
+    private SwitchPreference mInTopGroup;
+    private SwitchPreference mIntegrate;
     private ListPreference mDisplayClass;
     private ListPreference mSyncClass;
     private ListPreference mPushClass;
@@ -91,9 +91,9 @@ public class FolderPreferences extends SmilePreferenceFragment {
         category.setTitle(displayName);
 
 
-        mInTopGroup = (CheckBoxPreference)findPreference(PREFERENCE_IN_TOP_GROUP);
+        mInTopGroup = (SwitchPreference)findPreference(PREFERENCE_IN_TOP_GROUP);
         mInTopGroup.setChecked(mFolder.isInTopGroup());
-        mIntegrate = (CheckBoxPreference)findPreference(PREFERENCE_INTEGRATE);
+        mIntegrate = (SwitchPreference)findPreference(PREFERENCE_INTEGRATE);
         mIntegrate.setChecked(mFolder.isIntegrate());
 
         mDisplayClass = (ListPreference) findPreference(PREFERENCE_DISPLAY_CLASS);

@@ -17,6 +17,7 @@ import android.util.Log;
 import com.fsck.k9.Account;
 import com.fsck.k9.BaseAccount;
 import com.fsck.k9.K9;
+import com.fsck.k9.preferences.NotificationHideSubject;
 import com.fsck.k9.NotificationSetting;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.activity.Accounts;
@@ -34,6 +35,7 @@ import com.fsck.k9.mail.Folder;
 import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mailstore.LocalMessage;
+import com.fsck.k9.preferences.NotificationQuickDelete;
 import com.fsck.k9.search.LocalSearch;
 import com.fsck.k9.search.SearchAccount;
 import com.fsck.k9.search.SearchSpecification;
@@ -236,8 +238,8 @@ public class NotificationHelper {
         CharSequence summary = buildMessageSummary(context, sender, subject);
 
         boolean privacyModeEnabled =
-                (K9.getNotificationHideSubject() == K9.NotificationHideSubject.ALWAYS) ||
-                        (K9.getNotificationHideSubject() == K9.NotificationHideSubject.WHEN_LOCKED &&
+                (K9.getNotificationHideSubject() == NotificationHideSubject.ALWAYS) ||
+                        (K9.getNotificationHideSubject() == NotificationHideSubject.WHEN_LOCKED &&
                                 keyguardService.inKeyguardRestrictedInputMode());
 
         if (privacyModeEnabled || summary.length() == 0) {
@@ -315,9 +317,9 @@ public class NotificationHelper {
                     context.getString(R.string.notification_action_mark_as_read),
                     NotificationActionService.getReadAllMessagesIntent(context, account, allRefs));
 
-            K9.NotificationQuickDelete deleteOption = K9.getNotificationQuickDeleteBehaviour();
-            boolean showDeleteAction = deleteOption == K9.NotificationQuickDelete.ALWAYS ||
-                    (deleteOption == K9.NotificationQuickDelete.FOR_SINGLE_MSG && newMessages == 1);
+            NotificationQuickDelete deleteOption = K9.getNotificationQuickDeleteBehaviour();
+            boolean showDeleteAction = deleteOption == NotificationQuickDelete.ALWAYS ||
+                    (deleteOption == NotificationQuickDelete.FOR_SINGLE_MSG && newMessages == 1);
 
             NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender();
 

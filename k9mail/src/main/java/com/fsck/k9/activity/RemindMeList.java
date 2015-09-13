@@ -35,6 +35,7 @@ import com.fsck.k9.mailstore.LocalStore;
 import net.danlew.android.joda.JodaTimeAndroid;
 
 import org.joda.time.DateTime;
+import org.joda.time.Period;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -215,19 +216,11 @@ public class RemindMeList extends SmileActivity
 
     private Date getDelay(RemindMe.RemindMeInterval interval) {
         DateTime delay = DateTime.now();
-
-        switch (interval) {
-            case LATER:
-                delay.plusMinutes(10);
-                break;
-            case EVENING:
-                delay.plusMinutes(30);
-                break;
-            case TOMORROW:
-                delay.plusDays(1);
-                break;
-        }
-
+        Period offset = K9.getRemindMeTime(interval);
+        delay = delay.plusMonths(offset.getMonths());
+        delay = delay.plusWeeks(offset.getWeeks());
+        delay = delay.withHourOfDay(offset.getHours());
+        delay = delay.withMinuteOfHour(offset.getMinutes());
         return delay.toDate();
     }
 

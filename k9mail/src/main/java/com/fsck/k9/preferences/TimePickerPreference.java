@@ -6,6 +6,7 @@ package com.fsck.k9.preferences;
 
 import android.content.Context;
 import android.preference.DialogPreference;
+import android.support.annotation.NonNull;
 import android.text.format.DateFormat;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -15,6 +16,7 @@ import android.widget.TimePicker;
 import com.fsck.k9.K9;
 
 import org.joda.time.DateTime;
+import org.joda.time.Period;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
@@ -29,8 +31,7 @@ public class TimePickerPreference extends DialogPreference implements
     /**
      * The default value for this preference
      */
-    private String defaultValue;
-    private DateTime defaultTime;
+    private long defaultValue;
     private DateTime originalValue;
 
     /**
@@ -76,6 +77,7 @@ public class TimePickerPreference extends DialogPreference implements
             tp.setCurrentHour(hour);
             tp.setCurrentMinute(minute);
         }
+
         tp.setOnTimeChangedListener(this);
 
         return tp;
@@ -114,32 +116,29 @@ public class TimePickerPreference extends DialogPreference implements
 
         super.setDefaultValue(defaultValue);
 
-        if (!(defaultValue instanceof String)) {
-            return;
+        if (defaultValue instanceof Long) {
+            this.defaultValue = (long)defaultValue;
         }
 
-        final String time = (String)defaultValue;
-        DateTimeFormatter formatter = getDateTimeFormatter();
-
-        try {
-            defaultTime = formatter.parseDateTime(time);
-        } catch (IllegalArgumentException e) {
-            Log.e(K9.LOG_TAG, "failed to parse DateTime in TimePickerPreference.setDefaultValue", e);
-            return;
+        if (defaultValue instanceof Period) {
+            Period period = (Period)defaultValue;
+            DateTime javaEpoche = new DateTime(0);
+            this.defaultValue = javaEpoche.withPeriodAdded(period, 1).getMillis();
         }
 
-        this.defaultValue = time;
     }
 
     public DateTime getTime() {
-        final String time = getPersistedString(this.defaultValue);
-        DateTimeFormatter formatter = getDateTimeFormatter();
+        final long time = getPersistedLong(this.defaultValue);
+        return new DateTime(time);
+    }
 
-        try {
-            return formatter.parseDateTime(time);
-        } catch (IllegalArgumentException e) {
-            return defaultTime;
-        }
+    @NonNull
+    public Period getPeriod() {
+        final long time = getPersistedLong(this.defaultValue);
+        DateTime javaEpoche = new DateTime(0);
+        DateTime savedTime = new DateTime(time);
+        return new Period(javaEpoche, savedTime);
     }
 
     public static DateTimeFormatter getDateTimeFormatter() {
@@ -147,10 +146,8 @@ public class TimePickerPreference extends DialogPreference implements
     }
 
     private void persistTime(DateTime time) {
-        DateTimeFormatter formatter = getDateTimeFormatter();
-        String persistTime = formatter.print(time);
-        persistString(persistTime);
-        callChangeListener(persistTime);
+        persistLong(time.getMillis());
+        callChangeListener(time);
     }
 }
 

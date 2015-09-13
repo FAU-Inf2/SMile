@@ -16,6 +16,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.StrictMode;
+import android.support.annotation.NonNull;
 import android.text.format.Time;
 import android.util.Log;
 
@@ -32,6 +33,11 @@ import com.fsck.k9.mail.RemindMe.RemindMeInterval;
 import com.fsck.k9.mail.internet.BinaryTempFileBody;
 import com.fsck.k9.mail.ssl.LocalKeyStore;
 import com.fsck.k9.mailstore.LocalStore;
+import com.fsck.k9.preferences.BACKGROUND_OPS;
+import com.fsck.k9.preferences.LockScreenNotificationVisibility;
+import com.fsck.k9.preferences.NotificationHideSubject;
+import com.fsck.k9.preferences.NotificationQuickDelete;
+import com.fsck.k9.preferences.SplitViewMode;
 import com.fsck.k9.preferences.TimePickerPreference;
 import com.fsck.k9.provider.UnreadWidgetProvider;
 import com.fsck.k9.service.BootReceiver;
@@ -42,9 +48,10 @@ import com.fsck.k9.service.StorageGoneReceiver;
 import net.danlew.android.joda.JodaTimeAndroid;
 
 import org.joda.time.DateTime;
-import org.joda.time.Interval;
+import org.joda.time.DateTimeConstants;
 import org.joda.time.Period;
 import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.PeriodFormat;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -58,7 +65,7 @@ import de.fau.cs.mad.smile.android.BuildConfig;
 import de.fau.cs.mad.smile.android.R;
 
 public class K9 extends Application {
-    private static HashMap<RemindMeInterval, DateTime> remindMeTimes;
+    private static HashMap<RemindMeInterval, Period> remindMeTimes;
 
     static {
         remindMeTimes = new HashMap<>(RemindMeInterval.values().length);
@@ -69,11 +76,11 @@ public class K9 extends Application {
         }
     }
 
-    public static DateTime getRemindMeTime(RemindMeInterval interval) {
+    public static Period getRemindMeTime(RemindMeInterval interval) {
         return remindMeTimes.get(interval);
     }
 
-    public static void setRemindMeTime(RemindMeInterval interval, DateTime time) {
+    public static void setRemindMeTime(RemindMeInterval interval, Period time) {
         remindMeTimes.put(interval, time);
     }
 
@@ -131,10 +138,6 @@ public class K9 extends Application {
      * supplied argument.
      */
     private static boolean sInitialized = false;
-
-    public enum BACKGROUND_OPS {
-        ALWAYS, NEVER, WHEN_CHECKED_AUTO_SYNC
-    }
 
     private static String language = "";
     private static Theme theme = Theme.LIGHT;
@@ -206,45 +209,10 @@ public class K9 extends Application {
 
     private static NotificationHideSubject sNotificationHideSubject = NotificationHideSubject.NEVER;
 
-    /**
-     * Controls when to hide the subject in the notification area.
-     */
-    public enum NotificationHideSubject {
-        ALWAYS,
-        WHEN_LOCKED,
-        NEVER
-    }
-
     private static NotificationQuickDelete sNotificationQuickDelete = NotificationQuickDelete.NEVER;
-
-    /**
-     * Controls behaviour of delete button in notifications.
-     */
-    public enum NotificationQuickDelete {
-        ALWAYS,
-        FOR_SINGLE_MSG,
-        NEVER
-    }
 
     private static LockScreenNotificationVisibility sLockScreenNotificationVisibility =
         LockScreenNotificationVisibility.MESSAGE_COUNT;
-
-    public enum LockScreenNotificationVisibility {
-        EVERYTHING,
-        SENDERS,
-        MESSAGE_COUNT,
-        APP_NAME,
-        NOTHING
-    }
-
-    /**
-     * Controls when to use the message list split view.
-     */
-    public enum SplitViewMode {
-        ALWAYS,
-        NEVER,
-        WHEN_IN_LANDSCAPE
-    }
 
     private static boolean mMessageListCheckboxes = true;
     private static boolean mMessageListStars = true;
@@ -506,10 +474,22 @@ public class K9 extends Application {
         editor.putBoolean("autofitWidth", mAutofitWidth);
 
         DateTimeFormatter formatter = TimePickerPreference.getDateTimeFormatter();
-        String persistTime = formatter.print(getRemindMeTime(RemindMeInterval.EVENING));
+        DateTime javaEpoche = new DateTime(0);
+
+        String persistTime = formatter.print(javaEpoche.withPeriodAdded(getRemindMeTime(RemindMeInterval.LATER), 1));
+        editor.putString("remindme_later", persistTime);
+
+        persistTime = formatter.print(javaEpoche.withPeriodAdded(getRemindMeTime(RemindMeInterval.EVENING), 1));
         editor.putString("remindme_evening", persistTime);
-        persistTime = formatter.print(getRemindMeTime(RemindMeInterval.TOMORROW));
+
+        persistTime = formatter.print(javaEpoche.withPeriodAdded(getRemindMeTime(RemindMeInterval.TOMORROW), 1));
         editor.putString("remindme_tomorrow", persistTime);
+
+        persistTime = formatter.print(javaEpoche.withPeriodAdded(getRemindMeTime(RemindMeInterval.NEXT_WEEK), 1));
+        editor.putString("remindme_next_week", persistTime);
+
+        persistTime = formatter.print(javaEpoche.withPeriodAdded(getRemindMeTime(RemindMeInterval.NEXT_MONTH), 1));
+        editor.putString("remindme_next_month", persistTime);
 
         editor.putBoolean("quietTimeEnabled", mQuietTimeEnabled);
         editor.putBoolean("notificationDuringQuietTimeEnabled", mNotificationDuringQuietTimeEnabled);
@@ -751,17 +731,39 @@ public class K9 extends Application {
         mAutofitWidth = sprefs.getBoolean("autofitWidth", true);
 
         DateTimeFormatter formatter = TimePickerPreference.getDateTimeFormatter();
-        String time = sprefs.getString("remindme_evening", "17:00");
-        remindMeTimes.put(RemindMeInterval.EVENING, formatter.parseDateTime(time));
-        time = sprefs.getString("remindme_tomorrow", "08:30");
-        remindMeTimes.put(RemindMeInterval.TOMORROW, formatter.parseDateTime(time));
+        DateTime javaEpoche = new DateTime(0);
+        DateTime defaultTime = javaEpoche.withHourOfDay(2).withMinuteOfHour(0);
+
+        long time = sprefs.getLong("remindme_later", defaultTime.getMillis()); // NOTE: this time value should be interpreted as an offset to add
+        remindMeTimes.put(RemindMeInterval.LATER, getPeriod(time));
+
+        defaultTime = javaEpoche.withHourOfDay(17).withMinuteOfHour(0);
+        time = sprefs.getLong("remindme_evening", defaultTime.getMillis());
+        remindMeTimes.put(RemindMeInterval.EVENING, getPeriod(time));
+
+        defaultTime = javaEpoche.withHourOfDay(8).withMinuteOfHour(30);
+        time = sprefs.getLong("remindme_tomorrow", defaultTime.getMillis());
+        remindMeTimes.put(RemindMeInterval.TOMORROW, getPeriod(time));
+
+        DateTime monday = javaEpoche.withDayOfWeek(DateTimeConstants.MONDAY);
+        defaultTime = monday.plusWeeks(1).withHourOfDay(8).withMinuteOfHour(30);
+        time = sprefs.getLong("remindme_next_week", defaultTime.getMillis());
+        remindMeTimes.put(RemindMeInterval.NEXT_WEEK, getPeriod(time));
+
+        defaultTime = monday.plusMonths(1).withHourOfDay(8).withMinuteOfHour(30);
+        time = sprefs.getLong("remindme_next_month", defaultTime.getMillis());
+        remindMeTimes.put(RemindMeInterval.NEXT_MONTH, getPeriod(time));
 
         mQuietTimeEnabled = sprefs.getBoolean("quietTimeEnabled", false);
         mNotificationDuringQuietTimeEnabled = sprefs.getBoolean("notificationDuringQuietTimeEnabled", true);
-        time = sprefs.getString("quietTimeStarts", "21:00");
-        mQuietTimeStarts = formatter.parseDateTime(time);
-        time = sprefs.getString("quietTimeEnds", "7:00");
-        mQuietTimeEnds = formatter.parseDateTime(time);
+
+        defaultTime = javaEpoche.withHourOfDay(21).withMinuteOfHour(0);
+        time = sprefs.getLong("quietTimeStarts", defaultTime.getMillis());
+        mQuietTimeStarts = new DateTime(time);
+
+        defaultTime = javaEpoche.withHourOfDay(7).withMinuteOfHour(0);
+        time = sprefs.getLong("quietTimeEnds", defaultTime.getMillis());
+        mQuietTimeEnds = new DateTime(time);
 
         mShowCorrespondentNames = sprefs.getBoolean("showCorrespondentNames", true);
         mShowContactName = sprefs.getBoolean("showContactName", false);
@@ -773,7 +775,7 @@ public class K9 extends Application {
         mMessageViewShowNext = sprefs.getBoolean("messageViewShowNext", false);
         mWrapFolderNames = sprefs.getBoolean("wrapFolderNames", false);
         mHideUserAgent = sprefs.getBoolean("hideUserAgent", false);
-        mHideTimeZone = sprefs.getBoolean("hideTimeZone", false);
+        mHideTimeZone = sprefs.getBoolean("hideTimeZone", true);
 
         mConfirmDelete = sprefs.getBoolean("confirmDelete", false);
         mConfirmDiscardMessage = sprefs.getBoolean("confirmDiscardMessage", true);
@@ -854,6 +856,13 @@ public class K9 extends Application {
         themeValue = sprefs.getInt("messageComposeTheme", Theme.USE_GLOBAL.ordinal());
         K9.setK9ComposerThemeSetting(Theme.values()[themeValue]);
         K9.setUseFixedMessageViewTheme(sprefs.getBoolean("fixedMessageViewTheme", true));
+    }
+
+    @NonNull
+    private static Period getPeriod(long time) {
+        DateTime javaEpoche = new DateTime(0);
+        DateTime savedTime = new DateTime(time);
+        return new Period(javaEpoche, savedTime);
     }
 
     /**

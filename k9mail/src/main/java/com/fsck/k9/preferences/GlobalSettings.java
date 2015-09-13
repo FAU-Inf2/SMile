@@ -7,9 +7,6 @@ import com.fsck.k9.Account;
 import com.fsck.k9.Account.SortType;
 import com.fsck.k9.FontSizes;
 import com.fsck.k9.K9;
-import com.fsck.k9.K9.NotificationHideSubject;
-import com.fsck.k9.K9.NotificationQuickDelete;
-import com.fsck.k9.K9.SplitViewMode;
 import com.fsck.k9.K9.Theme;
 
 import java.io.File;
@@ -23,8 +20,6 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import de.fau.cs.mad.smile.android.R;
-
-import static com.fsck.k9.K9.LockScreenNotificationVisibility;
 
 public class GlobalSettings {
     public static final Map<String, TreeMap<Integer, SettingsDescription>> SETTINGS;
@@ -46,8 +41,8 @@ public class GlobalSettings {
                 new V(1, new DirectorySetting(Environment.getExternalStorageDirectory().toString()))
             ));
         s.put("backgroundOperations", Settings.versions(
-                new V(1, new EnumSetting<K9.BACKGROUND_OPS>(
-                        K9.BACKGROUND_OPS.class, K9.BACKGROUND_OPS.WHEN_CHECKED_AUTO_SYNC))
+                new V(1, new EnumSetting<BACKGROUND_OPS>(
+                        BACKGROUND_OPS.class, BACKGROUND_OPS.WHEN_CHECKED_AUTO_SYNC))
             ));
         s.put("changeRegisteredNameColor", Settings.versions(
                 new V(1, new BooleanSetting(false))
@@ -160,12 +155,14 @@ public class GlobalSettings {
         s.put("quietTimeEnabled", Settings.versions(
                 new V(1, new BooleanSetting(false))
             ));
+
         s.put("quietTimeEnds", Settings.versions(
                 new V(1, new TimeSetting("7:00"))
             ));
         s.put("quietTimeStarts", Settings.versions(
                 new V(1, new TimeSetting("21:00"))
             ));
+
         s.put("registeredNameColor", Settings.versions(
                 new V(1, new ColorSetting(0xFF00008F))
             ));
@@ -176,7 +173,7 @@ public class GlobalSettings {
                 new V(1, new BooleanSetting(true))
             ));
         s.put("sortTypeEnum", Settings.versions(
-                new V(10, new EnumSetting<SortType>(SortType.class, Account.DEFAULT_SORT_TYPE))
+                new V(10, new EnumSetting<>(SortType.class, Account.DEFAULT_SORT_TYPE))
             ));
         s.put("sortAscending", Settings.versions(
                 new V(10, new BooleanSetting(Account.DEFAULT_SORT_ASCENDING))
@@ -201,7 +198,7 @@ public class GlobalSettings {
                 new V(22, new BooleanSetting(false))
             ));
         s.put("notificationHideSubject", Settings.versions(
-                new V(12, new EnumSetting<NotificationHideSubject>(
+                new V(12, new EnumSetting<>(
                         NotificationHideSubject.class, NotificationHideSubject.NEVER))
             ));
         s.put("useBackgroundAsUnreadIndicator", Settings.versions(
@@ -211,7 +208,7 @@ public class GlobalSettings {
                 new V(20, new BooleanSetting(true))
             ));
         s.put("splitViewMode", Settings.versions(
-                new V(23, new EnumSetting<SplitViewMode>(SplitViewMode.class, SplitViewMode.NEVER))
+                new V(23, new EnumSetting<>(SplitViewMode.class, SplitViewMode.NEVER))
             ));
         s.put("messageComposeTheme", Settings.versions(
                 new V(24, new SubThemeSetting(K9.Theme.USE_GLOBAL))
@@ -253,7 +250,7 @@ public class GlobalSettings {
                 new V(32, new BooleanSetting(false))
             ));
         s.put("lockScreenNotificationVisibility", Settings.versions(
-                new V(37, new EnumSetting<LockScreenNotificationVisibility>(LockScreenNotificationVisibility.class,
+                new V(37, new EnumSetting<>(LockScreenNotificationVisibility.class,
                         LockScreenNotificationVisibility.MESSAGE_COUNT))
             ));
         s.put("confirmDeleteFromNotification", Settings.versions(
@@ -263,7 +260,7 @@ public class GlobalSettings {
                 new V(38, new BooleanSetting(false))
             ));
         s.put("notificationQuickDelete", Settings.versions(
-                new V(38, new EnumSetting<NotificationQuickDelete>(NotificationQuickDelete.class,
+                new V(38, new EnumSetting<>(NotificationQuickDelete.class,
                         NotificationQuickDelete.NEVER))
             ));
         s.put("notificationDuringQuietTimeEnabled", Settings.versions(

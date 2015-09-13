@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.support.annotation.ArrayRes;
 import android.util.DisplayMetrics;
@@ -160,8 +161,7 @@ public class RemindMeDialog extends DialogFragment {
             if (convertView == null) {
                 // if it's not recycled, initialize some attributes
                 imageView = new ImageView(context);
-                imageView.setBackgroundColor(Color.BLACK);
-                imageView.setColorFilter(Color.RED);
+                imageView.setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN);
                 Resources resources = context.getResources();
                 DisplayMetrics metrics = resources.getDisplayMetrics();
                 int width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80, metrics);

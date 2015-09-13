@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.util.Log;
 
 import com.fsck.k9.K9;
+import com.fsck.k9.preferences.BACKGROUND_OPS;
 
 import java.util.Date;
 
@@ -43,8 +44,8 @@ public class BootReceiver extends CoreReceiver {
             MailService.connectivityChange(context, tmpWakeLockId);
             tmpWakeLockId = null;
         } else if ("com.android.sync.SYNC_CONN_STATUS_CHANGED".equals(action)) {
-            K9.BACKGROUND_OPS bOps = K9.getBackgroundOps();
-            if (bOps == K9.BACKGROUND_OPS.WHEN_CHECKED_AUTO_SYNC) {
+            BACKGROUND_OPS bOps = K9.getBackgroundOps();
+            if (bOps == BACKGROUND_OPS.WHEN_CHECKED_AUTO_SYNC) {
                 MailService.actionReset(context, tmpWakeLockId);
                 tmpWakeLockId = null;
             }

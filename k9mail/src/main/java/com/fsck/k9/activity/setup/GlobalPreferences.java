@@ -19,9 +19,10 @@ import android.widget.Toast;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.K9;
-import com.fsck.k9.K9.NotificationHideSubject;
-import com.fsck.k9.K9.NotificationQuickDelete;
-import com.fsck.k9.K9.SplitViewMode;
+import com.fsck.k9.preferences.LockScreenNotificationVisibility;
+import com.fsck.k9.preferences.NotificationHideSubject;
+import com.fsck.k9.preferences.NotificationQuickDelete;
+import com.fsck.k9.preferences.SplitViewMode;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.activity.ColorPickerDialog;
 import com.fsck.k9.fragment.SmilePreferenceFragment;
@@ -30,6 +31,7 @@ import com.fsck.k9.helper.FileBrowserHelper.FileBrowserFailOverCallback;
 import com.fsck.k9.helper.NotificationHelper;
 import com.fsck.k9.mail.RemindMe;
 import com.fsck.k9.preferences.AccountPreference;
+import com.fsck.k9.preferences.BACKGROUND_OPS;
 import com.fsck.k9.preferences.CheckBoxListPreference;
 import com.fsck.k9.preferences.TimePickerPreference;
 import com.fsck.k9.preferences.TimeSpanPreference;
@@ -38,9 +40,6 @@ import com.fsck.k9.service.MailService;
 import net.danlew.android.joda.JodaTimeAndroid;
 
 import org.joda.time.DateTime;
-import org.joda.time.Interval;
-import org.joda.time.Period;
-import org.joda.time.PeriodType;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
@@ -235,13 +234,11 @@ public class GlobalPreferences extends SmilePreferenceFragment {
             }
         });
 
-        DateTimeFormatter formatter = DateTimeFormat.shortTime();
-
         remindme_later = (TimeSpanPreference)findPreference("remindme_time_later");
         remindme_evening = (TimePickerPreference)findPreference("remindme_time_evening");
-        remindme_evening.setDefaultValue(K9.getRemindMeTime(RemindMe.RemindMeInterval.EVENING).toString(formatter));
+        remindme_evening.setDefaultValue(K9.getRemindMeTime(RemindMe.RemindMeInterval.EVENING));
         remindme_tomorrow = (TimePickerPreference)findPreference("remindme_time_tomorrow");
-        remindme_tomorrow.setDefaultValue(K9.getRemindMeTime(RemindMe.RemindMeInterval.TOMORROW).toString(formatter));
+        remindme_tomorrow.setDefaultValue(K9.getRemindMeTime(RemindMe.RemindMeInterval.TOMORROW));
 
         mFixedWidth = (SwitchPreference) findPreference(PREFERENCE_MESSAGEVIEW_FIXEDWIDTH);
         mFixedWidth.setChecked(K9.messageViewFixedWidthFont());
@@ -256,14 +253,14 @@ public class GlobalPreferences extends SmilePreferenceFragment {
                 PREFERENCE_DISABLE_NOTIFICATION_DURING_QUIET_TIME);
         mDisableNotificationDuringQuietTime.setChecked(!K9.isNotificationDuringQuietTimeEnabled());
 
-
+        final DateTimeFormatter formatter = DateTimeFormat.shortTime();
         mQuietTimeStarts = (TimePickerPreference) findPreference(PREFERENCE_QUIET_TIME_STARTS);
         mQuietTimeStarts.setDefaultValue(K9.getQuietTimeStarts());
         mQuietTimeStarts.setSummary(K9.getQuietTimeStarts().toString(formatter));
         mQuietTimeStarts.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             public boolean onPreferenceChange(Preference preference, Object newValue) {
-                final String time = (String) newValue;
-                mQuietTimeStarts.setSummary(time);
+                final DateTime time = (DateTime) newValue;
+                mQuietTimeEnds.setSummary(formatter.print(time));
                 return false;
             }
         });
@@ -273,8 +270,8 @@ public class GlobalPreferences extends SmilePreferenceFragment {
         mQuietTimeEnds.setDefaultValue(K9.getQuietTimeEnds());
         mQuietTimeEnds.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             public boolean onPreferenceChange(Preference preference, Object newValue) {
-                final String time = (String) newValue;
-                mQuietTimeEnds.setSummary(time);
+                final DateTime time = (DateTime) newValue;
+                mQuietTimeEnds.setSummary(formatter.print(time));
                 return false;
             }
         });
@@ -381,8 +378,8 @@ public class GlobalPreferences extends SmilePreferenceFragment {
         K9.setAutofitWidth(true);
         K9.setWrapFolderNames(true);
 
-        K9.setRemindMeTime(RemindMe.RemindMeInterval.EVENING, remindme_evening.getTime());
-        K9.setRemindMeTime(RemindMe.RemindMeInterval.TOMORROW, remindme_tomorrow.getTime());
+        K9.setRemindMeTime(RemindMe.RemindMeInterval.EVENING, remindme_evening.getPeriod());
+        K9.setRemindMeTime(RemindMe.RemindMeInterval.TOMORROW, remindme_tomorrow.getPeriod());
 
         K9.setQuietTimeEnabled(mQuietTimeEnabled.isChecked());
         K9.setNotificationDuringQuietTimeEnabled(!mDisableNotificationDuringQuietTime.isChecked());
@@ -396,12 +393,12 @@ public class GlobalPreferences extends SmilePreferenceFragment {
 
         if (mLockScreenNotificationVisibility != null) {
             K9.setLockScreenNotificationVisibility(
-                    K9.LockScreenNotificationVisibility.valueOf(mLockScreenNotificationVisibility.getValue()));
+                    LockScreenNotificationVisibility.valueOf(mLockScreenNotificationVisibility.getValue()));
         }
 
         K9.setSplitViewMode(SplitViewMode.valueOf(mSplitViewMode.getValue()));
         K9.setAttachmentDefaultPath(mAttachmentPathPreference.getSummary().toString());
-        boolean needsRefresh = K9.setBackgroundOps(K9.BACKGROUND_OPS.WHEN_CHECKED_AUTO_SYNC);
+        boolean needsRefresh = K9.setBackgroundOps(BACKGROUND_OPS.WHEN_CHECKED_AUTO_SYNC);
 
         if (!K9.DEBUG && mDebugLogging.isChecked()) {
             Toast.makeText(mContext, R.string.debug_logging_enabled, Toast.LENGTH_LONG).show();

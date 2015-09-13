@@ -10,7 +10,7 @@ import android.widget.Toast;
 import com.fsck.k9.Account;
 import com.fsck.k9.Account.FolderMode;
 import com.fsck.k9.K9;
-import com.fsck.k9.K9.BACKGROUND_OPS;
+import com.fsck.k9.preferences.BACKGROUND_OPS;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.remotecontrol.K9RemoteControl;
 

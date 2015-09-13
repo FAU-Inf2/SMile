@@ -18,6 +18,7 @@ import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.helper.Utility;
 import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mail.Pusher;
+import com.fsck.k9.preferences.BACKGROUND_OPS;
 
 import java.util.Collection;
 import java.util.Date;
@@ -195,7 +196,7 @@ public class MailService extends CoreService {
     }
 
     private boolean isBackground() {
-        K9.BACKGROUND_OPS bOps = K9.getBackgroundOps();
+        BACKGROUND_OPS bOps = K9.getBackgroundOps();
         boolean autoSync = ContentResolver.getMasterSyncAutomatically();
 
         switch (bOps) {

@@ -2,18 +2,22 @@ package com.fsck.k9.preferences;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.preference.DialogPreference;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.NumberPicker;
 import android.widget.Spinner;
 
-import java.sql.Time;
 import java.util.ArrayList;
 
 import de.fau.cs.mad.smile.android.R;
@@ -25,7 +29,6 @@ public class TimeSpanPreference extends DialogPreference {
     private TimeUnit mTimeUnit;
     private NumberPicker numberPicker;
     private Spinner timeUnitSpinner;
-
 
     public TimeSpanPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -40,6 +43,8 @@ public class TimeSpanPreference extends DialogPreference {
     @Override
     protected void onBindDialogView(View view) {
         super.onBindDialogView(view);
+        final Context context = getContext();
+
         numberPicker = (NumberPicker) view.findViewById(R.id.pref_number_picker);
         timeUnitSpinner = (Spinner) view.findViewById(R.id.pref_timeunit_spinner);
 
@@ -47,7 +52,7 @@ public class TimeSpanPreference extends DialogPreference {
         timeUnits.add(TimeUnit.MINUTE);
         timeUnits.add(TimeUnit.HOUR);
         timeUnits.add(TimeUnit.DAY);
-        ArrayAdapter<TimeUnit> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, timeUnits);
+        ArrayAdapter<TimeUnit> adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, timeUnits);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         timeUnitSpinner.setAdapter(adapter);
         timeUnitSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -68,6 +73,25 @@ public class TimeSpanPreference extends DialogPreference {
         populateNumberPicker();
         timeUnitSpinner.setSelection(timeUnits.indexOf(mTimeUnit));
         timeUnitSpinner.invalidate();
+    }
+
+    @Override
+    protected void onBindView(View view) {
+        super.onBindView(view);
+        colorizeIcon();
+    }
+
+    private void colorizeIcon() {
+        final Context context = getContext();
+        final Drawable icon = getIcon();
+
+        if(icon != null) {
+            TypedValue typedValue = new TypedValue();
+            Resources.Theme theme = context.getTheme();
+            theme.resolveAttribute(R.attr.color, typedValue, true);
+            int color = Color.BLUE;
+            icon.setColorFilter(color, PorterDuff.Mode.SRC_IN);
+        }
     }
 
     private void populateNumberPicker() {

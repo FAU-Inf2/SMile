@@ -5,11 +5,16 @@
 package com.fsck.k9.preferences;
 
 import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.preference.DialogPreference;
 import android.support.annotation.NonNull;
 import android.text.format.DateFormat;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.TimePicker;
 
@@ -21,6 +26,8 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 import java.util.Locale;
+
+import de.fau.cs.mad.smile.android.R;
 
 /**
  * A preference type that allows a user to choose a time
@@ -81,6 +88,25 @@ public class TimePickerPreference extends DialogPreference implements
         tp.setOnTimeChangedListener(this);
 
         return tp;
+    }
+
+    private void colorizeIcon() {
+        final Context context = getContext();
+        final Drawable icon = getIcon();
+
+        if(icon != null) {
+            TypedValue typedValue = new TypedValue();
+            Resources.Theme theme = context.getTheme();
+            theme.resolveAttribute(R.attr.color, typedValue, true);
+            int color = Color.BLUE;
+            icon.setColorFilter(color, PorterDuff.Mode.SRC_IN);
+        }
+    }
+
+    @Override
+    protected void onBindView(View view) {
+        super.onBindView(view);
+        colorizeIcon();
     }
 
     /**

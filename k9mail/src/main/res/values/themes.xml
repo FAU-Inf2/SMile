@@ -6,6 +6,7 @@
     </style>
 
     <style name="Theme.K9.Light.Base" parent="@style/Theme.AppCompat.Light.NoActionBar">
+        <item name="android:color">@color/purple</item>
         <item name="iconFolder">@drawable/folder_light</item>
         <item name="iconListItemMenu">@drawable/dropdown_ic_arrow_normal_holo_light</item>
         <item name="iconMenuInfoDetails">@android:drawable/ic_menu_info_details</item>

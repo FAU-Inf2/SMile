@@ -22,7 +22,7 @@
         android:id="@+id/compose"
         android:alphabeticShortcut="c"
         android:icon="?attr/iconActionCompose"
-        app:showAsAction="always"
+        app:showAsAction="ifRoom"
         android:title="@string/compose_action"/>
     <item
         android:icon="?attr/iconFolder"

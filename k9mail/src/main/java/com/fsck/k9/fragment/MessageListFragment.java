@@ -2872,6 +2872,17 @@ public class MessageListFragment extends Fragment
         private MenuItem mUnflag;
 
         @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            MenuInflater inflater = mode.getMenuInflater();
+            inflater.inflate(R.menu.message_list_context, menu);
+
+            // check capabilities
+            setContextCapabilities(mAccount, menu);
+
+            return true;
+        }
+
+        @Override
         public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
             mSelectAll = menu.findItem(R.id.select_all);
             mMarkAsRead = menu.findItem(R.id.mark_as_read);
@@ -2898,111 +2909,6 @@ public class MessageListFragment extends Fragment
 
             }
             return true;
-        }
-
-        /**
-         * Get the set of account UUIDs for the selected messages.
-         */
-        private Set<String> getAccountUuidsForSelected() {
-            int maxAccounts = mAccountUuids.length;
-            Set<String> accountUuids = new HashSet<String>(maxAccounts);
-
-            for (int position = 0, end = mAdapter.getCount(); position < end; position++) {
-                Cursor cursor = (Cursor) mAdapter.getItem(position);
-                long uniqueId = cursor.getLong(mUniqueIdColumn);
-
-                if (mSelected.contains(uniqueId)) {
-                    String accountUuid = cursor.getString(ACCOUNT_UUID_COLUMN);
-                    accountUuids.add(accountUuid);
-
-                    if (accountUuids.size() == mAccountUuids.length) {
-                        break;
-                    }
-                }
-            }
-
-            return accountUuids;
-        }
-
-        @Override
-        public void onDestroyActionMode(ActionMode mode) {
-            mActionMode = null;
-            mSelectAll = null;
-            mMarkAsRead = null;
-            mMarkAsUnread = null;
-            mFlag = null;
-            mUnflag = null;
-            setSelectionState(false);
-        }
-
-        @Override
-        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-            MenuInflater inflater = mode.getMenuInflater();
-            inflater.inflate(R.menu.message_list_context, menu);
-
-            // check capabilities
-            setContextCapabilities(mAccount, menu);
-
-            return true;
-        }
-
-        /**
-         * Disables menu options not supported by the account type or current "search view".
-         *
-         * @param account The account to query for its capabilities.
-         * @param menu    The menu to adapt.
-         */
-        private void setContextCapabilities(Account account, Menu menu) {
-            if (!mSingleAccountMode) {
-                // We don't support cross-account copy/move operations right now
-                menu.findItem(R.id.move).setVisible(false);
-                menu.findItem(R.id.copy).setVisible(false);
-
-                //TODO: we could support the archive and spam operations if all selected messages
-                // belong to non-POP3 accounts
-                menu.findItem(R.id.archive).setVisible(false);
-                menu.findItem(R.id.spam).setVisible(false);
-
-            } else {
-                // hide unsupported
-                if (!mController.isCopyCapable(account)) {
-                    menu.findItem(R.id.copy).setVisible(false);
-                }
-
-                if (!mController.isMoveCapable(account)) {
-                    menu.findItem(R.id.move).setVisible(false);
-                    menu.findItem(R.id.archive).setVisible(false);
-                    menu.findItem(R.id.spam).setVisible(false);
-                }
-
-                if (!account.hasArchiveFolder()) {
-                    menu.findItem(R.id.archive).setVisible(false);
-                }
-
-                if (!account.hasSpamFolder()) {
-                    menu.findItem(R.id.spam).setVisible(false);
-                }
-            }
-        }
-
-        public void showSelectAll(boolean show) {
-            if (mActionMode != null) {
-                mSelectAll.setVisible(show);
-            }
-        }
-
-        public void showMarkAsRead(boolean show) {
-            if (mActionMode != null) {
-                mMarkAsRead.setVisible(show);
-                mMarkAsUnread.setVisible(!show);
-            }
-        }
-
-        public void showFlag(boolean show) {
-            if (mActionMode != null) {
-                mFlag.setVisible(show);
-                mUnflag.setVisible(!show);
-            }
         }
 
         @Override
@@ -3069,6 +2975,100 @@ public class MessageListFragment extends Fragment
             }
 
             return true;
+        }
+
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+            mActionMode = null;
+            mSelectAll = null;
+            mMarkAsRead = null;
+            mMarkAsUnread = null;
+            mFlag = null;
+            mUnflag = null;
+            setSelectionState(false);
+        }
+
+        /**
+         * Get the set of account UUIDs for the selected messages.
+         */
+        private Set<String> getAccountUuidsForSelected() {
+            int maxAccounts = mAccountUuids.length;
+            Set<String> accountUuids = new HashSet<String>(maxAccounts);
+
+            for (int position = 0, end = mAdapter.getCount(); position < end; position++) {
+                Cursor cursor = (Cursor) mAdapter.getItem(position);
+                long uniqueId = cursor.getLong(mUniqueIdColumn);
+
+                if (mSelected.contains(uniqueId)) {
+                    String accountUuid = cursor.getString(ACCOUNT_UUID_COLUMN);
+                    accountUuids.add(accountUuid);
+
+                    if (accountUuids.size() == mAccountUuids.length) {
+                        break;
+                    }
+                }
+            }
+
+            return accountUuids;
+        }
+
+        /**
+         * Disables menu options not supported by the account type or current "search view".
+         *
+         * @param account The account to query for its capabilities.
+         * @param menu    The menu to adapt.
+         */
+        private void setContextCapabilities(Account account, Menu menu) {
+            if (!mSingleAccountMode) {
+                // We don't support cross-account copy/move operations right now
+                menu.findItem(R.id.move).setVisible(false);
+                menu.findItem(R.id.copy).setVisible(false);
+
+                //TODO: we could support the archive and spam operations if all selected messages
+                // belong to non-POP3 accounts
+                menu.findItem(R.id.archive).setVisible(false);
+                menu.findItem(R.id.spam).setVisible(false);
+
+            } else {
+                // hide unsupported
+                if (!mController.isCopyCapable(account)) {
+                    menu.findItem(R.id.copy).setVisible(false);
+                }
+
+                if (!mController.isMoveCapable(account)) {
+                    menu.findItem(R.id.move).setVisible(false);
+                    menu.findItem(R.id.archive).setVisible(false);
+                    menu.findItem(R.id.spam).setVisible(false);
+                }
+
+                if (!account.hasArchiveFolder()) {
+                    menu.findItem(R.id.archive).setVisible(false);
+                }
+
+                if (!account.hasSpamFolder()) {
+                    menu.findItem(R.id.spam).setVisible(false);
+                }
+            }
+        }
+
+        public void showSelectAll(boolean show) {
+            if (mActionMode != null) {
+                mSelectAll.setVisible(show);
+            }
+        }
+
+        public void showMarkAsRead(boolean show) {
+            if (mActionMode != null) {
+                mMarkAsRead.setVisible(show);
+                mMarkAsUnread.setVisible(!show);
+            }
+        }
+
+        public void showFlag(boolean show) {
+            if (mActionMode != null) {
+                mFlag.setVisible(show);
+                mUnflag.setVisible(!show);
+            }
         }
     }
 }

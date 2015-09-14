@@ -955,10 +955,10 @@ public class MessageList extends K9Activity
                 mMessageListFragment.changeSort(SortType.SORT_ATTACHMENT);
                 return true;
             }
-            case R.id.select_all: {
+            /*case R.id.select_all: {
                 mMessageListFragment.selectAll();
                 return true;
-            }
+            }*/
             case R.id.settings: {
                 onEditPrefs();
                 return true;
@@ -1230,7 +1230,7 @@ public class MessageList extends K9Activity
                 !mMessageListFragment.isInitialized()) {
             menu.findItem(R.id.check_mail).setVisible(false);
             menu.findItem(R.id.set_sort).setVisible(false);
-            menu.findItem(R.id.select_all).setVisible(false);
+            //menu.findItem(R.id.select_all).setVisible(false);
             menu.findItem(R.id.send_messages).setVisible(false);
             menu.findItem(R.id.expunge).setVisible(false);
             menu.findItem(R.id.mark_all_as_read).setVisible(false);
@@ -1238,7 +1238,7 @@ public class MessageList extends K9Activity
             //menu.findItem(R.id.goto_sms_like_view).setVisible(false);
         } else {
             menu.findItem(R.id.set_sort).setVisible(true);
-            menu.findItem(R.id.select_all).setVisible(true);
+            //menu.findItem(R.id.select_all).setVisible(true);
             menu.findItem(R.id.compose).setVisible(true);
             menu.findItem(R.id.mark_all_as_read).setVisible(
                     mMessageListFragment.isMarkAllAsReadSupported());

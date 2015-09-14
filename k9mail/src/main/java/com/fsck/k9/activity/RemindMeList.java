@@ -215,12 +215,14 @@ public class RemindMeList extends SmileActivity
     }
 
     private Date getDelay(RemindMe.RemindMeInterval interval) {
-        DateTime delay = DateTime.now();
+        DateTime delay = DateTime.now().withTimeAtStartOfDay();
         Period offset = K9.getRemindMeTime(interval);
+        delay = delay.plus(offset);
+        /*
         delay = delay.plusMonths(offset.getMonths());
         delay = delay.plusWeeks(offset.getWeeks());
         delay = delay.withHourOfDay(offset.getHours());
-        delay = delay.withMinuteOfHour(offset.getMinutes());
+        delay = delay.withMinuteOfHour(offset.getMinutes());*/
         return delay.toDate();
     }
 

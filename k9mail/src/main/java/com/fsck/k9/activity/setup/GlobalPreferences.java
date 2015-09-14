@@ -123,6 +123,8 @@ public class GlobalPreferences extends SmilePreferenceFragment {
     private TimeSpanPreference remindme_later;
     private TimePickerPreference remindme_evening;
     private TimePickerPreference remindme_tomorrow;
+    private TimePickerPreference remindme_next_week;
+    private TimePickerPreference remindme_next_month;
 
     private Context mContext;
 
@@ -239,6 +241,10 @@ public class GlobalPreferences extends SmilePreferenceFragment {
         remindme_evening.setDefaultValue(K9.getRemindMeTime(RemindMe.RemindMeInterval.EVENING));
         remindme_tomorrow = (TimePickerPreference)findPreference("remindme_time_tomorrow");
         remindme_tomorrow.setDefaultValue(K9.getRemindMeTime(RemindMe.RemindMeInterval.TOMORROW));
+        remindme_next_week = (TimePickerPreference)findPreference("remindme_time_next_week");
+        remindme_next_week.setDefaultValue(K9.getRemindMeTime(RemindMe.RemindMeInterval.NEXT_WEEK));
+        remindme_next_month = (TimePickerPreference)findPreference("remindme_time_next_month");
+        remindme_next_month.setDefaultValue(K9.getRemindMeTime(RemindMe.RemindMeInterval.NEXT_MONTH));
 
         mFixedWidth = (SwitchPreference) findPreference(PREFERENCE_MESSAGEVIEW_FIXEDWIDTH);
         mFixedWidth.setChecked(K9.messageViewFixedWidthFont());
@@ -378,8 +384,11 @@ public class GlobalPreferences extends SmilePreferenceFragment {
         K9.setAutofitWidth(true);
         K9.setWrapFolderNames(true);
 
+        K9.setRemindMeTime(RemindMe.RemindMeInterval.LATER, remindme_later.getPeriod());
         K9.setRemindMeTime(RemindMe.RemindMeInterval.EVENING, remindme_evening.getPeriod());
         K9.setRemindMeTime(RemindMe.RemindMeInterval.TOMORROW, remindme_tomorrow.getPeriod());
+        K9.setRemindMeTime(RemindMe.RemindMeInterval.NEXT_WEEK, remindme_next_week.getPeriod());
+        K9.setRemindMeTime(RemindMe.RemindMeInterval.NEXT_MONTH, remindme_next_month.getPeriod());
 
         K9.setQuietTimeEnabled(mQuietTimeEnabled.isChecked());
         K9.setNotificationDuringQuietTimeEnabled(!mDisableNotificationDuringQuietTime.isChecked());

@@ -18,6 +18,8 @@ import android.widget.ArrayAdapter;
 import android.widget.NumberPicker;
 import android.widget.Spinner;
 
+import org.joda.time.Period;
+
 import java.util.ArrayList;
 
 import de.fau.cs.mad.smile.android.R;
@@ -37,7 +39,6 @@ public class TimeSpanPreference extends DialogPreference {
         setPositiveButtonText(android.R.string.ok);
         setNegativeButtonText(android.R.string.cancel);
         mTimeUnit = TimeUnit.MINUTE;
-
     }
 
     @Override
@@ -194,6 +195,18 @@ public class TimeSpanPreference extends DialogPreference {
         }
 
         mTimeSpan = myState.timeSpan;
+    }
+
+    public Period getPeriod() {
+        if(mTimeUnit == TimeUnit.MINUTE) {
+            return Period.minutes(mTimeSpan);
+        } else if (mTimeUnit == TimeUnit.HOUR) {
+            return Period.hours(mTimeSpan);
+        } else if (mTimeUnit == TimeUnit.DAY) {
+            return Period.days(mTimeSpan);
+        }
+
+        return null;
     }
 
     enum TimeUnit {

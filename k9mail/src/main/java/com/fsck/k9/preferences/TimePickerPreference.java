@@ -9,16 +9,14 @@ import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import android.preference.DialogPreference;
 import android.support.annotation.NonNull;
+import android.support.v7.preference.DialogPreference;
+import android.support.v7.preference.PreferenceDialogFragmentCompat;
 import android.text.format.DateFormat;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.TimePicker;
-
-import com.fsck.k9.K9;
 
 import org.joda.time.DateTime;
 import org.joda.time.Period;
@@ -32,14 +30,12 @@ import de.fau.cs.mad.smile.android.R;
 /**
  * A preference type that allows a user to choose a time
  */
-public class TimePickerPreference extends DialogPreference implements
-    TimePicker.OnTimeChangedListener {
+public class TimePickerPreference extends DialogPreference {
 
     /**
      * The default value for this preference
      */
     private long defaultValue;
-    private DateTime originalValue;
 
     /**
      * @param context
@@ -47,47 +43,7 @@ public class TimePickerPreference extends DialogPreference implements
      */
     public TimePickerPreference(final Context context, final AttributeSet attrs) {
         super(context, attrs);
-        initialize();
-    }
-
-    /**
-     * @param context
-     * @param attrs
-     * @param defStyle
-     */
-    public TimePickerPreference(final Context context, final AttributeSet attrs,
-                                final int defStyle) {
-        super(context, attrs, defStyle);
-        initialize();
-    }
-
-    /**
-     * Initialize this preference
-     */
-    private void initialize() {
         setPersistent(true);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see android.preference.DialogPreference#onCreateDialogView()
-     */
-    @Override
-    protected View onCreateDialogView() {
-        TimePicker tp = new TimePicker(getContext());
-        tp.setIs24HourView(DateFormat.is24HourFormat(getContext()));
-        originalValue = getTime();
-        if(originalValue != null) {
-            final int hour = originalValue.getHourOfDay();
-            final int minute = originalValue.getMinuteOfHour();
-            tp.setCurrentHour(hour);
-            tp.setCurrentMinute(minute);
-        }
-
-        tp.setOnTimeChangedListener(this);
-
-        return tp;
     }
 
     private void colorizeIcon() {
@@ -101,36 +57,6 @@ public class TimePickerPreference extends DialogPreference implements
             int color = Color.BLUE;
             icon.setColorFilter(color, PorterDuff.Mode.SRC_IN);
         }
-    }
-
-    @Override
-    protected void onBindView(View view) {
-        super.onBindView(view);
-        colorizeIcon();
-    }
-
-    /**
-     * @see
-     * android.widget.TimePicker.OnTimeChangedListener#onTimeChanged(android.widget.TimePicker, int, int)
-     */
-    @Override
-    public void onTimeChanged(final TimePicker view, final int hour, final int minute) {
-        DateTime newDate = getTime();
-        newDate = newDate.withHourOfDay(hour).withMinuteOfHour(minute);
-        persistTime(newDate);
-    }
-
-    /**
-     * If not a positive result, restore the original value
-     * before going to super.onDialogClosed(positiveResult).
-     */
-    @Override
-    protected void onDialogClosed(boolean positiveResult) {
-        if (!positiveResult) {
-            persistTime(originalValue);
-        }
-
-        super.onDialogClosed(positiveResult);
     }
 
     /**
@@ -171,9 +97,8 @@ public class TimePickerPreference extends DialogPreference implements
         return DateTimeFormat.forPattern("H:m").withLocale(Locale.US);
     }
 
-    private void persistTime(DateTime time) {
+    public void setTime(DateTime time) {
         persistLong(time.getMillis());
-        callChangeListener(time);
     }
 }
 

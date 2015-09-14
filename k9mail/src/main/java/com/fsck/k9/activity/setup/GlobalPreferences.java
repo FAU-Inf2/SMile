@@ -7,12 +7,11 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.ListPreference;
-import android.preference.Preference;
-import android.preference.Preference.OnPreferenceClickListener;
-import android.preference.PreferenceCategory;
-import android.preference.PreferenceScreen;
-import android.preference.SwitchPreference;
+import android.support.v7.preference.ListPreference;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceCategory;
+import android.support.v7.preference.PreferenceScreen;
+import android.support.v7.preference.SwitchPreferenceCompat;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
@@ -99,24 +98,24 @@ public class GlobalPreferences extends SmilePreferenceFragment {
     private ListPreference mLanguage;
     private ListPreference mTheme;
     private CheckBoxListPreference mVolumeNavigation;
-    private SwitchPreference mStartIntegratedInbox;
+    private SwitchPreferenceCompat mStartIntegratedInbox;
     private ListPreference mNotificationHideSubject;
     private ListPreference mPreviewLines;
-    private SwitchPreference mShowCorrespondentNames;
-    private SwitchPreference mChangeContactNameColor;
-    private SwitchPreference mFixedWidth;
-    private SwitchPreference mReturnToList;
-    private SwitchPreference mDebugLogging;
+    private SwitchPreferenceCompat mShowCorrespondentNames;
+    private SwitchPreferenceCompat mChangeContactNameColor;
+    private SwitchPreferenceCompat mFixedWidth;
+    private SwitchPreferenceCompat mReturnToList;
+    private SwitchPreferenceCompat mDebugLogging;
 
-    private SwitchPreference mQuietTimeEnabled;
-    private SwitchPreference mDisableNotificationDuringQuietTime;
+    private SwitchPreferenceCompat mQuietTimeEnabled;
+    private SwitchPreferenceCompat mDisableNotificationDuringQuietTime;
     private com.fsck.k9.preferences.TimePickerPreference mQuietTimeStarts;
     private com.fsck.k9.preferences.TimePickerPreference mQuietTimeEnds;
     private ListPreference mNotificationQuickDelete;
     private ListPreference mLockScreenNotificationVisibility;
     private Preference mAttachmentPathPreference;
 
-    private SwitchPreference mThreadedView;
+    private SwitchPreferenceCompat mThreadedView;
     private ListPreference mSplitViewMode;
     private GlobalPreferencesCallback callback;
 
@@ -198,7 +197,7 @@ public class GlobalPreferences extends SmilePreferenceFragment {
         mVolumeNavigation.setItems(new CharSequence[]{getString(R.string.volume_navigation_message), getString(R.string.volume_navigation_list)});
         mVolumeNavigation.setCheckedItems(new boolean[]{K9.useVolumeKeysForNavigationEnabled(), K9.useVolumeKeysForListNavigationEnabled()});
 
-        mStartIntegratedInbox = (SwitchPreference) findPreference(PREFERENCE_START_INTEGRATED_INBOX);
+        mStartIntegratedInbox = (SwitchPreferenceCompat) findPreference(PREFERENCE_START_INTEGRATED_INBOX);
         mStartIntegratedInbox.setChecked(K9.startIntegratedInbox());
 
         mNotificationHideSubject = setupListPreference(PREFERENCE_NOTIFICATION_HIDE_SUBJECT,
@@ -207,13 +206,13 @@ public class GlobalPreferences extends SmilePreferenceFragment {
         mPreviewLines = setupListPreference(PREFERENCE_MESSAGELIST_PREVIEW_LINES,
                 Integer.toString(K9.messageListPreviewLines()));
 
-        mShowCorrespondentNames = (SwitchPreference) findPreference(PREFERENCE_MESSAGELIST_SHOW_CORRESPONDENT_NAMES);
+        mShowCorrespondentNames = (SwitchPreferenceCompat) findPreference(PREFERENCE_MESSAGELIST_SHOW_CORRESPONDENT_NAMES);
         mShowCorrespondentNames.setChecked(K9.showCorrespondentNames());
 
-        mChangeContactNameColor = (SwitchPreference) findPreference(PREFERENCE_MESSAGELIST_CONTACT_NAME_COLOR);
+        mChangeContactNameColor = (SwitchPreferenceCompat) findPreference(PREFERENCE_MESSAGELIST_CONTACT_NAME_COLOR);
         mChangeContactNameColor.setChecked(K9.changeContactNameColor());
 
-        mThreadedView = (SwitchPreference) findPreference(PREFERENCE_THREADED_VIEW);
+        mThreadedView = (SwitchPreferenceCompat) findPreference(PREFERENCE_THREADED_VIEW);
         mThreadedView.setChecked(K9.isThreadedViewEnabled());
 
         if (K9.changeContactNameColor()) {
@@ -246,16 +245,16 @@ public class GlobalPreferences extends SmilePreferenceFragment {
         remindme_next_month = (TimePickerPreference)findPreference("remindme_time_next_month");
         remindme_next_month.setDefaultValue(K9.getRemindMeTime(RemindMe.RemindMeInterval.NEXT_MONTH));
 
-        mFixedWidth = (SwitchPreference) findPreference(PREFERENCE_MESSAGEVIEW_FIXEDWIDTH);
+        mFixedWidth = (SwitchPreferenceCompat) findPreference(PREFERENCE_MESSAGEVIEW_FIXEDWIDTH);
         mFixedWidth.setChecked(K9.messageViewFixedWidthFont());
 
-        mReturnToList = (SwitchPreference) findPreference(PREFERENCE_MESSAGEVIEW_RETURN_TO_LIST);
+        mReturnToList = (SwitchPreferenceCompat) findPreference(PREFERENCE_MESSAGEVIEW_RETURN_TO_LIST);
         mReturnToList.setChecked(K9.messageViewReturnToList());
 
-        mQuietTimeEnabled = (SwitchPreference) findPreference(PREFERENCE_QUIET_TIME_ENABLED);
+        mQuietTimeEnabled = (SwitchPreferenceCompat) findPreference(PREFERENCE_QUIET_TIME_ENABLED);
         mQuietTimeEnabled.setChecked(K9.getQuietTimeEnabled());
 
-        mDisableNotificationDuringQuietTime = (SwitchPreference) findPreference(
+        mDisableNotificationDuringQuietTime = (SwitchPreferenceCompat) findPreference(
                 PREFERENCE_DISABLE_NOTIFICATION_DURING_QUIET_TIME);
         mDisableNotificationDuringQuietTime.setChecked(!K9.isNotificationDuringQuietTimeEnabled());
 
@@ -298,13 +297,13 @@ public class GlobalPreferences extends SmilePreferenceFragment {
             mLockScreenNotificationVisibility = null;
         }
 
-        mDebugLogging = (SwitchPreference) findPreference(PREFERENCE_DEBUG_LOGGING);
+        mDebugLogging = (SwitchPreferenceCompat) findPreference(PREFERENCE_DEBUG_LOGGING);
         mDebugLogging.setChecked(K9.DEBUG);
 
         mAttachmentPathPreference = findPreference(PREFERENCE_ATTACHMENT_DEF_PATH);
         mAttachmentPathPreference.setSummary(K9.getAttachmentDefaultPath());
         mAttachmentPathPreference
-                .setOnPreferenceClickListener(new OnPreferenceClickListener() {
+                .setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                     FileBrowserFailOverCallback callback = new FileBrowserFailOverCallback() {
 
                         @Override
@@ -463,7 +462,7 @@ public class GlobalPreferences extends SmilePreferenceFragment {
         this.callback = callback;
     }
 
-    private class OnAccountPreferenceClickListener implements OnPreferenceClickListener {
+    private class OnAccountPreferenceClickListener implements Preference.OnPreferenceClickListener {
         @Override
         public boolean onPreferenceClick(Preference preference) {
             AccountPreference accountPreference = (AccountPreference)preference;

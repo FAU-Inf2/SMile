@@ -1,21 +1,12 @@
 package com.fsck.k9.preferences;
 
-import android.app.AlertDialog.Builder;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.preference.DialogPreference;
 import android.util.AttributeSet;
 
-public class CheckBoxListPreference extends DialogPreference {
+public class CheckBoxListPreference extends android.support.v7.preference.DialogPreference {
 
     private CharSequence[] mItems;
-
     private boolean[] mCheckedItems;
-
-    /**
-     * checkboxes state when the dialog is displayed
-     */
-    private boolean[] mPendingItems;
 
     /**
      * @param context
@@ -34,32 +25,12 @@ public class CheckBoxListPreference extends DialogPreference {
         super(context, attrs);
     }
 
-    @Override
-    protected void onPrepareDialogBuilder(final Builder builder) {
-        mPendingItems = new boolean[mItems.length];
-
-        System.arraycopy(mCheckedItems, 0, mPendingItems, 0, mCheckedItems.length);
-
-        builder.setMultiChoiceItems(mItems, mPendingItems,
-        new DialogInterface.OnMultiChoiceClickListener() {
-            @Override
-            public void onClick(final DialogInterface dialog, final int which,
-            final boolean isChecked) {
-                mPendingItems[which] = isChecked;
-            }
-        });
-    }
-
-    @Override
-    protected void onDialogClosed(boolean positiveResult) {
-        if (positiveResult) {
-            System.arraycopy(mPendingItems, 0, mCheckedItems, 0, mPendingItems.length);
-        }
-        mPendingItems = null;
-    }
-
     public void setItems(final CharSequence[] items) {
         mItems = items;
+    }
+
+    public CharSequence[] getItems() {
+        return mItems;
     }
 
     public void setCheckedItems(final boolean[] items) {
@@ -69,5 +40,4 @@ public class CheckBoxListPreference extends DialogPreference {
     public boolean[] getCheckedItems() {
         return mCheckedItems;
     }
-
 }

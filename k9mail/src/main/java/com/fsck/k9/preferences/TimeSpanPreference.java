@@ -1,7 +1,6 @@
 package com.fsck.k9.preferences;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Color;
@@ -9,7 +8,8 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.preference.DialogPreference;
+import android.support.v7.preference.DialogPreference;
+import android.support.v7.preference.PreferenceViewHolder;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.View;
@@ -27,8 +27,8 @@ import de.fau.cs.mad.smile.android.R;
 public class TimeSpanPreference extends DialogPreference {
 
     private static final int DEFAULT_VALUE = 15;
-    private int mTimeSpan;
-    private TimeUnit mTimeUnit;
+    private int timeSpan;
+    private TimeUnit timeUnit;
     private NumberPicker numberPicker;
     private Spinner timeUnitSpinner;
 
@@ -38,12 +38,12 @@ public class TimeSpanPreference extends DialogPreference {
         setDialogLayoutResource(R.layout.timespan_preference);
         setPositiveButtonText(android.R.string.ok);
         setNegativeButtonText(android.R.string.cancel);
-        mTimeUnit = TimeUnit.MINUTE;
+        timeUnit = TimeUnit.MINUTE;
     }
 
     @Override
-    protected void onBindDialogView(View view) {
-        super.onBindDialogView(view);
+    public void onBindViewHolder(PreferenceViewHolder view) {
+        super.onBindViewHolder(view);
         final Context context = getContext();
 
         numberPicker = (NumberPicker) view.findViewById(R.id.pref_number_picker);
@@ -59,27 +59,21 @@ public class TimeSpanPreference extends DialogPreference {
         timeUnitSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                mTimeUnit = (TimeUnit) parent.getItemAtPosition(position);
+                timeUnit = (TimeUnit) parent.getItemAtPosition(position);
                 populateNumberPicker();
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-                mTimeUnit = TimeUnit.MINUTE;
+                timeUnit = TimeUnit.MINUTE;
             }
         });
 
         numberPicker.setMinValue(1);
 
         populateNumberPicker();
-        timeUnitSpinner.setSelection(timeUnits.indexOf(mTimeUnit));
+        timeUnitSpinner.setSelection(timeUnits.indexOf(timeUnit));
         timeUnitSpinner.invalidate();
-    }
-
-    @Override
-    protected void onBindView(View view) {
-        super.onBindView(view);
-        colorizeIcon();
     }
 
     private void colorizeIcon() {
@@ -96,7 +90,7 @@ public class TimeSpanPreference extends DialogPreference {
     }
 
     private void populateNumberPicker() {
-        switch (mTimeUnit) {
+        switch (timeUnit) {
             case MINUTE:
                 final int maxValue = 360;
                 final int step = 5;
@@ -119,29 +113,7 @@ public class TimeSpanPreference extends DialogPreference {
                 numberPicker.setMaxValue(7);
         }
 
-        numberPicker.setValue(mTimeSpan);
-    }
-
-    @Override
-    public void onClick(DialogInterface dialog, int which) {
-        super.onClick(dialog, which);
-        if (which == DialogInterface.BUTTON_POSITIVE) {
-            mTimeSpan = numberPicker.getValue();
-            mTimeUnit = (TimeUnit) timeUnitSpinner.getSelectedItem();
-        }
-    }
-
-    @Override
-    protected void onDialogClosed(boolean positiveResult) {
-        if (positiveResult) {
-            persistInt(mTimeSpan);
-            persistString(mTimeUnit.toString());
-        }
-    }
-
-    @Override
-    protected void onSetInitialValue(boolean restorePersistedValue, Object defaultValue) {
-        super.onSetInitialValue(restorePersistedValue, defaultValue);
+        numberPicker.setValue(timeSpan);
     }
 
     @Override
@@ -163,8 +135,8 @@ public class TimeSpanPreference extends DialogPreference {
         final SavedState myState = new SavedState(superState);
         // Set the state's value with the class member that holds current
         // setting value
-        myState.timeSpan = mTimeSpan;
-        myState.timeUnit = mTimeUnit.name();
+        myState.timeSpan = timeSpan;
+        myState.timeUnit = timeUnit.name();
 
         return myState;
 
@@ -194,22 +166,40 @@ public class TimeSpanPreference extends DialogPreference {
             }
         }
 
-        mTimeSpan = myState.timeSpan;
+        timeSpan = myState.timeSpan;
+    }
+
+    public void setTimeSpan(int timeSpan) {
+        this.timeSpan = timeSpan;
+        persistInt(timeSpan);
     }
 
     public Period getPeriod() {
-        if(mTimeUnit == TimeUnit.MINUTE) {
-            return Period.minutes(mTimeSpan);
-        } else if (mTimeUnit == TimeUnit.HOUR) {
-            return Period.hours(mTimeSpan);
-        } else if (mTimeUnit == TimeUnit.DAY) {
-            return Period.days(mTimeSpan);
+        if(timeUnit == TimeUnit.MINUTE) {
+            return Period.minutes(timeSpan);
+        } else if (timeUnit == TimeUnit.HOUR) {
+            return Period.hours(timeSpan);
+        } else if (timeUnit == TimeUnit.DAY) {
+            return Period.days(timeSpan);
         }
 
         return null;
     }
 
-    enum TimeUnit {
+    public NumberPicker getNumberPicker() {
+        return numberPicker;
+    }
+
+    public Spinner getTimeUnitSpinner() {
+        return timeUnitSpinner;
+    }
+
+    public void setTimeUnit(TimeUnit timeUnit) {
+        this.timeUnit = timeUnit;
+        persistString(timeUnit.toString());
+    }
+
+    public enum TimeUnit {
         HOUR("hour"),
         MINUTE("minute"),
         DAY("day");

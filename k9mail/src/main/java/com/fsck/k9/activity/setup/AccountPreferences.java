@@ -9,14 +9,13 @@ import android.content.pm.ResolveInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Vibrator;
-import android.preference.SwitchPreference;
-import android.preference.EditTextPreference;
-import android.preference.ListPreference;
-import android.preference.Preference;
-import android.preference.Preference.OnPreferenceChangeListener;
-import android.preference.PreferenceCategory;
-import android.preference.PreferenceScreen;
 import android.preference.RingtonePreference;
+import android.support.v7.preference.EditTextPreference;
+import android.support.v7.preference.ListPreference;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceCategory;
+import android.support.v7.preference.PreferenceScreen;
+import android.support.v7.preference.SwitchPreferenceCompat;
 import android.util.Log;
 
 import com.fsck.k9.Account;
@@ -132,14 +131,14 @@ public class AccountPreferences extends SmilePreferenceFragment {
     private ListPreference mDisplayCount;
     private ListPreference mMessageAge;
     private ListPreference mMessageSize;
-    private SwitchPreference mAccountDefault;
-    private SwitchPreference mAccountNotify;
+    private SwitchPreferenceCompat mAccountDefault;
+    private SwitchPreferenceCompat mAccountNotify;
     private ListPreference mAccountNotifyNewMailMode;
-    private SwitchPreference mAccountNotifySelf;
+    private SwitchPreferenceCompat mAccountNotifySelf;
     private ListPreference mAccountShowPictures;
-    private SwitchPreference mAccountNotifySync;
-    private SwitchPreference mAccountVibrate;
-    private SwitchPreference mAccountLed;
+    private SwitchPreferenceCompat mAccountNotifySync;
+    private SwitchPreferenceCompat mAccountVibrate;
+    private SwitchPreferenceCompat mAccountLed;
     private ListPreference mAccountVibratePattern;
     private ListPreference mAccountVibrateTimes;
     private RingtonePreference mAccountRingtone;
@@ -154,19 +153,19 @@ public class AccountPreferences extends SmilePreferenceFragment {
     private Preference mChipColor;
     private Preference mLedColor;
     private boolean mIncomingChanged = false;
-    private SwitchPreference mNotificationOpensUnread;
+    private SwitchPreferenceCompat mNotificationOpensUnread;
     private ListPreference mMessageFormat;
-    private SwitchPreference mMessageReadReceipt;
+    private SwitchPreferenceCompat mMessageReadReceipt;
     private ListPreference mQuoteStyle;
     private EditTextPreference mAccountQuotePrefix;
-    private SwitchPreference mAccountDefaultQuotedTextShown;
-    private SwitchPreference mSyncRemoteDeletions;
+    private SwitchPreferenceCompat mAccountDefaultQuotedTextShown;
+    private SwitchPreferenceCompat mSyncRemoteDeletions;
     private boolean mHasCrypto = false;
     private OpenPgpAppPreference mCryptoApp;
     private OpenPgpKeyPreference mCryptoKey;
 
     private PreferenceCategory mSearchScreen;
-    private SwitchPreference mCloudSearchEnabled;
+    private SwitchPreferenceCompat mCloudSearchEnabled;
     private ListPreference mRemoteSearchNumResults;
     /*
      * Temporarily removed because search results aren't displayed to the user.
@@ -242,7 +241,7 @@ public class AccountPreferences extends SmilePreferenceFragment {
             }
         });
 
-        mMessageReadReceipt = (SwitchPreference) findPreference(PREFERENCE_MESSAGE_READ_RECEIPT);
+        mMessageReadReceipt = (SwitchPreferenceCompat) findPreference(PREFERENCE_MESSAGE_READ_RECEIPT);
         mMessageReadReceipt.setChecked(mAccount.isMessageReadReceiptAlways());
 
         mAccountQuotePrefix = (EditTextPreference) findPreference(PREFERENCE_QUOTE_PREFIX);
@@ -258,7 +257,7 @@ public class AccountPreferences extends SmilePreferenceFragment {
             }
         });
 
-        mAccountDefaultQuotedTextShown = (SwitchPreference) findPreference(PREFERENCE_DEFAULT_QUOTED_TEXT_SHOWN);
+        mAccountDefaultQuotedTextShown = (SwitchPreferenceCompat) findPreference(PREFERENCE_DEFAULT_QUOTED_TEXT_SHOWN);
         mAccountDefaultQuotedTextShown.setChecked(mAccount.isDefaultQuotedTextShown());
 
         mComposingScreen = (PreferenceScreen) findPreference(PREFERENCE_SCREEN_COMPOSING);
@@ -375,7 +374,7 @@ public class AccountPreferences extends SmilePreferenceFragment {
         }
 
 
-        mSyncRemoteDeletions = (SwitchPreference) findPreference(PREFERENCE_SYNC_REMOTE_DELETIONS);
+        mSyncRemoteDeletions = (SwitchPreferenceCompat) findPreference(PREFERENCE_SYNC_REMOTE_DELETIONS);
         mSyncRemoteDeletions.setChecked(mAccount.syncRemoteDeletions());
 
         mSearchableFolders = (ListPreference) findPreference(PREFERENCE_SEARCHABLE_FOLDERS);
@@ -437,7 +436,7 @@ public class AccountPreferences extends SmilePreferenceFragment {
             }
         });
 
-        mAccountDefault = (SwitchPreference) findPreference(PREFERENCE_DEFAULT);
+        mAccountDefault = (SwitchPreferenceCompat) findPreference(PREFERENCE_DEFAULT);
         mAccountDefault.setChecked(
                 mAccount.equals(Preferences.getPreferences(mContext).getDefaultAccount()));
 
@@ -484,10 +483,10 @@ public class AccountPreferences extends SmilePreferenceFragment {
 
         mSearchScreen = (PreferenceCategory) findPreference(PREFERENCE_SCREEN_SEARCH);
 
-        mCloudSearchEnabled = (SwitchPreference) findPreference(PREFERENCE_CLOUD_SEARCH_ENABLED);
+        mCloudSearchEnabled = (SwitchPreferenceCompat) findPreference(PREFERENCE_CLOUD_SEARCH_ENABLED);
         mRemoteSearchNumResults = (ListPreference) findPreference(PREFERENCE_REMOTE_SEARCH_NUM_RESULTS);
         mRemoteSearchNumResults.setOnPreferenceChangeListener(
-                new OnPreferenceChangeListener() {
+                new Preference.OnPreferenceChangeListener() {
                     public boolean onPreferenceChange(Preference pref, Object newVal) {
                         updateRemoteSearchLimit((String) newVal);
                         return true;
@@ -522,7 +521,7 @@ public class AccountPreferences extends SmilePreferenceFragment {
             mMainScreen.removePreference(mSearchScreen);
         }
 
-        mAccountNotify = (SwitchPreference) findPreference(PREFERENCE_NOTIFY);
+        mAccountNotify = (SwitchPreferenceCompat) findPreference(PREFERENCE_NOTIFY);
         mAccountNotify.setChecked(mAccount.isNotifyNewMail());
 
         mAccountNotifyNewMailMode = (ListPreference) findPreference(PREFERENCE_NOTIFY_NEW_MAIL_MODE);
@@ -538,21 +537,21 @@ public class AccountPreferences extends SmilePreferenceFragment {
             }
         });
 
-        mAccountNotifySelf = (SwitchPreference) findPreference(PREFERENCE_NOTIFY_SELF);
+        mAccountNotifySelf = (SwitchPreferenceCompat) findPreference(PREFERENCE_NOTIFY_SELF);
         mAccountNotifySelf.setChecked(mAccount.isNotifySelfNewMail());
 
-        mAccountNotifySync = (SwitchPreference) findPreference(PREFERENCE_NOTIFY_SYNC);
+        mAccountNotifySync = (SwitchPreferenceCompat) findPreference(PREFERENCE_NOTIFY_SYNC);
         mAccountNotifySync.setChecked(mAccount.isShowOngoing());
 
-        mAccountRingtone = (RingtonePreference) findPreference(PREFERENCE_RINGTONE);
+        /*mAccountRingtone = (RingtonePreference) findPreference(PREFERENCE_RINGTONE);
 
         // XXX: The following two lines act as a workaround for the RingtonePreference
         //      which does not let us set/get the value programmatically
         SharedPreferences prefs = mAccountRingtone.getPreferenceManager().getSharedPreferences();
         String currentRingtone = (!mAccount.getNotificationSetting().shouldRing() ? null : mAccount.getNotificationSetting().getRingtone());
-        prefs.edit().putString(PREFERENCE_RINGTONE, currentRingtone).commit();
+        prefs.edit().putString(PREFERENCE_RINGTONE, currentRingtone).commit();*/
 
-        mAccountVibrate = (SwitchPreference) findPreference(PREFERENCE_VIBRATE);
+        mAccountVibrate = (SwitchPreferenceCompat) findPreference(PREFERENCE_VIBRATE);
         mAccountVibrate.setChecked(mAccount.getNotificationSetting().shouldVibrate());
 
         mAccountVibratePattern = (ListPreference) findPreference(PREFERENCE_VIBRATE_PATTERN);
@@ -583,10 +582,10 @@ public class AccountPreferences extends SmilePreferenceFragment {
             }
         });
 
-        mAccountLed = (SwitchPreference) findPreference(PREFERENCE_NOTIFICATION_LED);
+        mAccountLed = (SwitchPreferenceCompat) findPreference(PREFERENCE_NOTIFICATION_LED);
         mAccountLed.setChecked(mAccount.getNotificationSetting().isLed());
 
-        mNotificationOpensUnread = (SwitchPreference) findPreference(PREFERENCE_NOTIFICATION_OPENS_UNREAD);
+        mNotificationOpensUnread = (SwitchPreferenceCompat) findPreference(PREFERENCE_NOTIFICATION_OPENS_UNREAD);
         mNotificationOpensUnread.setChecked(mAccount.goToUnreadMessageSearch());
 
         new PopulateFolderPrefsTask().execute();
@@ -634,6 +633,7 @@ public class AccountPreferences extends SmilePreferenceFragment {
 
         mHasCrypto = OpenPgpUtils.isAvailable(mContext);
         if (mHasCrypto) {
+            /*
             mCryptoApp = (OpenPgpAppPreference) findPreference(PREFERENCE_CRYPTO_APP);
             mCryptoKey = (OpenPgpKeyPreference) findPreference(PREFERENCE_CRYPTO_KEY);
 
@@ -658,7 +658,7 @@ public class AccountPreferences extends SmilePreferenceFragment {
                     mCryptoKey.setValue(value);
                     return false;
                 }
-            });
+            });*/
         } else {
             final Preference mCryptoApp = findPreference(PREFERENCE_CRYPTO_APP);
             mCryptoApp.setEnabled(false);
@@ -721,7 +721,7 @@ public class AccountPreferences extends SmilePreferenceFragment {
         defaultCryptoProvider = (ListPreference) findPreference("default_crypto");
         if (defaultCryptoProvider != null) {
             defaultCryptoProvider.setValue(mAccount.getDefaultCryptoProvider());
-            defaultCryptoProvider.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+            defaultCryptoProvider.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
                     String value = newValue.toString();
@@ -797,8 +797,8 @@ public class AccountPreferences extends SmilePreferenceFragment {
         mAccount.setLocalStorageProviderId(mLocalStorageProvider.getValue());
 
         if (mHasCrypto) {
-            mAccount.setPgpApp(mCryptoApp.getValue());
-            mAccount.setPgpKey(mCryptoKey.getValue());
+            /*mAccount.setPgpApp(mCryptoApp.getValue());
+            mAccount.setPgpKey(mCryptoKey.getValue());*/
         }
 
         // In webdav account we use the exact folder name also for inbox,
@@ -832,7 +832,7 @@ public class AccountPreferences extends SmilePreferenceFragment {
 
         boolean displayModeChanged = mAccount.setFolderDisplayMode(FolderMode.valueOf(mDisplayMode.getValue()));
 
-        SharedPreferences prefs = mAccountRingtone.getPreferenceManager().getSharedPreferences();
+        /*SharedPreferences prefs = mAccountRingtone.getPreferenceManager().getSharedPreferences();
         String newRingtone = prefs.getString(PREFERENCE_RINGTONE, null);
         if (newRingtone != null) {
             mAccount.getNotificationSetting().setRing(true);
@@ -841,7 +841,7 @@ public class AccountPreferences extends SmilePreferenceFragment {
             if (mAccount.getNotificationSetting().shouldRing()) {
                 mAccount.getNotificationSetting().setRingtone(null);
             }
-        }
+        }*/
 
         mAccount.setShowPictures(ShowPictures.valueOf(mAccountShowPictures.getValue()));
 

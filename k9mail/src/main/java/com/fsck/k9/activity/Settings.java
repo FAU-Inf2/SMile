@@ -1,10 +1,10 @@
 package com.fsck.k9.activity;
 
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -98,7 +98,8 @@ public class Settings extends AppCompatActivity implements GlobalPreferences.Glo
 
     @Override
     public void onBackPressed() {
-        FragmentManager fragmentManager = getFragmentManager();
+        //FragmentManager fragmentManager = getFragmentManager();
+        FragmentManager fragmentManager = getSupportFragmentManager();
         if(fragmentManager.getBackStackEntryCount() > 1) { // TODO: Workaround
             fragmentManager.popBackStack();
         } else {
@@ -108,7 +109,8 @@ public class Settings extends AppCompatActivity implements GlobalPreferences.Glo
     }
 
     private void loadPreference(SmilePreferenceFragment fragment) {
-        FragmentManager fm = getFragmentManager();
+        //FragmentManager fm = getFragmentManager();
+        FragmentManager fm = getSupportFragmentManager();
         FragmentTransaction ft = fm.beginTransaction();
         ft.replace(R.id.content_frame, fragment);
         ft.addToBackStack(null);

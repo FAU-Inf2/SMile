@@ -3,9 +3,9 @@ package com.fsck.k9.activity.setup;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.preference.SwitchPreference;
-import android.preference.ListPreference;
-import android.preference.Preference;
+import android.support.v7.preference.ListPreference;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.SwitchPreferenceCompat;
 import android.util.Log;
 
 import com.fsck.k9.Account;
@@ -38,8 +38,8 @@ public class FolderPreferences extends SmilePreferenceFragment {
 
     private LocalFolder mFolder;
 
-    private SwitchPreference mInTopGroup;
-    private SwitchPreference mIntegrate;
+    private SwitchPreferenceCompat mInTopGroup;
+    private SwitchPreferenceCompat mIntegrate;
     private ListPreference mDisplayClass;
     private ListPreference mSyncClass;
     private ListPreference mPushClass;
@@ -89,9 +89,9 @@ public class FolderPreferences extends SmilePreferenceFragment {
         category.setTitle(displayName);
 
 
-        mInTopGroup = (SwitchPreference)findPreference(PREFERENCE_IN_TOP_GROUP);
+        mInTopGroup = (SwitchPreferenceCompat)findPreference(PREFERENCE_IN_TOP_GROUP);
         mInTopGroup.setChecked(mFolder.isInTopGroup());
-        mIntegrate = (SwitchPreference)findPreference(PREFERENCE_INTEGRATE);
+        mIntegrate = (SwitchPreferenceCompat)findPreference(PREFERENCE_INTEGRATE);
         mIntegrate.setChecked(mFolder.isIntegrate());
 
         mDisplayClass = (ListPreference) findPreference(PREFERENCE_DISPLAY_CLASS);

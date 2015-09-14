@@ -27,9 +27,11 @@ package com.fsck.k9.activity.setup;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.os.Bundle;
+import android.os.Parcel;
 import android.os.Parcelable;
-import android.preference.DialogPreference;
 import android.support.annotation.ArrayRes;
+import android.support.v7.preference.DialogPreference;
+import android.support.v7.preference.PreferenceDialogFragmentCompat;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.SeekBar;
@@ -41,13 +43,9 @@ import de.fau.cs.mad.smile.android.R;
  * @author Jay Weisskopf
  */
 public class SliderPreference extends DialogPreference {
-    private static final String STATE_KEY_SUPER = "super";
-    private static final String STATE_KEY_SEEK_BAR_VALUE = "seek_bar_value";
-
-    protected final static int SEEKBAR_RESOLUTION = 10000;
+    private static final String STATE_KEY_SEEK_BAR_VALUE = "value";
 
     protected float mValue;
-    protected int mSeekBarValue;
     protected CharSequence[] mSummaries;
 
     /**
@@ -56,20 +54,6 @@ public class SliderPreference extends DialogPreference {
      */
     public SliderPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
-        setup(context, attrs);
-    }
-
-    /**
-     * @param context
-     * @param attrs
-     * @param defStyle
-     */
-    public SliderPreference(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
-        setup(context, attrs);
-    }
-
-    private void setup(Context context, AttributeSet attrs) {
         setDialogLayoutResource(R.layout.slider_preference_dialog);
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.SliderPreference);
         try {
@@ -136,60 +120,71 @@ public class SliderPreference extends DialogPreference {
     }
 
     @Override
-    protected View onCreateDialogView() {
-        mSeekBarValue = (int) (mValue * SEEKBAR_RESOLUTION);
-        View view = super.onCreateDialogView();
-        SeekBar seekbar = (SeekBar) view.findViewById(R.id.slider_preference_seekbar);
-        seekbar.setMax(SEEKBAR_RESOLUTION);
-        seekbar.setProgress(mSeekBarValue);
-        seekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-            }
-
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (fromUser) {
-                    SliderPreference.this.mSeekBarValue = progress;
-                    callChangeListener((float) SliderPreference.this.mSeekBarValue / SEEKBAR_RESOLUTION);
-                }
-            }
-        });
-        return view;
-    }
-
-    @Override
-    protected void onDialogClosed(boolean positiveResult) {
-        final float newValue = (float) mSeekBarValue / SEEKBAR_RESOLUTION;
-        if (positiveResult && callChangeListener(newValue)) {
-            setValue(newValue);
-        } else {
-            callChangeListener(mValue);
-        }
-        super.onDialogClosed(positiveResult);
-    }
-
-    @Override
     protected Parcelable onSaveInstanceState() {
-        Parcelable superState = super.onSaveInstanceState();
-        Bundle state = new Bundle();
-        state.putParcelable(STATE_KEY_SUPER, superState);
-        state.putInt(STATE_KEY_SEEK_BAR_VALUE, mSeekBarValue);
+        final Parcelable superState = super.onSaveInstanceState();
+        // Check whether this Preference is persistent (continually saved)
+        if (isPersistent()) {
+            // No need to save instance state since it's persistent,
+            // use superclass state
+            return superState;
+        }
 
-        return state;
+        // Create instance of custom BaseSavedState
+        final SavedState myState = new SavedState(superState);
+        // Set the state's value with the class member that holds current
+        // setting value
+        myState.sliderValue = mValue;
+
+        return myState;
     }
 
     @Override
     protected void onRestoreInstanceState(Parcelable state) {
-        Bundle bundle = (Bundle) state;
-        super.onRestoreInstanceState(bundle.getParcelable(STATE_KEY_SUPER));
-        mSeekBarValue = bundle.getInt(STATE_KEY_SEEK_BAR_VALUE);
+        if (state == null || !state.getClass().equals(SavedState.class)) {
+            // Didn't save the state, so call superclass
+            super.onRestoreInstanceState(state);
+            return;
+        }
 
-        callChangeListener((float) mSeekBarValue / SEEKBAR_RESOLUTION);
+        // Cast state to custom BaseSavedState and pass to superclass
+        SavedState myState = (SavedState) state;
+        super.onRestoreInstanceState(myState.getSuperState());
+        mValue = myState.sliderValue;
+    }
+
+    private static class SavedState extends BaseSavedState {
+        // Standard creator object using an instance of this class
+        public static final Parcelable.Creator<SavedState> CREATOR =
+                new Parcelable.Creator<SavedState>() {
+
+                    public SavedState createFromParcel(Parcel in) {
+                        return new SavedState(in);
+                    }
+
+                    public SavedState[] newArray(int size) {
+                        return new SavedState[size];
+                    }
+                };
+        // Member that holds the setting's value
+        // Change this data type to match the type saved by your Preference
+        float sliderValue;
+
+        public SavedState(Parcelable superState) {
+            super(superState);
+        }
+
+        public SavedState(Parcel source) {
+            super(source);
+            // Get the current preference's value
+            sliderValue = source.readFloat();
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            super.writeToParcel(dest, flags);
+            // Write the preference's value
+            dest.writeFloat(sliderValue);
+        }
     }
 }
+

@@ -3,8 +3,8 @@ package com.fsck.k9.activity.setup;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
-import android.preference.ListPreference;
-import android.preference.Preference;
+import android.support.v7.preference.ListPreference;
+import android.support.v7.preference.Preference;
 
 import com.fsck.k9.FontSizes;
 import com.fsck.k9.K9;
@@ -132,11 +132,7 @@ public class FontSizePreferences extends SmilePreferenceFragment {
                     final SliderPreference slider = (SliderPreference) preference;
                     final Float value = (Float) newValue;
                     slider.setSummary(String.format(summaryFormat, scaleToInt(value)));
-                    slider.setDialogTitle(
-                            String.format(titleFormat, slider.getTitle(), slider.getSummary()));
-                    if (slider.getDialog() != null) {
-                        slider.getDialog().setTitle(slider.getDialogTitle());
-                    }
+                    slider.setDialogTitle(String.format(titleFormat, slider.getTitle(), slider.getSummary()));
                     return true;
                 }
             }

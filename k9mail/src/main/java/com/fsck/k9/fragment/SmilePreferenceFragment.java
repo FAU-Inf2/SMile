@@ -1,11 +1,12 @@
 package com.fsck.k9.fragment;
 
-import android.preference.ListPreference;
-import android.preference.PreferenceFragment;
+import android.os.Bundle;
+import android.support.v7.preference.ListPreference;
+import android.support.v7.preference.PreferenceFragmentCompat;
 
 import com.fsck.k9.activity.K9PreferenceActivity.PreferenceChangeListener;
 
-public class SmilePreferenceFragment extends PreferenceFragment {
+public class SmilePreferenceFragment extends PreferenceFragmentCompat {
 
 
     /**
@@ -22,7 +23,7 @@ public class SmilePreferenceFragment extends PreferenceFragment {
         final ListPreference prefView = (ListPreference) findPreference(key);
         prefView.setValue(value);
         prefView.setSummary(prefView.getEntry());
-        prefView.setOnPreferenceChangeListener(new PreferenceChangeListener(prefView));
+        //prefView.setOnPreferenceChangeListener(new PreferenceChangeListener(prefView));
         return prefView;
     }
 
@@ -45,6 +46,11 @@ public class SmilePreferenceFragment extends PreferenceFragment {
         prefView.setEntryValues(entryValues);
         prefView.setValue(value);
         prefView.setSummary(prefView.getEntry());
-        prefView.setOnPreferenceChangeListener(new PreferenceChangeListener(prefView));
+        //prefView.setOnPreferenceChangeListener(new PreferenceChangeListener(prefView));
+    }
+
+    @Override
+    public void onCreatePreferences(Bundle bundle, String s) {
+
     }
 }

@@ -22,8 +22,9 @@
         <item name="android:textColor">#cccccc</item>
     </style>
 
-    <style name="Widget.K9.Toolbar" parent="Widget.AppCompat.Toolbar">
+    <style name="Widget.K9.Toolbar" parent="Theme.AppCompat.Light">
         <item name="android:background">?attr/colorPrimary</item>
+        <item name="theme">@style/ThemeOverlay.AppCompat.Dark.ActionBar</item>
     </style>
 
     <style name="UnreadWidgetContainer">

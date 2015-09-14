@@ -55,11 +55,14 @@ public class ColorPickerDialog extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         Context context = getActivity();
-        final int color = savedInstanceState.getInt(ARG_COLOR);
-        View view = LayoutInflater.from(context).inflate(R.layout.color_picker_dialog, null);
+        Bundle args = getArguments();
 
+        View view = LayoutInflater.from(context).inflate(R.layout.color_picker_dialog, null);
         mColorPicker = (ColorPicker) view.findViewById(R.id.color_picker);
-        mColorPicker.setColor(color);
+        if(args != null) {
+            final int color = args.getInt(ARG_COLOR);
+            mColorPicker.setColor(color);
+        }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setView(view);

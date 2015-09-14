@@ -9,12 +9,18 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
@@ -27,6 +33,9 @@ import android.widget.Toast;
 import com.fsck.k9.Account;
 import com.fsck.k9.Account.SortType;
 import com.fsck.k9.K9;
+import com.fsck.k9.adapter.DividerItemDecoration;
+import com.fsck.k9.adapter.RecyclerViewAdapter;
+import com.fsck.k9.mail.Message;
 import com.fsck.k9.preferences.SplitViewMode;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.crypto.PgpData;
@@ -149,10 +158,25 @@ public class MessageList extends K9Activity
 
     private StorageManager.StorageListener mStorageListener = new StorageListenerImplementation();
 
+    // Name and email in HeaderView -- TODO: for SMile-UI -> get from resources
+    String mName;
+    String mEmail;
+    //titles and icons for ListView
+    int mIcons[] = {R.drawable.ic_inbox_black_24dp, R.drawable.ic_send_black_24dp,
+            R.drawable.ic_drafts_black_24dp, R.drawable.ic_delete_black_24dp,
+            R.drawable.ic_settings_black_24dp, R.drawable.ic_help_black_24dp};
+    String mTitles[];
+
     private Toolbar toolbar;
     private ActionBar actionBar;
     private TextView mActionBarUnread;
     private Menu mMenu;
+
+    private RecyclerView mRecyclerView;
+    private RecyclerView.Adapter mAdapter;
+    private RecyclerView.LayoutManager mLayoutManager;
+    private DrawerLayout mDrawer;
+    private ActionBarDrawerToggle mDrawerToggle;
 
     private ViewGroup mMessageViewContainer;
     private View mMessageViewPlaceHolder;
@@ -216,6 +240,7 @@ public class MessageList extends K9Activity
         }
 
         initializeActionBar();
+        initializeNavigationDrawer();
 
         // Enable gesture detection for MessageLists
         //setupGestureDetector(this);
@@ -557,6 +582,107 @@ public class MessageList extends K9Activity
         mActionBarProgress = (ProgressBar) toolbar.findViewById(R.id.actionbar_progress);
         mActionButtonIndeterminateProgress =
                 getLayoutInflater().inflate(R.layout.actionbar_indeterminate_progress_actionview, null);
+    }
+
+    private void initializeNavigationDrawer() {
+        mRecyclerView = (RecyclerView) findViewById(R.id.RecyclerView);
+        mRecyclerView.setHasFixedSize(true);
+        mRecyclerView.addItemDecoration(new DividerItemDecoration(getResources()));
+
+        mTitles = new String[6];
+        mTitles[0] = getResources().getString(R.string.special_mailbox_name_inbox);
+        mTitles[1] = getResources().getString(R.string.special_mailbox_name_sent);
+        mTitles[2] = getResources().getString(R.string.special_mailbox_name_archive);
+        mTitles[3] = getResources().getString(R.string.special_mailbox_name_trash);
+        mTitles[4] = getResources().getString(R.string.preferences_title);
+        mTitles[5] = getResources().getString(R.string.app_name);
+
+        if(mAccount != null) { //TODO: initialize mAccount...
+            mName = mAccount.getName();
+            mEmail = mAccount.getEmail();
+        } else {
+            //TODO: just a workaround to display something
+            mName = getString(R.string.app_name);
+            mEmail = getString(R.string.app_name);
+        }
+
+        mAdapter = new RecyclerViewAdapter(mTitles, mIcons, mName, mEmail);
+        mRecyclerView.setAdapter(mAdapter);
+
+        final GestureDetector mGestureDetector = new GestureDetector(MessageList.this,
+                new GestureDetector.SimpleOnGestureListener() {
+                    @Override
+                    public boolean onSingleTapUp(MotionEvent e) {
+                        return true;
+                    }
+                });
+
+        mRecyclerView.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
+            @Override
+            public boolean onInterceptTouchEvent(RecyclerView recyclerView, MotionEvent motionEvent) {
+                View child = recyclerView.findChildViewUnder(motionEvent.getX(), motionEvent.getY());
+
+                if (child != null && mGestureDetector.onTouchEvent(motionEvent)) {
+                    mDrawer.closeDrawers();
+
+                    int position = recyclerView.getChildPosition(child);
+                    String title;
+                    if (position == 0)
+                        return true;
+                    else
+                        title = mTitles[position - 1];
+
+                    //TODO: remove Toasts...
+                    //switch not possible here :-(
+                    if (title.equals(getResources().getString(R.string.special_mailbox_name_inbox))) {
+                        //TODO: open folder
+                        Toast.makeText(MessageList.this, getString(R.string.clicked_on) + title, Toast.LENGTH_SHORT).show();                    } else if (title.equals(getResources().getString(R.string.special_mailbox_name_sent))) {
+                        //TODO: open folder
+                        Toast.makeText(MessageList.this, getString(R.string.clicked_on) + title, Toast.LENGTH_SHORT).show();
+                    } else if (title.equals(getResources().getString(R.string.special_mailbox_name_archive))) {
+                        //TODO: open folder
+                        Toast.makeText(MessageList.this, getString(R.string.clicked_on) + title, Toast.LENGTH_SHORT).show();
+                    } else if (title.equals(getResources().getString(R.string.special_mailbox_name_trash))) {
+                        //TODO: open folder
+                        Toast.makeText(MessageList.this, getString(R.string.clicked_on) + title, Toast.LENGTH_SHORT).show();
+                    } else if (title.equals(getResources().getString(R.string.preferences_title))) {
+                        onEditPrefs();
+                    } else if (title.equals(getResources().getString(R.string.app_name))) {
+                        //TODO: open
+                        Toast.makeText(MessageList.this, getString(R.string.clicked_on) + "last one...", Toast.LENGTH_SHORT).show();
+                    }
+                    return true;
+                }
+                return false;
+            }
+
+            @Override
+            public void onTouchEvent(RecyclerView recyclerView, MotionEvent motionEvent) {
+            }
+
+            @Override
+            public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+            }
+        });
+
+        mLayoutManager = new LinearLayoutManager(this);
+        mRecyclerView.setLayoutManager(mLayoutManager);
+        mDrawer = (DrawerLayout) findViewById(R.id.DrawerLayout);
+        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawer, toolbar, R.string.app_name,
+                R.string.app_name) { //TODO: set correct strings
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+            }
+
+            @Override
+            public void onDrawerClosed(View drawerView) {
+                super.onDrawerClosed(drawerView);
+            }
+        };
+        mDrawer.setDrawerListener(mDrawerToggle);
+        mDrawerToggle.syncState();
+
     }
 
     @Override
@@ -975,9 +1101,6 @@ public class MessageList extends K9Activity
      * @param menu The {@link Menu} instance that should be modified. May be {@code null}; in that case
      *             the method does nothing and immediately returns.
      */
-    private void configureMenu2(final Menu menu) {
-        return;
-    }
     private void configureMenu(final Menu menu) {
         if (menu == null) {
             return;

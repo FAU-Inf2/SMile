@@ -99,7 +99,11 @@ public class Settings extends AppCompatActivity implements GlobalPreferences.Glo
     @Override
     public void onBackPressed() {
         FragmentManager fragmentManager = getFragmentManager();
-        fragmentManager.popBackStack();
+        if(fragmentManager.getBackStackEntryCount() > 1) { // TODO: Workaround
+            fragmentManager.popBackStack();
+        } else {
+            finish();
+        }
         //super.onBackPressed();
     }
 
@@ -114,7 +118,7 @@ public class Settings extends AppCompatActivity implements GlobalPreferences.Glo
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
-            finish();
+            onBackPressed();
             return true;
         }
         return super.onOptionsItemSelected(item);

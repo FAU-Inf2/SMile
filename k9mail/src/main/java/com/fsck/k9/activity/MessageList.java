@@ -1318,7 +1318,9 @@ public class MessageList extends K9Activity
     @Override
     public void displayMessageSubject(String subject) {
         if (mDisplayMode == DisplayMode.MESSAGE_VIEW) {
-            //mActionBarSubject.setText(subject);
+            setActionBarSubTitle(null);
+            if(toolbar != null)
+                toolbar.setTitle(subject);
         }
     }
 

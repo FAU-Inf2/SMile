@@ -21,6 +21,8 @@ Tools and Libraries that we used:
 - [Android Holo ColorPicker](https://github.com/FAU-Inf2/SMile/tree/master/plugins/HoloColorPicker), License: Apache License Version 2.0
 - [OpenPGP API library](https://github.com/FAU-Inf2/SMile/tree/master/plugins/openpgp-api-library), License: Apache License Version 2.0
 - [AndroidSwipeLayout](https://github.com/daimajia/AndroidSwipeLayout), License: MIT
+- [Material Design Icons](https://www.google.com/design/icons/), License: CC BY 4.0
+- [Polygon Background](http://blog.spoongraphics.co.uk), License: CC BY 2.0
 
 S/MIME How-To
 --------------------------------

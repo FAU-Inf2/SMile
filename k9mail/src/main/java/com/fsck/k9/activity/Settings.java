@@ -98,7 +98,9 @@ public class Settings extends AppCompatActivity implements GlobalPreferences.Glo
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
+        FragmentManager fragmentManager = getFragmentManager();
+        fragmentManager.popBackStack();
+        //super.onBackPressed();
     }
 
     private void loadPreference(SmilePreferenceFragment fragment) {

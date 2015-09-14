@@ -17,12 +17,13 @@ public class TimePickerPreferenceDialog extends PreferenceDialogFragmentCompat i
 
     @Override
     protected View onCreateDialogView(Context context) {
+        TimePickerPreference preference = getTimePickerPreference();
         TimePicker tp = new TimePicker(context);
         tp.setIs24HourView(DateFormat.is24HourFormat(context));
-        DateTime originalValue = getTime();
-        if(originalValue != null) {
-            final int hour = originalValue.getHourOfDay();
-            final int minute = originalValue.getMinuteOfHour();
+        time = preference.getTime();
+        if(time != null) {
+            final int hour = time.getHourOfDay();
+            final int minute = time.getMinuteOfHour();
             tp.setCurrentHour(hour);
             tp.setCurrentMinute(minute);
         }

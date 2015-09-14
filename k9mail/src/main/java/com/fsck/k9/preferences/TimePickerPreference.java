@@ -18,6 +18,8 @@ import android.util.TypedValue;
 import android.view.View;
 import android.widget.TimePicker;
 
+import com.fsck.k9.fragment.SmileDialogPreference;
+
 import org.joda.time.DateTime;
 import org.joda.time.Period;
 import org.joda.time.format.DateTimeFormat;
@@ -30,7 +32,7 @@ import de.fau.cs.mad.smile.android.R;
 /**
  * A preference type that allows a user to choose a time
  */
-public class TimePickerPreference extends DialogPreference {
+public class TimePickerPreference extends DialogPreference implements SmileDialogPreference {
 
     /**
      * The default value for this preference
@@ -99,6 +101,11 @@ public class TimePickerPreference extends DialogPreference {
 
     public void setTime(DateTime time) {
         persistLong(time.getMillis());
+    }
+
+    @Override
+    public PreferenceDialogFragmentCompat getDialogInstance() {
+        return new TimePickerPreferenceDialog();
     }
 }
 

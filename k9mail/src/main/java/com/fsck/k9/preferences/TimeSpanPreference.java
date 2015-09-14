@@ -9,6 +9,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.v7.preference.DialogPreference;
+import android.support.v7.preference.PreferenceDialogFragmentCompat;
 import android.support.v7.preference.PreferenceViewHolder;
 import android.util.AttributeSet;
 import android.util.TypedValue;
@@ -18,13 +19,15 @@ import android.widget.ArrayAdapter;
 import android.widget.NumberPicker;
 import android.widget.Spinner;
 
+import com.fsck.k9.fragment.SmileDialogPreference;
+
 import org.joda.time.Period;
 
 import java.util.ArrayList;
 
 import de.fau.cs.mad.smile.android.R;
 
-public class TimeSpanPreference extends DialogPreference {
+public class TimeSpanPreference extends DialogPreference implements SmileDialogPreference {
 
     private static final int DEFAULT_VALUE = 15;
     private int timeSpan;
@@ -197,6 +200,11 @@ public class TimeSpanPreference extends DialogPreference {
     public void setTimeUnit(TimeUnit timeUnit) {
         this.timeUnit = timeUnit;
         persistString(timeUnit.toString());
+    }
+
+    @Override
+    public PreferenceDialogFragmentCompat getDialogInstance() {
+        return new TimeSpanPreferenceDialog();
     }
 
     public enum TimeUnit {

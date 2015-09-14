@@ -22,7 +22,7 @@ dependencies {
     compile 'commons-io:commons-io:2.4'
     compile group: androidSupportGroup, name: 'support-v4', version: supportLibsVersion
     compile group: androidSupportGroup, name: 'appcompat-v7', version: supportLibsVersion
-    compile group: androidSupportGroup, name: 'preference-v7', version: supportLibsVersion
+    compile group: androidSupportGroup, name: 'preference-v14', version: supportLibsVersion
     compile group: androidSupportGroup, name: 'support-v13', version: supportLibsVersion
     compile group: androidSupportGroup, name: 'cardview-v7', version: supportLibsVersion
     compile group: androidSupportGroup, name: 'recyclerview-v7', version: supportLibsVersion

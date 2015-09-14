@@ -1,9 +1,13 @@
 package com.fsck.k9.preferences;
 
 import android.content.Context;
+import android.support.v7.preference.DialogPreference;
+import android.support.v7.preference.PreferenceDialogFragmentCompat;
 import android.util.AttributeSet;
 
-public class CheckBoxListPreference extends android.support.v7.preference.DialogPreference {
+import com.fsck.k9.fragment.SmileDialogPreference;
+
+public class CheckBoxListPreference extends DialogPreference implements SmileDialogPreference {
 
     private CharSequence[] mItems;
     private boolean[] mCheckedItems;
@@ -39,5 +43,10 @@ public class CheckBoxListPreference extends android.support.v7.preference.Dialog
 
     public boolean[] getCheckedItems() {
         return mCheckedItems;
+    }
+
+    @Override
+    public PreferenceDialogFragmentCompat getDialogInstance() {
+        return new CheckBoxListPreferenceDialog();
     }
 }

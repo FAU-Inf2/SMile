@@ -23,7 +23,7 @@ Tools and Libraries that we used:
 - [AndroidSwipeLayout](https://github.com/daimajia/AndroidSwipeLayout), License: MIT
 - [Material Design Icons](https://www.google.com/design/icons/), License: CC BY 4.0
 - [Polygon Background](http://blog.spoongraphics.co.uk), License: CC BY 2.0
-- 
+
 S/MIME How-To
 --------------------------------
 To be able to read and send S/MIME encrypted mails, you have to install our [SMile Cryptographic Extension](https://github.com/FAU-Inf2/SMileCE) and import your certificate there.

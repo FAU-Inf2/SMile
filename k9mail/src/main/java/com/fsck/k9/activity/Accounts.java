@@ -132,10 +132,9 @@ public class Accounts extends K9Activity implements OnItemClickListener {
 
     private MenuItem mRefreshMenuItem;
     private Toolbar toolbar;
+    private ActionBar actionBar;
 
     private ListView listView;
-    private TextView mActionBarTitle;
-    private TextView mActionBarSubTitle;
     private TextView mActionBarUnread;
 
     /**
@@ -261,6 +260,7 @@ public class Accounts extends K9Activity implements OnItemClickListener {
         setContentView(R.layout.accounts);
         toolbar = (Toolbar)findViewById(R.id.toolbar);
         initializeActionBar();
+
         listView = (ListView) findViewById(android.R.id.list);
         listView.setOnItemClickListener(this);
         listView.setItemsCanFocus(false);
@@ -290,7 +290,8 @@ public class Accounts extends K9Activity implements OnItemClickListener {
     }
 
     public void setViewTitle() {
-        mActionBarTitle.setText(getApplicationContext().getString(R.string.accounts_title));
+        if(toolbar != null)
+            toolbar.setTitle(getApplicationContext().getString(R.string.accounts_title));
 
         if (mUnreadMessageCount == 0) {
             mActionBarUnread.setVisibility(View.GONE);
@@ -302,22 +303,26 @@ public class Accounts extends K9Activity implements OnItemClickListener {
         String operation = mListener.getOperation(getApplicationContext());
         operation = operation.trim();
         if (operation.length() < 1) {
-            mActionBarSubTitle.setVisibility(View.GONE);
+            if(actionBar != null)
+                actionBar.setSubtitle(null);
         } else {
-            mActionBarSubTitle.setVisibility(View.VISIBLE);
-            mActionBarSubTitle.setText(operation);
+            if(actionBar != null)
+                actionBar.setSubtitle(operation);
         }
     }
 
     private void initializeActionBar() {
-        setSupportActionBar(toolbar);
-        mActionBarTitle = (TextView) toolbar.findViewById(R.id.actionbar_title_first);
-        mActionBarSubTitle = (TextView) toolbar.findViewById(R.id.actionbar_title_sub);
-        mActionBarUnread = (TextView) toolbar.findViewById(R.id.actionbar_unread_count);
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
+        if(toolbar != null) {
+            setSupportActionBar(toolbar);
+        }
+        actionBar = getSupportActionBar();
+
+        if(actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(false);
         }
+
+        mActionBarUnread = (TextView) toolbar.findViewById(R.id.actionbar_unread_count);
+
     }
 
     /**

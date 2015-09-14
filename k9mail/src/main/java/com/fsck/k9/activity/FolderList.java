@@ -69,9 +69,8 @@ public final class FolderList extends K9Activity {
     private MenuItem mRefreshMenuItem;
     private View mActionBarProgressView;
     private Toolbar toolbar;
+    private ActionBar actionBar;
 
-    private TextView mActionBarTitle;
-    private TextView mActionBarSubTitle;
     private TextView mActionBarUnread;
 
     public static Intent actionHandleAccountIntent(Context context, Account account, boolean fromShortcut) {
@@ -136,15 +135,16 @@ public final class FolderList extends K9Activity {
     }
 
     private final void initializeActionBar() {
-        mActionBarTitle = (TextView) toolbar.findViewById(R.id.actionbar_title_first);
-        mActionBarSubTitle = (TextView) toolbar.findViewById(R.id.actionbar_title_sub);
-        mActionBarUnread = (TextView) toolbar.findViewById(R.id.actionbar_unread_count);
-        setSupportActionBar(toolbar);
-        ActionBar actionBar = getSupportActionBar();
+        if(toolbar != null) {
+            setSupportActionBar(toolbar);
+        }
+        actionBar = getSupportActionBar();
 
-        if (actionBar != null) {
+        if(actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
+
+        mActionBarUnread = (TextView) toolbar.findViewById(R.id.actionbar_unread_count);
     }
 
     @Override
@@ -283,7 +283,8 @@ public final class FolderList extends K9Activity {
     }
 
     public final void refreshTitle() {
-        mActionBarTitle.setText(getString(R.string.folders_title));
+        if(toolbar != null)
+            toolbar.setTitle(getString(R.string.folders_title));
 
         if (mUnreadMessageCount == 0) {
             mActionBarUnread.setVisibility(View.GONE);
@@ -295,9 +296,11 @@ public final class FolderList extends K9Activity {
         String operation = mListener.getOperation(FolderList.this);
 
         if (operation.length() < 1) {
-            mActionBarSubTitle.setText(mAccount.getEmail());
+            if(actionBar != null)
+                actionBar.setSubtitle(mAccount.getEmail());
         } else {
-            mActionBarSubTitle.setText(operation);
+            if(actionBar != null)
+                actionBar.setSubtitle(operation);
         }
 
         mAdapter.notifyDataSetChanged();
@@ -506,7 +509,8 @@ public final class FolderList extends K9Activity {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 MenuItemCompat.collapseActionView(folderMenuItem);
-                mActionBarTitle.setText(getString(R.string.filter_folders_action));
+                if(toolbar != null)
+                    toolbar.setTitle(getString(R.string.filter_folders_action));
                 return true;
             }
 
@@ -521,7 +525,8 @@ public final class FolderList extends K9Activity {
 
             @Override
             public boolean onClose() {
-                mActionBarTitle.setText(getString(R.string.folders_title));
+                if(toolbar != null)
+                    toolbar.setTitle(getString(R.string.folders_title));
                 return false;
             }
         });

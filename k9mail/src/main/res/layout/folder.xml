@@ -15,10 +15,21 @@
             android:id="@+id/toolbar"
             layout="@layout/toolbar_material" />
 
-        <ListView
-            android:id="@android:id/list"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            />
+        <com.fsck.k9.view.ViewSwitcher
+            android:id="@+id/container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <FrameLayout
+                android:id="@+id/message_list_container"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <FrameLayout
+                android:id="@+id/message_view_container"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+        </com.fsck.k9.view.ViewSwitcher>
     </LinearLayout>
 </android.support.v4.widget.DrawerLayout>

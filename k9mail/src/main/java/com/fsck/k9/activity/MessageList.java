@@ -46,7 +46,6 @@ import com.fsck.k9.search.SearchSpecification.SearchField;
 import com.fsck.k9.ui.messageview.MessageViewFragment;
 import com.fsck.k9.ui.messageview.MessageViewFragmentListener;
 import com.fsck.k9.view.MessageHeader;
-import com.fsck.k9.view.MessageTitleView;
 import com.fsck.k9.view.ViewSwitcher;
 import com.fsck.k9.view.ViewSwitcher.OnSwitchCompleteListener;
 
@@ -151,11 +150,7 @@ public class MessageList extends K9Activity
     private StorageManager.StorageListener mStorageListener = new StorageListenerImplementation();
 
     private Toolbar toolbar;
-    private View mActionBarMessageList;
-    private View mActionBarMessageView;
-    private MessageTitleView mActionBarSubject;
-    private TextView mActionBarTitle;
-    private TextView mActionBarSubTitle;
+    private ActionBar actionBar;
     private TextView mActionBarUnread;
     private Menu mMenu;
 
@@ -209,7 +204,7 @@ public class MessageList extends K9Activity
         if (useSplitView()) {
             setContentView(R.layout.split_message_list);
         } else {
-            setContentView(R.layout.message_list);
+            setContentView(R.layout.folder);
             mViewSwitcher = (ViewSwitcher) findViewById(R.id.container);
             mViewSwitcher.setFirstInAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_in_left));
             mViewSwitcher.setFirstOutAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_out_right));
@@ -448,7 +443,7 @@ public class MessageList extends K9Activity
         }
 
         // now we know if we are in single account mode and need a subtitle
-        mActionBarSubTitle.setVisibility((!mSingleFolderMode) ? View.GONE : View.VISIBLE);
+        //mActionBarSubTitle.setVisibility((!mSingleFolderMode) ? View.GONE : View.VISIBLE);
 
         return true;
     }
@@ -548,17 +543,16 @@ public class MessageList extends K9Activity
 
     private void initializeActionBar() {
         toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
+
+        if(toolbar != null) {
+            setSupportActionBar(toolbar);
+        }
+        actionBar = getSupportActionBar();
+
+        if(actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        mActionBarMessageList = toolbar.findViewById(R.id.actionbar_message_list);
-        mActionBarMessageView = toolbar.findViewById(R.id.actionbar_message_view);
-        mActionBarSubject = (MessageTitleView) toolbar.findViewById(R.id.message_title_view);
-        mActionBarTitle = (TextView) toolbar.findViewById(R.id.actionbar_title_first);
-        mActionBarSubTitle = (TextView) toolbar.findViewById(R.id.actionbar_title_sub);
         mActionBarUnread = (TextView) toolbar.findViewById(R.id.actionbar_unread_count);
         mActionBarProgress = (ProgressBar) toolbar.findViewById(R.id.actionbar_progress);
         mActionButtonIndeterminateProgress =
@@ -793,12 +787,6 @@ public class MessageList extends K9Activity
                 goBack();
                 return true;
             }
-            case R.id.newui: {
-                Intent intent = Messages.intentDisplaySearch(this, mSearch);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(intent);
-                return true;
-            }
             case R.id.compose: {
                 mMessageListFragment.onCompose();
                 return true;
@@ -987,6 +975,9 @@ public class MessageList extends K9Activity
      * @param menu The {@link Menu} instance that should be modified. May be {@code null}; in that case
      *             the method does nothing and immediately returns.
      */
+    private void configureMenu2(final Menu menu) {
+        return;
+    }
     private void configureMenu(final Menu menu) {
         if (menu == null) {
             return;
@@ -1159,11 +1150,13 @@ public class MessageList extends K9Activity
     }
 
     public void setActionBarTitle(String title) {
-        mActionBarTitle.setText(title);
+        if(toolbar != null)
+            toolbar.setTitle(title);
     }
 
     public void setActionBarSubTitle(String subTitle) {
-        mActionBarSubTitle.setText(subTitle);
+        if(actionBar != null)
+            actionBar.setSubtitle(subTitle);
     }
 
     public void setActionBarUnread(int unread) {
@@ -1319,13 +1312,13 @@ public class MessageList extends K9Activity
 
     @Override
     public void messageHeaderViewAvailable(MessageHeader header) {
-        mActionBarSubject.setMessageHeader(header);
+        //mActionBarSubject.setMessageHeader(header);
     }
 
     @Override
     public void displayMessageSubject(String subject) {
         if (mDisplayMode == DisplayMode.MESSAGE_VIEW) {
-            mActionBarSubject.setText(subject);
+            //mActionBarSubject.setText(subject);
         }
     }
 
@@ -1518,19 +1511,19 @@ public class MessageList extends K9Activity
     }
 
     private void showDefaultTitleView() {
-        mActionBarMessageView.setVisibility(View.GONE);
-        mActionBarMessageList.setVisibility(View.VISIBLE);
+        //mActionBarMessageView.setVisibility(View.GONE);
+        //mActionBarMessageList.setVisibility(View.VISIBLE);
 
         if (mMessageListFragment != null) {
             mMessageListFragment.updateTitle();
         }
 
-        mActionBarSubject.setMessageHeader(null);
+        //mActionBarSubject.setMessageHeader(null);
     }
 
     private void showMessageTitleView() {
-        mActionBarMessageList.setVisibility(View.GONE);
-        mActionBarMessageView.setVisibility(View.VISIBLE);
+        //mActionBarMessageList.setVisibility(View.GONE);
+        //mActionBarMessageView.setVisibility(View.VISIBLE);
 
         if (mMessageViewFragment != null) {
             displayMessageSubject(null);

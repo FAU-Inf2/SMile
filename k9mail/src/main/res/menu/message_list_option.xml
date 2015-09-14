@@ -10,13 +10,6 @@
     MessageList.configureMenu() if you make any changes to this file.
     -->
 
-    <!-- MessageList -->
-    <item
-        android:id="@+id/newui"
-        android:title="@string/material"
-        android:icon="?attr/voiceIcon"
-        app:showAsAction="always" />
-
     <!-- MessageView -->
     <item
         android:id="@+id/previous_message"

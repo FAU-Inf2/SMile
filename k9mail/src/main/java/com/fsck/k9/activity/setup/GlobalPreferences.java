@@ -157,12 +157,23 @@ public class GlobalPreferences extends SmilePreferenceFragment {
     }
 
     @Override
+    public SmilePreferenceFragment openPreferenceScreen() {
+        return newInstance(callback);
+    }
+
+    @Override
+    public void onCreatePreferences(Bundle bundle, String s) {
+        super.onCreatePreferences(bundle, s);
+        setPreferencesFromResource(R.xml.global_preferences, s);
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = getActivity();
         JodaTimeAndroid.init(mContext);
 
-        addPreferencesFromResource(R.xml.global_preferences);
+        //addPreferencesFromResource(R.xml.global_preferences);
         PreferenceCategory category = (PreferenceCategory) findPreference("accounts");
         List<Account> accounts = Preferences.getPreferences(mContext).getAccounts();
         for(Account account : accounts) {

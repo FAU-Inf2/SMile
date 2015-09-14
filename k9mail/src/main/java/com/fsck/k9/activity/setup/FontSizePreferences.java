@@ -66,6 +66,17 @@ public class FontSizePreferences extends SmilePreferenceFragment {
     }
 
     @Override
+    public SmilePreferenceFragment openPreferenceScreen() {
+        return newInstance();
+    }
+
+    @Override
+    public void onCreatePreferences(Bundle bundle, String s) {
+        super.onCreatePreferences(bundle, s);
+        setPreferencesFromResource(R.xml.font_preferences, s);
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 

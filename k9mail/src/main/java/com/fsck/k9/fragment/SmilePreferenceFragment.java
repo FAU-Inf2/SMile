@@ -6,8 +6,12 @@ import android.support.v7.preference.ListPreference;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceDialogFragmentCompat;
 import android.support.v7.preference.PreferenceFragmentCompat;
+import android.support.v7.preference.PreferenceScreen;
+import android.util.Log;
 
-public class SmilePreferenceFragment extends PreferenceFragmentCompat {
+import com.fsck.k9.K9;
+
+public abstract class SmilePreferenceFragment extends PreferenceFragmentCompat {
 
 
     /**
@@ -61,8 +65,16 @@ public class SmilePreferenceFragment extends PreferenceFragmentCompat {
         super.onDisplayPreferenceDialog(preference);
     }
 
+    public abstract SmilePreferenceFragment openPreferenceScreen();
+
     @Override
     public void onCreatePreferences(Bundle bundle, String s) {
+        Log.d(K9.LOG_TAG, "onCreatePreferences called: " + s + ", id: " + getId());
+    }
 
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Log.d(K9.LOG_TAG, "SmilePreferenceFragment.onCreate called");
     }
 }

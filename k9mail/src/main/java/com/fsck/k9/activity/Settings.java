@@ -7,6 +7,8 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.preference.PreferenceFragmentCompat;
+import android.support.v7.preference.PreferenceScreen;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
@@ -19,7 +21,7 @@ import com.fsck.k9.fragment.SmilePreferenceFragment;
 
 import de.fau.cs.mad.smile.android.R;
 
-public class Settings extends AppCompatActivity implements GlobalPreferences.GlobalPreferencesCallback {
+public class Settings extends AppCompatActivity implements GlobalPreferences.GlobalPreferencesCallback, PreferenceFragmentCompat.OnPreferenceStartScreenCallback {
     private final static String EDIT_ACCOUNT_ACTION = "EDIT_ACCOUNT";
     private static final String EDIT_FOLDER_ACTION = "EDIT_FOLDER";
     private final static String ACCOUNT_EXTRA = "account";
@@ -109,11 +111,15 @@ public class Settings extends AppCompatActivity implements GlobalPreferences.Glo
     }
 
     private void loadPreference(SmilePreferenceFragment fragment) {
-        //FragmentManager fm = getFragmentManager();
+        final String tag = fragment.getClass().getSimpleName();
+        loadPreference(fragment, tag);
+    }
+
+    private void loadPreference(SmilePreferenceFragment fragment, final String tag) {
         FragmentManager fm = getSupportFragmentManager();
         FragmentTransaction ft = fm.beginTransaction();
-        ft.replace(R.id.content_frame, fragment);
-        ft.addToBackStack(null);
+        ft.replace(R.id.content_frame, fragment, tag);
+        ft.addToBackStack(tag);
         ft.commit();
     }
 
@@ -126,4 +132,22 @@ public class Settings extends AppCompatActivity implements GlobalPreferences.Glo
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public boolean onPreferenceStartScreen(PreferenceFragmentCompat preferenceFragmentCompat, PreferenceScreen preferenceScreen) {
+        if(preferenceFragmentCompat instanceof SmilePreferenceFragment) {
+            SmilePreferenceFragment smilePreferenceFragment = (SmilePreferenceFragment)preferenceFragmentCompat;
+            SmilePreferenceFragment subScreen = smilePreferenceFragment.openPreferenceScreen();
+            Bundle args = subScreen.getArguments();
+            if(args == null) {
+                args = new Bundle();
+            }
+
+            args.putString(PreferenceFragmentCompat.ARG_PREFERENCE_ROOT, preferenceScreen.getKey());
+            subScreen.setArguments(args);
+            loadPreference(subScreen, preferenceScreen.getKey());
+            return true;
+        }
+
+        return false;
+    }
 }

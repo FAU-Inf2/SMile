@@ -36,7 +36,7 @@ public class FolderPreferences extends SmilePreferenceFragment {
     private static final String PREFERENCE_IN_TOP_GROUP = "folder_settings_in_top_group";
     private static final String PREFERENCE_INTEGRATE = "folder_settings_include_in_integrated_inbox";
 
-    private LocalFolder mFolder;
+    private LocalFolder folder;
 
     private SwitchPreferenceCompat mInTopGroup;
     private SwitchPreferenceCompat mIntegrate;
@@ -44,7 +44,8 @@ public class FolderPreferences extends SmilePreferenceFragment {
     private ListPreference mSyncClass;
     private ListPreference mPushClass;
     private ListPreference mNotifyClass;
-    private Context mContext;
+    private Context context;
+    private Account account;
 
     public static FolderPreferences newInstance(Account account, String folderName) {
         Bundle args = new Bundle();
@@ -56,19 +57,30 @@ public class FolderPreferences extends SmilePreferenceFragment {
     }
 
     @Override
+    public SmilePreferenceFragment openPreferenceScreen() {
+        return newInstance(account, folder.getName());
+    }
+
+    @Override
+    public void onCreatePreferences(Bundle bundle, String s) {
+        super.onCreatePreferences(bundle, s);
+        setPreferencesFromResource(R.xml.folder_preferences, s);
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mContext = getActivity();
+        context = getActivity();
 
         Bundle args = getArguments();
         String folderName = args.getString(EXTRA_FOLDER_NAME);
         String accountUuid = args.getString(EXTRA_ACCOUNT);
-        Account mAccount = Preferences.getPreferences(mContext).getAccount(accountUuid);
+        account = Preferences.getPreferences(context).getAccount(accountUuid);
 
         try {
-            LocalStore localStore = mAccount.getLocalStore();
-            mFolder = localStore.getFolder(folderName);
-            mFolder.open(Folder.OPEN_MODE_RW);
+            LocalStore localStore = account.getLocalStore();
+            folder = localStore.getFolder(folderName);
+            folder.open(Folder.OPEN_MODE_RW);
         } catch (MessagingException me) {
             Log.e(K9.LOG_TAG, "Unable to edit folder " + folderName + " preferences", me);
             return;
@@ -76,7 +88,7 @@ public class FolderPreferences extends SmilePreferenceFragment {
 
         boolean isPushCapable = false;
         try {
-            Store store = mAccount.getRemoteStore();
+            Store store = account.getRemoteStore();
             isPushCapable = store.isPushCapable();
         } catch (Exception e) {
             Log.e(K9.LOG_TAG, "Could not get remote store", e);
@@ -84,18 +96,17 @@ public class FolderPreferences extends SmilePreferenceFragment {
 
         addPreferencesFromResource(R.xml.folder_preferences);
 
-        String displayName = FolderInfoHolder.getDisplayName(mContext, mAccount, mFolder.getName());
+        String displayName = FolderInfoHolder.getDisplayName(context, account, folder.getName());
         Preference category = findPreference(PREFERENCE_TOP_CATERGORY);
         category.setTitle(displayName);
 
-
         mInTopGroup = (SwitchPreferenceCompat)findPreference(PREFERENCE_IN_TOP_GROUP);
-        mInTopGroup.setChecked(mFolder.isInTopGroup());
+        mInTopGroup.setChecked(folder.isInTopGroup());
         mIntegrate = (SwitchPreferenceCompat)findPreference(PREFERENCE_INTEGRATE);
-        mIntegrate.setChecked(mFolder.isIntegrate());
+        mIntegrate.setChecked(folder.isIntegrate());
 
         mDisplayClass = (ListPreference) findPreference(PREFERENCE_DISPLAY_CLASS);
-        mDisplayClass.setValue(mFolder.getDisplayClass().name());
+        mDisplayClass.setValue(folder.getDisplayClass().name());
         mDisplayClass.setSummary(mDisplayClass.getEntry());
         mDisplayClass.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             public boolean onPreferenceChange(Preference preference, Object newValue) {
@@ -108,7 +119,7 @@ public class FolderPreferences extends SmilePreferenceFragment {
         });
 
         mSyncClass = (ListPreference) findPreference(PREFERENCE_SYNC_CLASS);
-        mSyncClass.setValue(mFolder.getRawSyncClass().name());
+        mSyncClass.setValue(folder.getRawSyncClass().name());
         mSyncClass.setSummary(mSyncClass.getEntry());
         mSyncClass.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             public boolean onPreferenceChange(Preference preference, Object newValue) {
@@ -122,7 +133,7 @@ public class FolderPreferences extends SmilePreferenceFragment {
 
         mPushClass = (ListPreference) findPreference(PREFERENCE_PUSH_CLASS);
         mPushClass.setEnabled(isPushCapable);
-        mPushClass.setValue(mFolder.getRawPushClass().name());
+        mPushClass.setValue(folder.getRawPushClass().name());
         mPushClass.setSummary(mPushClass.getEntry());
         mPushClass.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             public boolean onPreferenceChange(Preference preference, Object newValue) {
@@ -135,7 +146,7 @@ public class FolderPreferences extends SmilePreferenceFragment {
         });
 
         mNotifyClass = (ListPreference) findPreference(PREFERENCE_NOTIFY_CLASS);
-        mNotifyClass.setValue(mFolder.getRawNotifyClass().name());
+        mNotifyClass.setValue(folder.getRawNotifyClass().name());
         mNotifyClass.setSummary(mNotifyClass.getEntry());
         mNotifyClass.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             public boolean onPreferenceChange(Preference preference, Object newValue) {
@@ -149,24 +160,24 @@ public class FolderPreferences extends SmilePreferenceFragment {
     }
 
     private void saveSettings() throws MessagingException {
-        mFolder.setInTopGroup(mInTopGroup.isChecked());
-        mFolder.setIntegrate(mIntegrate.isChecked());
+        folder.setInTopGroup(mInTopGroup.isChecked());
+        folder.setIntegrate(mIntegrate.isChecked());
         // We call getPushClass() because display class changes can affect push class when push class is set to inherit
-        FolderClass oldPushClass = mFolder.getPushClass();
-        FolderClass oldDisplayClass = mFolder.getDisplayClass();
-        mFolder.setDisplayClass(FolderClass.valueOf(mDisplayClass.getValue()));
-        mFolder.setSyncClass(FolderClass.valueOf(mSyncClass.getValue()));
-        mFolder.setPushClass(FolderClass.valueOf(mPushClass.getValue()));
-        mFolder.setNotifyClass(FolderClass.valueOf(mNotifyClass.getValue()));
+        FolderClass oldPushClass = folder.getPushClass();
+        FolderClass oldDisplayClass = folder.getDisplayClass();
+        folder.setDisplayClass(FolderClass.valueOf(mDisplayClass.getValue()));
+        folder.setSyncClass(FolderClass.valueOf(mSyncClass.getValue()));
+        folder.setPushClass(FolderClass.valueOf(mPushClass.getValue()));
+        folder.setNotifyClass(FolderClass.valueOf(mNotifyClass.getValue()));
 
-        mFolder.save();
+        folder.save();
 
-        FolderClass newPushClass = mFolder.getPushClass();
-        FolderClass newDisplayClass = mFolder.getDisplayClass();
+        FolderClass newPushClass = folder.getPushClass();
+        FolderClass newDisplayClass = folder.getDisplayClass();
 
         if (oldPushClass != newPushClass
                 || (newPushClass != FolderClass.NO_CLASS && oldDisplayClass != newDisplayClass)) {
-            MailService.actionRestartPushers(mContext, null);
+            MailService.actionRestartPushers(context, null);
         }
     }
 

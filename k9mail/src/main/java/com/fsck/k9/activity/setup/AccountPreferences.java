@@ -194,6 +194,17 @@ public class AccountPreferences extends SmilePreferenceFragment {
     }
 
     @Override
+    public SmilePreferenceFragment openPreferenceScreen() {
+        return newInstance(mAccount);
+    }
+
+    @Override
+    public void onCreatePreferences(Bundle bundle, String s) {
+        super.onCreatePreferences(bundle, s);
+        setPreferencesFromResource(R.xml.account_preferences, s);
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = getActivity();

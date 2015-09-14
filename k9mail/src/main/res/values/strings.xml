@@ -1184,4 +1184,6 @@ Please submit bug reports, contribute new features and ask questions at
     <string name="default_crypto_title">Default crypto protocol</string>
     <string name="no_crypto_provider_configured">This is an %1$s encrypted message and you have not configured a suitable crypto provider.</string>
     <string name="preferences_message_view_title">Message View</string>
+    <string name="clicked_on">Clicked on&#160;</string>
+
 </resources>

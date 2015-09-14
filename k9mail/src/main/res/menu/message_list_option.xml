@@ -44,7 +44,7 @@
         android:id="@+id/check_mail"
         android:alphabeticShortcut="r"
         android:icon="?attr/iconActionRefresh"
-        app:showAsAction="always"
+        app:showAsAction="never"
         android:title="@string/check_mail_action"/>
 
     <!-- MessageView -->
@@ -147,7 +147,7 @@
     <item
         android:id="@+id/set_sort"
         android:icon="?attr/iconActionSort"
-        app:showAsAction="ifRoom"
+        app:showAsAction="never"
         android:title="@string/sort_by">
         <menu>
             <item
@@ -179,7 +179,7 @@
         android:id="@+id/compose"
         android:alphabeticShortcut="c"
         android:icon="?attr/iconActionCompose"
-        app:showAsAction="ifRoom"
+        app:showAsAction="never"
         android:title="@string/compose_action"/>
 
     <!-- MessageList -->

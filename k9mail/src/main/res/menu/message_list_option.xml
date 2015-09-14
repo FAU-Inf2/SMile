@@ -183,11 +183,11 @@
         android:title="@string/compose_action"/>
 
     <!-- MessageList -->
-    <item
+   <!-- <item
         android:id="@+id/select_all"
         android:icon="?attr/iconActionSelectAll"
         app:showAsAction="never"
-        android:title="@string/batch_select_all"/>
+        android:title="@string/batch_select_all"/>-->
 
     <!-- MessageList -->
     <item

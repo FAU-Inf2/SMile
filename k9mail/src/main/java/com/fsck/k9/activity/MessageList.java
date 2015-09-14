@@ -35,7 +35,6 @@ import com.fsck.k9.Account.SortType;
 import com.fsck.k9.K9;
 import com.fsck.k9.adapter.DividerItemDecoration;
 import com.fsck.k9.adapter.RecyclerViewAdapter;
-import com.fsck.k9.mail.Message;
 import com.fsck.k9.preferences.SplitViewMode;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.crypto.PgpData;
@@ -703,6 +702,7 @@ public class MessageList extends K9Activity
     public void onBackPressed() {
         if (mDisplayMode == DisplayMode.MESSAGE_VIEW && mMessageListWasDisplayed) {
             showMessageList();
+            mDrawerToggle.setDrawerIndicatorEnabled(true);
         } else {
             super.onBackPressed();
         }
@@ -908,8 +908,14 @@ public class MessageList extends K9Activity
     public boolean onOptionsItemSelected(MenuItem item) {
         int itemId = item.getItemId();
         switch (itemId) {
+            case R.id.home: {
+                mDrawerToggle.setDrawerIndicatorEnabled(true);
+                goBack();
+                return true;
+            }
             // implements up navigation
             case android.R.id.home: {
+                mDrawerToggle.setDrawerIndicatorEnabled(true);
                 goBack();
                 return true;
             }
@@ -1793,6 +1799,14 @@ public class MessageList extends K9Activity
 
     @Override
     public void openMessage(MessageReference messageReference) {
+        mDrawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+        mDrawerToggle.setDrawerIndicatorEnabled(false);
+        if(actionBar != null) {
+            //both not working -- click on back-button will not be resolved
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setHomeButtonEnabled(true);
+        }
+
         Preferences prefs = Preferences.getPreferences(getApplicationContext());
         Account account = prefs.getAccount(messageReference.getAccountUuid());
         String folderName = messageReference.getFolderName();

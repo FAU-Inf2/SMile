@@ -15,4 +15,7 @@
     <color name="crypto_sidebar">#D8D8D8</color>
 
     <color name="default_contact_name_color">#ff00008f</color>
+
+    <color name="ColorPrimary">#3F51B5</color>
+    <color name="ColorPrimaryDark">#303F9F</color>
 </resources>

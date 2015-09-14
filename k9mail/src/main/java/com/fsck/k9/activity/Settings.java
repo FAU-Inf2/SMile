@@ -8,7 +8,7 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.widget.TextView;
+import android.view.MenuItem;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.Preferences;
@@ -56,8 +56,7 @@ public class Settings extends AppCompatActivity implements GlobalPreferences.Glo
         Toolbar toolbar = (Toolbar)findViewById(R.id.toolbar);
 
         if(toolbar != null) {
-            TextView actionBarTitle = (TextView) toolbar.findViewById(R.id.actionbar_title_first);
-            actionBarTitle.setText(R.string.preferences_title);
+            toolbar.setTitle(R.string.preferences_title);
             setSupportActionBar(toolbar);
         }
 
@@ -109,4 +108,14 @@ public class Settings extends AppCompatActivity implements GlobalPreferences.Glo
         ft.addToBackStack(null);
         ft.commit();
     }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
 }

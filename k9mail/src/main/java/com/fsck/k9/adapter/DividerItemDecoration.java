@@ -1,5 +1,6 @@
 package com.fsck.k9.adapter;
 
+import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
@@ -12,7 +13,8 @@ import de.fau.cs.mad.smile.android.R;
 public class DividerItemDecoration extends RecyclerView.ItemDecoration {
     private Drawable mDivider;
 
-    public DividerItemDecoration(Resources resources) {
+    public DividerItemDecoration(Context context) {
+        Resources resources = context.getResources();
         mDivider = resources.getDrawable(R.drawable.item_divider);
     }
 

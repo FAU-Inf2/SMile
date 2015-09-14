@@ -577,10 +577,12 @@ public class MessageList extends K9Activity
         if(toolbar != null) {
             setSupportActionBar(toolbar);
         }
+
         actionBar = getSupportActionBar();
 
         if(actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setHomeButtonEnabled(true);
         }
 
         mActionBarUnread = (TextView) toolbar.findViewById(R.id.actionbar_unread_count);
@@ -592,7 +594,7 @@ public class MessageList extends K9Activity
     private void initializeNavigationDrawer() {
         mRecyclerView = (RecyclerView) findViewById(R.id.RecyclerView);
         mRecyclerView.setHasFixedSize(true);
-        mRecyclerView.addItemDecoration(new DividerItemDecoration(getResources()));
+        mRecyclerView.addItemDecoration(new DividerItemDecoration(this));
 
         mTitles = new String[6];
         mTitles[0] = getResources().getString(R.string.special_mailbox_name_inbox);
@@ -917,13 +919,13 @@ public class MessageList extends K9Activity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int itemId = item.getItemId();
+        if(mDrawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+
+        final int itemId = item.getItemId();
+
         switch (itemId) {
-            case R.id.home: {
-                mDrawerToggle.setDrawerIndicatorEnabled(true);
-                goBack();
-                return true;
-            }
             // implements up navigation
             case android.R.id.home: {
                 mDrawerToggle.setDrawerIndicatorEnabled(true);

@@ -1107,7 +1107,7 @@ public class MessageList extends K9Activity
                 !mMessageListFragment.isInitialized()) {
             menu.findItem(R.id.check_mail).setVisible(false);
             menu.findItem(R.id.set_sort).setVisible(false);
-            menu.findItem(R.id.select_all).setVisible(false);
+            //menu.findItem(R.id.select_all).setVisible(false);
             menu.findItem(R.id.send_messages).setVisible(false);
             menu.findItem(R.id.expunge).setVisible(false);
             menu.findItem(R.id.mark_all_as_read).setVisible(false);

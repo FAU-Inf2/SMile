@@ -44,7 +44,7 @@
         android:id="@+id/check_mail"
         android:alphabeticShortcut="r"
         android:icon="?attr/iconActionRefresh"
-        app:showAsAction="always"
+        app:showAsAction="never"
         android:title="@string/check_mail_action"/>
 
     <!-- MessageView -->

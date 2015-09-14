@@ -261,6 +261,12 @@ public class MessageList extends K9Activity
     }
 
     @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        mDrawerToggle.syncState();
+    }
+
+    @Override
     public void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
 
@@ -292,7 +298,7 @@ public class MessageList extends K9Activity
      * Get references to existing fragments if the activity was restarted.
      */
     private void findFragments() {
-        android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentManager fragmentManager = getSupportFragmentManager();
         mMessageListFragment = (MessageListFragment) fragmentManager.findFragmentById(
                 R.id.message_list_container);
         mMessageViewFragment = (MessageViewFragment) fragmentManager.findFragmentById(
@@ -667,7 +673,7 @@ public class MessageList extends K9Activity
         mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
         mDrawer = (DrawerLayout) findViewById(R.id.DrawerLayout);
-        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawer, toolbar, R.string.app_name,
+        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawer, R.string.app_name,
                 R.string.app_name) { //TODO: set correct strings
             @Override
             public void onDrawerOpened(View drawerView) {
@@ -681,7 +687,12 @@ public class MessageList extends K9Activity
         };
         mDrawer.setDrawerListener(mDrawerToggle);
         mDrawerToggle.syncState();
+    }
 
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        mDrawerToggle.onConfigurationChanged(newConfig);
     }
 
     @Override
@@ -1805,6 +1816,7 @@ public class MessageList extends K9Activity
             //both not working -- click on back-button will not be resolved
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeButtonEnabled(true);
+            mDrawerToggle.syncState();
         }
 
         Preferences prefs = Preferences.getPreferences(getApplicationContext());

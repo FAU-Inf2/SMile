@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.preference.EditTextPreference;
 import android.support.v7.preference.ListPreference;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceCategory;
@@ -209,7 +210,7 @@ public class GlobalPreferences extends SmilePreferenceFragment {
         mNotificationQuickDelete = setupListPreference(PREFERENCE_NOTIF_QUICK_DELETE,
                 K9.getNotificationQuickDeleteBehaviour().toString());
         if (!NotificationHelper.platformSupportsExtendedNotifications()) {
-            PreferenceScreen prefs = (PreferenceScreen) findPreference("notification_preferences");
+            PreferenceCategory prefs = (PreferenceCategory) findPreference("notification_preferences");
             if (prefs != null) {
                 prefs.removePreference(mNotificationQuickDelete);
             }
@@ -220,7 +221,7 @@ public class GlobalPreferences extends SmilePreferenceFragment {
         mLockScreenNotificationVisibility = setupListPreference(PREFERENCE_LOCK_SCREEN_NOTIFICATION_VISIBILITY,
                 K9.getLockScreenNotificationVisibility().toString());
         if (!NotificationHelper.platformSupportsLockScreenNotifications()) {
-            PreferenceScreen prefs = (PreferenceScreen) findPreference("notification_preferences");
+            PreferenceCategory prefs = (PreferenceCategory) findPreference("notification_preferences");
             if (prefs != null) {
                 prefs.removePreference(mLockScreenNotificationVisibility);
             }
@@ -422,11 +423,15 @@ public class GlobalPreferences extends SmilePreferenceFragment {
         K9.setQuietTimeStarts(mQuietTimeStarts.getTime());
         K9.setQuietTimeEnds(mQuietTimeEnds.getTime());
 
-        K9.setNotificationQuickDeleteBehaviour(
-                NotificationQuickDelete.valueOf(mNotificationQuickDelete.getValue()));
+        if(mNotificationQuickDelete != null) {
+            K9.setNotificationQuickDeleteBehaviour(
+                    NotificationQuickDelete.valueOf(mNotificationQuickDelete.getValue()));
+        }
 
-        K9.setLockScreenNotificationVisibility(
-                LockScreenNotificationVisibility.valueOf(mLockScreenNotificationVisibility.getValue()));
+        if(mLockScreenNotificationVisibility != null) {
+            LockScreenNotificationVisibility value = LockScreenNotificationVisibility.valueOf(mLockScreenNotificationVisibility.getValue());
+            K9.setLockScreenNotificationVisibility(value);
+        }
 
 
         K9.setSplitViewMode(SplitViewMode.valueOf(mSplitViewMode.getValue()));

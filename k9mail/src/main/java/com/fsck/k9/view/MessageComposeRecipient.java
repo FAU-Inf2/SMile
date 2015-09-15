@@ -6,6 +6,7 @@ import android.text.InputType;
 import android.text.TextWatcher;
 import android.text.util.Rfc822Tokenizer;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.ImageButton;
@@ -14,6 +15,8 @@ import android.widget.MultiAutoCompleteTextView;
 
 import com.fsck.k9.EmailAddressAdapter;
 import com.fsck.k9.EmailAddressValidator;
+import com.fsck.k9.FontSizes;
+import com.fsck.k9.K9;
 import com.fsck.k9.mail.Address;
 
 import java.util.Arrays;
@@ -32,6 +35,8 @@ public class MessageComposeRecipient extends LinearLayout {
     }
 
     private void initializeUIElements(Context context, AttributeSet attributeSet) {
+        FontSizes fontSizes = K9.getFontSizes();
+        final int composeSize = fontSizes.getMessageComposeInput();
         TypedArray typedArray = context.obtainStyledAttributes(attributeSet, R.styleable.MessageComposeRecipient);
         mRecipient = new MultiAutoCompleteTextView(context);
         mRecipient.setInputType(InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
@@ -43,6 +48,7 @@ public class MessageComposeRecipient extends LinearLayout {
         }
 
         mRecipient.setTextAppearance(context, android.R.style.TextAppearance_Medium);
+        fontSizes.setViewTextSize(mRecipient, composeSize);
         LayoutParams recipientLayoutParams = new LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT);
         recipientLayoutParams.rightMargin = getPixelsFromDp(6);
         recipientLayoutParams.weight = 1;
@@ -66,6 +72,9 @@ public class MessageComposeRecipient extends LinearLayout {
         final int padding = getPixelsFromDp(8);
         mAddButton.setPadding(padding, padding, padding, padding);
         addView(mAddButton, addButtonLayoutParams);
+
+        typedArray.recycle();
+        k9Styles.recycle();
     }
 
     private void configureUIElements(Context context) {

@@ -10,6 +10,10 @@
         <item name="android:windowContentOverlay">@drawable/panel_separator</item>
     </style>
 
+    <style name="SMile.Dialog" parent="@style/Theme.AppCompat.Light.Dialog">
+        <item name="colorAccent">@color/accent</item>
+    </style>
+
     <!--
       Fix a bug with AutoCompleteTextView
       See https://code.google.com/p/android/issues/detail?id=5237

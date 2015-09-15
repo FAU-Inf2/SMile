@@ -20,6 +20,7 @@ dependencies {
     compile project(':plugins:HoloColorPicker')
     compile project(':smime-api')
     compile 'commons-io:commons-io:2.4'
+    compile 'com.jakewharton:butterknife:7.0.1'
     compile group: androidSupportGroup, name: 'support-v4', version: supportLibsVersion
     compile group: androidSupportGroup, name: 'appcompat-v7', version: supportLibsVersion
     compile group: androidSupportGroup, name: 'preference-v14', version: supportLibsVersion
@@ -92,6 +93,7 @@ android {
     lintOptions {
         abortOnError false
         lintConfig file("$rootProject.projectDir/config/lint/lint.xml")
+        disable 'InvalidPackage'
     }
 
     packagingOptions {

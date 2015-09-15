@@ -522,7 +522,7 @@ public class GlobalPreferences extends SmilePreferenceFragment {
         @Override
         public boolean onPreferenceClick(Preference preference) {
             AccountPreference accountPreference = (AccountPreference) preference;
-            Log.d(K9.LOG_TAG, "found acc pref: " + accountPreference.getAccount());
+            K9.logDebug("found acc pref: " + accountPreference.getAccount());
             callback.onAccountClick(accountPreference.getAccount());
             return false;
         }

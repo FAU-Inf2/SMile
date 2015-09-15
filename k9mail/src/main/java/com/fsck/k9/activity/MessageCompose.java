@@ -610,7 +610,7 @@ public class MessageCompose extends K9Activity implements View.OnClickListener,
 
                             @Override
                             public void onError(Exception e) {
-                                Log.d(K9.LOG_TAG, "smime api failed: ", e);
+                                K9.logDebug( "smime api failed: ", e);
                             }
                         });
                         mSmimeServiceConnection.bindToService();
@@ -1466,17 +1466,17 @@ public class MessageCompose extends K9Activity implements View.OnClickListener,
 
         @Override
         public void onReturn(Intent result) {
-            Log.d(K9.LOG_TAG, "SMime api returned: " + result);
+            K9.logDebug( "SMime api returned: " + result);
             final int resultCode = result.getIntExtra(SMimeApi.EXTRA_RESULT_CODE, SMimeApi.RESULT_CODE_ERROR);
             switch (resultCode) {
                 case SMimeApi.RESULT_CODE_SUCCESS:
                     latch.countDown();
-                    Log.d(K9.LOG_TAG, "crypto operation success");
+                    K9.logDebug( "crypto operation success");
                     break;
                 case SMimeApi.RESULT_CODE_ERROR:
                     currentMessage = null;
                     latch.countDown();
-                    Log.d(K9.LOG_TAG, "crypto operation fail");
+                    K9.logDebug( "crypto operation fail");
                     break;
             }
         }
@@ -2608,7 +2608,7 @@ public class MessageCompose extends K9Activity implements View.OnClickListener,
 
                 if (bodyOffset + bodyLength > text.length()) {
                     // The draft was edited outside of K-9 Mail?
-                    Log.d(K9.LOG_TAG, "The identity field from the draft contains an invalid LENGTH/OFFSET");
+                    K9.logDebug( "The identity field from the draft contains an invalid LENGTH/OFFSET");
                     bodyOffset = 0;
                     bodyLength = 0;
                 }
@@ -2698,7 +2698,7 @@ public class MessageCompose extends K9Activity implements View.OnClickListener,
                     mQuotedText.setCharacters(quotedText);
                 } catch (IndexOutOfBoundsException e) {
                     // Invalid bodyOffset or bodyLength.  The draft was edited outside of K-9 Mail?
-                    Log.d(K9.LOG_TAG, "The identity field from the draft contains an invalid bodyOffset/bodyLength");
+                    K9.logDebug( "The identity field from the draft contains an invalid bodyOffset/bodyLength");
                     if (viewMessageContent) {
                         mMessageContentView.setCharacters(text);
                     }

@@ -84,6 +84,18 @@ public class K9 extends Application {
         remindMeTimes.put(interval, time);
     }
 
+    public static void logDebug(String message) {
+        if(K9.DEBUG) {
+            Log.d(K9.LOG_TAG, message);
+        }
+    }
+
+    public static void logDebug(String message, Throwable throwable) {
+        if(K9.DEBUG) {
+            Log.d(K9.LOG_TAG, message, throwable);
+        }
+    }
+
     /**
      * Components that are interested in knowing when the K9 instance is
      * available and ready (Android invokes Application.onCreate() after other

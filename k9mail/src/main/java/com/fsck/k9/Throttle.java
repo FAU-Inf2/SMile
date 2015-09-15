@@ -94,7 +94,7 @@ public class Throttle {
     }
 
     private void debugLog(String message) {
-        Log.d(K9.LOG_TAG, "Throttle: [" + mName + "] " + message);
+        K9.logDebug( "Throttle: [" + mName + "] " + message);
     }
 
     private boolean isCallbackScheduled() {

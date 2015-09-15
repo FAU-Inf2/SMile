@@ -1670,14 +1670,14 @@ public class Account implements BaseAccount, StoreConfig {
 
     public String getSmimeProvider() {
         if(mSmimeApp == null) {
-            Log.d(K9.LOG_TAG, "Smime provider is null");
+            K9.logDebug( "Smime provider is null");
         }
 
         return mSmimeApp;
     }
 
     public void setSmimeProvider(String smimeProvider) {
-        Log.d(K9.LOG_TAG, "Smime app set to " + smimeProvider);
+        K9.logDebug( "Smime app set to " + smimeProvider);
         mSmimeApp = smimeProvider;
     }
 

@@ -72,7 +72,7 @@ public class FeatureStorage {
         public void folderStatusChanged(Account account, String folderName, int unreadMessageCount) {
             if(account.getSmileStorageFolderName().equals(folderName)) {
                 if(K9.DEBUG) {
-                    Log.d(K9.LOG_TAG, "folderStatusChanged in FeatureStorage");
+                    K9.logDebug( "folderStatusChanged in FeatureStorage");
                 }
             }
 
@@ -91,7 +91,7 @@ public class FeatureStorage {
             if (!localFile.exists()) {
                 try {
                     lastUpdate = -1;
-                    Log.d(K9.LOG_TAG, "smilestorage.json does not exist -- create file.");
+                    K9.logDebug( "smilestorage.json does not exist -- create file.");
                     localFile.createNewFile();
                 } catch (IOException e) {
                     Log.e(K9.LOG_TAG, "Error while creating local file." + e.getMessage());
@@ -129,12 +129,12 @@ public class FeatureStorage {
          * @return MessageId of newest version or null if local version is the newest one
          */
         private String hasUpdate() { //external file has changed
-            Log.d(K9.LOG_TAG, "Check whether there is a newer version of smilestorage.json on"+
+            K9.logDebug( "Check whether there is a newer version of smilestorage.json on"+
                     " the mailserver.");
 
             String currentMessageId = appendText.getCurrentMessageId();
-            Log.d(K9.LOG_TAG, "Latest local version is from: " + lastUpdate);
-            Log.d(K9.LOG_TAG, "Current MessageId from server: " + currentMessageId);
+            K9.logDebug( "Latest local version is from: " + lastUpdate);
+            K9.logDebug( "Current MessageId from server: " + currentMessageId);
             if (currentMessageId == null)
                 return null;
 
@@ -153,7 +153,7 @@ public class FeatureStorage {
          * Merges the new version with the local one and saves it locally.
          */
         private void mergeLocalExternalVersion(String newerMessageId) {
-            Log.d(K9.LOG_TAG, "External version of smilestorage.json is newer -- merge files.");
+            K9.logDebug( "External version of smilestorage.json is newer -- merge files.");
 
             String currentContent = appendText.getCurrentContent(newerMessageId);
 
@@ -165,7 +165,7 @@ public class FeatureStorage {
                             SmileFeaturesJsonRoot.class);
                 } catch (Exception e) {
                     // currentContent was not valid or was null -- nothing to merge
-                    Log.d(K9.LOG_TAG, "External version was empty/invalid -- nothing to merge.");
+                    K9.logDebug( "External version was empty/invalid -- nothing to merge.");
                     lastUpdate = Long.parseLong(newerMessageId.replace(
                             appendText.MESSAGE_ID_MAGIC_STRING, ""));
                     return;
@@ -174,7 +174,7 @@ public class FeatureStorage {
                     internalRoot = objectMapper.readValue(localFile, SmileFeaturesJsonRoot.class);
                 } catch (Exception e) {
                     // local file was empty -- save external version
-                    Log.d(K9.LOG_TAG, "Local version was empty/invalid -- save external "
+                    K9.logDebug( "Local version was empty/invalid -- save external "
                             + "version: " + currentContent);
                     externalRoot.setAllRemindMes(mergeRemindMes(externalRoot.getAllRemindMes(),
                             null));
@@ -206,7 +206,7 @@ public class FeatureStorage {
                     Log.e(K9.LOG_TAG, "Exception while adding allRemindMes to root: " + e.getMessage());
                 }
 
-                Log.d(K9.LOG_TAG, "New version from mergeLocalExternalVersion(): " + objectMapper.
+                K9.logDebug( "New version from mergeLocalExternalVersion(): " + objectMapper.
                         writerWithDefaultPrettyPrinter().writeValueAsString(internalRoot));
                 objectMapper.writeValue(localFile, internalRoot);
                 lastUpdate = Long.parseLong(newerMessageId.replace(
@@ -249,7 +249,7 @@ public class FeatureStorage {
                 // remove expired nodes
                 removePastNodes(root);
 
-                Log.d(K9.LOG_TAG, "New version from createUpdatedFile(): " + objectMapper.
+                K9.logDebug( "New version from createUpdatedFile(): " + objectMapper.
                         writerWithDefaultPrettyPrinter().writeValueAsString(root));
                 //save in local file
                 objectMapper.writeValue(localFile, root);
@@ -291,20 +291,20 @@ public class FeatureStorage {
                 }
 
                 try {
-                    Log.d(K9.LOG_TAG, "New RemindMe from server version -- add to local database.");
+                    K9.logDebug( "New RemindMe from server version -- add to local database.");
                     String []uids = {f.getUid()};
                     Message m = null;
                     try {
                         m = mAccount.getLocalStore().getFolder(mAccount.getRemindMeFolderName()).getMessages(uids, null).get(0);
                     } catch (Exception e) {
-                            Log.d(K9.LOG_TAG, "Failed to get message: " + e.getMessage());
+                            K9.logDebug( "Failed to get message: " + e.getMessage());
                     }
                     if(m == null)
                         continue;
 
                     f.setReference(m);
                     localRemindMe.add(f);
-                    Log.d(K9.LOG_TAG, "Added new RemindMe to database. MessageId: " + f.getMessageId()
+                    K9.logDebug( "Added new RemindMe to database. MessageId: " + f.getMessageId()
                             + ", title: " +  f.getTitle() + ", uid: " + f.getUid());
                 } catch (Exception e) {
                     Log.e(K9.LOG_TAG, "Error while adding new RemindMe to Database: " + e.getMessage());
@@ -320,7 +320,7 @@ public class FeatureStorage {
             long timestamp = System.currentTimeMillis();
             //go through and remove old nodes
             List<RemindMe> remindMes = root.getAllRemindMes();
-            Log.d(K9.LOG_TAG, "Sum of all RemindMes: " + remindMes.size());
+            K9.logDebug( "Sum of all RemindMes: " + remindMes.size());
 
             for (Iterator<RemindMe> i = remindMes.iterator(); i.hasNext();) {
                 RemindMe f = i.next();
@@ -334,7 +334,7 @@ public class FeatureStorage {
                 }
             }
 
-            Log.d(K9.LOG_TAG, "Sum of all RemindMeMail after removing expired ones: " +
+            K9.logDebug( "Sum of all RemindMeMail after removing expired ones: " +
                     remindMes.size());
             root.setAllRemindMes(remindMes);
 
@@ -399,7 +399,7 @@ public class FeatureStorage {
                 return;
             }
             try {
-                Log.d(K9.LOG_TAG, "New content to append: " + newContent);
+                K9.logDebug( "New content to append: " + newContent);
                 long newTimestamp = appendText.appendNewContent(newContent);
                 lastUpdate = newTimestamp;
             } catch (MessagingException e) {

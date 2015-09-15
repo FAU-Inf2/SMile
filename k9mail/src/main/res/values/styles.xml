@@ -14,6 +14,11 @@
         <item name="colorAccent">@color/accent</item>
     </style>
 
+    <style name="SMile.Preference" parent="@style/PreferenceThemeOverlay.v14.Material">
+        <item name="colorAccent">@color/accent</item>
+        <item name="textAppearanceListItem">@android:style/TextAppearance.Small</item>
+    </style>
+
     <!--
       Fix a bug with AutoCompleteTextView
       See https://code.google.com/p/android/issues/detail?id=5237

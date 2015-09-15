@@ -23,7 +23,7 @@
 -->
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <PreferenceCategory android:key="accounts" android:title="Accounts" />
+    <com.fsck.k9.preferences.AccountPreferenceCategory android:key="accounts" android:title="Accounts" />
 
     <PreferenceCategory
         android:key="global_preferences"

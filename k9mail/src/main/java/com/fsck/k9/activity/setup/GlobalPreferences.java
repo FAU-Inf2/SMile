@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.content.res.TypedArray;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.preference.EditTextPreference;
@@ -15,6 +16,9 @@ import android.support.v7.preference.PreferenceScreen;
 import android.support.v7.preference.SwitchPreferenceCompat;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.fsck.k9.Account;
@@ -28,6 +32,7 @@ import com.fsck.k9.helper.NotificationHelper;
 import com.fsck.k9.mail.RemindMe;
 import com.fsck.k9.mail.RemindMe.RemindMeInterval;
 import com.fsck.k9.preferences.AccountPreference;
+import com.fsck.k9.preferences.AccountPreferenceCategory;
 import com.fsck.k9.preferences.BACKGROUND_OPS;
 import com.fsck.k9.preferences.CheckBoxListPreference;
 import com.fsck.k9.preferences.LockScreenNotificationVisibility;
@@ -158,8 +163,7 @@ public class GlobalPreferences extends SmilePreferenceFragment {
         super.onCreate(savedInstanceState);
         mContext = getActivity();
         JodaTimeAndroid.init(mContext);
-
-        addAccounts();
+        
         setupLanguage();
         setupFontSize();
         setupVolumeNavigation();
@@ -237,6 +241,12 @@ public class GlobalPreferences extends SmilePreferenceFragment {
             initListPreference(mSplitViewMode, K9.getSplitViewMode().name(),
                     mSplitViewMode.getEntries(), mSplitViewMode.getEntryValues());
         }
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        addAccounts();
     }
 
     private TimePickerPreference setupTimePickerPreference(String key, Period defaultValue) {
@@ -363,14 +373,15 @@ public class GlobalPreferences extends SmilePreferenceFragment {
     }
 
     private void addAccounts() {
-        PreferenceCategory category = (PreferenceCategory) findPreference("accounts");
+        AccountPreferenceCategory category = (AccountPreferenceCategory)getPreferenceScreen().findPreference("accounts");
         if (category == null) {
             return;
         }
 
         List<Account> accounts = Preferences.getPreferences(mContext).getAccounts();
         for (Account account : accounts) {
-            category.addPreference(new AccountPreference(mContext, account, new OnAccountPreferenceClickListener()));
+            category.addAccount(account, new OnAccountPreferenceClickListener());
+            //category.addPreference(new AccountPreference(mContext, account, new OnAccountPreferenceClickListener()));
         }
     }
 
@@ -523,12 +534,12 @@ public class GlobalPreferences extends SmilePreferenceFragment {
         void onFontSizeSettings();
     }
 
-    private class OnAccountPreferenceClickListener implements Preference.OnPreferenceClickListener {
+    public class OnAccountPreferenceClickListener implements Preference.OnPreferenceClickListener {
         @Override
         public boolean onPreferenceClick(Preference preference) {
-            AccountPreference accountPreference = (AccountPreference) preference;
-            K9.logDebug("found acc pref: " + accountPreference.getAccount());
-            callback.onAccountClick(accountPreference.getAccount());
+            //AccountPreference accountPreference = (AccountPreference) preference;
+            //K9.logDebug("found acc pref: " + accountPreference.getAccount());
+            //callback.onAccountClick(accountPreference.getAccount());
             return false;
         }
     }

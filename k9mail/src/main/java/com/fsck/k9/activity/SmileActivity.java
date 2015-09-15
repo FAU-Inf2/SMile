@@ -20,31 +20,37 @@ import com.fsck.k9.Preferences;
 
 import java.util.List;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
 import de.fau.cs.mad.smile.android.R;
 
 public abstract class SmileActivity extends K9Activity {
 
-    private ListView mDrawerList;
-    private DrawerLayout mDrawerLayout;
+    @Bind(R.id.navList)
+    ListView mDrawerList;
+
+    @Bind(R.id.drawer_layout)
+    DrawerLayout mDrawerLayout;
+
+    @Bind(R.id.toolbar)
+    Toolbar toolbar;
+
     private ActionBarDrawerToggle mDrawerToggle;
     private ArrayAdapter<String> mAdapter;
-    private Toolbar toolbar;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.smile);
+        ButterKnife.bind(this);
         // enable up navigation in ActionBar
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        mDrawerList = (ListView)findViewById(R.id.navList);
-        mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
         mAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
         setupDrawer();
         addDrawerItems();

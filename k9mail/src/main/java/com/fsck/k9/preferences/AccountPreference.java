@@ -6,11 +6,13 @@ import android.util.AttributeSet;
 
 import com.fsck.k9.Account;
 
+import de.fau.cs.mad.smile.android.R;
+
 public class AccountPreference extends Preference {
     private final Account account;
 
-    public AccountPreference(Context context, Account account, OnPreferenceClickListener listener) {
-        super(context);
+    public AccountPreference(Context context, AttributeSet attributeSet, Account account, OnPreferenceClickListener listener) {
+        super(context, attributeSet);
         this.account = account;
         setPersistent(false);
         setTitle(account.getDescription());

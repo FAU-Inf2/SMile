@@ -739,6 +739,7 @@ public class Account implements BaseAccount, StoreConfig {
             editor.putString(mUuid + ".messageFormat", mMessageFormat.name());
             mMessageFormatAuto = false;
         }
+
         editor.putBoolean(mUuid + ".messageFormatAuto", mMessageFormatAuto);
         editor.putBoolean(mUuid + ".messageReadReceipt", mMessageReadReceipt);
         editor.putString(mUuid + ".quoteStyle", mQuoteStyle.name());
@@ -772,10 +773,9 @@ public class Account implements BaseAccount, StoreConfig {
                 editor.putBoolean(mUuid + ".useCompression." + type, useCompression);
             }
         }
+
         saveIdentities(preferences.getPreferences(), editor);
-
-        editor.commit();
-
+        editor.apply();
     }
 
     public void resetVisibleLimits() {

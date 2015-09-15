@@ -29,14 +29,14 @@ SMile ist eine quelloffene E-Mail-Anwendung für Android basierend auf K-9.
 Angebotene Funktionen:
 </p>
 <ul>
+  <li>S/MIME-Verschlüsselung mittels SMileCE</li>
   <li>RemindMe!-Funktionalität für Emails</li>
+  <li>Modernes Design</li>
   <li>Benachrichtigung über neue Nachrichten per IMAP IDLE</li>
   <li>Höhere Performance</li>
   <li>E-Mail-Signaturen</li>
-  <li>Automatische Blindkopie an sich selbst</li>
   <li>Ordner-Abonnements</li>
   <li>Synchronisation aller Ordner</li>
-  <li>Konfiguration einer Antwort-Adresse</li>
   <li>Tastatur-Shortcuts</li>
   <li>Verbesserte IMAP-Unterstützung</li>
   <li>Speichern von Anhängen auf SD-Karte</li>

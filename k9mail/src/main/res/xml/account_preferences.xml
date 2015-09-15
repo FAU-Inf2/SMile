@@ -23,15 +23,15 @@
 -->
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    android:key="main">
+    android:key="@string/account_preferences_main_key">
 
     <PreferenceCategory
         android:key="account_settings"
         android:title="@string/account_settings_general_title">
 
         <EditTextPreference
-            android:dialogTitle="@string/account_settings_description_label"
             android:key="account_description"
+            android:dialogTitle="@string/account_settings_description_label"
             android:persistent="false"
             android:singleLine="true"
             android:summary=""
@@ -50,92 +50,92 @@
             android:summary="@string/account_settings_color_summary"
             android:title="@string/account_settings_color_label" />
 
+        <ListPreference
+            android:key="show_pictures_enum"
+            android:dialogTitle="@string/account_settings_show_pictures_label"
+            android:entries="@array/account_settings_show_pictures_entries"
+            android:entryValues="@array/account_settings_show_pictures_values"
+            android:persistent="false"
+            android:title="@string/account_settings_show_pictures_label" />
+
     </PreferenceCategory>
 
-    <ListPreference
-        android:dialogTitle="@string/account_settings_show_pictures_label"
-        android:entries="@array/account_settings_show_pictures_entries"
-        android:entryValues="@array/account_settings_show_pictures_values"
-        android:key="show_pictures_enum"
-        android:persistent="false"
-        android:title="@string/account_settings_show_pictures_label" />
-
     <PreferenceScreen
-        android:key="incoming_prefs"
+        android:key="@string/account_preferences_incoming_key"
         android:title="@string/account_settings_sync">
 
         <ListPreference
+            android:key="account_display_count"
             android:dialogTitle="@string/account_settings_mail_display_count_label"
             android:entries="@array/account_settings_display_count_entries"
             android:entryValues="@array/account_settings_display_count_values"
-            android:key="account_display_count"
             android:persistent="false"
             android:title="@string/account_settings_mail_display_count_label" />
 
         <ListPreference
+            android:key="account_message_age"
             android:dialogTitle="@string/account_settings_message_age_label"
             android:entries="@array/account_settings_message_age_entries"
             android:entryValues="@array/account_settings_message_age_values"
-            android:key="account_message_age"
             android:persistent="false"
             android:title="@string/account_settings_message_age_label" />
 
         <ListPreference
+            android:key="account_autodownload_size"
             android:dialogTitle="@string/account_settings_autodownload_message_size_label"
             android:entries="@array/account_settings_autodownload_message_size_entries"
             android:entryValues="@array/account_settings_autodownload_message_size_values"
-            android:key="account_autodownload_size"
             android:persistent="false"
             android:title="@string/account_settings_autodownload_message_size_label" />
 
         <ListPreference
+            android:key="account_check_frequency"
             android:dialogTitle="@string/account_settings_mail_check_frequency_label"
             android:entries="@array/account_settings_check_frequency_entries"
             android:entryValues="@array/account_settings_check_frequency_values"
-            android:key="account_check_frequency"
             android:persistent="false"
             android:title="@string/account_settings_mail_check_frequency_label" />
 
         <ListPreference
+            android:key="folder_sync_mode"
             android:dialogTitle="@string/account_settings_folder_sync_mode_label"
             android:entries="@array/account_settings_folder_sync_mode_entries"
             android:entryValues="@array/account_settings_folder_sync_mode_values"
-            android:key="folder_sync_mode"
             android:persistent="false"
             android:title="@string/account_settings_folder_sync_mode_label" />
 
         <ListPreference
+            android:key="folder_push_mode"
             android:dialogTitle="@string/account_settings_folder_push_mode_label"
             android:entries="@array/account_settings_folder_push_mode_entries"
             android:entryValues="@array/account_settings_folder_push_mode_values"
-            android:key="folder_push_mode"
             android:persistent="false"
             android:title="@string/account_settings_folder_push_mode_label" />
 
         <SwitchPreferenceCompat
+            android:key="account_sync_remote_deletions"
             android:defaultValue="true"
-            android:key="account_sync_remote_deletetions"
             android:persistent="false"
             android:summary="@string/account_settings_sync_remote_deletetions_summary"
             android:title="@string/account_settings_sync_remote_deletetions_label" />
 
         <ListPreference
+            android:key="delete_policy"
             android:dialogTitle="@string/account_setup_incoming_delete_policy_label"
             android:entries="@array/account_setup_delete_policy_entries"
             android:entryValues="@array/account_setup_delete_policy_values"
-            android:key="delete_policy"
             android:persistent="false"
             android:title="@string/account_setup_incoming_delete_policy_label" />
 
         <ListPreference
+            android:key="expunge_policy"
             android:dialogTitle="@string/account_setup_expunge_policy_label"
             android:entries="@array/account_setup_expunge_policy_entries"
             android:entryValues="@array/account_setup_expunge_policy_values"
-            android:key="expunge_policy"
             android:persistent="false"
             android:title="@string/account_setup_expunge_policy_label" />
 
-        <PreferenceScreen
+        <Preference
             android:key="incoming"
             android:summary="@string/account_settings_incoming_summary"
             android:title="@string/account_settings_incoming_label" />
@@ -143,11 +143,11 @@
     </PreferenceScreen>
 
     <PreferenceScreen
-        android:key="composing"
+        android:key="@string/account_preferences_composing_key"
         android:title="@string/account_settings_composition">
 
-        <PreferenceScreen
-            android:key="composition"
+        <Preference
+            android:key="@string/account_preferences_composition_key"
             android:summary="@string/account_settings_composition_summary"
             android:title="@string/account_settings_composition_label" />
 
@@ -179,22 +179,22 @@
             android:defaultValue="true" />
 
         <EditTextPreference
-            android:dialogTitle="@string/account_settings_quote_prefix_label"
             android:key="account_quote_prefix"
+            android:dialogTitle="@string/account_settings_quote_prefix_label"
             android:persistent="false"
             android:singleLine="true"
             android:summary=""
             android:title="@string/account_settings_quote_prefix_label" />
 
-        <PreferenceScreen
-            android:key="outgoing"
+        <Preference
+            android:key="@string/account_preferences_outgoing_key"
             android:summary="@string/account_settings_outgoing_summary"
             android:title="@string/account_settings_outgoing_label" />
 
     </PreferenceScreen>
 
     <PreferenceScreen
-        android:key="folders"
+        android:key="@string/account_preferences_folders_key"
         android:title="@string/account_settings_folders">
 
         <ListPreference
@@ -204,62 +204,62 @@
             android:title="@string/account_setup_auto_expand_folder" />
 
         <ListPreference
+            android:key="folder_display_mode"
             android:dialogTitle="@string/account_settings_folder_display_mode_label"
             android:entries="@array/account_settings_folder_display_mode_entries"
             android:entryValues="@array/account_settings_folder_display_mode_values"
-            android:key="folder_display_mode"
             android:persistent="false"
             android:title="@string/account_settings_folder_display_mode_label" />
 
         <ListPreference
+            android:key="folder_target_mode"
             android:dialogTitle="@string/account_settings_folder_target_mode_label"
             android:entries="@array/account_settings_folder_target_mode_entries"
             android:entryValues="@array/account_settings_folder_target_mode_values"
-            android:key="folder_target_mode"
             android:persistent="false"
             android:title="@string/account_settings_folder_target_mode_label" />
 
         <ListPreference
+            android:key="searchable_folders"
             android:dialogTitle="@string/account_settings_searchable_label"
             android:entries="@array/account_settings_searchable_entries"
             android:entryValues="@array/account_settings_searchable_values"
-            android:key="searchable_folders"
             android:persistent="false"
             android:title="@string/account_settings_searchable_label" />
 
         <ListPreference
-            android:dialogTitle="@string/archive_folder_label"
             android:key="archive_folder"
+            android:dialogTitle="@string/archive_folder_label"
             android:persistent="false"
             android:title="@string/archive_folder_label" />
 
         <ListPreference
-            android:dialogTitle="@string/drafts_folder_label"
             android:key="drafts_folder"
+            android:dialogTitle="@string/drafts_folder_label"
             android:persistent="false"
             android:title="@string/drafts_folder_label" />
 
         <ListPreference
-            android:dialogTitle="@string/sent_folder_label"
             android:key="sent_folder"
+            android:dialogTitle="@string/sent_folder_label"
             android:persistent="false"
             android:title="@string/sent_folder_label" />
 
         <ListPreference
-            android:dialogTitle="@string/spam_folder_label"
             android:key="spam_folder"
+            android:dialogTitle="@string/spam_folder_label"
             android:persistent="false"
             android:title="@string/spam_folder_label" />
         <ListPreference
-            android:dialogTitle="@string/trash_folder_label"
             android:key="trash_folder"
+            android:dialogTitle="@string/trash_folder_label"
             android:persistent="false"
             android:title="@string/trash_folder_label" />
 
     </PreferenceScreen>
 
     <PreferenceScreen
-        android:key="storage_provider"
+        android:key="@string/account_preferences_storage_provider_key"
         android:title="@string/account_settings_storage_title">
 
         <ListPreference
@@ -270,29 +270,29 @@
     </PreferenceScreen>
 
     <PreferenceScreen
-        android:key="notifications"
+        android:key="@string/account_preferences_notifications_key"
         android:title="@string/notifications_title">
 
         <SwitchPreferenceCompat
-            android:defaultValue="true"
             android:key="account_notify"
+            android:defaultValue="true"
             android:persistent="false"
             android:summary="@string/account_settings_notify_summary"
             android:title="@string/account_settings_notify_label" />
 
         <ListPreference
+            android:key="folder_notify_new_mail_mode"
             android:dependency="account_notify"
             android:dialogTitle="@string/account_settings_folder_notify_new_mail_mode_label"
             android:entries="@array/account_settings_folder_notify_new_mail_mode_entries"
             android:entryValues="@array/account_settings_folder_notify_new_mail_mode_values"
-            android:key="folder_notify_new_mail_mode"
             android:persistent="false"
             android:title="@string/account_settings_folder_notify_new_mail_mode_label" />
 
         <SwitchPreferenceCompat
+            android:key="account_notify_self"
             android:defaultValue="true"
             android:dependency="account_notify"
-            android:key="account_notify_self"
             android:persistent="false"
             android:summary="@string/account_settings_notify_self_summary"
             android:title="@string/account_settings_notify_self_label" />
@@ -304,44 +304,44 @@
           See com.fsck.k9.activity.setup.AccountPreferences
         -->
        <!-- <RingtonePreference
+            android:key="account_ringtone"
             android:defaultValue="content://settings/system/notification_sound"
             android:dependency="account_notify"
-            android:key="account_ringtone"
             android:ringtoneType="notification"
             android:title="@string/account_settings_ringtone" />-->
 
         <SwitchPreferenceCompat
+            android:key="account_vibrate"
             android:defaultValue="false"
             android:dependency="account_notify"
-            android:key="account_vibrate"
             android:persistent="false"
             android:summary="@string/account_settings_vibrate_summary"
             android:title="@string/account_settings_vibrate_enable" />
 
         <ListPreference
+            android:key="account_vibrate_pattern"
             android:dependency="account_vibrate"
             android:dialogTitle="@string/account_settings_vibrate_pattern_label"
             android:entries="@array/account_settings_vibrate_pattern_entries"
             android:entryValues="@array/account_settings_vibrate_pattern_values"
-            android:key="account_vibrate_pattern"
             android:layout="?android:attr/preferenceLayoutChild"
             android:persistent="false"
             android:title="@string/account_settings_vibrate_pattern_label" />
 
         <ListPreference
+            android:key="account_vibrate_times"
             android:dependency="account_vibrate"
             android:dialogTitle="@string/account_settings_vibrate_times"
             android:entries="@array/account_settings_vibrate_times_label"
             android:entryValues="@array/account_settings_vibrate_times_label"
-            android:key="account_vibrate_times"
             android:layout="?android:attr/preferenceLayoutChild"
             android:persistent="false"
             android:title="@string/account_settings_vibrate_times" />
 
         <SwitchPreferenceCompat
+            android:key="account_led"
             android:defaultValue="true"
             android:dependency="account_notify"
-            android:key="account_led"
             android:persistent="false"
             android:summary="@string/account_settings_led_summary"
             android:title="@string/account_settings_led_label" />
@@ -354,15 +354,15 @@
             android:title="@string/account_settings_led_color_label" />
 
         <SwitchPreferenceCompat
-            android:defaultValue="true"
             android:key="account_notify_sync"
+            android:defaultValue="true"
             android:persistent="false"
             android:summary="@string/account_settings_notify_sync_summary"
             android:title="@string/account_settings_notify_sync_label" />
 
         <SwitchPreferenceCompat
-            android:defaultValue="true"
             android:key="notification_opens_unread"
+            android:defaultValue="true"
             android:persistent="false"
             android:summary="@string/account_settings_notification_opens_unread_summary"
             android:title="@string/account_settings_notification_opens_unread_label" />
@@ -370,7 +370,7 @@
     </PreferenceScreen>
 
     <PreferenceCategory
-        android:key="search"
+        android:key="@string/account_preferences_search_key"
         android:title="@string/account_settings_search">
 
         <SwitchPreferenceCompat
@@ -380,11 +380,11 @@
             android:title="@string/account_settings_remote_search_enabled" />
 
         <ListPreference
+            android:key="account_remote_search_num_results"
             android:dependency="remote_search_enabled"
             android:dialogTitle="@string/account_settings_remote_search_num_label"
             android:entries="@array/account_settings_remote_search_num_results_entries"
             android:entryValues="@array/account_settings_remote_search_num_results_values"
-            android:key="account_remote_search_num_results"
             android:persistent="false"
             android:title="@string/account_settings_remote_search_num_label" />
 

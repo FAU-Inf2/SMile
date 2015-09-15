@@ -1186,4 +1186,13 @@ Please submit bug reports, contribute new features and ask questions at
     <string name="preferences_message_view_title">Message View</string>
     <string name="clicked_on">Clicked on&#160;</string>
 
+    <string name="account_preferences_main_key">main</string>
+    <string name="account_preferences_incoming_key">incoming_prefs</string>
+    <string name="account_preferences_composing_key">composing</string>
+    <string name="account_preferences_composition_key">composition</string>
+    <string name="account_preferences_outgoing_key">outgoing</string>
+    <string name="account_preferences_folders_key">folders</string>
+    <string name="account_preferences_storage_provider_key">storage_provider</string>
+    <string name="account_preferences_notifications_key">notifications</string>
+    <string name="account_preferences_search_key">search</string>
 </resources>

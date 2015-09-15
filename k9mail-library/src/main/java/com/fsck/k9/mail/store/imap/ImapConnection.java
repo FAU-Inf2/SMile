@@ -22,6 +22,7 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ConnectException;
@@ -62,7 +63,7 @@ import static com.fsck.k9.mail.store.imap.ImapResponseParser.equalsIgnoreCase;
 /**
  * A cacheable class that stores the details for a single IMAP connection.
  */
-class ImapConnection {
+class ImapConnection implements Closeable {
     private static final int BUFFER_SIZE = 1024;
 
     private Socket mSocket;
@@ -206,6 +207,7 @@ class ImapConnection {
         return (mIn != null && mOut != null && mSocket != null && mSocket.isConnected() && !mSocket.isClosed());
     }
 
+    @Override
     public void close() {
 //            if (isOpen()) {
 //                try {

@@ -10,20 +10,12 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.v7.preference.DialogPreference;
 import android.support.v7.preference.PreferenceDialogFragmentCompat;
-import android.support.v7.preference.PreferenceViewHolder;
 import android.util.AttributeSet;
 import android.util.TypedValue;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.NumberPicker;
-import android.widget.Spinner;
 
 import com.fsck.k9.fragment.SmileDialogPreference;
 
 import org.joda.time.Period;
-
-import java.util.ArrayList;
 
 import de.fau.cs.mad.smile.android.R;
 
@@ -32,8 +24,6 @@ public class TimeSpanPreference extends DialogPreference implements SmileDialogP
     private static final int DEFAULT_VALUE = 15;
     private int timeSpan;
     private TimeUnit timeUnit;
-    private NumberPicker numberPicker;
-    private Spinner timeUnitSpinner;
 
     public TimeSpanPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -42,41 +32,6 @@ public class TimeSpanPreference extends DialogPreference implements SmileDialogP
         setPositiveButtonText(android.R.string.ok);
         setNegativeButtonText(android.R.string.cancel);
         timeUnit = TimeUnit.MINUTE;
-    }
-
-    @Override
-    public void onBindViewHolder(PreferenceViewHolder view) {
-        super.onBindViewHolder(view);
-        final Context context = getContext();
-
-        numberPicker = (NumberPicker) view.findViewById(R.id.pref_number_picker);
-        timeUnitSpinner = (Spinner) view.findViewById(R.id.pref_timeunit_spinner);
-
-        ArrayList<TimeUnit> timeUnits = new ArrayList<>();
-        timeUnits.add(TimeUnit.MINUTE);
-        timeUnits.add(TimeUnit.HOUR);
-        timeUnits.add(TimeUnit.DAY);
-        ArrayAdapter<TimeUnit> adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, timeUnits);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        timeUnitSpinner.setAdapter(adapter);
-        timeUnitSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                timeUnit = (TimeUnit) parent.getItemAtPosition(position);
-                populateNumberPicker();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                timeUnit = TimeUnit.MINUTE;
-            }
-        });
-
-        numberPicker.setMinValue(1);
-
-        populateNumberPicker();
-        timeUnitSpinner.setSelection(timeUnits.indexOf(timeUnit));
-        timeUnitSpinner.invalidate();
     }
 
     private void colorizeIcon() {
@@ -90,33 +45,6 @@ public class TimeSpanPreference extends DialogPreference implements SmileDialogP
             int color = Color.BLUE;
             icon.setColorFilter(color, PorterDuff.Mode.SRC_IN);
         }
-    }
-
-    private void populateNumberPicker() {
-        switch (timeUnit) {
-            case MINUTE:
-                final int maxValue = 360;
-                final int step = 5;
-                final int numberOfEntries = maxValue/step;
-                numberPicker.setMaxValue(numberOfEntries);
-                String[] values = new String[numberOfEntries];
-
-                for(int i = 5; i <= maxValue; i += step) {
-                    values[(i/step) - 1] = String.valueOf(i);
-                }
-
-                numberPicker.setDisplayedValues(values);
-                break;
-            case HOUR:
-                numberPicker.setDisplayedValues(null);
-                numberPicker.setMaxValue(24);
-                break;
-            case DAY:
-                numberPicker.setDisplayedValues(null);
-                numberPicker.setMaxValue(7);
-        }
-
-        numberPicker.setValue(timeSpan);
     }
 
     @Override
@@ -158,17 +86,7 @@ public class TimeSpanPreference extends DialogPreference implements SmileDialogP
         super.onRestoreInstanceState(myState.getSuperState());
 
         // Set this Preference's widget to reflect the restored state
-        numberPicker.setValue(myState.timeSpan);
-        TimeUnit savedTimeUnit = TimeUnit.valueOf(myState.timeUnit);
-
-        for(int i = 0; i < timeUnitSpinner.getCount(); i++) {
-            TimeUnit tmp = (TimeUnit) timeUnitSpinner.getItemAtPosition(i);
-            if(tmp == savedTimeUnit) {
-                timeUnitSpinner.setSelection(i);
-                break;
-            }
-        }
-
+        timeUnit = TimeUnit.valueOf(myState.timeUnit);
         timeSpan = myState.timeSpan;
     }
 
@@ -189,14 +107,6 @@ public class TimeSpanPreference extends DialogPreference implements SmileDialogP
         return null;
     }
 
-    public NumberPicker getNumberPicker() {
-        return numberPicker;
-    }
-
-    public Spinner getTimeUnitSpinner() {
-        return timeUnitSpinner;
-    }
-
     public void setTimeUnit(TimeUnit timeUnit) {
         this.timeUnit = timeUnit;
         persistString(timeUnit.toString());
@@ -205,6 +115,14 @@ public class TimeSpanPreference extends DialogPreference implements SmileDialogP
     @Override
     public PreferenceDialogFragmentCompat getDialogInstance() {
         return new TimeSpanPreferenceDialog();
+    }
+
+    public TimeUnit getTimeUnit() {
+        return timeUnit;
+    }
+
+    public int getTimeSpan() {
+        return timeSpan;
     }
 
     public enum TimeUnit {

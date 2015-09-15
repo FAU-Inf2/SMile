@@ -3,13 +3,13 @@ package com.fsck.k9.activity.setup;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.preference.RingtonePreference;
+import android.support.annotation.StringRes;
 import android.support.v7.preference.EditTextPreference;
 import android.support.v7.preference.ListPreference;
 import android.support.v7.preference.Preference;
@@ -31,11 +31,9 @@ import com.fsck.k9.NotificationSetting;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.activity.ChooseFolder;
 import com.fsck.k9.activity.ColorPickerDialog;
-import com.fsck.k9.crypto.OpenPgpApiHelper;
 import com.fsck.k9.fragment.SmilePreferenceFragment;
 import com.fsck.k9.mail.Folder;
 import com.fsck.k9.mail.Store;
-import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.mailstore.StorageManager;
 import com.fsck.k9.service.MailService;
 
@@ -58,7 +56,6 @@ public class AccountPreferences extends SmilePreferenceFragment {
 
     private static final int SELECT_AUTO_EXPAND_FOLDER = 100;
 
-    private static final String PREFERENCE_SCREEN_MAIN = "main";
     private static final String PREFERENCE_SCREEN_COMPOSING = "composing";
     private static final String PREFERENCE_SCREEN_INCOMING = "incoming_prefs";
     private static final String PREFERENCE_SCREEN_PUSH_ADVANCED = "push_advanced";
@@ -99,11 +96,11 @@ public class AccountPreferences extends SmilePreferenceFragment {
     private static final String PREFERENCE_QUOTE_PREFIX = "account_quote_prefix";
     private static final String PREFERENCE_QUOTE_STYLE = "quote_style";
     private static final String PREFERENCE_DEFAULT_QUOTED_TEXT_SHOWN = "default_quoted_text_shown";
-    private static final String PREFERENCE_SYNC_REMOTE_DELETIONS = "account_sync_remote_deletetions";
+    private static final String PREFERENCE_SYNC_REMOTE_DELETIONS = "account_sync_remote_deletions";
     private static final String PREFERENCE_CRYPTO = "crypto";
     private static final String PREFERENCE_CRYPTO_APP = "crypto_app";
     private static final String PREFERENCE_CRYPTO_KEY = "crypto_key";
-    private static final String PREFERENCE_CLOUD_SEARCH_ENABLED = "remote_search_enabled";
+    private static final String PREFERENCE_REMOTE_SEARCH_ENABLED = "remote_search_enabled";
     private static final String PREFERENCE_REMOTE_SEARCH_NUM_RESULTS = "account_remote_search_num_results";
     private static final String PREFERENCE_REMOTE_SEARCH_FULL_TEXT = "account_remote_search_full_text";
 
@@ -127,10 +124,10 @@ public class AccountPreferences extends SmilePreferenceFragment {
     private PreferenceScreen mComposingScreen;
 
     private EditTextPreference mAccountDescription;
-    private ListPreference mCheckFrequency;
-    private ListPreference mDisplayCount;
-    private ListPreference mMessageAge;
-    private ListPreference mMessageSize;
+    private ListPreference incoming_checkFrequency;
+    private ListPreference incoming_displayCount;
+    private ListPreference incoming_messageAge;
+    private ListPreference incoming_messageSize;
     private SwitchPreferenceCompat mAccountDefault;
     private SwitchPreferenceCompat mAccountNotify;
     private ListPreference mAccountNotifyNewMailMode;
@@ -142,24 +139,24 @@ public class AccountPreferences extends SmilePreferenceFragment {
     private ListPreference mAccountVibratePattern;
     private ListPreference mAccountVibrateTimes;
     private RingtonePreference mAccountRingtone;
-    private ListPreference mDisplayMode;
-    private ListPreference mSyncMode;
-    private ListPreference mPushMode;
-    private ListPreference mTargetMode;
-    private ListPreference mDeletePolicy;
-    private ListPreference mExpungePolicy;
-    private ListPreference mSearchableFolders;
+    private ListPreference folder_displayMode;
+    private ListPreference incoming_SyncMode;
+    private ListPreference incoming_pushMode;
+    private ListPreference folder_targetMode;
+    private ListPreference incoming_deletePolicy;
+    private ListPreference incoming_expungePolicy;
+    private ListPreference folder_searchableFolders;
     private ListPreference mAutoExpandFolder;
     private Preference mChipColor;
     private Preference mLedColor;
     private boolean mIncomingChanged = false;
     private SwitchPreferenceCompat mNotificationOpensUnread;
-    private ListPreference mMessageFormat;
-    private SwitchPreferenceCompat mMessageReadReceipt;
-    private ListPreference mQuoteStyle;
-    private EditTextPreference mAccountQuotePrefix;
-    private SwitchPreferenceCompat mAccountDefaultQuotedTextShown;
-    private SwitchPreferenceCompat mSyncRemoteDeletions;
+    private ListPreference composing_messageFormat;
+    private SwitchPreferenceCompat composing_messageReadReceipt;
+    private ListPreference composing_quoteStyle;
+    private EditTextPreference composing_accountQuotePrefix;
+    private SwitchPreferenceCompat composing_accountDefaultQuotedTextShown;
+    private SwitchPreferenceCompat incoming_syncRemoteDeletions;
     private boolean mHasCrypto = false;
     private OpenPgpAppPreference mCryptoApp;
     private OpenPgpKeyPreference mCryptoKey;
@@ -223,313 +220,19 @@ public class AccountPreferences extends SmilePreferenceFragment {
             Log.e(K9.LOG_TAG, "Could not get remote store", e);
         }
 
-        addPreferencesFromResource(R.xml.account_preferences);
+        //addPreferencesFromResource(R.xml.account_preferences);
 
-        mMainScreen = (PreferenceScreen) findPreference(PREFERENCE_SCREEN_MAIN);
+        setupMainScreen();
+        setupIncomingScreen();
+        setupComposingScreen();
+        setupFolderScreen();
+        setupStorageProviderScreen();
+        setupNotificationScreen();
+    }
 
-        mAccountDescription = (EditTextPreference) findPreference(PREFERENCE_DESCRIPTION);
-        mAccountDescription.setSummary(mAccount.getDescription());
-        mAccountDescription.setText(mAccount.getDescription());
-        mAccountDescription.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
-                final String summary = newValue.toString();
-                mAccountDescription.setSummary(summary);
-                mAccountDescription.setText(summary);
-                return false;
-            }
-        });
-
-        mMessageFormat = (ListPreference) findPreference(PREFERENCE_MESSAGE_FORMAT);
-        mMessageFormat.setValue(mAccount.getMessageFormat().name());
-        mMessageFormat.setSummary(mMessageFormat.getEntry());
-        mMessageFormat.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
-                final String summary = newValue.toString();
-                int index = mMessageFormat.findIndexOfValue(summary);
-                mMessageFormat.setSummary(mMessageFormat.getEntries()[index]);
-                mMessageFormat.setValue(summary);
-                return false;
-            }
-        });
-
-        mMessageReadReceipt = (SwitchPreferenceCompat) findPreference(PREFERENCE_MESSAGE_READ_RECEIPT);
-        mMessageReadReceipt.setChecked(mAccount.isMessageReadReceiptAlways());
-
-        mAccountQuotePrefix = (EditTextPreference) findPreference(PREFERENCE_QUOTE_PREFIX);
-        mAccountQuotePrefix.setSummary(mAccount.getQuotePrefix());
-        mAccountQuotePrefix.setText(mAccount.getQuotePrefix());
-        mAccountQuotePrefix.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            @Override
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
-                final String value = newValue.toString();
-                mAccountQuotePrefix.setSummary(value);
-                mAccountQuotePrefix.setText(value);
-                return false;
-            }
-        });
-
-        mAccountDefaultQuotedTextShown = (SwitchPreferenceCompat) findPreference(PREFERENCE_DEFAULT_QUOTED_TEXT_SHOWN);
-        mAccountDefaultQuotedTextShown.setChecked(mAccount.isDefaultQuotedTextShown());
-
-        mComposingScreen = (PreferenceScreen) findPreference(PREFERENCE_SCREEN_COMPOSING);
-
-        Preference.OnPreferenceChangeListener quoteStyleListener = new Preference.OnPreferenceChangeListener() {
-            @Override
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
-                final QuoteStyle style = QuoteStyle.valueOf(newValue.toString());
-                int index = mQuoteStyle.findIndexOfValue(newValue.toString());
-                mQuoteStyle.setSummary(mQuoteStyle.getEntries()[index]);
-
-                if (style == QuoteStyle.PREFIX) {
-                    mComposingScreen.addPreference(mAccountQuotePrefix);
-                } else if (style == QuoteStyle.HEADER) {
-                    mComposingScreen.removePreference(mAccountQuotePrefix);
-                }
-                return true;
-            }
-        };
-
-        mQuoteStyle = (ListPreference) findPreference(PREFERENCE_QUOTE_STYLE);
-        mQuoteStyle.setValue(mAccount.getQuoteStyle().name());
-        mQuoteStyle.setSummary(mQuoteStyle.getEntry());
-        mQuoteStyle.setOnPreferenceChangeListener(quoteStyleListener);
-        // Call the onPreferenceChange() handler on startup to update the Preference dialogue based
-        // upon the existing quote style setting.
-        quoteStyleListener.onPreferenceChange(mQuoteStyle, mAccount.getQuoteStyle().name());
-
-        mCheckFrequency = (ListPreference) findPreference(PREFERENCE_FREQUENCY);
-        mCheckFrequency.setValue(String.valueOf(mAccount.getAutomaticCheckIntervalMinutes()));
-        mCheckFrequency.setSummary(mCheckFrequency.getEntry());
-        mCheckFrequency.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
-                final String summary = newValue.toString();
-                int index = mCheckFrequency.findIndexOfValue(summary);
-                mCheckFrequency.setSummary(mCheckFrequency.getEntries()[index]);
-                mCheckFrequency.setValue(summary);
-                return false;
-            }
-        });
-
-        mDisplayMode = (ListPreference) findPreference(PREFERENCE_DISPLAY_MODE);
-        mDisplayMode.setValue(mAccount.getFolderDisplayMode().name());
-        mDisplayMode.setSummary(mDisplayMode.getEntry());
-        mDisplayMode.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
-                final String summary = newValue.toString();
-                int index = mDisplayMode.findIndexOfValue(summary);
-                mDisplayMode.setSummary(mDisplayMode.getEntries()[index]);
-                mDisplayMode.setValue(summary);
-                return false;
-            }
-        });
-
-        mSyncMode = (ListPreference) findPreference(PREFERENCE_SYNC_MODE);
-        mSyncMode.setValue(mAccount.getFolderSyncMode().name());
-        mSyncMode.setSummary(mSyncMode.getEntry());
-        mSyncMode.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
-                final String summary = newValue.toString();
-                int index = mSyncMode.findIndexOfValue(summary);
-                mSyncMode.setSummary(mSyncMode.getEntries()[index]);
-                mSyncMode.setValue(summary);
-                return false;
-            }
-        });
-
-
-        mTargetMode = (ListPreference) findPreference(PREFERENCE_TARGET_MODE);
-        mTargetMode.setValue(mAccount.getFolderTargetMode().name());
-        mTargetMode.setSummary(mTargetMode.getEntry());
-        mTargetMode.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
-                final String summary = newValue.toString();
-                int index = mTargetMode.findIndexOfValue(summary);
-                mTargetMode.setSummary(mTargetMode.getEntries()[index]);
-                mTargetMode.setValue(summary);
-                return false;
-            }
-        });
-
-        mDeletePolicy = (ListPreference) findPreference(PREFERENCE_DELETE_POLICY);
-        if (!mIsSeenFlagSupported) {
-            removeListEntry(mDeletePolicy, DeletePolicy.MARK_AS_READ.preferenceString());
-        }
-        mDeletePolicy.setValue(mAccount.getDeletePolicy().preferenceString());
-        mDeletePolicy.setSummary(mDeletePolicy.getEntry());
-        mDeletePolicy.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
-                final String summary = newValue.toString();
-                int index = mDeletePolicy.findIndexOfValue(summary);
-                mDeletePolicy.setSummary(mDeletePolicy.getEntries()[index]);
-                mDeletePolicy.setValue(summary);
-                return false;
-            }
-        });
-
-
-        mExpungePolicy = (ListPreference) findPreference(PREFERENCE_EXPUNGE_POLICY);
-        if (mIsExpungeCapable) {
-            mExpungePolicy.setValue(mAccount.getExpungePolicy().name());
-            mExpungePolicy.setSummary(mExpungePolicy.getEntry());
-            mExpungePolicy.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    final String summary = newValue.toString();
-                    int index = mExpungePolicy.findIndexOfValue(summary);
-                    mExpungePolicy.setSummary(mExpungePolicy.getEntries()[index]);
-                    mExpungePolicy.setValue(summary);
-                    return false;
-                }
-            });
-        } else {
-            ((PreferenceScreen) findPreference(PREFERENCE_SCREEN_INCOMING)).removePreference(mExpungePolicy);
-        }
-
-
-        mSyncRemoteDeletions = (SwitchPreferenceCompat) findPreference(PREFERENCE_SYNC_REMOTE_DELETIONS);
-        mSyncRemoteDeletions.setChecked(mAccount.syncRemoteDeletions());
-
-        mSearchableFolders = (ListPreference) findPreference(PREFERENCE_SEARCHABLE_FOLDERS);
-        mSearchableFolders.setValue(mAccount.getSearchableFolders().name());
-        mSearchableFolders.setSummary(mSearchableFolders.getEntry());
-        mSearchableFolders.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
-                final String summary = newValue.toString();
-                int index = mSearchableFolders.findIndexOfValue(summary);
-                mSearchableFolders.setSummary(mSearchableFolders.getEntries()[index]);
-                mSearchableFolders.setValue(summary);
-                return false;
-            }
-        });
-
-        mDisplayCount = (ListPreference) findPreference(PREFERENCE_DISPLAY_COUNT);
-        mDisplayCount.setValue(String.valueOf(mAccount.getDisplayCount()));
-        mDisplayCount.setSummary(mDisplayCount.getEntry());
-        mDisplayCount.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
-                final String summary = newValue.toString();
-                int index = mDisplayCount.findIndexOfValue(summary);
-                mDisplayCount.setSummary(mDisplayCount.getEntries()[index]);
-                mDisplayCount.setValue(summary);
-                return false;
-            }
-        });
-
-
-        mMessageAge = (ListPreference) findPreference(PREFERENCE_MESSAGE_AGE);
-
-        if (!mAccount.isSearchByDateCapable()) {
-            ((PreferenceScreen) findPreference(PREFERENCE_SCREEN_INCOMING)).removePreference(mMessageAge);
-        } else {
-            mMessageAge.setValue(String.valueOf(mAccount.getMaximumPolledMessageAge()));
-            mMessageAge.setSummary(mMessageAge.getEntry());
-            mMessageAge.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    final String summary = newValue.toString();
-                    int index = mMessageAge.findIndexOfValue(summary);
-                    mMessageAge.setSummary(mMessageAge.getEntries()[index]);
-                    mMessageAge.setValue(summary);
-                    return false;
-                }
-            });
-
-        }
-
-        mMessageSize = (ListPreference) findPreference(PREFERENCE_MESSAGE_SIZE);
-        mMessageSize.setValue(String.valueOf(mAccount.getMaximumAutoDownloadMessageSize()));
-        mMessageSize.setSummary(mMessageSize.getEntry());
-        mMessageSize.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
-                final String summary = newValue.toString();
-                int index = mMessageSize.findIndexOfValue(summary);
-                mMessageSize.setSummary(mMessageSize.getEntries()[index]);
-                mMessageSize.setValue(summary);
-                return false;
-            }
-        });
-
-        mAccountDefault = (SwitchPreferenceCompat) findPreference(PREFERENCE_DEFAULT);
-        mAccountDefault.setChecked(
-                mAccount.equals(Preferences.getPreferences(mContext).getDefaultAccount()));
-
-        mAccountShowPictures = (ListPreference) findPreference(PREFERENCE_SHOW_PICTURES);
-        mAccountShowPictures.setValue("" + mAccount.getShowPictures());
-        mAccountShowPictures.setSummary(mAccountShowPictures.getEntry());
-        mAccountShowPictures.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
-                final String summary = newValue.toString();
-                int index = mAccountShowPictures.findIndexOfValue(summary);
-                mAccountShowPictures.setSummary(mAccountShowPictures.getEntries()[index]);
-                mAccountShowPictures.setValue(summary);
-                return false;
-            }
-        });
-
-
-        mLocalStorageProvider = (ListPreference) findPreference(PREFERENCE_LOCAL_STORAGE_PROVIDER);
-        {
-            final Map<String, String> providers;
-            providers = StorageManager.getInstance(mContext).getAvailableProviders();
-            int i = 0;
-            final String[] providerLabels = new String[providers.size()];
-            final String[] providerIds = new String[providers.size()];
-            for (final Map.Entry<String, String> entry : providers.entrySet()) {
-                providerIds[i] = entry.getKey();
-                providerLabels[i] = entry.getValue();
-                i++;
-            }
-            mLocalStorageProvider.setEntryValues(providerIds);
-            mLocalStorageProvider.setEntries(providerLabels);
-            mLocalStorageProvider.setValue(mAccount.getLocalStorageProviderId());
-            mLocalStorageProvider.setSummary(providers.get(mAccount.getLocalStorageProviderId()));
-
-            mLocalStorageProvider.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    mLocalStorageProvider.setSummary(providers.get(newValue));
-                    return true;
-                }
-            });
-        }
-
-        // IMAP-specific preferences
-
-        mSearchScreen = (PreferenceCategory) findPreference(PREFERENCE_SCREEN_SEARCH);
-
-        mCloudSearchEnabled = (SwitchPreferenceCompat) findPreference(PREFERENCE_CLOUD_SEARCH_ENABLED);
-        mRemoteSearchNumResults = (ListPreference) findPreference(PREFERENCE_REMOTE_SEARCH_NUM_RESULTS);
-        mRemoteSearchNumResults.setOnPreferenceChangeListener(
-                new Preference.OnPreferenceChangeListener() {
-                    public boolean onPreferenceChange(Preference pref, Object newVal) {
-                        updateRemoteSearchLimit((String) newVal);
-                        return true;
-                    }
-                }
-        );
-        //mRemoteSearchFullText = (SwitchPreference) findPreference(PREFERENCE_REMOTE_SEARCH_FULL_TEXT);
-
-        if (mIsPushCapable) {
-            mCloudSearchEnabled.setChecked(mAccount.allowRemoteSearch());
-            String searchNumResults = Integer.toString(mAccount.getRemoteSearchNumResults());
-            mRemoteSearchNumResults.setValue(searchNumResults);
-            updateRemoteSearchLimit(searchNumResults);
-            //mRemoteSearchFullText.setChecked(mAccount.isRemoteSearchFullText());
-
-            mPushMode = (ListPreference) findPreference(PREFERENCE_PUSH_MODE);
-            mPushMode.setValue(mAccount.getFolderPushMode().name());
-            mPushMode.setSummary(mPushMode.getEntry());
-            mPushMode.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    final String summary = newValue.toString();
-                    int index = mPushMode.findIndexOfValue(summary);
-                    mPushMode.setSummary(mPushMode.getEntries()[index]);
-                    mPushMode.setValue(summary);
-                    return false;
-                }
-            });
-        } else {
-            PreferenceScreen incomingPrefs = (PreferenceScreen) findPreference(PREFERENCE_SCREEN_INCOMING);
-            incomingPrefs.removePreference((PreferenceScreen) findPreference(PREFERENCE_SCREEN_PUSH_ADVANCED));
-            incomingPrefs.removePreference((ListPreference) findPreference(PREFERENCE_PUSH_MODE));
-            mMainScreen.removePreference(mSearchScreen);
+    private void setupNotificationScreen() {
+        if (!isNotificationScreen()) {
+            return;
         }
 
         mAccountNotify = (SwitchPreferenceCompat) findPreference(PREFERENCE_NOTIFY);
@@ -599,7 +302,31 @@ public class AccountPreferences extends SmilePreferenceFragment {
         mNotificationOpensUnread = (SwitchPreferenceCompat) findPreference(PREFERENCE_NOTIFICATION_OPENS_UNREAD);
         mNotificationOpensUnread.setChecked(mAccount.goToUnreadMessageSearch());
 
-        new PopulateFolderPrefsTask().execute();
+        mLedColor = findPreference(PREFERENCE_LED_COLOR);
+        mLedColor.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            public boolean onPreferenceClick(Preference preference) {
+                onChooseLedColor();
+                return false;
+            }
+        });
+    }
+
+    private void setupMainScreen() {
+        if (!isMainScreen()) {
+            return;
+        }
+
+        mAccountDescription = (EditTextPreference) findPreference(PREFERENCE_DESCRIPTION);
+        mAccountDescription.setSummary(mAccount.getDescription());
+        mAccountDescription.setText(mAccount.getDescription());
+        mAccountDescription.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                final String summary = newValue.toString();
+                mAccountDescription.setSummary(summary);
+                mAccountDescription.setText(summary);
+                return false;
+            }
+        });
 
         mChipColor = findPreference(PREFERENCE_CHIP_COLOR);
         mChipColor.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -609,42 +336,56 @@ public class AccountPreferences extends SmilePreferenceFragment {
             }
         });
 
-        mLedColor = findPreference(PREFERENCE_LED_COLOR);
-        mLedColor.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            public boolean onPreferenceClick(Preference preference) {
-                onChooseLedColor();
+        mAccountDefault = (SwitchPreferenceCompat) findPreference(PREFERENCE_DEFAULT);
+        mAccountDefault.setChecked(
+                mAccount.equals(Preferences.getPreferences(mContext).getDefaultAccount()));
+
+        mAccountShowPictures = (ListPreference) findPreference(PREFERENCE_SHOW_PICTURES);
+        mAccountShowPictures.setValue("" + mAccount.getShowPictures());
+        mAccountShowPictures.setSummary(mAccountShowPictures.getEntry());
+        mAccountShowPictures.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                final String summary = newValue.toString();
+                int index = mAccountShowPictures.findIndexOfValue(summary);
+                mAccountShowPictures.setSummary(mAccountShowPictures.getEntries()[index]);
+                mAccountShowPictures.setValue(summary);
                 return false;
             }
         });
 
-        findPreference(PREFERENCE_COMPOSITION).setOnPreferenceClickListener(
-                new Preference.OnPreferenceClickListener() {
-                    public boolean onPreferenceClick(Preference preference) {
-                        onCompositionSettings();
+        setupCryptoCategory();
+
+        // IMAP-specific preferences
+
+        mCloudSearchEnabled = (SwitchPreferenceCompat) findPreference(PREFERENCE_REMOTE_SEARCH_ENABLED);
+        mRemoteSearchNumResults = (ListPreference) findPreference(PREFERENCE_REMOTE_SEARCH_NUM_RESULTS);
+        mRemoteSearchNumResults.setOnPreferenceChangeListener(
+                new Preference.OnPreferenceChangeListener() {
+                    public boolean onPreferenceChange(Preference pref, Object newVal) {
+                        updateRemoteSearchLimit((String) newVal);
                         return true;
                     }
-                });
+                }
+        );
+        //mRemoteSearchFullText = (SwitchPreference) findPreference(PREFERENCE_REMOTE_SEARCH_FULL_TEXT);
 
-        findPreference(PREFERENCE_INCOMING).setOnPreferenceClickListener(
-                new Preference.OnPreferenceClickListener() {
-                    public boolean onPreferenceClick(Preference preference) {
-                        mIncomingChanged = true;
-                        onIncomingSettings();
-                        return true;
-                    }
-                });
+        if (mIsPushCapable) {
+            mCloudSearchEnabled.setChecked(mAccount.allowRemoteSearch());
+            String searchNumResults = Integer.toString(mAccount.getRemoteSearchNumResults());
+            mRemoteSearchNumResults.setValue(searchNumResults);
+            updateRemoteSearchLimit(searchNumResults);
+            //mRemoteSearchFullText.setChecked(mAccount.isRemoteSearchFullText());
+        } else {
+            final String searchCategoryKey = mContext.getString(R.string.account_preferences_search_key);
+            Preference searchCategory = findPreference(searchCategoryKey);
+            getPreferenceScreen().removePreference(searchCategory);
+        }
+    }
 
-        findPreference(PREFERENCE_OUTGOING).setOnPreferenceClickListener(
-                new Preference.OnPreferenceClickListener() {
-                    public boolean onPreferenceClick(Preference preference) {
-                        onOutgoingSettings();
-                        return true;
-                    }
-                });
-
+    private void setupCryptoCategory() {
         mHasCrypto = OpenPgpUtils.isAvailable(mContext);
-        if (mHasCrypto) {
-            /*
+        /*if (mHasCrypto) {
+
             mCryptoApp = (OpenPgpAppPreference) findPreference(PREFERENCE_CRYPTO_APP);
             mCryptoKey = (OpenPgpKeyPreference) findPreference(PREFERENCE_CRYPTO_KEY);
 
@@ -669,7 +410,7 @@ public class AccountPreferences extends SmilePreferenceFragment {
                     mCryptoKey.setValue(value);
                     return false;
                 }
-            });*/
+            });
         } else {
             final Preference mCryptoApp = findPreference(PREFERENCE_CRYPTO_APP);
             mCryptoApp.setEnabled(false);
@@ -677,7 +418,7 @@ public class AccountPreferences extends SmilePreferenceFragment {
             final Preference mCryptoKey = findPreference(PREFERENCE_CRYPTO_KEY);
             mCryptoKey.setEnabled(false);
             mCryptoKey.setSummary(R.string.account_settings_no_openpgp_provider_installed);
-        }
+        }*/
 
         PackageManager packageManager = mContext.getPackageManager();
         Intent smime = new Intent(SMimeApi.SERVICE_INTENT);
@@ -744,6 +485,335 @@ public class AccountPreferences extends SmilePreferenceFragment {
         }
     }
 
+    private void setupIncomingScreen() {
+        if (!isIncomingScreen()) {
+            return;
+        }
+
+        incoming_displayCount = (ListPreference) findPreference(PREFERENCE_DISPLAY_COUNT);
+        incoming_displayCount.setValue(String.valueOf(mAccount.getDisplayCount()));
+        incoming_displayCount.setSummary(incoming_displayCount.getEntry());
+        incoming_displayCount.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                final String summary = newValue.toString();
+                int index = incoming_displayCount.findIndexOfValue(summary);
+                incoming_displayCount.setSummary(incoming_displayCount.getEntries()[index]);
+                incoming_displayCount.setValue(summary);
+                return false;
+            }
+        });
+
+        incoming_messageAge = (ListPreference) findPreference(PREFERENCE_MESSAGE_AGE);
+
+        if (!mAccount.isSearchByDateCapable()) {
+            ((PreferenceScreen) findPreference(PREFERENCE_SCREEN_INCOMING)).removePreference(incoming_messageAge);
+        } else {
+            incoming_messageAge.setValue(String.valueOf(mAccount.getMaximumPolledMessageAge()));
+            incoming_messageAge.setSummary(incoming_messageAge.getEntry());
+            incoming_messageAge.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                public boolean onPreferenceChange(Preference preference, Object newValue) {
+                    final String summary = newValue.toString();
+                    int index = incoming_messageAge.findIndexOfValue(summary);
+                    incoming_messageAge.setSummary(incoming_messageAge.getEntries()[index]);
+                    incoming_messageAge.setValue(summary);
+                    return false;
+                }
+            });
+
+        }
+
+        incoming_messageSize = (ListPreference) findPreference(PREFERENCE_MESSAGE_SIZE);
+        incoming_messageSize.setValue(String.valueOf(mAccount.getMaximumAutoDownloadMessageSize()));
+        incoming_messageSize.setSummary(incoming_messageSize.getEntry());
+        incoming_messageSize.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                final String summary = newValue.toString();
+                int index = incoming_messageSize.findIndexOfValue(summary);
+                incoming_messageSize.setSummary(incoming_messageSize.getEntries()[index]);
+                incoming_messageSize.setValue(summary);
+                return false;
+            }
+        });
+
+        incoming_checkFrequency = (ListPreference) findPreference(PREFERENCE_FREQUENCY);
+        incoming_checkFrequency.setValue(String.valueOf(mAccount.getAutomaticCheckIntervalMinutes()));
+        incoming_checkFrequency.setSummary(incoming_checkFrequency.getEntry());
+        incoming_checkFrequency.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                final String summary = newValue.toString();
+                int index = incoming_checkFrequency.findIndexOfValue(summary);
+                incoming_checkFrequency.setSummary(incoming_checkFrequency.getEntries()[index]);
+                incoming_checkFrequency.setValue(summary);
+                return false;
+            }
+        });
+
+        incoming_SyncMode = (ListPreference) findPreference(PREFERENCE_SYNC_MODE);
+        incoming_SyncMode.setValue(mAccount.getFolderSyncMode().name());
+        incoming_SyncMode.setSummary(incoming_SyncMode.getEntry());
+        incoming_SyncMode.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                final String summary = newValue.toString();
+                int index = incoming_SyncMode.findIndexOfValue(summary);
+                incoming_SyncMode.setSummary(incoming_SyncMode.getEntries()[index]);
+                incoming_SyncMode.setValue(summary);
+                return false;
+            }
+        });
+
+        if (mIsPushCapable) {
+            incoming_pushMode = (ListPreference) findPreference(PREFERENCE_PUSH_MODE);
+            incoming_pushMode.setValue(mAccount.getFolderPushMode().name());
+            incoming_pushMode.setSummary(incoming_pushMode.getEntry());
+            incoming_pushMode.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                public boolean onPreferenceChange(Preference preference, Object newValue) {
+                    final String summary = newValue.toString();
+                    int index = incoming_pushMode.findIndexOfValue(summary);
+                    incoming_pushMode.setSummary(incoming_pushMode.getEntries()[index]);
+                    incoming_pushMode.setValue(summary);
+                    return false;
+                }
+            });
+        } else {
+            getPreferenceScreen().removePreference(findPreference(PREFERENCE_PUSH_MODE));
+        }
+
+        incoming_syncRemoteDeletions = setupSwitchPreference(PREFERENCE_SYNC_REMOTE_DELETIONS, mAccount.syncRemoteDeletions());
+
+        incoming_deletePolicy = (ListPreference) findPreference(PREFERENCE_DELETE_POLICY);
+        if (!mIsSeenFlagSupported) {
+            removeListEntry(incoming_deletePolicy, DeletePolicy.MARK_AS_READ.preferenceString());
+        }
+
+        incoming_deletePolicy.setValue(mAccount.getDeletePolicy().preferenceString());
+        incoming_deletePolicy.setSummary(incoming_deletePolicy.getEntry());
+        incoming_deletePolicy.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                final String summary = newValue.toString();
+                int index = incoming_deletePolicy.findIndexOfValue(summary);
+                incoming_deletePolicy.setSummary(incoming_deletePolicy.getEntries()[index]);
+                incoming_deletePolicy.setValue(summary);
+                return false;
+            }
+        });
+
+
+        incoming_expungePolicy = (ListPreference) findPreference(PREFERENCE_EXPUNGE_POLICY);
+        if (mIsExpungeCapable) {
+            incoming_expungePolicy.setValue(mAccount.getExpungePolicy().name());
+            incoming_expungePolicy.setSummary(incoming_expungePolicy.getEntry());
+            incoming_expungePolicy.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                public boolean onPreferenceChange(Preference preference, Object newValue) {
+                    final String summary = newValue.toString();
+                    int index = incoming_expungePolicy.findIndexOfValue(summary);
+                    incoming_expungePolicy.setSummary(incoming_expungePolicy.getEntries()[index]);
+                    incoming_expungePolicy.setValue(summary);
+                    return false;
+                }
+            });
+        } else {
+            getPreferenceScreen().removePreference(incoming_expungePolicy);
+        }
+
+        findPreference(PREFERENCE_INCOMING).setOnPreferenceClickListener(
+                new Preference.OnPreferenceClickListener() {
+                    public boolean onPreferenceClick(Preference preference) {
+                        mIncomingChanged = true;
+                        onIncomingSettings();
+                        return true;
+                    }
+                });
+    }
+
+    private void setupComposingScreen() {
+        if (!isComposingScreen()) {
+            return;
+        }
+
+        Preference composition = findPreference(PREFERENCE_COMPOSITION);
+        composition.setOnPreferenceClickListener(
+                new Preference.OnPreferenceClickListener() {
+                    public boolean onPreferenceClick(Preference preference) {
+                        onCompositionSettings();
+                        return true;
+                    }
+                });
+
+        composing_messageFormat = (ListPreference) findPreference(PREFERENCE_MESSAGE_FORMAT);
+        composing_messageFormat.setValue(mAccount.getMessageFormat().name());
+        composing_messageFormat.setSummary(composing_messageFormat.getEntry());
+        composing_messageFormat.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                final String summary = newValue.toString();
+                int index = composing_messageFormat.findIndexOfValue(summary);
+                composing_messageFormat.setSummary(composing_messageFormat.getEntries()[index]);
+                composing_messageFormat.setValue(summary);
+                return false;
+            }
+        });
+
+        composing_messageReadReceipt = (SwitchPreferenceCompat) findPreference(PREFERENCE_MESSAGE_READ_RECEIPT);
+        composing_messageReadReceipt.setChecked(mAccount.isMessageReadReceiptAlways());
+
+        composing_accountQuotePrefix = (EditTextPreference) findPreference(PREFERENCE_QUOTE_PREFIX);
+        composing_accountQuotePrefix.setSummary(mAccount.getQuotePrefix());
+        composing_accountQuotePrefix.setText(mAccount.getQuotePrefix());
+        composing_accountQuotePrefix.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                final String value = newValue.toString();
+                composing_accountQuotePrefix.setSummary(value);
+                composing_accountQuotePrefix.setText(value);
+                return false;
+            }
+        });
+
+        composing_accountDefaultQuotedTextShown = setupSwitchPreference(PREFERENCE_DEFAULT_QUOTED_TEXT_SHOWN, mAccount.isDefaultQuotedTextShown());
+
+        mComposingScreen = (PreferenceScreen) findPreference(PREFERENCE_SCREEN_COMPOSING);
+
+        Preference.OnPreferenceChangeListener quoteStyleListener = new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                final QuoteStyle style = QuoteStyle.valueOf(newValue.toString());
+                int index = composing_quoteStyle.findIndexOfValue(newValue.toString());
+                composing_quoteStyle.setSummary(composing_quoteStyle.getEntries()[index]);
+
+                if (style == QuoteStyle.PREFIX) {
+                    mComposingScreen.addPreference(composing_accountQuotePrefix);
+                } else if (style == QuoteStyle.HEADER) {
+                    mComposingScreen.removePreference(composing_accountQuotePrefix);
+                }
+                return true;
+            }
+        };
+
+        composing_quoteStyle = (ListPreference) findPreference(PREFERENCE_QUOTE_STYLE);
+        composing_quoteStyle.setValue(mAccount.getQuoteStyle().name());
+        composing_quoteStyle.setSummary(composing_quoteStyle.getEntry());
+        composing_quoteStyle.setOnPreferenceChangeListener(quoteStyleListener);
+        // Call the onPreferenceChange() handler on startup to update the Preference dialogue based
+        // upon the existing quote style setting.
+        quoteStyleListener.onPreferenceChange(composing_quoteStyle, mAccount.getQuoteStyle().name());
+
+        Preference outgoing = findPreference(PREFERENCE_OUTGOING);
+        outgoing.setOnPreferenceClickListener(
+                new Preference.OnPreferenceClickListener() {
+                    public boolean onPreferenceClick(Preference preference) {
+                        onOutgoingSettings();
+                        return true;
+                    }
+                });
+    }
+
+    private void setupFolderScreen() {
+        if (!isFolderScreen()) {
+            return;
+        }
+
+        new PopulateFolderPrefsTask().execute();
+        folder_displayMode = (ListPreference) findPreference(PREFERENCE_DISPLAY_MODE);
+        folder_displayMode.setValue(mAccount.getFolderDisplayMode().name());
+        folder_displayMode.setSummary(folder_displayMode.getEntry());
+        folder_displayMode.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                final String summary = newValue.toString();
+                int index = folder_displayMode.findIndexOfValue(summary);
+                folder_displayMode.setSummary(folder_displayMode.getEntries()[index]);
+                folder_displayMode.setValue(summary);
+                return false;
+            }
+        });
+
+        folder_targetMode = (ListPreference) findPreference(PREFERENCE_TARGET_MODE);
+        folder_targetMode.setValue(mAccount.getFolderTargetMode().name());
+        folder_targetMode.setSummary(folder_targetMode.getEntry());
+        folder_targetMode.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                final String summary = newValue.toString();
+                int index = folder_targetMode.findIndexOfValue(summary);
+                folder_targetMode.setSummary(folder_targetMode.getEntries()[index]);
+                folder_targetMode.setValue(summary);
+                return false;
+            }
+        });
+
+        folder_searchableFolders = (ListPreference) findPreference(PREFERENCE_SEARCHABLE_FOLDERS);
+        folder_searchableFolders.setValue(mAccount.getSearchableFolders().name());
+        folder_searchableFolders.setSummary(folder_searchableFolders.getEntry());
+        folder_searchableFolders.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                final String summary = newValue.toString();
+                int index = folder_searchableFolders.findIndexOfValue(summary);
+                folder_searchableFolders.setSummary(folder_searchableFolders.getEntries()[index]);
+                folder_searchableFolders.setValue(summary);
+                return false;
+            }
+        });
+    }
+
+    private void setupStorageProviderScreen() {
+        if (!isStorageProviderScreen()) {
+            return;
+        }
+
+        mLocalStorageProvider = (ListPreference) findPreference(PREFERENCE_LOCAL_STORAGE_PROVIDER);
+
+        final Map<String, String> providers;
+        providers = StorageManager.getInstance(mContext).getAvailableProviders();
+        int i = 0;
+        final String[] providerLabels = new String[providers.size()];
+        final String[] providerIds = new String[providers.size()];
+        for (final Map.Entry<String, String> entry : providers.entrySet()) {
+            providerIds[i] = entry.getKey();
+            providerLabels[i] = entry.getValue();
+            i++;
+        }
+
+        mLocalStorageProvider.setEntryValues(providerIds);
+        mLocalStorageProvider.setEntries(providerLabels);
+        mLocalStorageProvider.setValue(mAccount.getLocalStorageProviderId());
+        mLocalStorageProvider.setSummary(providers.get(mAccount.getLocalStorageProviderId()));
+
+        mLocalStorageProvider.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                mLocalStorageProvider.setSummary(providers.get(newValue));
+                return true;
+            }
+        });
+    }
+
+    private boolean isMainScreen() {
+        return isScreen(R.string.account_preferences_main_key);
+    }
+
+    private boolean isIncomingScreen() {
+        return isScreen(R.string.account_preferences_incoming_key);
+    }
+
+    private boolean isComposingScreen() {
+        return isScreen(R.string.account_preferences_composing_key);
+    }
+
+    private boolean isFolderScreen() {
+        return isScreen(R.string.account_preferences_folders_key);
+    }
+
+    private boolean isStorageProviderScreen() {
+        return isScreen(R.string.account_preferences_storage_provider_key);
+    }
+
+    private boolean isNotificationScreen() {
+        return isScreen(R.string.account_preferences_notifications_key);
+    }
+
+    private boolean isScreen(@StringRes int resId) {
+        String key = getPreferenceScreen().getKey();
+        String screen = mContext.getString(resId);
+
+        return screen.equals(key);
+    }
+
     @Override
     public void onPause() {
         saveSettings();
@@ -771,62 +841,71 @@ public class AccountPreferences extends SmilePreferenceFragment {
     }
 
     private void saveSettings() {
+        saveMainScreen();
+        saveIncomingScreen();
+        saveComposingScreen();
+        saveFolderScreen();
+        saveStorageProviderScreen();
+        saveNotificationScreen();
+
+        mAccount.setAlwaysShowCcBcc(false);
+
+        boolean needsRefresh = false;
+        boolean displayModeChanged = false;
+
+        if(isFolderScreen()) {
+            FolderMode mode = FolderMode.valueOf(folder_displayMode.getValue());
+            displayModeChanged = mAccount.setFolderDisplayMode(mode);
+        }
+
+        if(isIncomingScreen()) {
+            final int checkFrequency = Integer.parseInt(incoming_checkFrequency.getValue());
+            needsRefresh = mAccount.setAutomaticCheckIntervalMinutes(checkFrequency);
+            FolderMode mode = FolderMode.valueOf(incoming_SyncMode.getValue());
+            needsRefresh |= mAccount.setFolderSyncMode(mode);
+
+            //IMAP specific stuff
+            if (mIsPushCapable) {
+
+                boolean needsPushRestart = mAccount.setFolderPushMode(FolderMode.valueOf(incoming_pushMode.getValue()));
+                if (mAccount.getFolderPushMode() != FolderMode.NONE) {
+                    needsPushRestart |= displayModeChanged;
+                    needsPushRestart |= mIncomingChanged;
+                }
+
+                if (needsRefresh && needsPushRestart) {
+                    MailService.actionReset(mContext, null);
+                } else if (needsRefresh) {
+                    MailService.actionReschedulePoll(mContext, null);
+                } else if (needsPushRestart) {
+                    MailService.actionRestartPushers(mContext, null);
+                }
+            }
+        }
+
+        // TODO: refresh folder list here
+        mAccount.save(Preferences.getPreferences(mContext));
+    }
+
+    private void saveMainScreen() {
+        if (!isMainScreen()) {
+            return;
+        }
+
         if (mAccountDefault.isChecked()) {
             Preferences.getPreferences(mContext).setDefaultAccount(mAccount);
         }
 
+        mAccount.setShowPictures(ShowPictures.valueOf(mAccountShowPictures.getValue()));
+
         mAccount.setDescription(mAccountDescription.getText());
-        mAccount.setNotifyNewMail(mAccountNotify.isChecked());
-        mAccount.setFolderNotifyNewMailMode(FolderMode.valueOf(mAccountNotifyNewMailMode.getValue()));
-        mAccount.setNotifySelfNewMail(mAccountNotifySelf.isChecked());
-        mAccount.setShowOngoing(mAccountNotifySync.isChecked());
-        mAccount.setDisplayCount(Integer.parseInt(mDisplayCount.getValue()));
-        mAccount.setMaximumAutoDownloadMessageSize(Integer.parseInt(mMessageSize.getValue()));
-        if (mAccount.isSearchByDateCapable()) {
-            mAccount.setMaximumPolledMessageAge(Integer.parseInt(mMessageAge.getValue()));
-        }
-
-        mAccount.getNotificationSetting().setVibrate(mAccountVibrate.isChecked());
-        mAccount.getNotificationSetting().setVibratePattern(Integer.parseInt(mAccountVibratePattern.getValue()));
-        mAccount.getNotificationSetting().setVibrateTimes(Integer.parseInt(mAccountVibrateTimes.getValue()));
-        mAccount.getNotificationSetting().setLed(mAccountLed.isChecked());
-        mAccount.setGoToUnreadMessageSearch(mNotificationOpensUnread.isChecked());
-        mAccount.setFolderTargetMode(FolderMode.valueOf(mTargetMode.getValue()));
-        mAccount.setDeletePolicy(DeletePolicy.fromInt(Integer.parseInt(mDeletePolicy.getValue())));
-        if (mIsExpungeCapable) {
-            mAccount.setExpungePolicy(Expunge.valueOf(mExpungePolicy.getValue()));
-        }
-
-        mAccount.setSyncRemoteDeletions(mSyncRemoteDeletions.isChecked());
-        mAccount.setSearchableFolders(Searchable.valueOf(mSearchableFolders.getValue()));
-        mAccount.setMessageFormat(MessageFormat.valueOf(mMessageFormat.getValue()));
-        mAccount.setAlwaysShowCcBcc(false);
-        mAccount.setMessageReadReceipt(mMessageReadReceipt.isChecked());
-        mAccount.setQuoteStyle(QuoteStyle.valueOf(mQuoteStyle.getValue()));
-        mAccount.setQuotePrefix(mAccountQuotePrefix.getText());
-        mAccount.setDefaultQuotedTextShown(mAccountDefaultQuotedTextShown.isChecked());
-        mAccount.setLocalStorageProviderId(mLocalStorageProvider.getValue());
-
         if (mHasCrypto) {
             /*mAccount.setPgpApp(mCryptoApp.getValue());
             mAccount.setPgpKey(mCryptoKey.getValue());*/
         }
 
-        // In webdav account we use the exact folder name also for inbox,
-        // since it varies because of internationalization
-        if (mAccount.getStoreUri().startsWith("webdav")) {
-            mAccount.setAutoExpandFolderName(mAutoExpandFolder.getValue());
-        } else {
-            mAccount.setAutoExpandFolderName(reverseTranslateFolder(mAutoExpandFolder.getValue()));
-        }
-
-        if (mIsMoveCapable) {
-            mAccount.setArchiveFolderName(mArchiveFolder.getValue());
-            mAccount.setDraftsFolderName(mDraftsFolder.getValue());
-            mAccount.setSentFolderName(mSentFolder.getValue());
-            mAccount.setSpamFolderName(mSpamFolder.getValue());
-            mAccount.setTrashFolderName(mTrashFolder.getValue());
-        }
+        mAccount.setSmimeProvider(mSmimeApp.getValue());
+        mAccount.setDefaultCryptoProvider(defaultCryptoProvider.getValue());
 
         //IMAP stuff
         if (mIsPushCapable) {
@@ -837,11 +916,89 @@ public class AccountPreferences extends SmilePreferenceFragment {
             mAccount.setRemoteSearchNumResults(Integer.parseInt(mRemoteSearchNumResults.getValue()));
             //mAccount.setRemoteSearchFullText(mRemoteSearchFullText.isChecked());
         }
+    }
 
-        boolean needsRefresh = mAccount.setAutomaticCheckIntervalMinutes(Integer.parseInt(mCheckFrequency.getValue()));
-        needsRefresh |= mAccount.setFolderSyncMode(FolderMode.valueOf(mSyncMode.getValue()));
+    private void saveIncomingScreen() {
+        if(!isIncomingScreen()) {
+            return;
+        }
 
-        boolean displayModeChanged = mAccount.setFolderDisplayMode(FolderMode.valueOf(mDisplayMode.getValue()));
+        mAccount.setDisplayCount(Integer.parseInt(incoming_displayCount.getValue()));
+        mAccount.setMaximumAutoDownloadMessageSize(Integer.parseInt(incoming_messageSize.getValue()));
+        if (mAccount.isSearchByDateCapable()) {
+            mAccount.setMaximumPolledMessageAge(Integer.parseInt(incoming_messageAge.getValue()));
+        }
+
+        mAccount.setDeletePolicy(DeletePolicy.fromInt(Integer.parseInt(incoming_deletePolicy.getValue())));
+
+        if (mIsExpungeCapable) {
+            mAccount.setExpungePolicy(Expunge.valueOf(incoming_expungePolicy.getValue()));
+        }
+
+        mAccount.setSyncRemoteDeletions(incoming_syncRemoteDeletions.isChecked());
+    }
+
+    private void saveComposingScreen() {
+        if(!isComposingScreen()) {
+            return;
+        }
+
+        mAccount.setMessageFormat(MessageFormat.valueOf(composing_messageFormat.getValue()));
+        mAccount.setMessageReadReceipt(composing_messageReadReceipt.isChecked());
+        mAccount.setQuoteStyle(QuoteStyle.valueOf(composing_quoteStyle.getValue()));
+        mAccount.setQuotePrefix(composing_accountQuotePrefix.getText());
+        mAccount.setDefaultQuotedTextShown(composing_accountDefaultQuotedTextShown.isChecked());
+    }
+
+    private void saveFolderScreen() {
+        if(!isFolderScreen()) {
+            return;
+        }
+
+        // In webdav account we use the exact folder name also for inbox,
+        // since it varies because of internationalization
+        if (mAccount.getStoreUri().startsWith("webdav")) {
+            mAccount.setAutoExpandFolderName(mAutoExpandFolder.getValue());
+        } else {
+            mAccount.setAutoExpandFolderName(reverseTranslateFolder(mAutoExpandFolder.getValue()));
+        }
+
+
+        if (mIsMoveCapable) {
+            mAccount.setArchiveFolderName(mArchiveFolder.getValue());
+            mAccount.setDraftsFolderName(mDraftsFolder.getValue());
+            mAccount.setSentFolderName(mSentFolder.getValue());
+            mAccount.setSpamFolderName(mSpamFolder.getValue());
+            mAccount.setTrashFolderName(mTrashFolder.getValue());
+        }
+
+        mAccount.setFolderTargetMode(FolderMode.valueOf(folder_targetMode.getValue()));
+        mAccount.setSearchableFolders(Searchable.valueOf(folder_searchableFolders.getValue()));
+    }
+
+    private void saveStorageProviderScreen() {
+        if(!isStorageProviderScreen()) {
+            return;
+        }
+
+        mAccount.setLocalStorageProviderId(mLocalStorageProvider.getValue());
+    }
+
+    private void saveNotificationScreen() {
+        if (!isNotificationScreen()) {
+            return;
+        }
+
+        //Notification
+        mAccount.setNotifyNewMail(mAccountNotify.isChecked());
+        mAccount.setFolderNotifyNewMailMode(FolderMode.valueOf(mAccountNotifyNewMailMode.getValue()));
+        mAccount.setNotifySelfNewMail(mAccountNotifySelf.isChecked());
+        mAccount.setShowOngoing(mAccountNotifySync.isChecked());
+        mAccount.getNotificationSetting().setVibrate(mAccountVibrate.isChecked());
+        mAccount.getNotificationSetting().setVibratePattern(Integer.parseInt(mAccountVibratePattern.getValue()));
+        mAccount.getNotificationSetting().setVibrateTimes(Integer.parseInt(mAccountVibrateTimes.getValue()));
+        mAccount.getNotificationSetting().setLed(mAccountLed.isChecked());
+        mAccount.setGoToUnreadMessageSearch(mNotificationOpensUnread.isChecked());
 
         /*SharedPreferences prefs = mAccountRingtone.getPreferenceManager().getSharedPreferences();
         String newRingtone = prefs.getString(PREFERENCE_RINGTONE, null);
@@ -853,31 +1010,6 @@ public class AccountPreferences extends SmilePreferenceFragment {
                 mAccount.getNotificationSetting().setRingtone(null);
             }
         }*/
-
-        mAccount.setShowPictures(ShowPictures.valueOf(mAccountShowPictures.getValue()));
-
-        //IMAP specific stuff
-        if (mIsPushCapable) {
-            boolean needsPushRestart = mAccount.setFolderPushMode(FolderMode.valueOf(mPushMode.getValue()));
-            if (mAccount.getFolderPushMode() != FolderMode.NONE) {
-                needsPushRestart |= displayModeChanged;
-                needsPushRestart |= mIncomingChanged;
-            }
-
-            if (needsRefresh && needsPushRestart) {
-                MailService.actionReset(mContext, null);
-            } else if (needsRefresh) {
-                MailService.actionReschedulePoll(mContext, null);
-            } else if (needsPushRestart) {
-                MailService.actionRestartPushers(mContext, null);
-            }
-        }
-
-        mAccount.setSmimeProvider(mSmimeApp.getValue());
-        mAccount.setDefaultCryptoProvider(defaultCryptoProvider.getValue());
-
-        // TODO: refresh folder list here
-        mAccount.save(Preferences.getPreferences(mContext));
     }
 
     @Override
@@ -984,7 +1116,7 @@ public class AccountPreferences extends SmilePreferenceFragment {
     }
 
     private class PopulateFolderPrefsTask extends AsyncTask<Void, Void, Void> {
-        List<? extends Folder> folders = new LinkedList<LocalFolder>();
+        List<? extends Folder> folders = new LinkedList<>();
         String[] allFolderValues;
         String[] allFolderLabels;
 

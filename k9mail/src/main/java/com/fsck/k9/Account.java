@@ -1224,9 +1224,11 @@ public class Account implements BaseAccount, StoreConfig {
         if (syncMode == FolderMode.NONE && oldSyncMode != FolderMode.NONE) {
             return true;
         }
+
         if (syncMode != FolderMode.NONE && oldSyncMode == FolderMode.NONE) {
             return true;
         }
+
         return false;
     }
 

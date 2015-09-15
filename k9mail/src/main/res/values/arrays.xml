@@ -786,4 +786,15 @@
         <item>@color/red</item>
         <item>@color/purple</item>
     </integer-array>
+
+    <string-array name="account_preferences_screen_keys" translatable="false">
+        <item>@string/account_preferences_main_key</item>
+        <item>@string/account_preferences_composing_key</item>
+        <item>@string/account_preferences_composition_key</item>
+        <item>@string/account_preferences_outgoing_key</item>
+        <item>@string/account_preferences_folders_key</item>
+        <item>@string/account_preferences_storage_provider_key</item>
+        <item>@string/account_preferences_notifications_key</item>
+        <item>@string/account_preferences_search_key</item>
+    </string-array>
 </resources>

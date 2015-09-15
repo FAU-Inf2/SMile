@@ -3,42 +3,33 @@ package com.fsck.k9.activity;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
-import android.app.AlertDialog;
-import android.app.AlertDialog.Builder;
-import android.app.Dialog;
-import android.app.LoaderManager;
 import android.app.PendingIntent;
 import android.content.ClipData;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentSender.SendIntentException;
-import android.content.Loader;
+import android.content.IntentSender;
 import android.content.pm.ActivityInfo;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
-import android.support.annotation.Nullable;
-import android.support.v4.app.NavUtils;
-import android.support.v4.app.TaskStackBuilder;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.internal.view.ContextThemeWrapper;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.util.TypedValue;
-import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.Window;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.AdapterView;
@@ -46,7 +37,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
-import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -132,14 +122,8 @@ import de.fau.cs.mad.smime_api.ISMimeService;
 import de.fau.cs.mad.smime_api.SMimeApi;
 import de.fau.cs.mad.smime_api.SMimeServiceConnection;
 
-public class MessageCompose extends K9Activity implements OnClickListener,
+public class MessageCompose extends K9Activity implements View.OnClickListener,
         ProgressDialogFragment.CancelListener {
-
-    private static final int DIALOG_SAVE_OR_DISCARD_DRAFT_MESSAGE = 1;
-    private static final int DIALOG_REFUSE_TO_SAVE_DRAFT_MARKED_ENCRYPTED = 2;
-    private static final int DIALOG_CONFIRM_DISCARD_ON_BACK = 3;
-    private static final int DIALOG_CHOOSE_IDENTITY = 4;
-    private static final int DIALOG_CONFIRM_DISCARD = 5;
 
     private static final long INVALID_DRAFT_ID = MessagingController.INVALID_MESSAGE_ID;
 
@@ -588,7 +572,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
 
         if (isCryptoProviderEnabled()) {
             mCryptoSignatureCheckbox = (CheckBox)findViewById(R.id.cb_crypto_signature);
-            final OnCheckedChangeListener updateListener = new OnCheckedChangeListener() {
+            final CompoundButton.OnCheckedChangeListener updateListener = new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     updateMessageFormat();
@@ -635,7 +619,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
             }).start();
 
             mEncryptLayout.setVisibility(View.VISIBLE);
-            mCryptoSignatureCheckbox.setOnClickListener(new OnClickListener() {
+            mCryptoSignatureCheckbox.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     CheckBox checkBox = (CheckBox) v;
@@ -851,20 +835,8 @@ public class MessageCompose extends K9Activity implements OnClickListener,
     }
 
     private void setupTheme() {
-        if (K9.getK9ComposerThemeSetting() != K9.Theme.USE_GLOBAL) {
-            // theme the whole content according to the theme (except the action bar)
-            mThemeContext = new ContextThemeWrapper(this,
-                    K9.getK9ThemeResourceId(K9.getK9ComposerTheme()));
-            View view = LayoutInflater.from(mThemeContext).inflate(R.layout.message_compose, null);
-            TypedValue outValue = new TypedValue();
-            // background color needs to be forced
-            mThemeContext.getTheme().resolveAttribute(R.attr.messageViewBackgroundColor, outValue, true);
-            view.setBackgroundColor(outValue.data);
-            setContentView(view);
-        } else {
-            setContentView(R.layout.message_compose);
-            mThemeContext = this;
-        }
+        setContentView(R.layout.message_compose);
+        mThemeContext = new ContextThemeWrapper(this, K9.getK9ThemeResourceId(K9.getK9Theme()));
     }
 
     @Override
@@ -1552,7 +1524,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
                     try {
                         startIntentSenderForResult(pi.getIntentSender(),
                                 requestCode, null, 0, 0, 0);
-                    } catch (SendIntentException e) {
+                    } catch (IntentSender.SendIntentException e) {
                         Log.e(K9.LOG_TAG, "SendIntentException", e);
                     }
                     break;
@@ -1684,14 +1656,14 @@ public class MessageCompose extends K9Activity implements OnClickListener,
     }
 
     private void initAttachmentInfoLoader(Attachment attachment) {
-        LoaderManager loaderManager = getLoaderManager();
+        LoaderManager loaderManager = getSupportLoaderManager();
         Bundle bundle = new Bundle();
         bundle.putParcelable(LOADER_ARG_ATTACHMENT, attachment);
         loaderManager.initLoader(attachment.loaderId, bundle, mAttachmentInfoLoaderCallback);
     }
 
     private void initAttachmentContentLoader(Attachment attachment) {
-        LoaderManager loaderManager = getLoaderManager();
+        LoaderManager loaderManager = getSupportLoaderManager();
         Bundle bundle = new Bundle();
         bundle.putParcelable(LOADER_ARG_ATTACHMENT, attachment);
         loaderManager.initLoader(attachment.loaderId, bundle, mAttachmentContentLoaderCallback);
@@ -2001,7 +1973,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
                 }
                 break;
             case R.id.identity:
-                showDialog(DIALOG_CHOOSE_IDENTITY);
+                createChooseIdentityDialog().show();
                 break;
         }
     }
@@ -2048,7 +2020,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
 
     private void askBeforeDiscard(){
         if (K9.confirmDiscardMessage()) {
-            showDialog(DIALOG_CONFIRM_DISCARD);
+            createConfirmDiscardDialog2().show();
         } else {
             onDiscard();
         }
@@ -2063,7 +2035,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
                 break;
             case R.id.save:
                 if (shouldEncrypt()) {
-                    showDialog(DIALOG_REFUSE_TO_SAVE_DRAFT_MARKED_ENCRYPTED);
+                    createCanNotSaveEncryptedDialog().show();
                 } else {
                     onSave();
                 }
@@ -2113,11 +2085,11 @@ public class MessageCompose extends K9Activity implements OnClickListener,
     public void onBackPressed() {
         if (mDraftNeedsSaving) {
             if (shouldEncrypt()) {
-                showDialog(DIALOG_REFUSE_TO_SAVE_DRAFT_MARKED_ENCRYPTED);
+                createCanNotSaveEncryptedDialog().show();
             } else if (!mAccount.hasDraftsFolder()) {
-                showDialog(DIALOG_CONFIRM_DISCARD_ON_BACK);
+                createConfirmDiscardDialog().show();
             } else {
-                showDialog(DIALOG_SAVE_OR_DISCARD_DRAFT_MESSAGE);
+                createSaveOrDiscardDialog().show();
             }
         } else {
             // Check if editing an existing draft.
@@ -2168,96 +2140,98 @@ public class MessageCompose extends K9Activity implements OnClickListener,
         }
     }
 
-    @Override
-    public Dialog onCreateDialog(int id) {
-        switch (id) {
-            case DIALOG_SAVE_OR_DISCARD_DRAFT_MESSAGE:
-                return new AlertDialog.Builder(this)
-                       .setTitle(R.string.save_or_discard_draft_message_dlg_title)
-                       .setMessage(R.string.save_or_discard_draft_message_instructions_fmt)
-                .setPositiveButton(R.string.save_draft_action, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        dismissDialog(DIALOG_SAVE_OR_DISCARD_DRAFT_MESSAGE);
-                        onSave();
-                    }
-                })
-                .setNegativeButton(R.string.discard_action, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        dismissDialog(DIALOG_SAVE_OR_DISCARD_DRAFT_MESSAGE);
-                        onDiscard();
-                    }
-                })
-                .create();
-            case DIALOG_REFUSE_TO_SAVE_DRAFT_MARKED_ENCRYPTED:
-                return new AlertDialog.Builder(this)
-                       .setTitle(R.string.refuse_to_save_draft_marked_encrypted_dlg_title)
-                       .setMessage(R.string.refuse_to_save_draft_marked_encrypted_instructions_fmt)
-                .setNeutralButton(R.string.okay_action, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        dismissDialog(DIALOG_REFUSE_TO_SAVE_DRAFT_MARKED_ENCRYPTED);
-                    }
-                })
-                .create();
-            case DIALOG_CONFIRM_DISCARD_ON_BACK:
-                return new AlertDialog.Builder(this)
-                       .setTitle(R.string.confirm_discard_draft_message_title)
-                       .setMessage(R.string.confirm_discard_draft_message)
+    private AlertDialog createConfirmDiscardDialog() {
+        return new AlertDialog.Builder(this)
+                .setTitle(R.string.confirm_discard_draft_message_title)
+                .setMessage(R.string.confirm_discard_draft_message)
                 .setPositiveButton(R.string.cancel_action, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int whichButton) {
-                        dismissDialog(DIALOG_CONFIRM_DISCARD_ON_BACK);
+                        dialog.dismiss();
                     }
                 })
                 .setNegativeButton(R.string.discard_action, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int whichButton) {
-                        dismissDialog(DIALOG_CONFIRM_DISCARD_ON_BACK);
+                        dialog.dismiss();
                         Toast.makeText(MessageCompose.this,
-                                       getString(R.string.message_discarded_toast),
-                                       Toast.LENGTH_LONG).show();
+                                getString(R.string.message_discarded_toast),
+                                Toast.LENGTH_LONG).show();
                         onDiscard();
                     }
                 })
                 .create();
-            case DIALOG_CHOOSE_IDENTITY:
-                Context context = new ContextThemeWrapper(this,
-                        (K9.getK9Theme() == K9.Theme.LIGHT) ?
-                        R.style.Theme_K9_Dialog_Light :
-                        R.style.Theme_K9_Dialog_Dark);
-                Builder builder = new AlertDialog.Builder(context);
-                builder.setTitle(R.string.send_as);
-                final IdentityAdapter adapter = new IdentityAdapter(context);
-                builder.setAdapter(adapter, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        IdentityContainer container = (IdentityContainer) adapter.getItem(which);
-                        onAccountChosen(container.account, container.identity);
-                    }
-                });
+    }
 
-                return builder.create();
-            case DIALOG_CONFIRM_DISCARD: {
-                return new AlertDialog.Builder(this)
-                        .setTitle(R.string.dialog_confirm_delete_title)
-                        .setMessage(R.string.dialog_confirm_delete_message)
-                        .setPositiveButton(R.string.dialog_confirm_delete_confirm_button,
-                                new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        onDiscard();
-                                    }
-                                })
-                        .setNegativeButton(R.string.dialog_confirm_delete_cancel_button,
-                                new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int which) {
-                                    }
-                                })
-                        .create();
+    private AlertDialog createConfirmDiscardDialog2() {
+        return new AlertDialog.Builder(this)
+                .setTitle(R.string.dialog_confirm_delete_title)
+                .setMessage(R.string.dialog_confirm_delete_message)
+                .setPositiveButton(R.string.dialog_confirm_delete_confirm_button,
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                onDiscard();
+                            }
+                        })
+                .setNegativeButton(R.string.dialog_confirm_delete_cancel_button,
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                            }
+                        })
+                .create();
+    }
+
+    private AlertDialog createChooseIdentityDialog() {
+        Context context = new ContextThemeWrapper(this,
+                (K9.getK9Theme() == K9.Theme.LIGHT) ?
+                R.style.Theme_K9_Dialog_Light :
+                R.style.Theme_K9_Dialog_Dark);
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle(R.string.send_as);
+        final IdentityAdapter adapter = new IdentityAdapter(context);
+        builder.setAdapter(adapter, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                IdentityContainer container = (IdentityContainer) adapter.getItem(which);
+                onAccountChosen(container.account, container.identity);
             }
-        }
-        return super.onCreateDialog(id);
+        });
+
+        return builder.create();
+    }
+
+    private AlertDialog createCanNotSaveEncryptedDialog() {
+        return new AlertDialog.Builder(this)
+               .setTitle(R.string.refuse_to_save_draft_marked_encrypted_dlg_title)
+               .setMessage(R.string.refuse_to_save_draft_marked_encrypted_instructions_fmt)
+        .setNeutralButton(R.string.okay_action, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int whichButton) {
+                dialog.dismiss();
+            }
+        })
+                .create();
+    }
+
+    private AlertDialog createSaveOrDiscardDialog() {
+        return new AlertDialog.Builder(this)
+               .setTitle(R.string.save_or_discard_draft_message_dlg_title)
+               .setMessage(R.string.save_or_discard_draft_message_instructions_fmt)
+        .setPositiveButton(R.string.save_draft_action, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int whichButton) {
+                dialog.dismiss();
+                onSave();
+            }
+        })
+        .setNegativeButton(R.string.discard_action, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int whichButton) {
+                dialog.dismiss();
+                onDiscard();
+            }
+        })
+        .create();
     }
 
     /**
@@ -2626,7 +2600,6 @@ public class MessageCompose extends K9Activity implements OnClickListener,
             showOrHideQuotedText(quotedMode);
             return;
         }
-
 
         if (messageFormat == MessageFormat.HTML) {
             Part part = MimeUtility.findFirstPartByMimeType(message, "text/html");
@@ -3518,7 +3491,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
         return isCryptoProviderEnabled() && mCryptoSignatureCheckbox.isChecked();
     }
 
-    class DoLaunchOnClickListener implements OnClickListener {
+    class DoLaunchOnClickListener implements View.OnClickListener {
 
         private final int resultId;
 

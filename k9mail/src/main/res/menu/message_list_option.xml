@@ -215,11 +215,6 @@
         app:showAsAction="never"
         android:title="@string/select_text_action"/>
 
-    <!-- MessageView -->
-    <item
-        android:id="@+id/toggle_message_view_theme"
-        app:showAsAction="never"
-        android:title="@string/message_view_theme_action_dark"/>
     <item
         android:id="@+id/show_folder_list"
         app:showAsAction="never"

@@ -57,12 +57,6 @@ public class MessageWebView extends RigidWebView {
         this.setScrollBarStyle(SCROLLBARS_INSIDE_OVERLAY);
         this.setLongClickable(true);
 
-        if (K9.getK9MessageViewTheme() == K9.Theme.DARK) {
-            // Black theme should get a black webview background
-            // we'll set the background of the messages on load
-            this.setBackgroundColor(0xff000000);
-        }
-
         final WebSettings webSettings = this.getSettings();
 
         webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
@@ -117,12 +111,6 @@ public class MessageWebView extends RigidWebView {
     public void setText(String text) {
      // Include a meta tag so the WebView will not use a fixed viewport width of 980 px
         String content = "<html><head><meta name=\"viewport\" content=\"width=device-width\"/>";
-        if (K9.getK9MessageViewTheme() == K9.Theme.DARK)  {
-            content += "<style type=\"text/css\">" +
-                   "* { background: black ! important; color: #F3F3F3 !important }" +
-                   ":link, :link * { color: #CCFF33 !important }" +
-                   ":visited, :visited * { color: #551A8B !important }</style> ";
-        }
         content += HtmlConverter.cssStylePre();
         content += "</head><body>" + text + "</body></html>";
 

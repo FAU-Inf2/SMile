@@ -1,7 +1,7 @@
 package com.fsck.k9.activity.asynctask;
 
-import android.content.AsyncTaskLoader;
 import android.content.Context;
+import android.support.v4.content.AsyncTaskLoader;
 import android.util.Log;
 
 import com.fsck.k9.K9;

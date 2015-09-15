@@ -141,9 +141,6 @@ public class K9 extends Application {
 
     private static String language = "";
     private static Theme theme = Theme.LIGHT;
-    private static Theme messageViewTheme = Theme.USE_GLOBAL;
-    private static Theme composerTheme = Theme.USE_GLOBAL;
-    private static boolean useFixedMessageTheme = true;
 
     private static final FontSizes fontSizes = new FontSizes();
 
@@ -521,9 +518,6 @@ public class K9 extends Application {
 
         editor.putString("language", language);
         editor.putInt("theme", theme.ordinal());
-        editor.putInt("messageViewTheme", messageViewTheme.ordinal());
-        editor.putInt("messageComposeTheme", composerTheme.ordinal());
-        editor.putBoolean("fixedMessageViewTheme", useFixedMessageTheme);
 
         editor.putBoolean("confirmDelete", mConfirmDelete);
         editor.putBoolean("confirmDiscardMessage", mConfirmDiscardMessage);
@@ -839,7 +833,6 @@ public class K9 extends Application {
         sMessageViewCopyActionVisible = sprefs.getBoolean("messageViewCopyActionVisible", false);
         sMessageViewSpamActionVisible = sprefs.getBoolean("messageViewSpamActionVisible", false);
 
-
         K9.setK9Language(sprefs.getString("language", ""));
 
         int themeValue = sprefs.getInt("theme", Theme.LIGHT.ordinal());
@@ -852,10 +845,7 @@ public class K9 extends Application {
         }
 
         themeValue = sprefs.getInt("messageViewTheme", Theme.USE_GLOBAL.ordinal());
-        K9.setK9MessageViewThemeSetting(Theme.values()[themeValue]);
         themeValue = sprefs.getInt("messageComposeTheme", Theme.USE_GLOBAL.ordinal());
-        K9.setK9ComposerThemeSetting(Theme.values()[themeValue]);
-        K9.setUseFixedMessageViewTheme(sprefs.getBoolean("fixedMessageViewTheme", true));
     }
 
     @NonNull
@@ -937,22 +927,6 @@ public class K9 extends Application {
         return getK9ThemeResourceId(theme);
     }
 
-    public static Theme getK9MessageViewTheme() {
-        return messageViewTheme == Theme.USE_GLOBAL ? theme : messageViewTheme;
-    }
-
-    public static Theme getK9MessageViewThemeSetting() {
-        return messageViewTheme;
-    }
-
-    public static Theme getK9ComposerTheme() {
-        return composerTheme == Theme.USE_GLOBAL ? theme : composerTheme;
-    }
-
-    public static Theme getK9ComposerThemeSetting() {
-        return composerTheme;
-    }
-
     public static Theme getK9Theme() {
         return theme;
     }
@@ -960,25 +934,6 @@ public class K9 extends Application {
     public static void setK9Theme(Theme ntheme) {
         if (ntheme != Theme.USE_GLOBAL) {
             theme = ntheme;
-        }
-    }
-
-    public static void setK9MessageViewThemeSetting(Theme nMessageViewTheme) {
-        messageViewTheme = nMessageViewTheme;
-    }
-
-    public static boolean useFixedMessageViewTheme() {
-        return useFixedMessageTheme;
-    }
-
-    public static void setK9ComposerThemeSetting(Theme compTheme) {
-        composerTheme = compTheme;
-    }
-
-    public static void setUseFixedMessageViewTheme(boolean useFixed) {
-        useFixedMessageTheme = useFixed;
-        if (!useFixedMessageTheme && messageViewTheme == Theme.USE_GLOBAL) {
-            messageViewTheme = theme;
         }
     }
 

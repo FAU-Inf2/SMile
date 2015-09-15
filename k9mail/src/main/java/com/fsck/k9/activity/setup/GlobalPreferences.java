@@ -99,8 +99,8 @@ public class GlobalPreferences extends SmilePreferenceFragment {
     private SwitchPreferenceCompat mDebugLogging;
     private SwitchPreferenceCompat mQuietTimeEnabled;
     private SwitchPreferenceCompat mDisableNotificationDuringQuietTime;
-    private com.fsck.k9.preferences.TimePickerPreference mQuietTimeStarts;
-    private com.fsck.k9.preferences.TimePickerPreference mQuietTimeEnds;
+    private TimePickerPreference mQuietTimeStarts;
+    private TimePickerPreference mQuietTimeEnds;
     private ListPreference mNotificationQuickDelete;
     private ListPreference mLockScreenNotificationVisibility;
     private Preference mAttachmentPathPreference;
@@ -439,7 +439,6 @@ public class GlobalPreferences extends SmilePreferenceFragment {
 
         K9.DEBUG = mDebugLogging.isChecked();
 
-        K9.setUseFixedMessageViewTheme(true);
         K9.setAnimations(true);
         K9.setGesturesEnabled(true);
         K9.setConfirmDelete(false);

@@ -936,10 +936,6 @@ public class MessageList extends K9Activity
                 mMessageListFragment.onCompose();
                 return true;
             }
-            case R.id.toggle_message_view_theme: {
-                onToggleTheme();
-                return true;
-            }
             // MessageList
             case R.id.check_mail: {
                 mMessageListFragment.checkMail();
@@ -1147,7 +1143,6 @@ public class MessageList extends K9Activity
             menu.findItem(R.id.refile).setVisible(false);
             menu.findItem(R.id.toggle_unread).setVisible(false);
             menu.findItem(R.id.select_text).setVisible(false);
-            menu.findItem(R.id.toggle_message_view_theme).setVisible(false);
             menu.findItem(R.id.show_headers).setVisible(false);
             menu.findItem(R.id.hide_headers).setVisible(false);
         } else {
@@ -1170,19 +1165,6 @@ public class MessageList extends K9Activity
                 MenuItem next = menu.findItem(R.id.next_message);
                 next.setEnabled(canDoNext);
                 next.getIcon().setAlpha(canDoNext ? 255 : 127);
-            }
-
-            MenuItem toggleTheme = menu.findItem(R.id.toggle_message_view_theme);
-            if (K9.useFixedMessageViewTheme()) {
-                toggleTheme.setVisible(false);
-            } else {
-                // Set title of menu item to switch to dark/light theme
-                if (K9.getK9MessageViewTheme() == K9.Theme.DARK) {
-                    toggleTheme.setTitle(R.string.message_view_theme_action_light);
-                } else {
-                    toggleTheme.setTitle(R.string.message_view_theme_action_dark);
-                }
-                toggleTheme.setVisible(true);
             }
 
             // Set title of menu item to toggle the read state of the currently displayed message
@@ -1631,27 +1613,6 @@ public class MessageList extends K9Activity
     @Override
     public void disableDeleteAction() {
         mMenu.findItem(R.id.delete).setEnabled(false);
-    }
-
-    private void onToggleTheme() {
-        if (K9.getK9MessageViewTheme() == K9.Theme.DARK) {
-            K9.setK9MessageViewThemeSetting(K9.Theme.LIGHT);
-        } else {
-            K9.setK9MessageViewThemeSetting(K9.Theme.DARK);
-        }
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Context appContext = getApplicationContext();
-                Preferences prefs = Preferences.getPreferences(appContext);
-                Editor editor = prefs.getPreferences().edit();
-                K9.save(editor);
-                editor.commit();
-            }
-        }).start();
-
-        recreate();
     }
 
     private void showDefaultTitleView() {

@@ -195,16 +195,24 @@ public class AppPreference extends DialogPreference implements SmileDialogPrefer
         return marketIntent;
     }
 
-    public String getSelectedPackage() {
+    String getSelectedPackage() {
         return selectedPackage;
     }
 
-    public void setSelectedPackage(String selectedPackage) {
+    void setSelectedPackage(String selectedPackage) {
         this.selectedPackage = selectedPackage;
     }
 
     @Override
     public PreferenceDialogFragmentCompat getDialogInstance() {
         return AppPreferenceDialog.newInstance(getKey());
+    }
+
+    public void setValue(String value) {
+        setAndPersist(value);
+    }
+
+    public String getValue() {
+        return selectedPackage;
     }
 }

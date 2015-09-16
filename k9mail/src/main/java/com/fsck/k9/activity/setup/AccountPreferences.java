@@ -31,10 +31,12 @@ import com.fsck.k9.NotificationSetting;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.activity.ChooseFolder;
 import com.fsck.k9.activity.ColorPickerDialog;
+import com.fsck.k9.crypto.OpenPgpApiHelper;
 import com.fsck.k9.fragment.SmilePreferenceFragment;
 import com.fsck.k9.mail.Folder;
 import com.fsck.k9.mail.Store;
 import com.fsck.k9.mailstore.StorageManager;
+import com.fsck.k9.preferences.AppPreference;
 import com.fsck.k9.service.MailService;
 
 import org.openintents.openpgp.util.OpenPgpAppPreference;
@@ -158,7 +160,7 @@ public class AccountPreferences extends SmilePreferenceFragment {
     private SwitchPreferenceCompat composing_accountDefaultQuotedTextShown;
     private SwitchPreferenceCompat incoming_syncRemoteDeletions;
     private boolean mHasCrypto = false;
-    private OpenPgpAppPreference mCryptoApp;
+    private AppPreference mCryptoApp;
     private OpenPgpKeyPreference mCryptoKey;
 
     private PreferenceCategory mSearchScreen;
@@ -177,7 +179,7 @@ public class AccountPreferences extends SmilePreferenceFragment {
     private ListPreference mSpamFolder;
     private ListPreference mTrashFolder;
 
-    private ListPreference mSmimeApp;
+    private AppPreference mSmimeApp;
     private ListPreference defaultCryptoProvider;
 
     private Context mContext;
@@ -384,10 +386,10 @@ public class AccountPreferences extends SmilePreferenceFragment {
 
     private void setupCryptoCategory() {
         mHasCrypto = OpenPgpUtils.isAvailable(mContext);
-        /*if (mHasCrypto) {
+        if (mHasCrypto) {
 
-            mCryptoApp = (OpenPgpAppPreference) findPreference(PREFERENCE_CRYPTO_APP);
-            mCryptoKey = (OpenPgpKeyPreference) findPreference(PREFERENCE_CRYPTO_KEY);
+            mCryptoApp = (AppPreference) findPreference(PREFERENCE_CRYPTO_APP);
+            //mCryptoKey = (OpenPgpKeyPreference) findPreference(PREFERENCE_CRYPTO_KEY);
 
             mCryptoApp.setValue(String.valueOf(mAccount.getPgpApp()));
             mCryptoApp.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
@@ -395,11 +397,12 @@ public class AccountPreferences extends SmilePreferenceFragment {
                     String value = newValue.toString();
                     mCryptoApp.setValue(value);
 
-                    mCryptoKey.setOpenPgpProvider(value);
+                    //mCryptoKey.setOpenPgpProvider(value);
                     return false;
                 }
             });
 
+            /*
             mCryptoKey.setValue(mAccount.getPgpKey());
             mCryptoKey.setOpenPgpProvider(mCryptoApp.getValue());
             // TODO: other identities?
@@ -410,7 +413,7 @@ public class AccountPreferences extends SmilePreferenceFragment {
                     mCryptoKey.setValue(value);
                     return false;
                 }
-            });
+            });*/
         } else {
             final Preference mCryptoApp = findPreference(PREFERENCE_CRYPTO_APP);
             mCryptoApp.setEnabled(false);
@@ -418,13 +421,13 @@ public class AccountPreferences extends SmilePreferenceFragment {
             final Preference mCryptoKey = findPreference(PREFERENCE_CRYPTO_KEY);
             mCryptoKey.setEnabled(false);
             mCryptoKey.setSummary(R.string.account_settings_no_openpgp_provider_installed);
-        }*/
+        }
 
-        PackageManager packageManager = mContext.getPackageManager();
+        mSmimeApp = (AppPreference) findPreference(PREFERENCE_CRYPTO_SMIME_APP);
+
+        /*PackageManager packageManager = mContext.getPackageManager();
         Intent smime = new Intent(SMimeApi.SERVICE_INTENT);
         List<ResolveInfo> activities = packageManager.queryIntentServices(smime, 0);
-        mSmimeApp = (ListPreference) findPreference(PREFERENCE_CRYPTO_SMIME_APP);
-
         if (activities.size() > 0) {
             final ArrayList<String> names = new ArrayList<>();
             final ArrayList<String> values = new ArrayList<>();
@@ -468,7 +471,7 @@ public class AccountPreferences extends SmilePreferenceFragment {
         } else {
             mSmimeApp.setSummary(getString(R.string.account_settings_smime_app_not_found));
             mSmimeApp.setEnabled(false);
-        }
+        }*/
 
         defaultCryptoProvider = (ListPreference) findPreference("default_crypto");
         if (defaultCryptoProvider != null) {
@@ -900,8 +903,8 @@ public class AccountPreferences extends SmilePreferenceFragment {
 
         mAccount.setDescription(mAccountDescription.getText());
         if (mHasCrypto) {
-            /*mAccount.setPgpApp(mCryptoApp.getValue());
-            mAccount.setPgpKey(mCryptoKey.getValue());*/
+            mAccount.setPgpApp(mCryptoApp.getValue());
+            //mAccount.setPgpKey(mCryptoKey.getValue());
         }
 
         mAccount.setSmimeProvider(mSmimeApp.getValue());

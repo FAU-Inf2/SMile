@@ -418,12 +418,20 @@ public class AccountPreferences extends SmilePreferenceFragment {
             final Preference mCryptoApp = findPreference(PREFERENCE_CRYPTO_APP);
             mCryptoApp.setEnabled(false);
             mCryptoApp.setSummary(R.string.account_settings_no_openpgp_provider_installed);
-            final Preference mCryptoKey = findPreference(PREFERENCE_CRYPTO_KEY);
-            mCryptoKey.setEnabled(false);
-            mCryptoKey.setSummary(R.string.account_settings_no_openpgp_provider_installed);
+            //final Preference mCryptoKey = findPreference(PREFERENCE_CRYPTO_KEY);
+            //mCryptoKey.setEnabled(false);
+            //mCryptoKey.setSummary(R.string.account_settings_no_openpgp_provider_installed);
         }
 
         mSmimeApp = (AppPreference) findPreference(PREFERENCE_CRYPTO_SMIME_APP);
+        mSmimeApp.setValue(String.valueOf(mAccount.getPgpApp()));
+        mSmimeApp.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                String value = newValue.toString();
+                mSmimeApp.setValue(value);
+                return false;
+            }
+        });
 
         /*PackageManager packageManager = mContext.getPackageManager();
         Intent smime = new Intent(SMimeApi.SERVICE_INTENT);

@@ -163,7 +163,7 @@ public class GlobalPreferences extends SmilePreferenceFragment {
         super.onCreate(savedInstanceState);
         mContext = getActivity();
         JodaTimeAndroid.init(mContext);
-        
+
         setupLanguage();
         setupFontSize();
         setupVolumeNavigation();
@@ -378,10 +378,10 @@ public class GlobalPreferences extends SmilePreferenceFragment {
             return;
         }
 
+        category.removeAll();
         List<Account> accounts = Preferences.getPreferences(mContext).getAccounts();
         for (Account account : accounts) {
             category.addAccount(account, new OnAccountPreferenceClickListener());
-            //category.addPreference(new AccountPreference(mContext, account, new OnAccountPreferenceClickListener()));
         }
     }
 
@@ -537,9 +537,9 @@ public class GlobalPreferences extends SmilePreferenceFragment {
     public class OnAccountPreferenceClickListener implements Preference.OnPreferenceClickListener {
         @Override
         public boolean onPreferenceClick(Preference preference) {
-            //AccountPreference accountPreference = (AccountPreference) preference;
-            //K9.logDebug("found acc pref: " + accountPreference.getAccount());
-            //callback.onAccountClick(accountPreference.getAccount());
+            AccountPreference accountPreference = (AccountPreference) preference;
+            K9.logDebug("found acc pref: " + accountPreference.getAccount());
+            callback.onAccountClick(accountPreference.getAccount());
             return false;
         }
     }

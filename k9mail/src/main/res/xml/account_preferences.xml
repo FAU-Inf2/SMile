@@ -23,6 +23,7 @@
 -->
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:smile="http://schemas.android.com/apk/res-auto"
     android:key="@string/account_preferences_main_key">
 
     <PreferenceCategory
@@ -403,20 +404,27 @@
         android:key="crypto"
         android:title="@string/account_settings_crypto">
 <!--
-        <org.openintents.openpgp.util.OpenPgpAppPreference
-            android:key="crypto_app"
-            android:persistent="false"
-            android:title="@string/account_settings_crypto_app" />
-
         <org.openintents.openpgp.util.OpenPgpKeyPreference
             android:key="crypto_key"
             android:persistent="false"
             android:title="@string/account_settings_crypto_key" />
 -->
-        <ListPreference
+        <com.fsck.k9.preferences.AppPreference
+            android:key="crypto_app"
+            android:persistent="false"
+            android:title="@string/account_settings_crypto_app"
+            smile:packageName="org.sufficientlysecure.keychain"
+            smile:simpleName="OpenKeychain"
+            smile:serviceIntentName="org.openintents.openpgp.IOpenPgpService"
+            />
+
+        <com.fsck.k9.preferences.AppPreference
             android:key="smime_app"
             android:persistent="false"
-            android:title="@string/smime_app" />
+            android:title="@string/smime_app"
+            smile:packageName="de.fau.cs.mad.smile.android.encryption"
+            smile:simpleName="Smile Cryptographic Extension"
+            smile:serviceIntentName="de.fau.cs.mad.ISMimeService" />
 
         <ListPreference
             android:defaultValue="None"

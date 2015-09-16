@@ -48,6 +48,13 @@ import java.util.Map;
 import de.fau.cs.mad.smile.android.R;
 
 public class AccountPreferences extends SmilePreferenceFragment {
+    public interface AccountPreferenceFragmentCallback {
+        /*
+        workaround for startIntentSenderFromChild in OpenPgpKeyPreferenceCompat
+         */
+        void registerFragment(AccountPreferences fragment);
+    }
+
     private static final String EXTRA_ACCOUNT = "account";
 
     private static final int SELECT_AUTO_EXPAND_FOLDER = 100;
@@ -177,6 +184,7 @@ public class AccountPreferences extends SmilePreferenceFragment {
     private ListPreference defaultCryptoProvider;
 
     private Context mContext;
+    private AccountPreferenceFragmentCallback callback;
 
     public static AccountPreferences newInstance(Account account) {
         Bundle args = new Bundle();
@@ -201,6 +209,7 @@ public class AccountPreferences extends SmilePreferenceFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = getActivity();
+        callback.registerFragment(this);
 
         Bundle args = getArguments();
         String accountUuid = args.getString(EXTRA_ACCOUNT);
@@ -982,6 +991,17 @@ public class AccountPreferences extends SmilePreferenceFragment {
         }
 
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        try {
+            callback = (AccountPreferenceFragmentCallback)activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException("you need to implement AccountPreferenceFragmentCallback");
+        }
+
+        super.onAttach(activity);
     }
 
     private void onCompositionSettings() {

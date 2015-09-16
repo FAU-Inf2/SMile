@@ -13,7 +13,6 @@ import com.fsck.k9.K9;
 
 public abstract class SmilePreferenceFragment extends PreferenceFragmentCompat {
 
-
     /**
      * Set up the {@link ListPreference} instance identified by {@code key}.
      *

@@ -1,13 +1,12 @@
 package com.fsck.k9.preferences;
 
 import android.app.Activity;
-import android.app.Application;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.res.TypedArray;
-import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.v7.preference.Preference;
@@ -96,7 +95,7 @@ public class OpenPgpKeyPreferenceCompat extends Preference {
         data.putExtra(OpenPgpApi.EXTRA_USER_ID, mDefaultUserId);
 
         OpenPgpApi api = new OpenPgpApi(getContext(), mServiceConnection.getService());
-        api.executeApiAsync(data, null, null, new MyCallback(this, activity, REQUEST_CODE_KEY_PREFERENCE));
+        api.executeApiAsync(data, null, null, new MyCallback(activity, REQUEST_CODE_KEY_PREFERENCE));
     }
 
     public void save(long newValue) {
@@ -243,7 +242,8 @@ public class OpenPgpKeyPreferenceCompat extends Preference {
 
     public boolean handleOnActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_CODE_KEY_PREFERENCE && resultCode == Activity.RESULT_OK) {
-            getSignKeyId(data);
+            long keyId = data.getLongExtra(OpenPgpApi.EXTRA_SIGN_KEY_ID, NO_KEY);
+            save(keyId);
             return true;
         } else {
             return false;
@@ -252,11 +252,9 @@ public class OpenPgpKeyPreferenceCompat extends Preference {
 
     private static class MyCallback implements OpenPgpApi.IOpenPgpCallback {
         private final Activity activity;
-        private final OpenPgpKeyPreferenceCompat preference;
         private final int requestCode;
 
-        private MyCallback(OpenPgpKeyPreferenceCompat preference, Activity activity, int requestCode) {
-            this.preference = preference;
+        private MyCallback(Activity activity, int requestCode) {
             this.activity = activity;
             this.requestCode = requestCode;
         }
@@ -265,12 +263,9 @@ public class OpenPgpKeyPreferenceCompat extends Preference {
         public void onReturn(Intent result) {
             switch (result.getIntExtra(OpenPgpApi.RESULT_CODE, OpenPgpApi.RESULT_CODE_ERROR)) {
                 case OpenPgpApi.RESULT_CODE_SUCCESS: {
-                    long keyId = result.getLongExtra(OpenPgpApi.EXTRA_SIGN_KEY_ID, NO_KEY);
-                    preference.save(keyId);
                     break;
                 }
                 case OpenPgpApi.RESULT_CODE_USER_INTERACTION_REQUIRED: {
-
                     PendingIntent pi = result.getParcelableExtra(OpenPgpApi.RESULT_INTENT);
                     try {
                         activity.startIntentSenderFromChild(

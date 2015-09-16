@@ -3,8 +3,6 @@ package com.fsck.k9.activity.setup;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Vibrator;
@@ -37,23 +35,26 @@ import com.fsck.k9.mail.Folder;
 import com.fsck.k9.mail.Store;
 import com.fsck.k9.mailstore.StorageManager;
 import com.fsck.k9.preferences.AppPreference;
+import com.fsck.k9.preferences.OpenPgpKeyPreferenceCompat;
 import com.fsck.k9.service.MailService;
 
-import org.openintents.openpgp.util.OpenPgpAppPreference;
-import org.openintents.openpgp.util.OpenPgpKeyPreference;
 import org.openintents.openpgp.util.OpenPgpUtils;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import de.fau.cs.mad.smile.android.R;
-import de.fau.cs.mad.smime_api.SMimeApi;
-
 
 public class AccountPreferences extends SmilePreferenceFragment {
+    public interface AccountPreferenceFragmentCallback {
+        /*
+        workaround for startIntentSenderFromChild in OpenPgpKeyPreferenceCompat
+         */
+        void registerFragment(AccountPreferences fragment);
+    }
+
     private static final String EXTRA_ACCOUNT = "account";
 
     private static final int SELECT_AUTO_EXPAND_FOLDER = 100;
@@ -161,7 +162,7 @@ public class AccountPreferences extends SmilePreferenceFragment {
     private SwitchPreferenceCompat incoming_syncRemoteDeletions;
     private boolean mHasCrypto = false;
     private AppPreference mCryptoApp;
-    private OpenPgpKeyPreference mCryptoKey;
+    private OpenPgpKeyPreferenceCompat mCryptoKey;
 
     private PreferenceCategory mSearchScreen;
     private SwitchPreferenceCompat mCloudSearchEnabled;
@@ -183,6 +184,7 @@ public class AccountPreferences extends SmilePreferenceFragment {
     private ListPreference defaultCryptoProvider;
 
     private Context mContext;
+    private AccountPreferenceFragmentCallback callback;
 
     public static AccountPreferences newInstance(Account account) {
         Bundle args = new Bundle();
@@ -207,6 +209,7 @@ public class AccountPreferences extends SmilePreferenceFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = getActivity();
+        callback.registerFragment(this);
 
         Bundle args = getArguments();
         String accountUuid = args.getString(EXTRA_ACCOUNT);
@@ -389,20 +392,18 @@ public class AccountPreferences extends SmilePreferenceFragment {
         if (mHasCrypto) {
 
             mCryptoApp = (AppPreference) findPreference(PREFERENCE_CRYPTO_APP);
-            //mCryptoKey = (OpenPgpKeyPreference) findPreference(PREFERENCE_CRYPTO_KEY);
-
+            mCryptoKey = (OpenPgpKeyPreferenceCompat) findPreference(PREFERENCE_CRYPTO_KEY);
+            mCryptoKey.setActivity(getActivity());
             mCryptoApp.setValue(String.valueOf(mAccount.getPgpApp()));
             mCryptoApp.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
                     String value = newValue.toString();
                     mCryptoApp.setValue(value);
-
-                    //mCryptoKey.setOpenPgpProvider(value);
+                    mCryptoKey.setOpenPgpProvider(value);
                     return false;
                 }
             });
 
-            /*
             mCryptoKey.setValue(mAccount.getPgpKey());
             mCryptoKey.setOpenPgpProvider(mCryptoApp.getValue());
             // TODO: other identities?
@@ -413,14 +414,14 @@ public class AccountPreferences extends SmilePreferenceFragment {
                     mCryptoKey.setValue(value);
                     return false;
                 }
-            });*/
+            });
         } else {
             final Preference mCryptoApp = findPreference(PREFERENCE_CRYPTO_APP);
             mCryptoApp.setEnabled(false);
             mCryptoApp.setSummary(R.string.account_settings_no_openpgp_provider_installed);
-            //final Preference mCryptoKey = findPreference(PREFERENCE_CRYPTO_KEY);
-            //mCryptoKey.setEnabled(false);
-            //mCryptoKey.setSummary(R.string.account_settings_no_openpgp_provider_installed);
+            final Preference mCryptoKey = findPreference(PREFERENCE_CRYPTO_KEY);
+            mCryptoKey.setEnabled(false);
+            mCryptoKey.setSummary(R.string.account_settings_no_openpgp_provider_installed);
         }
 
         mSmimeApp = (AppPreference) findPreference(PREFERENCE_CRYPTO_SMIME_APP);
@@ -432,54 +433,6 @@ public class AccountPreferences extends SmilePreferenceFragment {
                 return false;
             }
         });
-
-        /*PackageManager packageManager = mContext.getPackageManager();
-        Intent smime = new Intent(SMimeApi.SERVICE_INTENT);
-        List<ResolveInfo> activities = packageManager.queryIntentServices(smime, 0);
-        if (activities.size() > 0) {
-            final ArrayList<String> names = new ArrayList<>();
-            final ArrayList<String> values = new ArrayList<>();
-            final String none = "None";
-            names.add(none);
-            values.add(none);
-
-            for (ResolveInfo ri : activities) {
-                if (ri.serviceInfo != null) {
-                    names.add(ri.serviceInfo.loadLabel(packageManager).toString());
-                    values.add(ri.serviceInfo.packageName);
-                }
-            }
-
-            mSmimeApp.setEntries(names.toArray(new String[names.size()]));
-            mSmimeApp.setEntryValues(values.toArray(new String[values.size()]));
-            mSmimeApp.setDefaultValue(none);
-            mSmimeApp.setSummary(none);
-
-            final String smimeApp = mAccount.getSmimeProvider();
-            if (smimeApp != null && !smimeApp.equals("")) {
-                mSmimeApp.setValue(smimeApp);
-                int pos = values.indexOf(smimeApp);
-                if (pos >= 0) {
-                    String name = names.get(pos);
-                    mSmimeApp.setSummary(name);
-                }
-            }
-
-            mSmimeApp.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    String value = newValue.toString();
-                    Log.d(K9.LOG_TAG, "Selected " + value);
-                    mSmimeApp.setValue(value);
-                    int pos = values.indexOf(value);
-                    String name = names.get(pos);
-                    mSmimeApp.setSummary(name);
-                    return false;
-                }
-            });
-        } else {
-            mSmimeApp.setSummary(getString(R.string.account_settings_smime_app_not_found));
-            mSmimeApp.setEnabled(false);
-        }*/
 
         defaultCryptoProvider = (ListPreference) findPreference("default_crypto");
         if (defaultCryptoProvider != null) {
@@ -912,7 +865,7 @@ public class AccountPreferences extends SmilePreferenceFragment {
         mAccount.setDescription(mAccountDescription.getText());
         if (mHasCrypto) {
             mAccount.setPgpApp(mCryptoApp.getValue());
-            //mAccount.setPgpKey(mCryptoKey.getValue());
+            mAccount.setPgpKey(mCryptoKey.getValue());
         }
 
         mAccount.setSmimeProvider(mSmimeApp.getValue());
@@ -1038,6 +991,17 @@ public class AccountPreferences extends SmilePreferenceFragment {
         }
 
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        try {
+            callback = (AccountPreferenceFragmentCallback)activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException("you need to implement AccountPreferenceFragmentCallback");
+        }
+
+        super.onAttach(activity);
     }
 
     private void onCompositionSettings() {

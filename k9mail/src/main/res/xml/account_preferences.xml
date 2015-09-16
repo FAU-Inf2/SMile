@@ -403,12 +403,7 @@
     <PreferenceCategory
         android:key="crypto"
         android:title="@string/account_settings_crypto">
-<!--
-        <org.openintents.openpgp.util.OpenPgpKeyPreference
-            android:key="crypto_key"
-            android:persistent="false"
-            android:title="@string/account_settings_crypto_key" />
--->
+
         <com.fsck.k9.preferences.AppPreference
             android:key="crypto_app"
             android:persistent="false"
@@ -418,6 +413,11 @@
             smile:serviceIntentName="org.openintents.openpgp.IOpenPgpService"
             smile:noneIcon="@drawable/ic_action_cancel_light"
             />
+
+        <com.fsck.k9.preferences.OpenPgpKeyPreferenceCompat
+            android:key="crypto_key"
+            android:persistent="false"
+            android:title="@string/account_settings_crypto_key" />
 
         <com.fsck.k9.preferences.AppPreference
             android:key="smime_app"

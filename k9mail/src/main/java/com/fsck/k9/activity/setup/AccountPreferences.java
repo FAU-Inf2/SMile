@@ -424,7 +424,7 @@ public class AccountPreferences extends SmilePreferenceFragment {
         }
 
         mSmimeApp = (AppPreference) findPreference(PREFERENCE_CRYPTO_SMIME_APP);
-        mSmimeApp.setValue(String.valueOf(mAccount.getPgpApp()));
+        mSmimeApp.setValue(String.valueOf(mAccount.getSmimeProvider()));
         mSmimeApp.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 String value = newValue.toString();

@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.NavUtils;
+import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceFragmentCompat;
@@ -78,11 +80,12 @@ public class Settings extends AppCompatActivity
 
         if(action == null) {
             GlobalPreferences fragment = GlobalPreferences.newInstance(this);
-            loadPreference(fragment);
+            loadPreference(fragment, false);
         } else if (EDIT_ACCOUNT_ACTION.equals(action)) {
             final String accountUuid = intent.getStringExtra(ACCOUNT_EXTRA);
             Account account = Preferences.getPreferences(this).getAccount(accountUuid);
-            onAccountClick(account);
+            AccountPreferences fragment = AccountPreferences.newInstance(account);
+            loadPreference(fragment, false);
         } else if (EDIT_FOLDER_ACTION.equals(action)) {
             final String accountUuid = intent.getStringExtra(ACCOUNT_EXTRA);
             Account account = Preferences.getPreferences(this).getAccount(accountUuid);
@@ -94,44 +97,50 @@ public class Settings extends AppCompatActivity
     @Override
     public void onAccountClick(Account account) {
         AccountPreferences fragment = AccountPreferences.newInstance(account);
-        loadPreference(fragment);
+        loadPreference(fragment, true);
     }
 
     @Override
     public void onFontSizeSettings() {
         FontSizePreferences fragment = FontSizePreferences.newInstance();
-        loadPreference(fragment);
+        loadPreference(fragment, true);
     }
 
-    @Override
-    public void onBackPressed() {
-        //FragmentManager fragmentManager = getFragmentManager();
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        if(fragmentManager.getBackStackEntryCount() > 1) { // TODO: Workaround
-            fragmentManager.popBackStack();
-        } else {
-            finish();
-        }
-        //super.onBackPressed();
-    }
-
-    private void loadPreference(SmilePreferenceFragment fragment) {
+    private void loadPreference(SmilePreferenceFragment fragment, boolean addToBackStack) {
         final String tag = fragment.getClass().getSimpleName();
-        loadPreference(fragment, tag);
+        loadPreference(fragment, addToBackStack, tag);
     }
 
-    private void loadPreference(SmilePreferenceFragment fragment, final String tag) {
+    private void loadPreference(SmilePreferenceFragment fragment, boolean addToBackStack, final String tag) {
         FragmentManager fm = getSupportFragmentManager();
         FragmentTransaction ft = fm.beginTransaction();
         ft.replace(R.id.content_frame, fragment, tag);
-        ft.addToBackStack(tag);
+
+        if(addToBackStack) {
+            ft.addToBackStack(tag);
+        }
+
         ft.commit();
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
-            onBackPressed();
+            Intent upIntent = NavUtils.getParentActivityIntent(this);
+            if (NavUtils.shouldUpRecreateTask(this, upIntent)) {
+                // This activity is NOT part of this app's task, so create a new task
+                // when navigating up, with a synthesized back stack.
+                TaskStackBuilder.create(this)
+                        // Add all of this activity's parents to the back stack
+                        .addNextIntentWithParentStack(upIntent)
+                                // Navigate up to the closest parent
+                        .startActivities();
+            } else {
+                // This activity is part of this app's task, so simply
+                // navigate up to the logical parent activity.
+                NavUtils.navigateUpTo(this, upIntent);
+            }
+
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -149,7 +158,7 @@ public class Settings extends AppCompatActivity
 
             args.putString(PreferenceFragmentCompat.ARG_PREFERENCE_ROOT, preferenceScreen.getKey());
             subScreen.setArguments(args);
-            loadPreference(subScreen, preferenceScreen.getKey());
+            loadPreference(subScreen, true, preferenceScreen.getKey());
             return true;
         }
 

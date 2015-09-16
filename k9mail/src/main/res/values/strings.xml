@@ -1195,4 +1195,7 @@ Please submit bug reports, contribute new features and ask questions at
     <string name="account_preferences_storage_provider_key">storage_provider</string>
     <string name="account_preferences_notifications_key">notifications</string>
     <string name="account_preferences_search_key">search</string>
+
+    <string name="app_preference_none">None</string>
+    <string name="app_preference_install_via">Install %1$s via %2$s</string>
 </resources>

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <declare-styleable name="K9Styles">
         <attr name="iconFolder" format="reference" />
         <attr name="iconListItemMenu" format="reference" />
@@ -69,5 +68,12 @@
     <declare-styleable name="MessageComposeRecipient">
         <attr name="recipientHint" format="string" />
         <attr name="addDescription" format="string" />
+    </declare-styleable>
+
+    <declare-styleable name="AppPreference">
+        <attr name="packageName" format="string" />
+        <attr name="simpleName" format="string" />
+        <attr name="serviceIntentName" format="string" />
+        <attr name="noneIcon" format="reference" />
     </declare-styleable>
 </resources>

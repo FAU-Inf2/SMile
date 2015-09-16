@@ -416,6 +416,7 @@
             smile:packageName="org.sufficientlysecure.keychain"
             smile:simpleName="OpenKeychain"
             smile:serviceIntentName="org.openintents.openpgp.IOpenPgpService"
+            smile:noneIcon="@drawable/ic_action_cancel_light"
             />
 
         <com.fsck.k9.preferences.AppPreference
@@ -424,7 +425,8 @@
             android:title="@string/smime_app"
             smile:packageName="de.fau.cs.mad.smile.android.encryption"
             smile:simpleName="Smile Cryptographic Extension"
-            smile:serviceIntentName="de.fau.cs.mad.ISMimeService" />
+            smile:serviceIntentName="de.fau.cs.mad.ISMimeService"
+            smile:noneIcon="@drawable/ic_action_cancel_light" />
 
         <ListPreference
             android:defaultValue="None"

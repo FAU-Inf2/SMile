@@ -2,22 +2,18 @@ package com.fsck.k9.preferences;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.pm.ResolveInfo;
+import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.preference.PreferenceDialogFragmentCompat;
+import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
-import org.openintents.openpgp.util.OpenPgpApi;
-
-import java.util.ArrayList;
 import java.util.List;
 
 /*
@@ -80,13 +76,16 @@ public class AppPreferenceDialog extends PreferenceDialogFragmentCompat {
             return;
         }
 
-        preference.setAndPersist(preference.getSelectedPackage());
+        preference.setValue(preference.getSelectedPackage());
     }
 
     private static class AppEntryArrayAdapter extends ArrayAdapter<AppEntry> {
+        private final static int ICON_SIZE = 50;
+        private final Resources resources;
 
         public AppEntryArrayAdapter(Context context, List<AppEntry> entries) {
             super(context, android.R.layout.select_dialog_singlechoice, android.R.id.text1, entries);
+            resources = getContext().getResources();
         }
 
         public View getView(int position, View convertView, ViewGroup parent) {
@@ -95,11 +94,15 @@ public class AppPreferenceDialog extends PreferenceDialogFragmentCompat {
             TextView tv = (TextView) v.findViewById(android.R.id.text1);
 
             // Put the image on the TextView
-            tv.setCompoundDrawablesWithIntrinsicBounds(getItem(position).getIcon(), null,
-                    null, null);
+            Drawable icon = getItem(position).getIcon();
+            DisplayMetrics displayMetrics = resources.getDisplayMetrics();
+            float scale = displayMetrics.density;
+            int iconSizeInPx = (int) (ICON_SIZE * scale);
+            icon.setBounds(0, 0, iconSizeInPx, iconSizeInPx);
+            tv.setCompoundDrawables(icon, null, null, null);
 
             // Add margin between image and text (support various screen densities)
-            int dp10 = (int) (10 * getContext().getResources().getDisplayMetrics().density + 0.5f);
+            int dp10 = (int) (10 * displayMetrics.density + 0.5f);
             tv.setCompoundDrawablePadding(dp10);
 
             return v;

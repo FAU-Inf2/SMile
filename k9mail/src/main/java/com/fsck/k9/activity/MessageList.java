@@ -601,18 +601,26 @@ public class MessageList extends K9Activity
         mRecyclerView.addItemDecoration(new DividerItemDecoration(this));
 
         mTitles = new String[7];
-        mTitles[0] = getResources().getString(R.string.special_mailbox_name_inbox);
-        mTitles[1] = getResources().getString(R.string.special_mailbox_name_sent);
-        mTitles[2] = getResources().getString(R.string.special_mailbox_name_archive);
-        mTitles[3] = getResources().getString(R.string.special_mailbox_name_trash);
-        mTitles[4] = getResources().getString(R.string.folder_list);
-        mTitles[5] = getResources().getString(R.string.preferences_title);
-        mTitles[6] = getResources().getString(R.string.app_name);
-
         if(mAccount != null) {
+            mTitles[0] = mAccount.getInboxFolderName();
+            mTitles[1] = mAccount.getSentFolderName();
+            mTitles[2] = mAccount.getDraftsFolderName();
+            mTitles[3] = mAccount.getTrashFolderName();
+            mTitles[4] = getResources().getString(R.string.folder_list);
+            mTitles[5] = getResources().getString(R.string.preferences_title);
+            mTitles[6] = getResources().getString(R.string.app_name);
+
             mName = mAccount.getName();
             mEmail = mAccount.getEmail();
         } else {
+            mTitles[0] = getResources().getString(R.string.special_mailbox_name_inbox);
+            mTitles[1] = getResources().getString(R.string.special_mailbox_name_sent);
+            mTitles[2] = getResources().getString(R.string.special_mailbox_name_drafts);
+            mTitles[3] = getResources().getString(R.string.special_mailbox_name_trash);
+            mTitles[4] = getResources().getString(R.string.folder_list);
+            mTitles[5] = getResources().getString(R.string.preferences_title);
+            mTitles[6] = getResources().getString(R.string.app_name);
+
             //TODO: just a workaround to display something
             mName = getString(R.string.app_name);
             mEmail = getString(R.string.app_name);
@@ -638,33 +646,36 @@ public class MessageList extends K9Activity
                     mDrawer.closeDrawers();
 
                     int position = recyclerView.getChildPosition(child);
-                    String title;
-                    if (position == 0)
-                        return true;
-                    else
-                        title = mTitles[position - 1];
-
-                    //switch not possible here :-(
-                    if (title.equals(getResources().getString(R.string.special_mailbox_name_inbox))) {
-                        if(mAccount != null)
-                            onOpenFolder(mAccount.getInboxFolderName());
-                    } else if (title.equals(getResources().getString(R.string.special_mailbox_name_sent))) {
-                        if(mAccount != null)
-                            onOpenFolder(mAccount.getSentFolderName());
-                    } else if (title.equals(getResources().getString(R.string.special_mailbox_name_archive))) {
-                        if(mAccount != null)
-                            onOpenFolder(mAccount.getArchiveFolderName());
-                    } else if (title.equals(getResources().getString(R.string.special_mailbox_name_trash))) {
-                        if(mAccount != null)
-                            onOpenFolder(mAccount.getTrashFolderName());
-                    } else if (title.equals(getResources().getString(R.string.folder_list))) {
-                        if(mAccount != null)
-                            onShowFolderList();
-                    } else if (title.equals(getResources().getString(R.string.preferences_title))) {
-                        onEditPrefs();
-                    } else if (title.equals(getResources().getString(R.string.app_name))) {
-                        //TODO: open
-                        Toast.makeText(MessageList.this, getString(R.string.clicked_on) + "last one...", Toast.LENGTH_SHORT).show();
+                    switch(position) {
+                        case 0:
+                            break;
+                        case 1:
+                            if(mAccount != null)
+                                onOpenFolder(mAccount.getInboxFolderName());
+                            break;
+                        case 2:
+                            if(mAccount != null)
+                                onOpenFolder(mAccount.getSentFolderName());
+                            break;
+                        case 3:
+                            if(mAccount != null)
+                                onOpenFolder(mAccount.getDraftsFolderName());
+                            break;
+                        case 4:
+                            if(mAccount != null)
+                                onOpenFolder(mAccount.getTrashFolderName());
+                            break;
+                        case 5:
+                            if(mAccount != null)
+                                onShowFolderList();
+                            break;
+                        case 6:
+                            onEditPrefs();
+                            break;
+                        case 7:
+                            //TODO
+                            Toast.makeText(MessageList.this, getString(R.string.clicked_on) + "last one...", Toast.LENGTH_SHORT).show();
+                            break;
                     }
                     return true;
                 }

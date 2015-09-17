@@ -22,8 +22,7 @@ import de.fau.cs.mad.smile.android.R;
 public class TimeSpanPreference extends DialogPreference implements SmileDialogPreference {
 
     private static final int DEFAULT_VALUE = 15;
-    private int timeSpan;
-    private TimeUnit timeUnit;
+    private Period period;
 
     public TimeSpanPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -31,7 +30,7 @@ public class TimeSpanPreference extends DialogPreference implements SmileDialogP
         setDialogLayoutResource(R.layout.timespan_preference);
         setPositiveButtonText(android.R.string.ok);
         setNegativeButtonText(android.R.string.cancel);
-        timeUnit = TimeUnit.MINUTE;
+        period = Period.ZERO;
     }
 
     private void colorizeIcon() {
@@ -47,9 +46,22 @@ public class TimeSpanPreference extends DialogPreference implements SmileDialogP
         }
     }
 
+    public void setPeriod(Period period) {
+        this.period = period;
+    }
+
+    public Period getPeriod() {
+        return period;
+    }
+
     @Override
     protected Object onGetDefaultValue(TypedArray a, int index) {
         return a.getInteger(index, DEFAULT_VALUE);
+    }
+
+    @Override
+    public PreferenceDialogFragmentCompat getDialogInstance() {
+        return new TimeSpanPreferenceDialog();
     }
 
     @Override
@@ -66,8 +78,7 @@ public class TimeSpanPreference extends DialogPreference implements SmileDialogP
         final SavedState myState = new SavedState(superState);
         // Set the state's value with the class member that holds current
         // setting value
-        myState.timeSpan = timeSpan;
-        myState.timeUnit = timeUnit.name();
+        myState.period = period;
 
         return myState;
 
@@ -84,65 +95,11 @@ public class TimeSpanPreference extends DialogPreference implements SmileDialogP
         // Cast state to custom BaseSavedState and pass to superclass
         SavedState myState = (SavedState) state;
         super.onRestoreInstanceState(myState.getSuperState());
-
-        // Set this Preference's widget to reflect the restored state
-        timeUnit = TimeUnit.valueOf(myState.timeUnit);
-        timeSpan = myState.timeSpan;
-    }
-
-    public void setTimeSpan(int timeSpan) {
-        this.timeSpan = timeSpan;
-        persistInt(timeSpan);
-    }
-
-    public Period getPeriod() {
-        if(timeUnit == TimeUnit.MINUTE) {
-            return Period.minutes(timeSpan);
-        } else if (timeUnit == TimeUnit.HOUR) {
-            return Period.hours(timeSpan);
-        } else if (timeUnit == TimeUnit.DAY) {
-            return Period.days(timeSpan);
-        }
-
-        return null;
-    }
-
-    public void setTimeUnit(TimeUnit timeUnit) {
-        this.timeUnit = timeUnit;
-        persistString(timeUnit.toString());
-    }
-
-    @Override
-    public PreferenceDialogFragmentCompat getDialogInstance() {
-        return new TimeSpanPreferenceDialog();
-    }
-
-    public TimeUnit getTimeUnit() {
-        return timeUnit;
-    }
-
-    public int getTimeSpan() {
-        return timeSpan;
-    }
-
-    public enum TimeUnit {
-        HOUR("hour"),
-        MINUTE("minute"),
-        DAY("day");
-
-        private String description;
-
-        TimeUnit(String description) {
-            this.description = description;
-        }
-
-        @Override
-        public String toString() {
-            return description;
-        }
+        period = myState.period;
     }
 
     private static class SavedState extends BaseSavedState {
+
         // Standard creator object using an instance of this class
         public static final Parcelable.Creator<SavedState> CREATOR =
                 new Parcelable.Creator<SavedState>() {
@@ -157,9 +114,7 @@ public class TimeSpanPreference extends DialogPreference implements SmileDialogP
                 };
         // Member that holds the setting's value
         // Change this data type to match the type saved by your Preference
-        int timeSpan;
-        String timeUnit;
-
+        Period period;
         public SavedState(Parcelable superState) {
             super(superState);
         }
@@ -167,16 +122,13 @@ public class TimeSpanPreference extends DialogPreference implements SmileDialogP
         public SavedState(Parcel source) {
             super(source);
             // Get the current preference's value
-            timeSpan = source.readInt();  // Change this to read the appropriate data type
-            timeUnit = source.readString();
+            period = (Period)source.readSerializable();
         }
 
         @Override
         public void writeToParcel(Parcel dest, int flags) {
             super.writeToParcel(dest, flags);
-            // Write the preference's value
-            dest.writeInt(timeSpan);  // Change this to write the appropriate data type
-            dest.writeString(timeUnit);
+            dest.writeSerializable(period);
         }
     }
 }

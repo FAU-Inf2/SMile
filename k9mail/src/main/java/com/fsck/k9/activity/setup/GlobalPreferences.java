@@ -199,6 +199,9 @@ public class GlobalPreferences extends SmilePreferenceFragment {
         }
 
         remindme_later = (TimeSpanPreference) findPreference("remindme_time_later");
+        if(remindme_later != null) {
+            remindme_later.setPeriod(K9.getRemindMeTime(RemindMeInterval.LATER));
+        }
         remindme_evening = setupTimePickerPreference("remindme_time_evening", K9.getRemindMeTime(RemindMeInterval.EVENING));
         remindme_tomorrow = setupTimePickerPreference("remindme_time_tomorrow", K9.getRemindMeTime(RemindMeInterval.TOMORROW));
         remindme_next_week = setupTimePickerPreference("remindme_time_next_week", K9.getRemindMeTime(RemindMeInterval.NEXT_WEEK));
@@ -261,26 +264,30 @@ public class GlobalPreferences extends SmilePreferenceFragment {
 
     private void setupQuietTime() {
         final DateTimeFormatter formatter = DateTimeFormat.shortTime();
-        mQuietTimeStarts = (TimePickerPreference) findPreference(PREFERENCE_QUIET_TIME_STARTS);
+        DateTime javaEpoche = new DateTime(0);
+
+        mQuietTimeStarts = setupTimePickerPreference(PREFERENCE_QUIET_TIME_STARTS, K9.getQuietTimeStarts());
         if (mQuietTimeStarts != null) {
-            mQuietTimeStarts.setDefaultValue(K9.getQuietTimeStarts());
-            mQuietTimeStarts.setSummary(K9.getQuietTimeStarts().toString(formatter));
+            final String summary = javaEpoche.plus(K9.getQuietTimeStarts()).toString(formatter);
+            mQuietTimeStarts.setSummary(summary);
             mQuietTimeStarts.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
                     final DateTime time = (DateTime) newValue;
+                    mQuietTimeStarts.setTime(time);
                     mQuietTimeStarts.setSummary(formatter.print(time));
                     return false;
                 }
             });
         }
 
-        mQuietTimeEnds = (TimePickerPreference) findPreference(PREFERENCE_QUIET_TIME_ENDS);
+        mQuietTimeEnds = setupTimePickerPreference(PREFERENCE_QUIET_TIME_ENDS, K9.getQuietTimeEnds());
         if (mQuietTimeEnds != null) {
-            mQuietTimeEnds.setSummary(K9.getQuietTimeEnds().toString(formatter));
-            mQuietTimeEnds.setDefaultValue(K9.getQuietTimeEnds());
+            final String summary = javaEpoche.plus(K9.getQuietTimeEnds()).toString(formatter);
+            mQuietTimeEnds.setSummary(summary);
             mQuietTimeEnds.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
                     final DateTime time = (DateTime) newValue;
+                    mQuietTimeStarts.setTime(time);
                     mQuietTimeEnds.setSummary(formatter.print(time));
                     return false;
                 }
@@ -431,8 +438,8 @@ public class GlobalPreferences extends SmilePreferenceFragment {
 
         K9.setQuietTimeEnabled(mQuietTimeEnabled.isChecked());
         K9.setNotificationDuringQuietTimeEnabled(!mDisableNotificationDuringQuietTime.isChecked());
-        K9.setQuietTimeStarts(mQuietTimeStarts.getTime());
-        K9.setQuietTimeEnds(mQuietTimeEnds.getTime());
+        K9.setQuietTimeStarts(mQuietTimeStarts.getPeriod());
+        K9.setQuietTimeEnds(mQuietTimeEnds.getPeriod());
 
         if(mNotificationQuickDelete != null) {
             K9.setNotificationQuickDeleteBehaviour(
@@ -481,7 +488,8 @@ public class GlobalPreferences extends SmilePreferenceFragment {
     }
 
     private void handleSaveRemindMeScreen() {
-        if(remindme_later == null) {
+        final String prefKey = getPreferenceScreen().getKey();
+        if(!"messagelist_remindme_times".equals(prefKey)) {
             return;
         }
 

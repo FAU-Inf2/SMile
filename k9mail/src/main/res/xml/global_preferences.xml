@@ -22,7 +22,8 @@
   can be displayed after the device has been rotated.
 -->
 
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:key="main">
     <com.fsck.k9.preferences.AccountPreferenceCategory android:key="accounts" android:title="Accounts" />
 
     <PreferenceCategory

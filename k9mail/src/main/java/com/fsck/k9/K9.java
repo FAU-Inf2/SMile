@@ -247,8 +247,8 @@ public class K9 extends Application {
     private static boolean mAutofitWidth;
     private static boolean mQuietTimeEnabled = false;
     private static boolean mNotificationDuringQuietTimeEnabled = true;
-    private static DateTime mQuietTimeStarts = null;
-    private static DateTime mQuietTimeEnds = null;
+    private static Period mQuietTimeStarts = null;
+    private static Period mQuietTimeEnds = null;
     private static String mAttachmentDefaultPath = "";
     private static boolean mWrapFolderNames = false;
     private static boolean mHideUserAgent = false;
@@ -485,27 +485,32 @@ public class K9 extends Application {
         DateTimeFormatter formatter = TimePickerPreference.getDateTimeFormatter();
         DateTime javaEpoche = new DateTime(0);
 
-        String persistTime = formatter.print(javaEpoche.withPeriodAdded(getRemindMeTime(RemindMeInterval.LATER), 1));
-        editor.putString("remindme_later", persistTime);
+        String persistTime;// = formatter.print();
+        DateTime saveTime = javaEpoche.plus(getRemindMeTime(RemindMeInterval.LATER));
+        editor.putLong("remindme_later", saveTime.getMillis());
 
-        persistTime = formatter.print(javaEpoche.withPeriodAdded(getRemindMeTime(RemindMeInterval.EVENING), 1));
-        editor.putString("remindme_evening", persistTime);
+        persistTime = formatter.print(javaEpoche.plus(getRemindMeTime(RemindMeInterval.EVENING)));
+        saveTime = javaEpoche.plus(getRemindMeTime(RemindMeInterval.EVENING));
+        editor.putLong("remindme_evening", saveTime.getMillis());
 
-        persistTime = formatter.print(javaEpoche.withPeriodAdded(getRemindMeTime(RemindMeInterval.TOMORROW), 1));
-        editor.putString("remindme_tomorrow", persistTime);
+        persistTime = formatter.print(javaEpoche.plus(getRemindMeTime(RemindMeInterval.TOMORROW)));
+        saveTime = javaEpoche.plus(getRemindMeTime(RemindMeInterval.EVENING));
+        editor.putLong("remindme_tomorrow", saveTime.getMillis());
 
-        persistTime = formatter.print(javaEpoche.withPeriodAdded(getRemindMeTime(RemindMeInterval.NEXT_WEEK), 1));
-        editor.putString("remindme_next_week", persistTime);
+        persistTime = formatter.print(javaEpoche.plus(getRemindMeTime(RemindMeInterval.NEXT_WEEK)));
+        saveTime = javaEpoche.plus(getRemindMeTime(RemindMeInterval.EVENING));
+        editor.putLong("remindme_next_week", saveTime.getMillis());
 
-        persistTime = formatter.print(javaEpoche.withPeriodAdded(getRemindMeTime(RemindMeInterval.NEXT_MONTH), 1));
-        editor.putString("remindme_next_month", persistTime);
+        persistTime = formatter.print(javaEpoche.plus(getRemindMeTime(RemindMeInterval.NEXT_MONTH)));
+        saveTime = javaEpoche.plus(getRemindMeTime(RemindMeInterval.EVENING));
+        editor.putLong("remindme_next_month", saveTime.getMillis());
 
         editor.putBoolean("quietTimeEnabled", mQuietTimeEnabled);
         editor.putBoolean("notificationDuringQuietTimeEnabled", mNotificationDuringQuietTimeEnabled);
 
-        persistTime = formatter.print(mQuietTimeStarts);
+        persistTime = formatter.print(javaEpoche.plus(mQuietTimeStarts));
         editor.putString("quietTimeStarts", persistTime);
-        persistTime = formatter.print(mQuietTimeEnds);
+        persistTime = formatter.print(javaEpoche.plus(mQuietTimeEnds));
         editor.putString("quietTimeEnds", persistTime);
 
         editor.putBoolean("startIntegratedInbox", mStartIntegratedInbox);
@@ -765,11 +770,11 @@ public class K9 extends Application {
 
         defaultTime = javaEpoche.withHourOfDay(21).withMinuteOfHour(0);
         time = sprefs.getLong("quietTimeStarts", defaultTime.getMillis());
-        mQuietTimeStarts = new DateTime(time);
+        mQuietTimeStarts = getPeriod(time);
 
         defaultTime = javaEpoche.withHourOfDay(7).withMinuteOfHour(0);
         time = sprefs.getLong("quietTimeEnds", defaultTime.getMillis());
-        mQuietTimeEnds = new DateTime(time);
+        mQuietTimeEnds = getPeriod(time);
 
         mShowCorrespondentNames = sprefs.getBoolean("showCorrespondentNames", true);
         mShowContactName = sprefs.getBoolean("showContactName", false);
@@ -1011,19 +1016,19 @@ public class K9 extends Application {
         mNotificationDuringQuietTimeEnabled = notificationDuringQuietTimeEnabled;
     }
 
-    public static DateTime getQuietTimeStarts() {
+    public static Period getQuietTimeStarts() {
         return mQuietTimeStarts;
     }
 
-    public static void setQuietTimeStarts(DateTime quietTimeStarts) {
+    public static void setQuietTimeStarts(Period quietTimeStarts) {
         mQuietTimeStarts = quietTimeStarts;
     }
 
-    public static DateTime getQuietTimeEnds() {
+    public static Period getQuietTimeEnds() {
         return mQuietTimeEnds;
     }
 
-    public static void setQuietTimeEnds(DateTime quietTimeEnds) {
+    public static void setQuietTimeEnds(Period quietTimeEnds) {
         mQuietTimeEnds = quietTimeEnds;
     }
 
@@ -1035,10 +1040,10 @@ public class K9 extends Application {
 
         Time time = new Time();
         time.setToNow();
-        Integer startHour = mQuietTimeStarts.getHourOfDay();
-        Integer startMinute = mQuietTimeStarts.getMinuteOfHour();
-        Integer endHour = mQuietTimeEnds.getHourOfDay();
-        Integer endMinute = mQuietTimeEnds.getMinuteOfHour();
+        Integer startHour = mQuietTimeStarts.getHours();
+        Integer startMinute = mQuietTimeStarts.getMinutes();
+        Integer endHour = mQuietTimeEnds.getHours();
+        Integer endMinute = mQuietTimeEnds.getMinutes();
 
         Integer now = (time.hour * 60) + time.minute;
         Integer quietStarts = startHour * 60 + startMinute;

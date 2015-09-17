@@ -42,7 +42,7 @@ import com.fsck.k9.activity.ChooseFolder;
 import com.fsck.k9.activity.MessageReference;
 import com.fsck.k9.activity.RemindMeList;
 import com.fsck.k9.holder.FolderInfoHolder;
-import com.fsck.k9.activity.listener.ActivityListener;
+import com.fsck.k9.listener.ActivityListener;
 import com.fsck.k9.adapter.MessageListAdapter;
 import com.fsck.k9.cache.EmailProviderCache;
 import com.fsck.k9.controller.MessagingController;

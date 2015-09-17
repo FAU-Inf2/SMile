@@ -16,7 +16,7 @@ import android.widget.Toast;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.K9;
-import com.fsck.k9.activity.listener.FolderClickListener;
+import com.fsck.k9.listener.FolderClickListener;
 import com.fsck.k9.activity.FolderListFilter;
 import com.fsck.k9.holder.FolderInfoHolder;
 import com.fsck.k9.holder.FolderViewHolder;

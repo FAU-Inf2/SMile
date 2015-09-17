@@ -7,7 +7,7 @@ import android.util.Log;
 import com.fsck.k9.Account;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
-import com.fsck.k9.activity.listener.ActivityListener;
+import com.fsck.k9.listener.ActivityListener;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.helper.NotificationHelper;
 import com.fsck.k9.mail.FetchProfile;

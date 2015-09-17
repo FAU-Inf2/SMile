@@ -1,4 +1,4 @@
-package com.fsck.k9.activity.asynctask;
+package com.fsck.k9.asynctask;
 
 import android.content.Context;
 import android.os.AsyncTask;

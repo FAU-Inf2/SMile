@@ -1,4 +1,4 @@
-package com.fsck.k9.activity.asynctask;
+package com.fsck.k9.asynctask;
 
 import android.app.ProgressDialog;
 import android.content.ContentResolver;

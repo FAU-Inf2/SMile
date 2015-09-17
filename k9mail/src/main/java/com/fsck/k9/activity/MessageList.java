@@ -62,6 +62,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.TreeSet;
 
+import butterknife.ButterKnife;
 import de.cketti.library.changelog.ChangeLog;
 import de.fau.cs.mad.smile.android.R;
 
@@ -238,6 +239,8 @@ public class MessageList extends K9Activity
             mViewSwitcher.setThirdOutAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_out_left));
             mViewSwitcher.setOnSwitchCompleteListener(this);
         }
+
+        ButterKnife.bind(this);
 
         // Enable gesture detection for MessageLists
         //setupGestureDetector(this);

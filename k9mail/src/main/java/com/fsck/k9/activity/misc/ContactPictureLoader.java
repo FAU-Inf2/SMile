@@ -9,6 +9,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -17,10 +18,11 @@ import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v4.util.LruCache;
 import android.text.TextUtils;
-import android.widget.QuickContactBadge;
+import android.util.DisplayMetrics;
 
 import com.fsck.k9.helper.Contacts;
 import com.fsck.k9.mail.Address;
+import com.fsck.k9.view.QuickContactBadge;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -129,11 +131,8 @@ public class ContactPictureLoader {
     public void loadContactPicture(Address address, QuickContactBadge badge) {
         Bitmap bitmap = getBitmapFromCache(address);
         if (bitmap != null) {
-            RoundedBitmapDrawable roundedBitmapDrawable;
-            roundedBitmapDrawable = RoundedBitmapDrawableFactory.create(mContext.getResources(), bitmap);
-            roundedBitmapDrawable.setCornerRadius(Math.max(bitmap.getWidth(), bitmap.getHeight()) / 2.0f);
             // The picture was found in the bitmap cache
-            badge.setImageDrawable(roundedBitmapDrawable);
+            badge.setImageBitmap(bitmap);
         } else if (cancelPotentialWork(address, badge)) {
             // Query the contacts database in a background thread and try to load the contact
             // picture, if there is one.
@@ -178,29 +177,55 @@ public class ContactPictureLoader {
      * Calculates a bitmap with a color and a capital letter for contacts without picture.
      */
     private Bitmap calculateFallbackBitmap(Address address) {
-        Bitmap result = Bitmap.createBitmap(mPictureSizeInPx, mPictureSizeInPx,
-                Bitmap.Config.ARGB_8888);
-
-        Canvas canvas = new Canvas(result);
-
         int rgb = calcUnknownContactColor(address);
-        result.eraseColor(rgb);
-
         String letter = calcUnknownContactLetter(address);
+        return generateCircleBitmap(rgb, 40, letter);
+    }
 
-        Paint paint = new Paint();
-        paint.setAntiAlias(true);
-        paint.setStyle(Paint.Style.FILL);
-        paint.setARGB(255, 255, 255, 255);
-        paint.setTextSize(mPictureSizeInPx * 3 / 4); // just scale this down a bit
-        Rect rect = new Rect();
-        paint.getTextBounds(letter, 0, 1, rect);
-        float width = paint.measureText(letter);
-        canvas.drawText(letter,
-                (mPictureSizeInPx / 2f) - (width / 2f),
-                (mPictureSizeInPx / 2f) + (rect.height() / 2f), paint);
+    /**
+     * Create round, coloured bitmap with text embedded.
+     * @param circleColor The color to use.
+     * @param diameterDP The diameter of the circle.
+     * @param text The text to embed.
+     * @return Bitmap showing a text.
+     */
+    public Bitmap generateCircleBitmap(int circleColor, float diameterDP, String text) {
+        /**
+         *
+         * http://stackoverflow.com/questions/31168636/rounded-quickcontactbadge-with-text
+         */
+        final int textColor = 0xffffffff;
 
-        return result;
+        DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
+        float diameterPixels = diameterDP * (metrics.densityDpi / 160f);
+        float radiusPixels = diameterPixels / 2;
+
+        // Create the bitmap
+        Bitmap output = Bitmap.createBitmap((int) diameterPixels, (int) diameterPixels, Bitmap.Config.ARGB_8888);
+
+        // Create the canvas to draw on
+        Canvas canvas = new Canvas(output);
+        canvas.drawARGB(0, 0, 0, 0);
+
+        // Draw the circle
+        final Paint paintC = new Paint();
+        paintC.setAntiAlias(true);
+        paintC.setColor(circleColor);
+        canvas.drawCircle(radiusPixels, radiusPixels, radiusPixels, paintC);
+
+        // Draw the text
+        if (text != null && text.length() > 0) {
+            final Paint paintT = new Paint();
+            paintT.setColor(textColor);
+            paintT.setAntiAlias(true);
+            paintT.setTextSize(radiusPixels * 2);
+            paintT.setTypeface(Typeface.SANS_SERIF);
+            final Rect textBounds = new Rect();
+            paintT.getTextBounds(text, 0, text.length(), textBounds);
+            canvas.drawText(text, radiusPixels - textBounds.exactCenterX(), radiusPixels - textBounds.exactCenterY(), paintT);
+        }
+
+        return output;
     }
 
     private void addBitmapToCache(Address key, Bitmap bitmap) {
@@ -270,7 +295,7 @@ public class ContactPictureLoader {
             this.mContext = context;
             this.mContactsHelper = Contacts.getInstance(mContext);
             this.mContentResolver = mContext.getContentResolver();
-            mQuickContactBadgeReference = new WeakReference<QuickContactBadge>(badge);
+            mQuickContactBadgeReference = new WeakReference<>(badge);
             mAddress = new Address(address);
         }
 
@@ -320,11 +345,7 @@ public class ContactPictureLoader {
             if (mQuickContactBadgeReference != null) {
                 QuickContactBadge badge = mQuickContactBadgeReference.get();
                 if (badge != null && getContactPictureRetrievalTask(badge) == this) {
-                    RoundedBitmapDrawable roundedBitmapDrawable;
-                    roundedBitmapDrawable = RoundedBitmapDrawableFactory.create(mContext.getResources(), bitmap);
-                    roundedBitmapDrawable.setCornerRadius(Math.max(bitmap.getWidth(), bitmap.getHeight()) / 2.0f);
-                    //badge.setImageBitmap(bitmap);
-                    badge.setImageDrawable(roundedBitmapDrawable);
+                    badge.setImageBitmap(bitmap);
                 }
             }
         }

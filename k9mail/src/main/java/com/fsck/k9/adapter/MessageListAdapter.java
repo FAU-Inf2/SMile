@@ -98,7 +98,6 @@ public class MessageListAdapter extends CursorAdapter {
     public View newView(final Context context, Cursor cursor, ViewGroup parent) {
         LayoutInflater inflater = LayoutInflater.from(context);
         View view = inflater.inflate(R.layout.message_list_item, parent, false);
-        //view.setId(R.layout.message_list_item);
 
         final MessageViewHolder holder = new MessageViewHolder(view);
         final boolean senderAboveSubject = K9.messageListSenderAboveSubject();
@@ -112,7 +111,6 @@ public class MessageListAdapter extends CursorAdapter {
             view.findViewById(R.id.sender_compact).setVisibility(View.GONE);
             holder.setPreview((TextView) view.findViewById(R.id.preview));
             holder.setFlagged((CheckBox) view.findViewById(R.id.flagged_bottom_right));
-            view.findViewById(R.id.flagged_center_right).setVisibility(View.GONE);
         }
 
         if (mContactsPictureLoader == null) {
@@ -134,17 +132,13 @@ public class MessageListAdapter extends CursorAdapter {
         mFontSizes.setViewTextSize(holder.getPreview(), mFontSizes.getMessageListPreview());
         holder.setThreadCount((TextView) view.findViewById(R.id.thread_count));
         mFontSizes.setViewTextSize(holder.getThreadCount(), mFontSizes.getMessageListSubject()); // thread count is next to subject
-        view.findViewById(R.id.selected_checkbox_wrapper).setVisibility((mCheckboxes) ? View.VISIBLE : View.GONE);
 
         holder.getFlagged().setVisibility(mStars ? View.VISIBLE : View.GONE);
         holder.getFlagged().setOnClickListener(holder);
 
-        holder.setSelected((CheckBox) view.findViewById(R.id.selected_checkbox));
-        holder.getSelected().setOnClickListener(holder);
-
         view.setTag(holder);
 
-        final SwipeLayout swipeLayout = (SwipeLayout) view;
+        final SwipeLayout swipeLayout = holder.getSwipeLayout();
         swipeLayout.addDrag(SwipeLayout.DragEdge.Left, view.findViewById(R.id.pull_out));
         swipeLayout.addDrag(SwipeLayout.DragEdge.Right, view.findViewById(R.id.delete));
 

@@ -471,7 +471,6 @@ public class GlobalPreferences extends SmilePreferenceFragment {
         K9.setMeasureAccounts(true);
         K9.setCountSearchMessages(true);
         K9.setHideSpecialAccounts(false);
-        K9.setMessageListCheckboxes(false);
         K9.setMessageListStars(true);
         K9.setMessageListSenderAboveSubject(false);
         K9.setShowContactName(true);

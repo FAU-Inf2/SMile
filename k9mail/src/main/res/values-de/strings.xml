@@ -211,6 +211,7 @@ Um Fehler zu melden, neue Funktionen vorzuschlagen oder Fragen zu stellen, besuc
     <string name="notification_bg_send_ticker">E-Mail in <xliff:g id="account">%s</xliff:g> wird gesendet</string>
     <string name="notification_bg_send_title">E-Mail wird gesendet</string>
     <string name="notification_bg_title_separator">:</string>
+    <string name="folder_list">Ordnerliste</string>
     <string name="special_mailbox_name_inbox">Posteingang</string>
     <string name="special_mailbox_name_outbox">Postausgang</string>
     <string name="special_mailbox_name_drafts">Entwürfe</string>

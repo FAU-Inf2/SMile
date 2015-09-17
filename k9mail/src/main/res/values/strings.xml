@@ -220,7 +220,7 @@ Please submit bug reports, contribute new features and ask questions at
     <string name="notification_bg_send_ticker">Sending mail: <xliff:g id="account">%s</xliff:g></string>
     <string name="notification_bg_send_title">Sending mail</string>
     <string name="notification_bg_title_separator">:</string>
-
+    <string name="folder_list">All folders</string>
     <string name="special_mailbox_name_inbox">Inbox</string>
     <string name="special_mailbox_name_outbox">Outbox</string>
     <string name="special_mailbox_name_drafts">Drafts</string>

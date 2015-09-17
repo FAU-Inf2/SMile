@@ -1,26 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
+    android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:orientation="horizontal">
+    android:layout_gravity="center">
 
-    <RelativeLayout
-        android:layout_width="match_parent"
+    <LinearLayout
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true">
+        android:layout_centerInParent="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal">
 
-        <NumberPicker
-            android:id="@+id/pref_number_picker"
+        <LinearLayout
+            android:id="@+id/pref_hour_picker_container"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true"/>
+            android:layout_marginLeft="20dp"
+            android:orientation="vertical">
 
-        <Spinner
-            android:id="@+id/pref_timeunit_spinner"
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:editable="false"
+                android:text="Hour"
+                android:textIsSelectable="false" />
+
+            <NumberPicker
+                android:id="@+id/pref_hour_picker"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/pref_minute_picker_container"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toRightOf="@id/pref_number_picker"
-            android:layout_centerVertical="true"
-            android:layout_marginRight="20dp" />
-    </RelativeLayout>
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="20dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:editable="false"
+                android:text="Minute"
+                android:textIsSelectable="false" />
+
+            <NumberPicker
+                android:id="@+id/pref_minute_picker"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+    </LinearLayout>
 </RelativeLayout>

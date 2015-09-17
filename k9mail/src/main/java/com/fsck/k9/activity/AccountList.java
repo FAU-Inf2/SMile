@@ -9,7 +9,7 @@ import android.widget.ListView;
 import com.fsck.k9.Account;
 import com.fsck.k9.BaseAccount;
 import com.fsck.k9.K9;
-import com.fsck.k9.activity.asynctask.LoadAccountTask;
+import com.fsck.k9.asynctask.LoadAccountTask;
 import com.fsck.k9.adapter.AccountsAdapter;
 import com.fsck.k9.search.SearchAccount;
 

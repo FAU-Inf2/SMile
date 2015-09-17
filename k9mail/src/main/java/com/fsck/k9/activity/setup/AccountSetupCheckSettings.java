@@ -20,7 +20,7 @@ import com.fsck.k9.Account;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.activity.K9Activity;
-import com.fsck.k9.activity.asynctask.CheckAccountTask;
+import com.fsck.k9.asynctask.CheckAccountTask;
 import com.fsck.k9.fragment.ConfirmationDialogFragment;
 import com.fsck.k9.fragment.ConfirmationDialogFragment.ConfirmationDialogFragmentListener;
 import com.fsck.k9.mail.CertificateValidationException;

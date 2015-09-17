@@ -1,106 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.daimajia.swipe.SwipeLayout
-    xmlns:swipe="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/card_view"
     android:layout_width="match_parent"
-    android:layout_height="fill_parent"
-    swipe:leftEdgeSwipeOffset="0dp"
-    swipe:rightEdgeSwipeOffset="0dp">
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    card_view:cardCornerRadius="4dp">
 
-    <RelativeLayout
+    <com.daimajia.swipe.SwipeLayout xmlns:swipe="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/swipe_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="left"
-        android:layout_toLeftOf="@+id/msg"
-        android:id="@+id/pull_out"
-        android:background="@color/background_floating_material_light"
-        >
-        <ImageView
-            android:id="@+id/pull_out_remind_me"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_marginRight="10dip"
-            android:layout_weight="1"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:src="@drawable/ic_alarm_add_black_48dp"/>
-        <ImageView
-            android:id="@+id/pull_out_archive"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_marginRight="10dip"
-            android:layout_weight="1"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:src="@drawable/ic_action_archive_material_light"/>
-    </RelativeLayout>
+        android:layout_height="fill_parent"
+        swipe:leftEdgeSwipeOffset="0dp"
+        swipe:rightEdgeSwipeOffset="0dp">
 
-    <RelativeLayout
-        android:id="@+id/delete"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#FF5534"
-        android:gravity="left"
-        android:tag="Delete"
-        android:weightSum="10">
+        <RelativeLayout
+            android:id="@+id/pull_out"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="left"
+            android:layout_toLeftOf="@+id/msg"
+            android:background="@color/background_floating_material_light">
+
+            <ImageView
+                android:id="@+id/pull_out_remind_me"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="10dip"
+                android:layout_weight="1"
+                android:src="@drawable/ic_alarm_add_black_48dp" />
+
+            <ImageView
+                android:id="@+id/pull_out_archive"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="10dip"
+                android:layout_weight="1"
+                android:src="@drawable/ic_action_archive_material_light" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/delete"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#FF5534"
+            android:gravity="left"
+            android:tag="Delete"
+            android:weightSum="10">
+
             <ImageView
                 android:id="@+id/trash"
                 android:layout_width="50dp"
                 android:layout_height="30dp"
                 android:layout_centerVertical="true"
                 android:src="@drawable/ic_action_delete_material_light" />
-    </RelativeLayout>
+        </RelativeLayout>
 
-    <View
+        <View
             android:id="@+id/chip"
-            android:adjustViewBounds="false"
-            android:layout_height="match_parent"
             android:layout_width="8dip"
-            android:layout_marginRight="4dp"
-            />
-
-    <LinearLayout
-            android:id="@+id/selected_checkbox_wrapper"
-            android:layout_width="wrap_content"
-
             android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:layout_gravity="center"
-            android:visibility="visible"
-            android:textColor="?android:attr/textColorPrimary"
-            android:baselineAligned="false">
+            android:layout_marginRight="4dp"
+            android:adjustViewBounds="false" />
 
-        <CheckBox
-                android:id="@+id/selected_checkbox"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:focusable="false"
-                android:clickable="false"
-                android:paddingLeft="4dp"
-                android:paddingRight="0dp"
-                android:visibility="visible"
-                />
-
-    </LinearLayout>
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:id="@+id/msg"
-        android:layout_gravity="center"
-        >
-
-
-        <RelativeLayout
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/msg"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" >
+            android:layout_gravity="center"
+            android:orientation="horizontal">
 
-            <QuickContactBadge
+            <com.fsck.k9.view.QuickContactBadge
                 android:id="@+id/contact_badge"
-                android:layout_marginRight="8dip"
                 android:layout_marginTop="4dip"
                 android:layout_marginBottom="3dip"
                 android:layout_height="40dip"
@@ -111,126 +86,103 @@
                 style="?android:attr/quickContactBadgeStyleWindowLarge"
                 android:background="@android:color/transparent"/>
 
-        </RelativeLayout>
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="6dip"
-            android:layout_marginLeft="2dp" >
-
-            <TextView
-                android:id="@+id/preview"
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:layout_toLeftOf="@+id/flagged_bottom_right"
-                android:layout_marginLeft="50dip"
-                android:layout_marginRight="3dip"
-                android:bufferType="spannable"
-                android:layout_below="@+id/subject_wrapper"
-                android:singleLine="false"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="?android:attr/textColorPrimary"
-                android:longClickable="false"
-                android:layout_alignWithParentIfMissing="false"
-                android:gravity="top"
-                android:layout_alignParentBottom="false"/>
-
-            <LinearLayout
-                android:id="@+id/subject_wrapper"
-                android:layout_centerInParent="true"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="false"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentBottom="false"
-                android:layout_alignParentLeft="false"
-                android:layout_toLeftOf="@+id/date">
+                android:padding="6dip">
 
                 <TextView
-                    android:id="@+id/sender_compact"
+                    android:id="@+id/preview"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_width="0dp"
-                    android:layout_weight="0.3"
-                    android:ellipsize="end"
-                    android:singleLine="true"
-                    android:layout_marginBottom="1dip"
-                    android:layout_marginLeft="50dip"
+                    android:layout_alignParentBottom="false"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignWithParentIfMissing="false"
+                    android:layout_below="@+id/subject_wrapper"
+                    android:layout_marginRight="3dip"
+                    android:layout_toLeftOf="@+id/flagged_bottom_right"
+                    android:bufferType="spannable"
+                    android:gravity="top"
+                    android:longClickable="false"
+                    android:singleLine="false"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="?android:attr/textColorPrimary"
-                    />
+                    android:textColor="?android:attr/textColorPrimary" />
 
-                <TextView
-                    android:id="@+id/subject"
-                    android:layout_width="0dp"
-                    android:layout_weight="0.7"
+                <LinearLayout
+                    android:id="@+id/subject_wrapper"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="1dip"
-                    android:layout_marginLeft="50dip"
-                    android:ellipsize="marquee"
-                    android:singleLine="true"
-                    android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="?android:attr/textColorPrimary"
-                    />
+                    android:layout_alignParentBottom="false"
+                    android:layout_alignParentLeft="false"
+                    android:layout_alignParentRight="false"
+                    android:layout_alignParentTop="true"
+                    android:layout_centerInParent="true"
+                    android:layout_toLeftOf="@+id/date">
+
+                    <TextView
+                        android:id="@+id/sender_compact"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="1dip"
+                        android:layout_weight="0.3"
+                        android:ellipsize="end"
+                        android:singleLine="true"
+                        android:textAppearance="?android:attr/textAppearanceSmall"
+                        android:textColor="?android:attr/textColorPrimary" />
+
+                    <TextView
+                        android:id="@+id/subject"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="1dip"
+                        android:layout_weight="0.7"
+                        android:ellipsize="marquee"
+                        android:singleLine="true"
+                        android:textAppearance="?android:attr/textAppearanceSmall"
+                        android:textColor="?android:attr/textColorPrimary" />
+
+                    <TextView
+                        android:id="@+id/thread_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="3dip"
+                        android:layout_marginRight="4dip"
+                        android:focusable="false"
+                        android:paddingBottom="1dip"
+                        android:paddingLeft="4dip"
+                        android:paddingRight="4dip" />
+                </LinearLayout>
 
                 <TextView
-                    android:id="@+id/thread_count"
+                    android:id="@+id/date"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="3dip"
-                    android:layout_marginRight="4dip"
-                    android:paddingRight="4dip"
-                    android:paddingBottom="1dip"
-                    android:paddingLeft="4dip"
+                    android:layout_alignTop="@+id/subject_wrapper"
+                    android:layout_alignWithParentIfMissing="true"
+                    android:layout_centerVertical="true"
+                    android:layout_toLeftOf="@+id/flagged_center_right"
+                    android:paddingLeft="3dip"
+                    android:paddingRight="8dip"
+                    android:singleLine="true"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textColor="?android:attr/textColorSecondary" />
+
+                <CheckBox
+                    android:id="@+id/flagged_bottom_right"
+                    style="?android:attr/starStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="fill_parent"
+                    android:layout_alignParentRight="true"
+                    android:layout_below="@+id/date"
                     android:focusable="false"
-                    />
-            </LinearLayout>
+                    android:gravity="center_vertical"
+                    android:paddingLeft="2dip"
+                    android:paddingRight="4dip"
+                    android:paddingTop="5dip"
+                    android:visibility="visible" />
 
-            <CheckBox
-                android:id="@+id/flagged_center_right"
-                style="?android:attr/starStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:layout_centerVertical="true"
-                android:paddingTop="3dip"
-                android:paddingLeft="2dip"
-                android:paddingRight="4dip"
-                android:focusable="false"
-                android:visibility="gone"
-                />
+            </RelativeLayout>
 
-            <TextView
-                android:id="@+id/date"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignTop="@+id/subject_wrapper"
-                android:layout_alignWithParentIfMissing="true"
-                android:layout_centerVertical="true"
-                android:layout_toLeftOf="@+id/flagged_center_right"
-                android:paddingLeft="3dip"
-                android:paddingRight="8dip"
-                android:singleLine="true"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="?android:attr/textColorSecondary"/>
-
-            <CheckBox
-                android:id="@+id/flagged_bottom_right"
-                style="?android:attr/starStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="fill_parent"
-                android:layout_below="@+id/date"
-                android:layout_alignParentRight="true"
-                android:paddingTop="5dip"
-                android:paddingLeft="2dip"
-                android:paddingRight="4dip"
-                android:focusable="false"
-                android:visibility="visible"
-                android:gravity="center_vertical"/>
-
-        </RelativeLayout>
-
-    </RelativeLayout>
-
-
-</com.daimajia.swipe.SwipeLayout>
+        </LinearLayout>
+    </com.daimajia.swipe.SwipeLayout>
+</android.support.v7.widget.CardView>

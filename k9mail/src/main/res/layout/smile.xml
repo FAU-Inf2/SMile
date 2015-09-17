@@ -1,29 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:elevation="7dp">
 
     <include
         android:id="@+id/toolbar"
         layout="@layout/actionbar_custom" />
 
-    <android.support.v4.widget.DrawerLayout
-        android:id="@+id/drawer_layout"
+    <FrameLayout
+        android:id="@+id/content_frame"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent" />
 
-        <FrameLayout
-            android:id="@+id/content_frame"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-        <!-- Side navigation drawer UI -->
-        <ListView
-            android:id="@+id/navList"
-            android:layout_width="200dp"
-            android:layout_height="match_parent"
-            android:layout_gravity="start"
-            android:background="#ffeeeeee" />
-    </android.support.v4.widget.DrawerLayout>
-</LinearLayout>
+    <!-- Side navigation drawer UI -->
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/navList"
+        android:layout_width="320dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:background="#ffffff"
+        android:scrollbars="vertical" />
+</android.support.v4.widget.DrawerLayout>

@@ -1,11 +1,12 @@
 package com.fsck.k9.holder;
 
+import android.support.v7.widget.CardView;
 import android.view.View;
 import android.widget.CheckBox;
-import android.widget.QuickContactBadge;
 import android.widget.TextView;
 
 import com.daimajia.swipe.SwipeLayout;
+import com.fsck.k9.view.QuickContactBadge;
 
 import de.fau.cs.mad.smile.android.R;
 
@@ -18,14 +19,13 @@ public class MessageViewHolder implements View.OnClickListener {
     private View chip;
     private TextView threadCount;
     private CheckBox flagged;
-    private CheckBox selected;
     private SwipeLayout swipeLayout;
     private int position = -1;
     private QuickContactBadge contactBadge;
     private float fraction;
 
     public MessageViewHolder(View rootView) {
-        swipeLayout = (SwipeLayout) rootView;
+        swipeLayout = (SwipeLayout) rootView.findViewById(R.id.swipe_layout);
         date = (TextView) rootView.findViewById(R.id.date);
         chip = rootView.findViewById(R.id.chip);
         contactBadge = (QuickContactBadge) rootView.findViewById(R.id.contact_badge);
@@ -36,9 +36,6 @@ public class MessageViewHolder implements View.OnClickListener {
         if (position != -1) {
 
             switch (view.getId()) {
-                case R.id.selected_checkbox:
-                    //handler.toggleMessageSelectWithAdapterPosition(position);
-                    break;
                 /*case R.id.delete:
                     onDelete(getMessageAtPosition(position));
                     break;*/
@@ -112,14 +109,6 @@ public class MessageViewHolder implements View.OnClickListener {
 
     public void setFlagged(CheckBox flagged) {
         this.flagged = flagged;
-    }
-
-    public CheckBox getSelected() {
-        return selected;
-    }
-
-    public void setSelected(CheckBox selected) {
-        this.selected = selected;
     }
 
     public SwipeLayout getSwipeLayout() {

@@ -46,7 +46,7 @@
                 android:padding="6dip"
                 android:layout_marginLeft="2dp" >
 
-                <QuickContactBadge
+                <com.fsck.k9.view.QuickContactBadge
                     android:id="@+id/contact_badge"
                     android:layout_width="40dp"
                     android:layout_height="40dp"

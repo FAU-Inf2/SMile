@@ -892,17 +892,11 @@ public class MessageList extends K9Activity
                 }
                 return true;
             }
-            /* FIXME
-            case KeyEvent.KEYCODE_Z: {
-                mMessageViewFragment.zoom(event);
-                return true;
-            }*/
             case KeyEvent.KEYCODE_H: {
                 Toast toast = Toast.makeText(this, R.string.message_list_help_key, Toast.LENGTH_LONG);
                 toast.show();
                 return true;
             }
-
         }
 
         return false;
@@ -918,6 +912,7 @@ public class MessageList extends K9Activity
                 return true;
             }
         }
+
         return super.onKeyUp(keyCode, event);
     }
 
@@ -1088,13 +1083,6 @@ public class MessageList extends K9Activity
                 updateMenu();
                 return true;
             }
-            /*case R.id.goto_sms_like_view: {
-                if (mDisplayMode == DisplayMode.MESSAGE_LIST)
-                    showSmsView();
-                else if (mDisplayMode == DisplayMode.SMS_LIST)
-                    showMessageList();
-                return true;
-            } */
         }
 
         if (!mSingleFolderMode) {

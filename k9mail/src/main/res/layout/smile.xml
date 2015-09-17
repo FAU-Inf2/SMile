@@ -15,7 +15,7 @@
         android:layout_height="match_parent" />
 
     <!-- Side navigation drawer UI -->
-    <android.support.v7.widget.RecyclerView
+    <ListView
         android:id="@+id/navList"
         android:layout_width="320dp"
         android:layout_height="match_parent"

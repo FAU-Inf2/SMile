@@ -88,6 +88,7 @@ import java.util.concurrent.Future;
 
 import de.fau.cs.mad.smile.android.R;
 
+import static butterknife.ButterKnife.findById;
 
 public class MessageListFragment extends Fragment
         implements AdapterView.OnItemClickListener,
@@ -347,7 +348,6 @@ public class MessageListFragment extends Fragment
 
         mInflater = inflater;
         View view = inflater.inflate(R.layout.message_list_fragment, container, false);
-
         initializePullToRefresh(inflater, view);
         initializeLayout();
         mListView.setVerticalFadingEdgeEnabled(false);
@@ -801,8 +801,7 @@ public class MessageListFragment extends Fragment
      * @param enable {@code true} to enable. {@code false} to disable.
      */
     private void setPullToRefreshEnabled(boolean enable) {
-        mPullToRefreshView.setMode((enable) ?
-                PullToRefreshBase.Mode.PULL_FROM_START : PullToRefreshBase.Mode.DISABLED);
+        mPullToRefreshView.setMode((enable) ? PullToRefreshBase.Mode.PULL_FROM_START : PullToRefreshBase.Mode.DISABLED);
     }
 
     private void initializeLayout() {
@@ -908,7 +907,7 @@ public class MessageListFragment extends Fragment
 
             SharedPreferences.Editor editor = mPreferences.getPreferences().edit();
             K9.save(editor);
-            editor.commit();
+            editor.apply();
         }
 
         reSort();
@@ -971,6 +970,7 @@ public class MessageListFragment extends Fragment
     }
 
     public void openMessage(MessageReference messageReference) {
+        Log.d(K9.LOG_TAG, "wanted to open message: " + messageReference);
     }
 
     private void onDelete(LocalMessage message) {

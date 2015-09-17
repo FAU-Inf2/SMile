@@ -63,9 +63,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             contactBadge = findById(itemView, R.id.contact_badge);
             subject = findById(itemView, R.id.subject);
             threadCount = findById(itemView, R.id.thread_count);
-            itemView.findViewById(R.id.flagged_center_right).setVisibility(View.GONE);
             itemView.findViewById(R.id.sender_compact).setVisibility(View.GONE);
-            itemView.findViewById(R.id.thread_count).setVisibility(View.GONE);
+            threadCount.setVisibility(View.GONE);
         }
 
         public final TextView getSubject() {

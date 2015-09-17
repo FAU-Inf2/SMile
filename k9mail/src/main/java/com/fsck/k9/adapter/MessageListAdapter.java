@@ -100,7 +100,6 @@ public class MessageListAdapter extends CursorAdapter {
         View view = inflater.inflate(R.layout.message_list_item, parent, false);
 
         final MessageViewHolder holder = new MessageViewHolder(view);
-        final boolean senderAboveSubject = K9.messageListSenderAboveSubject();
 
         if (mPreviewLines == 0 && mContactsPictureLoader == null) {
             view.findViewById(R.id.preview).setVisibility(View.GONE);
@@ -117,14 +116,7 @@ public class MessageListAdapter extends CursorAdapter {
             holder.getContactBadge().setVisibility(View.GONE);
         }
 
-        if (senderAboveSubject) {
-            holder.setFrom((TextView) view.findViewById(R.id.subject));
-            mFontSizes.setViewTextSize(holder.getFrom(), mFontSizes.getMessageListSender());
-        } else {
-            holder.setSubject((TextView) view.findViewById(R.id.subject));
-            mFontSizes.setViewTextSize(holder.getSubject(), mFontSizes.getMessageListSubject());
-        }
-
+        mFontSizes.setViewTextSize(holder.getSubject(), mFontSizes.getMessageListSubject());
         mFontSizes.setViewTextSize(holder.getDate(), mFontSizes.getMessageListDate());
 
         // 1 preview line is needed even if it is set to 0, because subject is part of the same text view
@@ -247,9 +239,6 @@ public class MessageListAdapter extends CursorAdapter {
         final MessageViewHolder holder = (MessageViewHolder) view.getTag();
 
         int maybeBoldTypeface = (read) ? Typeface.NORMAL : Typeface.BOLD;
-
-        //long uniqueId = cursor.getLong(mUniqueIdColumn);
-        //boolean selected = mSelected.contains(uniqueId);
 
         holder.getChip().setBackgroundColor(account.getChipColor());
 

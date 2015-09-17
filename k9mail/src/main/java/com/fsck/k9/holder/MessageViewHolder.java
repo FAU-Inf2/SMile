@@ -10,6 +10,8 @@ import com.fsck.k9.view.QuickContactBadge;
 
 import de.fau.cs.mad.smile.android.R;
 
+import static butterknife.ButterKnife.findById;
+
 public class MessageViewHolder implements View.OnClickListener {
     private TextView subject;
     private TextView preview;
@@ -25,10 +27,11 @@ public class MessageViewHolder implements View.OnClickListener {
     private float fraction;
 
     public MessageViewHolder(View rootView) {
-        swipeLayout = (SwipeLayout) rootView.findViewById(R.id.swipe_layout);
-        date = (TextView) rootView.findViewById(R.id.date);
-        chip = rootView.findViewById(R.id.chip);
-        contactBadge = (QuickContactBadge) rootView.findViewById(R.id.contact_badge);
+        swipeLayout = findById(rootView, R.id.swipe_layout);
+        date = findById(rootView, R.id.date);
+        chip = findById(rootView, R.id.chip);
+        contactBadge = findById(rootView, R.id.contact_badge);
+        subject = findById(rootView, R.id.subject);
     }
 
     @Override

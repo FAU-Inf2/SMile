@@ -606,7 +606,7 @@ public class MessageList extends K9Activity
         mTitles[5] = getResources().getString(R.string.preferences_title);
         mTitles[6] = getResources().getString(R.string.app_name);
 
-        if(mAccount != null) { //TODO: initialize mAccount...
+        if(mAccount != null) {
             mName = mAccount.getName();
             mEmail = mAccount.getEmail();
         } else {
@@ -641,21 +641,22 @@ public class MessageList extends K9Activity
                     else
                         title = mTitles[position - 1];
 
-                    //TODO: remove Toasts...
                     //switch not possible here :-(
                     if (title.equals(getResources().getString(R.string.special_mailbox_name_inbox))) {
-                        //TODO: open folder
-                        Toast.makeText(MessageList.this, getString(R.string.clicked_on) + title, Toast.LENGTH_SHORT).show();                    } else if (title.equals(getResources().getString(R.string.special_mailbox_name_sent))) {
-                        //TODO: open folder
-                        Toast.makeText(MessageList.this, getString(R.string.clicked_on) + title, Toast.LENGTH_SHORT).show();
+                        if(mAccount != null)
+                            onOpenFolder(mAccount.getInboxFolderName());
+                    } else if (title.equals(getResources().getString(R.string.special_mailbox_name_sent))) {
+                        if(mAccount != null)
+                            onOpenFolder(mAccount.getSentFolderName());
                     } else if (title.equals(getResources().getString(R.string.special_mailbox_name_archive))) {
-                        //TODO: open folder
-                        Toast.makeText(MessageList.this, getString(R.string.clicked_on) + title, Toast.LENGTH_SHORT).show();
+                        if(mAccount != null)
+                            onOpenFolder(mAccount.getArchiveFolderName());
                     } else if (title.equals(getResources().getString(R.string.special_mailbox_name_trash))) {
-                        //TODO: open folder
-                        Toast.makeText(MessageList.this, getString(R.string.clicked_on) + title, Toast.LENGTH_SHORT).show();
+                        if(mAccount != null)
+                            onOpenFolder(mAccount.getTrashFolderName());
                     } else if (title.equals(getResources().getString(R.string.folder_list))) {
-                        onShowFolderList();
+                        if(mAccount != null)
+                            onShowFolderList();
                     } else if (title.equals(getResources().getString(R.string.preferences_title))) {
                         onEditPrefs();
                     } else if (title.equals(getResources().getString(R.string.app_name))) {
@@ -694,6 +695,14 @@ public class MessageList extends K9Activity
         mDrawer.setDrawerListener(mDrawerToggle);
         mDrawerToggle.syncState();
     }
+
+    private void onOpenFolder(final String folder) {
+        LocalSearch search = new LocalSearch(folder);
+        search.addAccountUuid(mAccount.getUuid());
+        search.addAllowedFolder(folder);
+        MessageList.actionDisplaySearch(this, search, false, false);
+    }
+
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {

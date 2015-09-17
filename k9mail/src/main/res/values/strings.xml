@@ -30,15 +30,14 @@ SMile is a powerful free email client for Android based on K-9.
 Its improved features include:
 </p>
 <ul>
+  <li>S/MIME-support with SMileCE</li>
   <li>RemindMe!-functionality for emails</li>
+  <li>Modern design</li>
   <li>Push mail using IMAP IDLE</li>
   <li>Better performance</li>
-  <li>Message refiling</li>
   <li>Email signatures</li>
-  <li>Bcc-to-self</li>
   <li>Folder subscriptions</li>
   <li>All folder synchronization</li>
-  <li>Return-address configuration</li>
   <li>Keyboard shortcuts</li>
   <li>Better IMAP support</li>
   <li>Saving attachments to SD</li>
@@ -221,7 +220,7 @@ Please submit bug reports, contribute new features and ask questions at
     <string name="notification_bg_send_ticker">Sending mail: <xliff:g id="account">%s</xliff:g></string>
     <string name="notification_bg_send_title">Sending mail</string>
     <string name="notification_bg_title_separator">:</string>
-
+    <string name="folder_list">All folders</string>
     <string name="special_mailbox_name_inbox">Inbox</string>
     <string name="special_mailbox_name_outbox">Outbox</string>
     <string name="special_mailbox_name_drafts">Drafts</string>

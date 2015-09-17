@@ -239,15 +239,15 @@ public class MessageList extends K9Activity
             mViewSwitcher.setOnSwitchCompleteListener(this);
         }
 
-        initializeActionBar();
-        initializeNavigationDrawer();
-
         // Enable gesture detection for MessageLists
         //setupGestureDetector(this);
 
         if (!decodeExtras(getIntent())) {
             return;
         }
+
+        initializeActionBar();
+        initializeNavigationDrawer();
 
         findFragments();
         initializeDisplayMode(savedInstanceState);

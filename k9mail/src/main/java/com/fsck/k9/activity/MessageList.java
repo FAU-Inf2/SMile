@@ -1049,34 +1049,6 @@ public class MessageList extends K9Activity
                 if (mDisplayMode == DisplayMode.SMS_LIST) fillContacts(mMessageListFragment);
                 return true;
             }
-            case R.id.set_sort_date: {
-                mMessageListFragment.changeSort(SortType.SORT_DATE);
-                return true;
-            }
-            case R.id.set_sort_arrival: {
-                mMessageListFragment.changeSort(SortType.SORT_ARRIVAL);
-                return true;
-            }
-            case R.id.set_sort_subject: {
-                mMessageListFragment.changeSort(SortType.SORT_SUBJECT);
-                return true;
-            }
-            case R.id.set_sort_sender: {
-                mMessageListFragment.changeSort(SortType.SORT_SENDER);
-                return true;
-            }
-            case R.id.set_sort_flag: {
-                mMessageListFragment.changeSort(SortType.SORT_FLAGGED);
-                return true;
-            }
-            case R.id.set_sort_unread: {
-                mMessageListFragment.changeSort(SortType.SORT_UNREAD);
-                return true;
-            }
-            case R.id.set_sort_attach: {
-                mMessageListFragment.changeSort(SortType.SORT_ATTACHMENT);
-                return true;
-            }
             /*case R.id.select_all: {
                 mMessageListFragment.selectAll();
                 return true;

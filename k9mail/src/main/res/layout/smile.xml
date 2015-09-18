@@ -5,21 +5,18 @@
     android:layout_height="match_parent"
     android:elevation="7dp">
 
-    <include
-        android:id="@+id/toolbar"
-        layout="@layout/actionbar_custom" />
-
-    <FrameLayout
-        android:id="@+id/content_frame"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
-    <!-- Side navigation drawer UI -->
-    <ListView
-        android:id="@+id/navList"
-        android:layout_width="320dp"
         android:layout_height="match_parent"
-        android:layout_gravity="start"
-        android:background="#ffffff"
-        android:scrollbars="vertical" />
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/toolbar"
+            layout="@layout/toolbar_material" />
+
+        <FrameLayout
+            android:id="@+id/content_frame"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </LinearLayout>
 </android.support.v4.widget.DrawerLayout>

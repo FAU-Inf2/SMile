@@ -73,6 +73,10 @@ public class RemindMeList extends SmileActivity
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        //TODO: does not work??
+        toolbar.setTitle(getString(R.string.remindme_action));
+
         final Intent intent = getIntent();
         handleIntent(intent);
         JodaTimeAndroid.init(this);

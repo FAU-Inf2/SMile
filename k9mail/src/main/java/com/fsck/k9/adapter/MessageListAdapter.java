@@ -2,24 +2,13 @@ package com.fsck.k9.adapter;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.graphics.Color;
-import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.support.v4.widget.CursorAdapter;
-import android.text.Spannable;
-import android.text.SpannableStringBuilder;
-import android.text.TextUtils;
-import android.text.format.DateUtils;
-import android.text.style.AbsoluteSizeSpan;
-import android.text.style.ForegroundColorSpan;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.CheckBox;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.daimajia.swipe.SimpleSwipeListener;
 import com.daimajia.swipe.SwipeLayout;
@@ -28,19 +17,14 @@ import com.fsck.k9.FontSizes;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.activity.misc.ContactPictureLoader;
-import com.fsck.k9.fragment.MessageActions;
+import com.fsck.k9.fragment.IMessageListPresenter;
 import com.fsck.k9.fragment.MessageListFragment;
 import com.fsck.k9.helper.ContactPicture;
 import com.fsck.k9.helper.FolderHelper;
 import com.fsck.k9.helper.MessageHelper;
-import com.fsck.k9.helper.Utility;
-import com.fsck.k9.mail.Address;
-import com.fsck.k9.holder.MessageViewHolder;
-import com.fsck.k9.mail.Folder;
 import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.mailstore.LocalMessage;
-import com.fsck.k9.mailstore.LocalStore;
 import com.fsck.k9.view.MessageListItemView;
 
 import de.fau.cs.mad.smile.android.R;
@@ -56,7 +40,7 @@ public class MessageListAdapter extends CursorAdapter {
     private final int mPreviewLines;
     private final FontSizes mFontSizes;
     private final boolean mSenderAboveSubject;
-    private final MessageActions messageActionsCallback;
+    private final IMessageListPresenter messageActionsCallback;
     private ContactPictureLoader mContactsPictureLoader;
     private Drawable mAttachmentIcon;
     private Drawable mForwardedIcon;
@@ -64,7 +48,7 @@ public class MessageListAdapter extends CursorAdapter {
     private Drawable mForwardedAnsweredIcon;
 
 
-    public MessageListAdapter(Context context, MessageActions messageActionsCallback, boolean threadedList) {
+    public MessageListAdapter(Context context, IMessageListPresenter messageActionsCallback, boolean threadedList) {
         super(context, null, 0);
 
         if (K9.showContactPicture()) {

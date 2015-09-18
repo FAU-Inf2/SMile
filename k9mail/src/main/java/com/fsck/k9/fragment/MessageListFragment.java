@@ -17,12 +17,10 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.view.ActionMode;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -56,7 +54,6 @@ import com.fsck.k9.helper.FolderHelper;
 import com.fsck.k9.helper.MergeCursorWithUniqueId;
 import com.fsck.k9.holder.FolderInfoHolder;
 import com.fsck.k9.listener.ActivityListener;
-import com.fsck.k9.adapter.MessageListAdapter;
 import com.fsck.k9.cache.EmailProviderCache;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.fragment.ConfirmationDialogFragment.ConfirmationDialogFragmentListener;
@@ -67,8 +64,6 @@ import com.fsck.k9.mail.Address;
 import com.fsck.k9.mail.Flag;
 import com.fsck.k9.mail.Folder;
 import com.fsck.k9.mail.Message;
-import com.fsck.k9.mail.MessagingException;
-import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.provider.EmailProvider;
 import com.fsck.k9.provider.EmailProvider.MessageColumns;
@@ -79,10 +74,8 @@ import com.fsck.k9.search.LocalSearch;
 import com.fsck.k9.search.SearchCondition;
 import com.fsck.k9.search.SearchSpecification;
 import com.fsck.k9.search.SqlQueryBuilder;
+import com.fsck.k9.view.MessageListView;
 import com.fsck.k9.view.RefreshableMessageList;
-import com.handmark.pulltorefresh.library.ILoadingLayout;
-import com.handmark.pulltorefresh.library.PullToRefreshBase;
-import com.handmark.pulltorefresh.library.PullToRefreshListView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -104,7 +97,7 @@ import static butterknife.ButterKnife.findById;
 public class MessageListFragment extends Fragment
         implements AdapterView.OnItemClickListener,
         ConfirmationDialogFragmentListener,
-        MessageActions {
+        IMessageListPresenter {
 
     protected static final int ID_COLUMN = 0;
     public static final int UID_COLUMN = 1;
@@ -202,7 +195,6 @@ public class MessageListFragment extends Fragment
     MessageHelper mMessageHelper;
     private RefreshableMessageList mPullToRefreshView;
     //private MessageListAdapter mAdapter;
-    private LayoutInflater mInflater;
     private NotificationHelper notificationHelper;
     private String[] mAccountUuids;
     private int mUnreadMessageCount = 0;
@@ -300,7 +292,6 @@ public class MessageListFragment extends Fragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        mInflater = inflater;
         View view = inflater.inflate(R.layout.message_list_fragment, container, false);
         mPullToRefreshView = (RefreshableMessageList)view;
         mPullToRefreshView.loadMessages(mCurrentFolder.folder);
@@ -331,6 +322,34 @@ public class MessageListFragment extends Fragment
     }
 
     @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        saveSelectedMessages(outState);
+        saveListState(outState);
+
+        outState.putBoolean(STATE_REMOTE_SEARCH_PERFORMED, mRemoteSearchPerformed);
+        outState.putParcelable(STATE_ACTIVE_MESSAGE, mActiveMessage);
+    }
+
+    /**
+     * Restore the state of a previous {@link MessageListFragment} instance.
+     *
+     * @see #onSaveInstanceState(Bundle)
+     */
+    private void restoreInstanceState(Bundle savedInstanceState) {
+        if (savedInstanceState == null) {
+            return;
+        }
+
+        restoreSelectedMessages(savedInstanceState);
+
+        mRemoteSearchPerformed = savedInstanceState.getBoolean(STATE_REMOTE_SEARCH_PERFORMED);
+        mSavedListState = savedInstanceState.getParcelable(STATE_MESSAGE_LIST);
+        mActiveMessage = savedInstanceState.getParcelable(STATE_ACTIVE_MESSAGE);
+    }
+
+    @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if (view == mFooterView) {
             if (mCurrentFolder != null && !mSearch.isManualSearch()) {
@@ -351,7 +370,6 @@ public class MessageListFragment extends Fragment
                             mExtraSearchResults.size());
                 } else {
                     mExtraSearchResults = null;
-                    updateFooter("");
                 }
 
                 mController.loadSearchResults(mAccount, mCurrentFolder.name, toProcess, mListener);
@@ -383,34 +401,6 @@ public class MessageListFragment extends Fragment
                 //openMessageAtPosition(listViewToAdapterPosition(position));
             }
         }
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-
-        saveSelectedMessages(outState);
-        saveListState(outState);
-
-        outState.putBoolean(STATE_REMOTE_SEARCH_PERFORMED, mRemoteSearchPerformed);
-        outState.putParcelable(STATE_ACTIVE_MESSAGE, mActiveMessage);
-    }
-
-    /**
-     * Restore the state of a previous {@link MessageListFragment} instance.
-     *
-     * @see #onSaveInstanceState(Bundle)
-     */
-    private void restoreInstanceState(Bundle savedInstanceState) {
-        if (savedInstanceState == null) {
-            return;
-        }
-
-        restoreSelectedMessages(savedInstanceState);
-
-        mRemoteSearchPerformed = savedInstanceState.getBoolean(STATE_REMOTE_SEARCH_PERFORMED);
-        mSavedListState = savedInstanceState.getParcelable(STATE_MESSAGE_LIST);
-        mActiveMessage = savedInstanceState.getParcelable(STATE_ACTIVE_MESSAGE);
     }
 
     /**
@@ -469,8 +459,6 @@ public class MessageListFragment extends Fragment
         if (mCurrentFolder != null && mCurrentFolder.name.equals(folder)) {
             mCurrentFolder.loading = loading;
         }
-
-        updateFooterView();
     }
 
     public void updateTitle() {
@@ -773,9 +761,6 @@ public class MessageListFragment extends Fragment
         //mPullToRefreshView.setMode((enable) ? PullToRefreshBase.Mode.PULL_FROM_START : PullToRefreshBase.Mode.DISABLED);
     }
 
-    private void initializeLayout() {
-    }
-
     public void onCompose() {
         if (!mSingleAccountMode) {
             /*
@@ -907,7 +892,7 @@ public class MessageListFragment extends Fragment
     }
 
     public void move(LocalMessage message, String destFolder) {
-        //onMove(message);
+        onMove(message);
     }
 
     public void delete(LocalMessage message){
@@ -931,7 +916,21 @@ public class MessageListFragment extends Fragment
     }
 
     public void openMessage(MessageReference messageReference) {
-        Log.d(K9.LOG_TAG, "wanted to open message: " + messageReference);
+        mHandler.openMessage(messageReference);
+    }
+
+    public void sort(SortType sortType, boolean ascending) {
+        changeSort(sortType, ascending);
+    }
+
+    @Override
+    public void setModel(LocalMessage message) {
+
+    }
+
+    @Override
+    public void setView(MessageListView messageListView) {
+
     }
 
     private void onDelete(LocalMessage message) {
@@ -1283,56 +1282,6 @@ public class MessageListFragment extends Fragment
         return AdapterView.INVALID_POSITION;
     }
 */
-    private View getFooterView(ViewGroup parent) {
-        if (mFooterView == null) {
-            mFooterView = mInflater.inflate(R.layout.message_list_item_footer, parent, false);
-            mFooterView.setId(R.layout.message_list_item_footer);
-            FooterViewHolder holder = new FooterViewHolder();
-            holder.main = (TextView) mFooterView.findViewById(R.id.main_text);
-            mFooterView.setTag(holder);
-        }
-
-        return mFooterView;
-    }
-
-    private void updateFooterView() {
-        if (!mSearch.isManualSearch() && mCurrentFolder != null && mAccount != null) {
-            if (mCurrentFolder.loading) {
-                updateFooter(mContext.getString(R.string.status_loading_more));
-            } else {
-                String message;
-                if (!mCurrentFolder.lastCheckFailed) {
-                    if (mAccount.getDisplayCount() == 0) {
-                        message = mContext.getString(R.string.message_list_load_more_messages_action);
-                    } else {
-                        message = String.format(mContext.getString(R.string.load_more_messages_fmt), mAccount.getDisplayCount());
-                    }
-                } else {
-                    message = mContext.getString(R.string.status_loading_more_failed);
-                }
-                updateFooter(message);
-            }
-        } else {
-            updateFooter(null);
-        }
-    }
-
-    public void updateFooter(final String text) {
-        if (mFooterView == null) {
-            return;
-        }
-
-        FooterViewHolder holder = (FooterViewHolder) mFooterView.getTag();
-
-        if (text != null) {
-            holder.main.setText(text);
-        }
-        if (holder.main.getText().length() > 0) {
-            holder.main.setVisibility(View.VISIBLE);
-        } else {
-            holder.main.setVisibility(View.GONE);
-        }
-    }
 
     /**
      * Set selection state for all messages.

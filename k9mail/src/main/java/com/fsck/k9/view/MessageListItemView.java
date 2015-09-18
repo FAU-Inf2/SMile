@@ -23,8 +23,7 @@ import com.fsck.k9.Account;
 import com.fsck.k9.FontSizes;
 import com.fsck.k9.K9;
 import com.fsck.k9.activity.misc.ContactPictureLoader;
-import com.fsck.k9.fragment.MessageActions;
-import com.fsck.k9.fragment.MessageListFragment;
+import com.fsck.k9.fragment.IMessageListPresenter;
 import com.fsck.k9.helper.ContactPicture;
 import com.fsck.k9.helper.MessageHelper;
 import com.fsck.k9.mail.Address;
@@ -52,7 +51,7 @@ public class MessageListItemView extends SwipeLayout {
     private QuickContactBadge contactBadge;
     private int position; // TODO: remove this once cursor is no longer used
     private ContactPictureLoader contactsPictureLoader;
-    private MessageActions messageActionsCallback;
+    private IMessageListPresenter messageActionsCallback;
 
     private Drawable mAttachmentIcon;
     private Drawable mForwardedIcon;
@@ -311,7 +310,7 @@ public class MessageListItemView extends SwipeLayout {
         return message;
     }
 
-    public void setMessageActionsCallback(MessageActions messageActionsCallback) {
+    public void setMessageActionsCallback(IMessageListPresenter messageActionsCallback) {
         this.messageActionsCallback = messageActionsCallback;
     }
 

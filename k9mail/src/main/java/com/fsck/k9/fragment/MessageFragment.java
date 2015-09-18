@@ -46,7 +46,7 @@ public class MessageFragment extends Fragment {
     private LocalSearch search;
     private String mFolderName;
     private Account mAccount;
-    private MessageActions mCallback;
+    private IMessageListPresenter mCallback;
 
     public static MessageFragment newInstance(final LocalSearch search) {
         MessageFragment fragment = new MessageFragment();
@@ -78,7 +78,7 @@ public class MessageFragment extends Fragment {
         // This makes sure that the container activity has implemented
         // the callback interface. If not, it throws an exception
         try {
-            mCallback = (MessageActions) activity;
+            mCallback = (IMessageListPresenter) activity;
         } catch (ClassCastException e) {
             throw new ClassCastException(activity.toString()
                     + " must implement OnHeadlineSelectedListener");

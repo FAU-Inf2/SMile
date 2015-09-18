@@ -18,7 +18,7 @@ import com.fsck.k9.Account;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.crypto.PgpData;
-import com.fsck.k9.fragment.MessageActions;
+import com.fsck.k9.fragment.IMessageListPresenter;
 import com.fsck.k9.fragment.MessageFragment;
 import com.fsck.k9.fragment.RemindMeDatePickerDialog;
 import com.fsck.k9.fragment.RemindMeDialog;
@@ -49,7 +49,7 @@ import java.util.List;
 import de.fau.cs.mad.smile.android.R;
 
 public class Messages extends SmileActivity
-        implements MessageActions,
+        implements IMessageListPresenter,
         MessageViewFragmentListener,RemindMeDialog.NoticeDialogListener,
         TimePickerDialog.OnTimeSetListener,
         DatePickerDialog.OnDateSetListener {
@@ -228,7 +228,7 @@ public class Messages extends SmileActivity
 
     }
 
-    // implement MessageActions
+    // implement IMessageListPresenter
 
     @Override
     public void move(LocalMessage message, String destFolder) {

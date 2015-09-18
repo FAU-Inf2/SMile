@@ -40,6 +40,7 @@ import com.fsck.k9.Account.SortType;
 import com.fsck.k9.K9;
 import com.fsck.k9.adapter.DividerItemDecoration;
 import com.fsck.k9.adapter.RecyclerViewAdapter;
+import com.fsck.k9.helper.FolderHelper;
 import com.fsck.k9.preferences.SplitViewMode;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.crypto.PgpData;
@@ -608,10 +609,10 @@ public class MessageList extends K9Activity
 
         mTitles = new String[7];
         if(mAccount != null) {
-            mTitles[0] = mAccount.getInboxFolderName();
-            mTitles[1] = mAccount.getSentFolderName();
-            mTitles[2] = mAccount.getDraftsFolderName();
-            mTitles[3] = mAccount.getTrashFolderName();
+            mTitles[0] = FolderHelper.getDisplayName(this, mAccount, mAccount.getInboxFolderName());
+            mTitles[1] = FolderHelper.getDisplayName(this, mAccount, mAccount.getSentFolderName());
+            mTitles[2] = FolderHelper.getDisplayName(this, mAccount, mAccount.getDraftsFolderName());
+            mTitles[3] = FolderHelper.getDisplayName(this, mAccount, mAccount.getTrashFolderName());
             mTitles[4] = getResources().getString(R.string.folder_list);
             mTitles[5] = getResources().getString(R.string.preferences_title);
             mTitles[6] = getResources().getString(R.string.about_action) + " " + getResources().getString(R.string.app_name);

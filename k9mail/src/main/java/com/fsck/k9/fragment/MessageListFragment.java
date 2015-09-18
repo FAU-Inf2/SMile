@@ -298,11 +298,17 @@ public class MessageListFragment extends Fragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
         mInflater = inflater;
         View view = inflater.inflate(R.layout.message_list_fragment, container, false);
         initializePullToRefresh(inflater, view);
-        initializeLayout();
+        mListView = mPullToRefreshView.getRefreshableView();
+        mListView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
+        mListView.setLongClickable(true);
+        mListView.setFastScrollEnabled(true);
+        mListView.setScrollingCacheEnabled(false);
+        mListView.setOnItemClickListener(this);
+
+        registerForContextMenu(mListView);
         mListView.setVerticalFadingEdgeEnabled(false);
 
         return view;
@@ -510,7 +516,7 @@ public class MessageListFragment extends Fragment
         // regular folder content display
         if (!isManualSearch() && mSingleFolderMode) {
             Activity activity = getActivity();
-            String displayName = FolderInfoHolder.getDisplayName(activity, mAccount,
+            String displayName = FolderHelper.getDisplayName(activity, mAccount,
                     mFolderName);
 
             mFragmentListener.setMessageListTitle(displayName);
@@ -780,14 +786,6 @@ public class MessageListFragment extends Fragment
     }
 
     private void initializeLayout() {
-        mListView = mPullToRefreshView.getRefreshableView();
-        mListView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
-        mListView.setLongClickable(true);
-        mListView.setFastScrollEnabled(true);
-        mListView.setScrollingCacheEnabled(false);
-        mListView.setOnItemClickListener(this);
-
-        registerForContextMenu(mListView);
     }
 
     public void onCompose() {

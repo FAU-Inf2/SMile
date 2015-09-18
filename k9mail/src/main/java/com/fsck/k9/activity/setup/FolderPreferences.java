@@ -12,6 +12,7 @@ import com.fsck.k9.Account;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.fragment.SmilePreferenceFragment;
+import com.fsck.k9.helper.FolderHelper;
 import com.fsck.k9.holder.FolderInfoHolder;
 import com.fsck.k9.mail.Folder;
 import com.fsck.k9.mail.Folder.FolderClass;
@@ -96,7 +97,7 @@ public class FolderPreferences extends SmilePreferenceFragment {
 
         addPreferencesFromResource(R.xml.folder_preferences);
 
-        String displayName = FolderInfoHolder.getDisplayName(context, account, folder.getName());
+        String displayName = FolderHelper.getDisplayName(context, account, folder.getName());
         Preference category = findPreference(PREFERENCE_TOP_CATERGORY);
         category.setTitle(displayName);
 

@@ -53,7 +53,7 @@ public class RemindMeFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mRemindMeList = new ArrayList<RemindMe>();
+        mRemindMeList = new ArrayList<>();
         mAdapter = new RemindMeAdapter(mRemindMeList);
         String accountUuid = getArguments().getString(ARG_ACCOUNT);
         mAccount = Preferences.getPreferences(getActivity()).getAccount(accountUuid);

@@ -7,8 +7,9 @@ import android.util.AttributeSet;
 import com.fsck.k9.adapter.MessageAdapter;
 
 public class MessageListView extends RecyclerView {
-    public MessageListView(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
+
+    public MessageListView(Context context, AttributeSet attrs) {
+        super(context, attrs);
     }
 
     @Override

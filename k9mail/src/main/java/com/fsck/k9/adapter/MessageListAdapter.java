@@ -105,9 +105,13 @@ public class MessageListAdapter extends CursorAdapter {
     }
 
     @Override
-    public void bindView(View view, final Context context, Cursor cursor) {
+    public void bindView(final View view, final Context context, Cursor cursor) {
+        final MessageListItemView holder = (MessageListItemView) view;
         Account account = getAccountFromCursor(cursor);
+        LocalMessage message = getMessageAtPosition(cursor.getPosition());
+        holder.setMessage(message);
 
+        /*
         String fromList = cursor.getString(MessageListFragment.SENDER_LIST_COLUMN);
         String toList = cursor.getString(MessageListFragment.TO_LIST_COLUMN);
         String ccList = cursor.getString(MessageListFragment.CC_LIST_COLUMN);
@@ -151,8 +155,6 @@ public class MessageListAdapter extends CursorAdapter {
 
         boolean hasAttachments = (cursor.getInt(MessageListFragment.ATTACHMENT_COUNT_COLUMN) > 0);
 
-        final MessageListItemView holder = (MessageListItemView) view;
-
         holder.getChip().setBackgroundColor(account.getChipColor());
 
         if (mStars) {
@@ -168,6 +170,7 @@ public class MessageListAdapter extends CursorAdapter {
              * email address is available. ListView reuses the views but QuickContactBadge
              * doesn't reset the padding, so we do it ourselves.
              */
+            /*
             holder.getContactBadge().setPadding(0, 0, 0, 0);
             mContactsPictureLoader.loadContactPicture(counterpartyAddress, holder.getContactBadge());
         } else {
@@ -254,25 +257,43 @@ public class MessageListAdapter extends CursorAdapter {
         }
 
         if (holder.getSubject() != null) {
-            if (!mSenderAboveSubject) {
                 holder.getSubject().setCompoundDrawablesWithIntrinsicBounds(
                         statusHolder, // left
                         null, // top
                         hasAttachments ? mAttachmentIcon : null, // right
                         null); // bottom
-            }
+
 
             holder.getSubject().setTypeface(Typeface.create(holder.getSubject().getTypeface(), maybeBoldTypeface));
             holder.getSubject().setText(subject);
         }
 
         holder.getDate().setText(displayDate);
-        holder.addSwipeListener(new ExecuteSwipeListener());
+        holder.addSwipeListener(new ExecuteSwipeListener());*/
     }
 
     protected Account getAccountFromCursor(Cursor cursor) {
         String accountUuid = cursor.getString(MessageListFragment.ACCOUNT_UUID_COLUMN);
         return Preferences.getPreferences(context).getAccount(accountUuid);
+    }
+
+    private LocalMessage getMessageAtPosition(int adapterPosition) {
+        if (adapterPosition == AdapterView.INVALID_POSITION) {
+            return null;
+        }
+
+        Cursor cursor = (Cursor) getItem(adapterPosition);
+        String uid = cursor.getString(MessageListFragment.UID_COLUMN);
+
+        Account account = getAccountFromCursor(cursor);
+        long folderId = cursor.getLong(MessageListFragment.FOLDER_ID_COLUMN);
+        LocalFolder folder = FolderHelper.getFolderById(account, folderId);
+
+        try {
+            return folder.getMessage(uid);
+        } catch (MessagingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private class ExecuteSwipeListener extends SimpleSwipeListener {
@@ -298,25 +319,6 @@ public class MessageListAdapter extends CursorAdapter {
 
             if (delete.isShown()) {
                 messageActionsCallback.delete(message);
-            }
-        }
-
-        private LocalMessage getMessageAtPosition(int adapterPosition) {
-            if (adapterPosition == AdapterView.INVALID_POSITION) {
-                return null;
-            }
-
-            Cursor cursor = (Cursor) getItem(adapterPosition);
-            String uid = cursor.getString(MessageListFragment.UID_COLUMN);
-
-            Account account = getAccountFromCursor(cursor);
-            long folderId = cursor.getLong(MessageListFragment.FOLDER_ID_COLUMN);
-            LocalFolder folder = FolderHelper.getFolderById(account, folderId);
-
-            try {
-                return folder.getMessage(uid);
-            } catch (MessagingException e) {
-                throw new RuntimeException(e);
             }
         }
     }

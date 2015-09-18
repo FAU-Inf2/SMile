@@ -32,6 +32,7 @@ import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.listener.MessageListSwipeListener;
+import com.fsck.k9.view.MessageListItemView;
 import com.fsck.k9.view.QuickContactBadge;
 
 import java.util.List;
@@ -43,60 +44,47 @@ import static butterknife.ButterKnife.findById;
 
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageViewHolder> {
     public static class MessageViewHolder extends RecyclerView.ViewHolder {
-        private final TextView subject;
-        private final TextView preview;
-        private final TextView date;
-        private final View chip;
-        private final TextView threadCount;
-        private final CheckBox flagged;
-        private final SwipeLayout swipeLayout;
-        private final QuickContactBadge contactBadge;
+        MessageListItemView itemView;
 
         public MessageViewHolder(View itemView) {
             super(itemView);
-
-            swipeLayout = (SwipeLayout) itemView;
-            date = findById(itemView, R.id.date);
-            chip = findById(itemView, R.id.chip);
-            preview = findById(itemView, R.id.preview);
-            flagged = findById(itemView, R.id.flagged);
-            contactBadge = findById(itemView, R.id.contact_badge);
-            subject = findById(itemView, R.id.subject);
-            threadCount = findById(itemView, R.id.thread_count);
-            itemView.findViewById(R.id.sender_compact).setVisibility(View.GONE);
-            threadCount.setVisibility(View.GONE);
+            this.itemView = (MessageListItemView)itemView;
         }
 
-        public final TextView getSubject() {
-            return subject;
+        public MessageListItemView getItemView() {
+            return itemView;
         }
 
-        public final TextView getPreview() {
-            return preview;
+        public View getChip() {
+            return itemView.getChip();
         }
 
-        public final TextView getDate() {
-            return date;
+        public CheckBox getFlagged() {
+            return itemView.getFlagged();
         }
 
-        public final View getChip() {
-            return chip;
+        public QuickContactBadge getContactBadge() {
+            return itemView.getContactBadge();
         }
 
-        public final TextView getThreadCount() {
-            return threadCount;
+        public TextView getThreadCount() {
+            return itemView.getThreadCount();
         }
 
-        public final SwipeLayout getSwipeLayout() {
-            return swipeLayout;
+        public TextView getPreview() {
+            return itemView.getPreview();
         }
 
-        public final CheckBox getFlagged() {
-            return flagged;
+        public TextView getFrom() {
+            return itemView.getFrom();
         }
 
-        public final QuickContactBadge getContactBadge() {
-            return contactBadge;
+        public TextView getSubject() {
+            return itemView.getSubject();
+        }
+
+        public TextView getDate() {
+            return itemView.getDate();
         }
     }
 
@@ -126,35 +114,16 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     @Override
     public MessageViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        View view = inflater.inflate(R.layout.messages_item, parent, false);
-
+        View view = inflater.inflate(R.layout.message_list_item, parent, false);
         MessageViewHolder holder = new MessageViewHolder(view);
-
-        setupFontSize(holder);
-        setupSwipe(view, holder);
-
         return holder;
-    }
-
-    private final void setupFontSize(final MessageViewHolder holder) {
-        final FontSizes fontSizes = K9.getFontSizes();
-        fontSizes.setViewTextSize(holder.getPreview(), fontSizes.getMessageListPreview());
-        fontSizes.setViewTextSize(holder.getSubject(), fontSizes.getMessageListSubject());
-        fontSizes.setViewTextSize(holder.getDate(), fontSizes.getMessageListDate());
-        holder.getPreview().setLines(Math.max(K9.messageListPreviewLines(), 1));
-    }
-
-    private final void setupSwipe(final View view, final MessageViewHolder holder) {
-        final SwipeLayout swipeLayout = holder.getSwipeLayout();
-        swipeLayout.addDrag(SwipeLayout.DragEdge.Left, view.findViewById(R.id.pull_out));
-        swipeLayout.addDrag(SwipeLayout.DragEdge.Right, view.findViewById(R.id.delete));
-        swipeLayout.addRevealListener(R.id.delete, new DeleteMessageRevealListener(swipeLayout));
-        swipeLayout.addRevealListener(R.id.pull_out, new ArchiveOrRemindMeRevealListener(swipeLayout));
     }
 
     @Override
     public void onBindViewHolder(MessageViewHolder holder, final int position) {
         final LocalMessage message = mMessages.get(position);
+        holder.getItemView().setMessage(message);
+        /*
         Account account = message.getAccount();
 
         Address[] fromAddrs = message.getFrom();
@@ -218,7 +187,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         }
 
         holder.getPreview().setText(messageStringBuilder, TextView.BufferType.SPANNABLE);
-        Spannable str = (Spannable) holder.preview.getText();
+        Spannable str = (Spannable) holder.getPreview().getText();
 
         // Create a span section for the sender, and assign the correct font size and weight
         int fontSize = K9.getFontSizes().getMessageListSubject();
@@ -244,13 +213,11 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 null); // bottom
 
         holder.getSubject().setText(displayName);
-        //holder.getSubject().setText(subject);
         holder.getChip().setBackgroundColor(account.getChipColor());
         holder.getDate().setText(displayDate);
         holder.getPreview().setText(message.getPreview());
-        //holder.getPreview().setVisibility(View.GONE);
-
-        holder.getSwipeLayout().addSwipeListener(new MessageListSwipeListener(this, message));
+        */
+        //holder.getSwipeLayout().addSwipeListener(new MessageListSwipeListener(this, message));
     }
 
     private Drawable getStatusHolder(boolean answered, boolean forwarded) {
@@ -287,7 +254,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                      * doesn't reset the padding, so we do it ourselves.
                      */
                 holder.getContactBadge().setPadding(0, 0, 0, 0);
-                mContactsPictureLoader.loadContactPicture(counterpartyAddress, holder.contactBadge);
+                mContactsPictureLoader.loadContactPicture(counterpartyAddress, holder.getContactBadge());
             } else {
                 holder.getContactBadge().assignContactUri(null);
                 holder.getContactBadge().setImageResource(R.drawable.ic_contact_picture);
@@ -298,78 +265,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     @Override
     public int getItemCount() {
         return mMessages.size();
-    }
-
-    private static class DeleteMessageRevealListener implements SwipeLayout.OnRevealListener {
-        private final SwipeLayout swipeLayout;
-
-        public DeleteMessageRevealListener(SwipeLayout swipeLayout) {
-            this.swipeLayout = swipeLayout;
-        }
-
-        @Override
-        public void onReveal(View view, SwipeLayout.DragEdge dragEdge, float v, int i) {
-            ImageView trash = (ImageView) swipeLayout.findViewById(R.id.trash);
-            if (v > 0.25) {
-                view.setBackgroundColor(Color.RED);
-                trash.setVisibility(View.VISIBLE);
-            } else {
-                view.setBackgroundColor(swipeLayout.getSolidColor());
-                trash.setVisibility(View.INVISIBLE);
-            }
-        }
-    }
-
-    private static class ArchiveOrRemindMeRevealListener implements SwipeLayout.OnRevealListener {
-        private final SwipeLayout swipeLayout;
-        private boolean img_set1;
-        private boolean img_set2;
-
-        public ArchiveOrRemindMeRevealListener(SwipeLayout swipeLayout) {
-            this.swipeLayout = swipeLayout;
-            img_set1 = false;
-            img_set2 = false;
-        }
-
-        @Override
-        public void onReveal(View view, SwipeLayout.DragEdge dragEdge, float v, int i) {
-            if (dragEdge != SwipeLayout.DragEdge.Left) {
-                return;
-            }
-
-            ImageView archive = findById(view, R.id.pull_out_archive);
-            ImageView remindMe = findById(view, R.id.pull_out_remind_me);
-
-            if (v <= 0.2) {
-                img_set1 = img_set2 = false;
-                archive.setVisibility(View.INVISIBLE);
-                remindMe.setVisibility(View.INVISIBLE);
-            }
-
-            if (v > 0.2 && !img_set1) {
-                img_set1 = true;
-                img_set2 = false;
-                archive.setVisibility(View.INVISIBLE);
-                remindMe.setVisibility(View.VISIBLE);
-            }
-
-            if (v > 0.5 && !img_set2) {
-                img_set1 = false;
-                img_set2 = true;
-                remindMe.setVisibility(View.INVISIBLE);
-                archive.setVisibility(View.VISIBLE);
-            }
-
-            if (v <= 0.2) {
-                view.setBackgroundColor(Color.LTGRAY);
-            } else {
-                if (0.2 < v && v < 0.5) {
-                    view.setBackgroundColor(Color.YELLOW);
-                } else {
-                    view.setBackgroundColor(Color.GREEN);
-                }
-            }
-        }
     }
 
     public void archiveMessage(LocalMessage message) {

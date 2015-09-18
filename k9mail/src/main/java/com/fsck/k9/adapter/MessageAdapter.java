@@ -59,7 +59,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             date = findById(itemView, R.id.date);
             chip = findById(itemView, R.id.chip);
             preview = findById(itemView, R.id.preview);
-            flagged = findById(itemView, R.id.flagged_bottom_right);
+            flagged = findById(itemView, R.id.flagged);
             contactBadge = findById(itemView, R.id.contact_badge);
             subject = findById(itemView, R.id.subject);
             threadCount = findById(itemView, R.id.thread_count);

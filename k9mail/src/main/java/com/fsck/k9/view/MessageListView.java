@@ -14,7 +14,5 @@ public class MessageListView extends RecyclerView {
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        final MessageAdapter adapter = new MessageAdapter(getContext(), null, null);
-        setAdapter(adapter);
     }
 }

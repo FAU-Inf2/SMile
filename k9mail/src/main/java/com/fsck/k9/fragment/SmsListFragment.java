@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.AdapterView;
 
 import com.fsck.k9.Account;
+import com.fsck.k9.helper.FolderHelper;
 import com.fsck.k9.mail.Message;
 import com.fsck.k9.search.LocalSearch;
 
@@ -100,7 +101,7 @@ public class SmsListFragment extends MessageListFragment {
             if (mThreadedList && cursor.getInt(THREAD_COUNT_COLUMN) > 1) {
                 Account account = getAccountFromCursor(cursor);
                 long folderId = cursor.getLong(FOLDER_ID_COLUMN);
-                String folderName = getFolderNameById(account, folderId);
+                String folderName = FolderHelper.getFolderNameById(account, folderId);
 
                 // If threading is enabled and this item represents a thread, display the thread contents.
                 long rootId = cursor.getLong(THREAD_ROOT_COLUMN);

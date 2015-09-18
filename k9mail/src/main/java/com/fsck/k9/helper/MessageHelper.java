@@ -34,13 +34,14 @@ public class MessageHelper {
      */
     private static final int TOO_MANY_ADDRESSES = 50;
 
-    private static MessageHelper sInstance;
+    private static MessageHelper instance;
 
     public synchronized static MessageHelper getInstance(final Context context) {
-        if (sInstance == null) {
-            sInstance = new MessageHelper(context);
+        if (instance == null) {
+            instance = new MessageHelper(context);
         }
-        return sInstance;
+
+        return instance;
     }
 
     private Context mContext;
@@ -53,7 +54,14 @@ public class MessageHelper {
                          final LocalMessage message,
                          final FolderInfoHolder folder,
                          Account account) {
-        final Contacts contactHelper = K9.showContactName() ? Contacts.getInstance(mContext) : null;
+        final Contacts contactHelper;
+        if (K9.showContactName()) {
+            contactHelper = Contacts.getInstance(mContext);
+        }
+        else {
+            contactHelper = null;
+        }
+
         try {
             target.message = message;
             target.compareArrival = message.getInternalDate();

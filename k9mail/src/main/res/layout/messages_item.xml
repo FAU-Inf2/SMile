@@ -101,7 +101,7 @@
                 android:layout_below="@+id/subject_wrapper"
                 android:layout_marginLeft="50dip"
                 android:layout_marginRight="3dip"
-                android:layout_toLeftOf="@+id/flagged_bottom_right"
+                android:layout_toLeftOf="@+id/flagged"
                 android:bufferType="spannable"
                 android:gravity="top"
                 android:longClickable="false"
@@ -184,7 +184,7 @@
                 android:textColor="?android:attr/textColorSecondary" />
 
             <CheckBox
-                android:id="@+id/flagged_bottom_right"
+                android:id="@+id/flagged"
                 style="?android:attr/starStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="fill_parent"

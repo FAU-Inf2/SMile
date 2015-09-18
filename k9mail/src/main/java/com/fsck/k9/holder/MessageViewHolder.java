@@ -1,6 +1,5 @@
 package com.fsck.k9.holder;
 
-import android.support.v7.widget.CardView;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.TextView;
@@ -42,7 +41,7 @@ public class MessageViewHolder implements View.OnClickListener {
                 /*case R.id.delete:
                     onDelete(getMessageAtPosition(position));
                     break;*/
-                case R.id.flagged_bottom_right:
+                case R.id.flagged:
                 case R.id.flagged_center_right:
                     //handler.toggleMessageFlagWithAdapterPosition(position);
                     break;

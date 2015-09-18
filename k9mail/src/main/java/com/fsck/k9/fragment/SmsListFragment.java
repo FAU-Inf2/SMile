@@ -108,7 +108,7 @@ public class SmsListFragment extends MessageListFragment {
                 mFragmentListener.showThread(account, folderName, rootId);
             } else {
                 // This item represents a message; just display the message.
-                openMessageAtPosition(listViewToAdapterPosition(position));
+                //openMessageAtPosition(listViewToAdapterPosition(position));
             }
         }
     }

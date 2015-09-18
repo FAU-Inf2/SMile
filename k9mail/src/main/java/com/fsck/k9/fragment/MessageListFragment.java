@@ -17,6 +17,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.view.ActionMode;
 import android.text.TextUtils;
@@ -78,6 +79,7 @@ import com.fsck.k9.search.LocalSearch;
 import com.fsck.k9.search.SearchCondition;
 import com.fsck.k9.search.SearchSpecification;
 import com.fsck.k9.search.SqlQueryBuilder;
+import com.fsck.k9.view.RefreshableMessageList;
 import com.handmark.pulltorefresh.library.ILoadingLayout;
 import com.handmark.pulltorefresh.library.PullToRefreshBase;
 import com.handmark.pulltorefresh.library.PullToRefreshListView;
@@ -195,11 +197,11 @@ public class MessageListFragment extends Fragment
     protected boolean mThreadedList;
     // package visible so handler can access it
     Parcelable mSavedListState;
-    ListView mListView;
+    //ListView mListView;
     /* package visibility for faster inner class access */
     MessageHelper mMessageHelper;
-    private PullToRefreshListView mPullToRefreshView;
-    private MessageListAdapter mAdapter;
+    private RefreshableMessageList mPullToRefreshView;
+    //private MessageListAdapter mAdapter;
     private LayoutInflater mInflater;
     private NotificationHelper notificationHelper;
     private String[] mAccountUuids;
@@ -300,8 +302,11 @@ public class MessageListFragment extends Fragment
                              Bundle savedInstanceState) {
         mInflater = inflater;
         View view = inflater.inflate(R.layout.message_list_fragment, container, false);
-        initializePullToRefresh(inflater, view);
-        mListView = mPullToRefreshView.getRefreshableView();
+        mPullToRefreshView = (RefreshableMessageList)view;
+        mPullToRefreshView.loadMessages(mCurrentFolder.folder);
+        mPullToRefreshView.setHandler(mHandler);
+        //initializePullToRefresh(inflater, view);
+        /*mListView = findById(view, R.id.message_list);
         mListView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
         mListView.setLongClickable(true);
         mListView.setFastScrollEnabled(true);
@@ -310,14 +315,8 @@ public class MessageListFragment extends Fragment
 
         registerForContextMenu(mListView);
         mListView.setVerticalFadingEdgeEnabled(false);
-
+        */
         return view;
-    }
-
-    @Override
-    public void onDestroyView() {
-        mSavedListState = mListView.onSaveInstanceState();
-        super.onDestroyView();
     }
 
     @Override
@@ -325,21 +324,10 @@ public class MessageListFragment extends Fragment
         super.onActivityCreated(savedInstanceState);
 
         mMessageHelper = MessageHelper.getInstance(getActivity());
-
         initializeMessageList();
 
         // This needs to be done before initializing the cursor loader below
         initializeSortSettings();
-
-        mLoaderJustInitialized = true;
-        LoaderManager loaderManager = getLoaderManager();
-        int len = mAccountUuids.length;
-        mCursors = new Cursor[len];
-        mCursorValid = new boolean[len];
-        for (int i = 0; i < len; i++) {
-            loaderManager.initLoader(i, null, new MessageListLoaderCallback(getActivity()));
-            mCursorValid[i] = false;
-        }
     }
 
     @Override
@@ -392,7 +380,7 @@ public class MessageListFragment extends Fragment
                 mFragmentListener.showThread(account, folderName, rootId);
             } else {
                 // This item represents a message; just display the message.
-                openMessageAtPosition(listViewToAdapterPosition(position));
+                //openMessageAtPosition(listViewToAdapterPosition(position));
             }
         }
     }
@@ -557,7 +545,7 @@ public class MessageListFragment extends Fragment
     void progress(final boolean progress) {
         mFragmentListener.enableActionBarProgress(progress);
         if (mPullToRefreshView != null && !progress) {
-            mPullToRefreshView.onRefreshComplete();
+            //mPullToRefreshView.onRefreshComplete();
         }
     }
 
@@ -575,9 +563,9 @@ public class MessageListFragment extends Fragment
         if (mSavedListState != null) {
             // The previously saved state was never restored, so just use that.
             outState.putParcelable(STATE_MESSAGE_LIST, mSavedListState);
-        } else if (mListView != null) {
+        }/* else if (mListView != null) {
             outState.putParcelable(STATE_MESSAGE_LIST, mListView.onSaveInstanceState());
-        }
+        }*/
     }
 
     private void initializeSortSettings() {
@@ -643,7 +631,7 @@ public class MessageListFragment extends Fragment
     }
 
     private void initializeMessageList() {
-        mAdapter = new MessageListAdapter(getActivity(), this, mThreadedList);
+        /*mAdapter = new MessageListAdapter(getActivity(), this, mThreadedList);
 
         if (mFolderName != null) {
             mCurrentFolder = FolderHelper.getFolder(mContext, mFolderName, mAccount);
@@ -654,7 +642,7 @@ public class MessageListFragment extends Fragment
             updateFooterView();
         }
 
-        mListView.setAdapter(mAdapter);
+        mListView.setAdapter(mAdapter);*/
     }
 
     private void createCacheBroadcastReceiver(Context appContext) {
@@ -663,7 +651,7 @@ public class MessageListFragment extends Fragment
         mCacheBroadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                mAdapter.notifyDataSetChanged();
+                //mAdapter.notifyDataSetChanged();
             }
         };
 
@@ -740,7 +728,7 @@ public class MessageListFragment extends Fragment
     }
 
     private void initializePullToRefresh(LayoutInflater inflater, View layout) {
-        mPullToRefreshView = findById(layout, R.id.message_list);
+        /*mPullToRefreshView = findById(layout, R.id.message_list);
 
         // Set empty view
         View loadingView = inflater.inflate(R.layout.message_list_loading, null);
@@ -773,7 +761,7 @@ public class MessageListFragment extends Fragment
         }
 
         // Disable pull-to-refresh until the message list has been loaded
-        setPullToRefreshEnabled(false);
+        setPullToRefreshEnabled(false);*/
     }
 
     /**
@@ -782,7 +770,7 @@ public class MessageListFragment extends Fragment
      * @param enable {@code true} to enable. {@code false} to disable.
      */
     private void setPullToRefreshEnabled(boolean enable) {
-        mPullToRefreshView.setMode((enable) ? PullToRefreshBase.Mode.PULL_FROM_START : PullToRefreshBase.Mode.DISABLED);
+        //mPullToRefreshView.setMode((enable) ? PullToRefreshBase.Mode.PULL_FROM_START : PullToRefreshBase.Mode.DISABLED);
     }
 
     private void initializeLayout() {
@@ -1127,7 +1115,7 @@ public class MessageListFragment extends Fragment
     public void onSendPendingMessages() {
         mController.sendPendingMessages(mAccount, null);
     }
-
+/*
     @Override
     public boolean onContextItemSelected(android.view.MenuItem item) {
         if (mContextMenuUniqueId == 0) {
@@ -1294,7 +1282,7 @@ public class MessageListFragment extends Fragment
 
         return AdapterView.INVALID_POSITION;
     }
-
+*/
     private View getFooterView(ViewGroup parent) {
         if (mFooterView == null) {
             mFooterView = mInflater.inflate(R.layout.message_list_item_footer, parent, false);
@@ -1353,7 +1341,7 @@ public class MessageListFragment extends Fragment
      *                 action mode is finished.
      */
     private void setSelectionState(boolean selected) {
-        if (selected) {
+        /*if (selected) {
             if (mAdapter.getCount() == 0) {
                 // Nothing to do if there are no messages
                 return;
@@ -1388,27 +1376,27 @@ public class MessageListFragment extends Fragment
             }
         }
 
-        mAdapter.notifyDataSetChanged();
+        mAdapter.notifyDataSetChanged();*/
     }
 
     protected void toggleMessageSelect(int listViewPosition) {
-        int adapterPosition = listViewToAdapterPosition(listViewPosition);
+        /*int adapterPosition = listViewToAdapterPosition(listViewPosition);
         if (adapterPosition == AdapterView.INVALID_POSITION) {
             return;
         }
 
-        toggleMessageSelectWithAdapterPosition(adapterPosition);
+        toggleMessageSelectWithAdapterPosition(adapterPosition);*/
     }
 
     private void toggleMessageFlagWithAdapterPosition(int adapterPosition) {
-        Cursor cursor = (Cursor) mAdapter.getItem(adapterPosition);
+        /*Cursor cursor = (Cursor) mAdapter.getItem(adapterPosition);
         boolean flagged = (cursor.getInt(FLAGGED_COLUMN) == 1);
 
-        setFlag(adapterPosition, Flag.FLAGGED, !flagged);
+        setFlag(adapterPosition, Flag.FLAGGED, !flagged);*/
     }
 
     private void toggleMessageSelectWithAdapterPosition(int adapterPosition) {
-        Cursor cursor = (Cursor) mAdapter.getItem(adapterPosition);
+        /*Cursor cursor = (Cursor) mAdapter.getItem(adapterPosition);
         long uniqueId = cursor.getLong(mUniqueIdColumn);
 
         boolean selected = mSelected.contains(uniqueId);
@@ -1447,7 +1435,7 @@ public class MessageListFragment extends Fragment
 
         computeSelectAllVisibility();
 
-        mAdapter.notifyDataSetChanged();
+        mAdapter.notifyDataSetChanged();*/
     }
 
     private void updateActionModeTitle() {
@@ -1455,11 +1443,11 @@ public class MessageListFragment extends Fragment
     }
 
     private void computeSelectAllVisibility() {
-        mActionModeCallback.showSelectAll(mSelected.size() != mAdapter.getCount());
+        //mActionModeCallback.showSelectAll(mSelected.size() != mAdapter.getCount());
     }
 
     private void computeBatchDirection() {
-        boolean isBatchFlag = false;
+        /*boolean isBatchFlag = false;
         boolean isBatchRead = false;
 
         for (int i = 0, end = mAdapter.getCount(); i < end; i++) {
@@ -1485,11 +1473,11 @@ public class MessageListFragment extends Fragment
         }
 
         mActionModeCallback.showMarkAsRead(isBatchRead);
-        mActionModeCallback.showFlag(isBatchFlag);
+        mActionModeCallback.showFlag(isBatchFlag);*/
     }
 
     private void setFlag(int adapterPosition, final Flag flag, final boolean newState) {
-        if (adapterPosition == AdapterView.INVALID_POSITION) {
+        /*if (adapterPosition == AdapterView.INVALID_POSITION) {
             return;
         }
 
@@ -1506,11 +1494,11 @@ public class MessageListFragment extends Fragment
                     newState);
         }
 
-        computeBatchDirection();
+        computeBatchDirection();*/
     }
 
     private void setFlagForSelected(final Flag flag, final boolean newState) {
-        if (mSelected.isEmpty()) {
+        /*if (mSelected.isEmpty()) {
             return;
         }
 
@@ -1560,7 +1548,7 @@ public class MessageListFragment extends Fragment
             }
         }
 
-        computeBatchDirection();
+        computeBatchDirection();*/
     }
 
     private void onMove(LocalMessage message) {
@@ -1919,7 +1907,7 @@ public class MessageListFragment extends Fragment
 
     public List<MessageReference> getMessageReferences() {
         List<MessageReference> messageRefs = new ArrayList<MessageReference>();
-
+        /*
         for (int i = 0, len = mAdapter.getCount(); i < len; i++) {
             Cursor cursor = (Cursor) mAdapter.getItem(i);
 
@@ -1929,7 +1917,7 @@ public class MessageListFragment extends Fragment
             MessageReference ref = new MessageReference(accountUuid, folderName, messageUid, null);
 
             messageRefs.add(ref);
-        }
+        }*/
 
         return messageRefs;
     }
@@ -1939,24 +1927,24 @@ public class MessageListFragment extends Fragment
     }
 
     public void onMoveUp() {
-        int currentPosition = mListView.getSelectedItemPosition();
+        /*int currentPosition = mListView.getSelectedItemPosition();
         if (currentPosition == AdapterView.INVALID_POSITION || mListView.isInTouchMode()) {
             currentPosition = mListView.getFirstVisiblePosition();
         }
         if (currentPosition > 0) {
             mListView.setSelection(currentPosition - 1);
-        }
+        }*/
     }
 
     public void onMoveDown() {
-        int currentPosition = mListView.getSelectedItemPosition();
+        /*int currentPosition = mListView.getSelectedItemPosition();
         if (currentPosition == AdapterView.INVALID_POSITION || mListView.isInTouchMode()) {
             currentPosition = mListView.getFirstVisiblePosition();
         }
 
         if (currentPosition < mListView.getCount()) {
             mListView.setSelection(currentPosition + 1);
-        }
+        }*/
     }
 
     public boolean openPrevious(MessageReference messageReference) {
@@ -1970,35 +1958,38 @@ public class MessageListFragment extends Fragment
     }
 
     public boolean openNext(MessageReference messageReference) {
-        int position = getPosition(messageReference);
+        /*int position = getPosition(messageReference);
         if (position < 0 || position == mAdapter.getCount() - 1) {
             return false;
         }
 
-        openMessageAtPosition(position + 1);
-        return true;
+        openMessageAtPosition(position + 1);*/
+        return false;
     }
 
     public boolean isFirst(MessageReference messageReference) {
-        return mAdapter.isEmpty() || messageReference.equals(getReferenceForPosition(0));
+        //return mAdapter.isEmpty() || messageReference.equals(getReferenceForPosition(0));
+        return false;
     }
 
     public boolean isLast(MessageReference messageReference) {
-        return mAdapter.isEmpty() || messageReference.equals(getReferenceForPosition(mAdapter.getCount() - 1));
+        //return mAdapter.isEmpty() || messageReference.equals(getReferenceForPosition(mAdapter.getCount() - 1));
+        return false;
     }
 
     private MessageReference getReferenceForPosition(int position) {
-        Cursor cursor = (Cursor) mAdapter.getItem(position);
+        /*Cursor cursor = (Cursor) mAdapter.getItem(position);
 
         String accountUuid = cursor.getString(ACCOUNT_UUID_COLUMN);
         String folderName = cursor.getString(FOLDER_NAME_COLUMN);
         String messageUid = cursor.getString(UID_COLUMN);
-        return new MessageReference(accountUuid, folderName, messageUid, null);
+        return new MessageReference(accountUuid, folderName, messageUid, null);*/
+        return null;
     }
 
     protected void openMessageAtPosition(int position) {
         // Scroll message into view if necessary
-        int listViewPosition = adapterToListViewPosition(position);
+        /*int listViewPosition = adapterToListViewPosition(position);
         if (listViewPosition != AdapterView.INVALID_POSITION &&
                 (listViewPosition < mListView.getFirstVisiblePosition() ||
                         listViewPosition > mListView.getLastVisiblePosition())) {
@@ -2010,11 +2001,11 @@ public class MessageListFragment extends Fragment
         // For some reason the mListView.setSelection() above won't do anything when we call
         // onOpenMessage() (and consequently mAdapter.notifyDataSetChanged()) right away. So we
         // defer the call using MessageListHandler.
-        mHandler.openMessage(ref);
+        mHandler.openMessage(ref);*/
     }
 
     private int getPosition(MessageReference messageReference) {
-        for (int i = 0, len = mAdapter.getCount(); i < len; i++) {
+        /*for (int i = 0, len = mAdapter.getCount(); i < len; i++) {
             Cursor cursor = (Cursor) mAdapter.getItem(i);
 
             String accountUuid = cursor.getString(ACCOUNT_UUID_COLUMN);
@@ -2026,7 +2017,7 @@ public class MessageListFragment extends Fragment
                     uid.equals(messageReference.getUid())) {
                 return i;
             }
-        }
+        }*/
 
         return -1;
     }
@@ -2036,30 +2027,32 @@ public class MessageListFragment extends Fragment
     }
 
     private LocalMessage getSelectedMessage() {
-        int listViewPosition = mListView.getSelectedItemPosition();
+        /*int listViewPosition = mListView.getSelectedItemPosition();
         int adapterPosition = listViewToAdapterPosition(listViewPosition);
 
-        return getMessageAtPosition(adapterPosition);
+        return getMessageAtPosition(adapterPosition);*/
+        return null;
     }
 
     private int getAdapterPositionForSelectedMessage() {
-        int listViewPosition = mListView.getSelectedItemPosition();
-        return listViewToAdapterPosition(listViewPosition);
+        //int listViewPosition = mListView.getSelectedItemPosition();
+        //return listViewToAdapterPosition(listViewPosition);
+        return -1;
     }
 
     private int getPositionForUniqueId(long uniqueId) {
-        for (int position = 0, end = mAdapter.getCount(); position < end; position++) {
+        /*for (int position = 0, end = mAdapter.getCount(); position < end; position++) {
             Cursor cursor = (Cursor) mAdapter.getItem(position);
             if (cursor.getLong(mUniqueIdColumn) == uniqueId) {
                 return position;
             }
-        }
+        }*/
 
         return AdapterView.INVALID_POSITION;
     }
 
     private LocalMessage getMessageAtPosition(int adapterPosition) {
-        if (adapterPosition == AdapterView.INVALID_POSITION) {
+        /*if (adapterPosition == AdapterView.INVALID_POSITION) {
             return null;
         }
 
@@ -2074,12 +2067,13 @@ public class MessageListFragment extends Fragment
             return folder.getMessage(uid);
         } catch (MessagingException e) {
             throw new RuntimeException(e);
-        }
+        }*/
+        return null;
     }
 
     private List<LocalMessage> getCheckedMessages() {
         List<LocalMessage> messages = new ArrayList<>(mSelected.size());
-        for (int position = 0, end = mAdapter.getCount(); position < end; position++) {
+        /*for (int position = 0, end = mAdapter.getCount(); position < end; position++) {
             Cursor cursor = (Cursor) mAdapter.getItem(position);
             long uniqueId = cursor.getLong(mUniqueIdColumn);
 
@@ -2089,7 +2083,7 @@ public class MessageListFragment extends Fragment
                     messages.add(message);
                 }
             }
-        }
+        }*/
 
         return messages;
     }
@@ -2102,7 +2096,7 @@ public class MessageListFragment extends Fragment
     }
 
     public void toggleMessageSelect() {
-        toggleMessageSelect(mListView.getSelectedItemPosition());
+        //toggleMessageSelect(mListView.getSelectedItemPosition());
     }
 
     public void onToggleFlagged() {
@@ -2119,9 +2113,9 @@ public class MessageListFragment extends Fragment
             return;
         }
 
-        Cursor cursor = (Cursor) mAdapter.getItem(adapterPosition);
+        /*Cursor cursor = (Cursor) mAdapter.getItem(adapterPosition);
         boolean flagState = (cursor.getInt(flagColumn) == 1);
-        setFlag(adapterPosition, flag, !flagState);
+        setFlag(adapterPosition, flag, !flagState);*/
     }
 
     public void onMove() {
@@ -2290,7 +2284,7 @@ public class MessageListFragment extends Fragment
         }
 
         mSelectedCount = 0;
-        for (int i = 0, end = mAdapter.getCount(); i < end; i++) {
+        /*for (int i = 0, end = mAdapter.getCount(); i < end; i++) {
             Cursor cursor = (Cursor) mAdapter.getItem(i);
             long uniqueId = cursor.getLong(mUniqueIdColumn);
 
@@ -2298,7 +2292,7 @@ public class MessageListFragment extends Fragment
                 int threadCount = cursor.getInt(THREAD_COUNT_COLUMN);
                 mSelectedCount += (threadCount > 1) ? threadCount : 1;
             }
-        }
+        }*/
     }
 
     protected Account getAccountFromCursor(Cursor cursor) {
@@ -2329,9 +2323,9 @@ public class MessageListFragment extends Fragment
         }
 
         // Redraw list immediately
-        if (mAdapter != null) {
+        /*if (mAdapter != null) {
             mAdapter.notifyDataSetChanged();
-        }
+        }*/
     }
 
     public boolean isSingleAccountMode() {
@@ -2552,7 +2546,7 @@ public class MessageListFragment extends Fragment
 
         @Override
         public void onLoaderReset(Loader<Cursor> loader) {
-            mAdapter.swapCursor(null);
+            //mAdapter.swapCursor(null);
         }
 
         @Override
@@ -2563,7 +2557,7 @@ public class MessageListFragment extends Fragment
             }
 
             // Remove the "Loading..." view
-            mPullToRefreshView.setEmptyView(null);
+            //mPullToRefreshView.setEmptyView(null);
 
             setPullToRefreshEnabled(isPullToRefreshAllowed());
 
@@ -2598,7 +2592,7 @@ public class MessageListFragment extends Fragment
             cleanupSelected(cursor);
             updateContextMenu(cursor);
 
-            mAdapter.swapCursor(cursor);
+            //mAdapter.swapCursor(cursor);
 
             resetActionMode();
             computeBatchDirection();
@@ -2826,7 +2820,7 @@ public class MessageListFragment extends Fragment
             int maxAccounts = mAccountUuids.length;
             Set<String> accountUuids = new HashSet<String>(maxAccounts);
 
-            for (int position = 0, end = mAdapter.getCount(); position < end; position++) {
+            /*for (int position = 0, end = mAdapter.getCount(); position < end; position++) {
                 Cursor cursor = (Cursor) mAdapter.getItem(position);
                 long uniqueId = cursor.getLong(mUniqueIdColumn);
 
@@ -2838,7 +2832,7 @@ public class MessageListFragment extends Fragment
                         break;
                     }
                 }
-            }
+            }*/
 
             return accountUuids;
         }

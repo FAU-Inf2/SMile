@@ -29,7 +29,7 @@ public class MessageListHandler extends Handler {
     private WeakReference<MessageListFragment> mFragment;
 
     public MessageListHandler(MessageListFragment fragment) {
-        mFragment = new WeakReference<MessageListFragment>(fragment);
+        mFragment = new WeakReference<>(fragment);
     }
 
     public void folderLoading(String folder, boolean loading) {
@@ -129,7 +129,7 @@ public class MessageListHandler extends Handler {
                 break;
             }
             case ACTION_RESTORE_LIST_POSITION: {
-                fragment.mListView.onRestoreInstanceState((Parcelable) msg.obj);
+                //fragment.mListView.onRestoreInstanceState((Parcelable) msg.obj);
                 break;
             }
             case ACTION_OPEN_MESSAGE: {

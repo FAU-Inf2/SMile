@@ -45,7 +45,6 @@ public class SmsListFragment extends MessageListFragment {
                             mExtraSearchResults.size());
                 } else {
                     mExtraSearchResults = null;
-                    updateFooter("");
                 }
 
                 mController.loadSearchResults(mAccount, mCurrentFolder.name, toProcess, mListener);
@@ -93,7 +92,7 @@ public class SmsListFragment extends MessageListFragment {
 
         }while(cursor.moveToNext());
 
-*/
+
 
         if (mSelectedCount > 0) {
             toggleMessageSelect(position);
@@ -110,6 +109,6 @@ public class SmsListFragment extends MessageListFragment {
                 // This item represents a message; just display the message.
                 //openMessageAtPosition(listViewToAdapterPosition(position));
             }
-        }
+        }*/
     }
 }

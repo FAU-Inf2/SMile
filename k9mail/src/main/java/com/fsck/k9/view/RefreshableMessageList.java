@@ -5,7 +5,6 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.AttributeSet;
 
 import com.fsck.k9.fragment.MessageListHandler;
-import com.fsck.k9.mail.Folder;
 
 import de.fau.cs.mad.smile.android.R;
 
@@ -30,11 +29,11 @@ public class RefreshableMessageList extends SwipeRefreshLayout {
         });
     }
 
-    public void setHandler(MessageListHandler handler) {
-        //messageListView.setHandler(handler);
+    public MessageListView getMessageListView() {
+        return messageListView;
     }
 
-    public void loadMessages(Folder folder) {
-        //messageListView.loadMessages(folder);
+    public void setHandler(MessageListHandler handler) {
+        messageListView.setHandler(handler);
     }
 }

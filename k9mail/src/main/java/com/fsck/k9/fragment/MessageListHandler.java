@@ -54,18 +54,6 @@ public class MessageListHandler extends Handler {
         sendMessage(msg);
     }
 
-    public void updateFooter(final String message) {
-        post(new Runnable() {
-            @Override
-            public void run() {
-                MessageListFragment fragment = mFragment.get();
-                if (fragment != null) {
-                    fragment.updateFooter(message);
-                }
-            }
-        });
-    }
-
     public void goBack() {
         android.os.Message msg = android.os.Message.obtain(this, ACTION_GO_BACK);
         sendMessage(msg);

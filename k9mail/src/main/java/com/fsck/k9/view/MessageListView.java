@@ -9,21 +9,18 @@ import android.view.View;
 
 import com.fsck.k9.K9;
 import com.fsck.k9.adapter.MessageAdapter;
+import com.fsck.k9.fragment.IMessageListPresenter;
 import com.fsck.k9.fragment.MessageListHandler;
 import com.fsck.k9.fragment.RecyclerItemClickListener;
-import com.fsck.k9.mail.Folder;
-import com.fsck.k9.mail.Message;
-import com.fsck.k9.mail.MessageRetrievalListener;
-import com.fsck.k9.mail.MessagingException;
-import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.mailstore.LocalMessage;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MessageListView extends RecyclerView {
+public class MessageListView extends RecyclerView implements IMessageListView {
     private final List<LocalMessage> messages;
     private MessageListHandler handler;
+    private IMessageListPresenter presenter;
 
     public MessageListView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -55,27 +52,14 @@ public class MessageListView extends RecyclerView {
         this.handler = handler;
     }
 
-    public void loadMessages(final Folder folder) {
-        try {
-            folder.getMessages(new MessageRetrievalListener() {
-                @Override
-                public void messageStarted(String uid, int number, int ofTotal) {
-
-                }
-
-                @Override
-                public void messageFinished(Message message, int number, int ofTotal) {
-                    messages.add((LocalMessage) message);
-                }
-
-                @Override
-                public void messagesFinished(int total) {
-
-                }
-            }, false);
-        } catch (MessagingException e) {
-            Log.e(K9.LOG_TAG, "failed to retrieve messages");
-        }
+    @Override
+    public void setPresenter(IMessageListPresenter presenter) {
+        this.presenter = presenter;
     }
 
+    @Override
+    public void showMessageList(List<LocalMessage> messageList) {
+        messages.clear();
+        messages.addAll(messageList);
+    }
 }

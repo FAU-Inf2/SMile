@@ -66,7 +66,7 @@ public class MessageFragment extends Fragment {
         context = getActivity();
         messages = new ArrayList<>();
         remindMeList = new ArrayList<>();
-        adapter = new MessageAdapter(messages, mCallback);
+        adapter = new MessageAdapter(messages);
 
         new LoadFollowUp(context, mAccount, handler).execute();
     }

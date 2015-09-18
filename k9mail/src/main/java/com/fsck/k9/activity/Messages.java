@@ -35,6 +35,7 @@ import com.fsck.k9.search.SearchSpecification;
 import com.fsck.k9.ui.messageview.MessageViewFragment;
 import com.fsck.k9.ui.messageview.MessageViewFragmentListener;
 import com.fsck.k9.view.MessageHeader;
+import com.fsck.k9.view.MessageListView;
 
 import net.danlew.android.joda.JodaTimeAndroid;
 
@@ -231,6 +232,11 @@ public class Messages extends SmileActivity
     // implement IMessageListPresenter
 
     @Override
+    public void setView(MessageListView messageListView) {
+
+    }
+
+    @Override
     public void move(LocalMessage message, String destFolder) {
         LocalFolder localFolder = null;
 
@@ -283,6 +289,11 @@ public class Messages extends SmileActivity
     @Override
     public void openMessage(MessageReference messageReference) {
         loadFragment(MessageViewFragment.newInstance(messageReference));
+    }
+
+    @Override
+    public void sort(Account.SortType sortType, Boolean ascending) {
+
     }
 
     @Override

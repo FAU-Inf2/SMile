@@ -287,6 +287,7 @@ public class MessageListFragment extends Fragment
         mPreferences = Preferences.getPreferences(appContext);
         mController = MessagingController.getInstance(appContext);
         notificationHelper = NotificationHelper.getInstance(appContext);
+        setHasOptionsMenu(true);
 
         restoreInstanceState(savedInstanceState);
         decodeArguments();

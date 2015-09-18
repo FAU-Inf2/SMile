@@ -343,6 +343,26 @@ public class K9 extends Application {
     public static final int CERTIFICATE_EXCEPTION_NOTIFICATION_OUTGOING = -2500;
     public static final int CONNECTIVITY_ID = -3;
 
+
+    public final static String[][] USED_LIBRARIES = new String[][]{
+            new String[]{"K-9 Mail", "https://github.com/k9mail/k-9"},
+            new String[]{"jackson", "https://github.com/FasterXML/jackson"},
+            new String[]{"OpenPGP API library", "https://github.com/FAU-Inf2/SMile/tree/master/plugins/openpgp-api-library"},
+            new String[]{"AndroidSwipeLayout", "https://github.com/daimajia/AndroidSwipeLayout"},
+            new String[]{"Material Design Icons", "https://www.google.com/design/icons/"},
+            new String[]{"Polygon Background", "http://blog.spoongraphics.co.uk/"},
+            new String[]{"jutf7", "http://jutf7.sourceforge.net/"},
+            new String[]{"JZlib", "http://www.jcraft.com/jzlib/"},
+            new String[]{"Commons IO", "http://commons.apache.org/io/"},
+            new String[]{"Mime4j", "http://james.apache.org/mime4j/"},
+            new String[]{"HtmlCleaner", "http://htmlcleaner.sourceforge.net/"},
+            new String[]{"Android-PullToRefresh", "https://github.com/chrisbanes/Android-PullToRefresh"},
+            new String[]{"ckChangeLog", "https://github.com/cketti/ckChangeLog"},
+            new String[]{"HoloColorPicker", "https://github.com/LarsWerkman/HoloColorPicker"},
+            new String[]{"Glide", "https://github.com/bumptech/glide"}
+    };
+
+
     public static class Intents {
 
         public static class EmailReceived {

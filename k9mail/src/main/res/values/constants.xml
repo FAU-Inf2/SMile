@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_revision_url">https://github.com/k9mail/k-9/wiki/ReleaseNotes</string>
-    <string name="app_webpage_url">http://code.google.com/p/k9mail/</string>
+    <string name="app_webpage_url">https://github.com/FAU-Inf2/SMile/</string>
     <string name="message_header_mua">SMile for Android</string>
 
     <!-- Licenses - translating legal stuff should be left to experts -->

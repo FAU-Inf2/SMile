@@ -11,6 +11,7 @@ import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
@@ -71,6 +72,8 @@ import java.util.TreeSet;
 import butterknife.ButterKnife;
 import de.cketti.library.changelog.ChangeLog;
 import de.fau.cs.mad.smile.android.R;
+
+import static butterknife.ButterKnife.findById;
 
 
 /**
@@ -257,6 +260,14 @@ public class MessageList extends K9Activity
 
         initializeActionBar();
         initializeNavigationDrawer();
+
+        FloatingActionButton actionButton = findById(this, R.id.fab);
+        actionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MessageCompose.actionCompose(MessageList.this, mAccount);
+            }
+        });
 
         findFragments();
         initializeDisplayMode(savedInstanceState);

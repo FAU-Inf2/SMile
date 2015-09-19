@@ -56,8 +56,8 @@ public class MessageListItemView extends SwipeLayout {
         preview.setLines(Math.max(previewLines, 1));
         flagged.setOnClickListener(new OnClickListener() {
             @Override
-            public void onClick(View v) {
-                // TODO:
+            public void onClick(View view) {
+                MessageListItemView itemView = (MessageListItemView)view;
             }
         });
 

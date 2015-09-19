@@ -643,7 +643,7 @@ public class MessageList extends K9Activity
             mEmail = getString(R.string.app_name);
         }
 
-        mAdapter = new RecyclerViewAdapter(mTitles, mIcons, mName, mEmail);
+        mAdapter = new RecyclerViewAdapter(mTitles, mIcons, mAccount);
         mRecyclerView.setAdapter(mAdapter);
 
         final GestureDetector mGestureDetector = new GestureDetector(MessageList.this,

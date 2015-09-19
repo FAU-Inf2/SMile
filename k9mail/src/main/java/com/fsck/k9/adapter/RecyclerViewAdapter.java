@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.fsck.k9.Account;
 import com.fsck.k9.view.AccountView;
 
 import de.fau.cs.mad.smile.android.R;
@@ -17,25 +18,22 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
     private static final int TYPE_HEADER = 0;
     private static final int TYPE_ITEM = 1;
+    private final Account account;
 
     enum ItemType {
         HEADER,
         ITEM
     }
 
-    private String mHeaderName;
-    private String mHeaderEmail;
-
     private String mNavigationTitles[];
     private int mIcons[];
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ItemType type;
+        AccountView header;
 
         TextView textView;
         ImageView imageView;
-        TextView name;
-        TextView email;
 
         public ViewHolder(View itemView, int ViewType) {
             super(itemView);
@@ -45,19 +43,16 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
                 imageView = (ImageView) itemView.findViewById(R.id.rowIcon);
                 type = ItemType.ITEM;
             } else {
-                AccountView header = (AccountView)itemView;
-                name = header.getName();
-                email = header.getMail();
+                header = (AccountView)itemView;
                 type = ItemType.HEADER;
             }
         }
     }
 
-    public RecyclerViewAdapter(String[] titles, int[] icons, String name, String email) {
+    public RecyclerViewAdapter(String[] titles, int[] icons, Account account) {
         mNavigationTitles = titles;
         mIcons = icons;
-        this.mHeaderName = name;
-        this.mHeaderEmail = email;
+        this.account = account;
     }
 
     @Override
@@ -81,8 +76,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             holder.textView.setText(mNavigationTitles[position - 1]);
             holder.imageView.setImageResource(mIcons[position - 1]);
         } else {
-            holder.name.setText(mHeaderName);
-            holder.email.setText(mHeaderEmail);
+            holder.header.setCurrentAccount(account);
         }
     }
 

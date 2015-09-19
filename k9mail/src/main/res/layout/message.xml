@@ -1,64 +1,82 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.fsck.k9.ui.messageview.MessageTopView
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/message_view"
-    android:orientation="vertical"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:layout_weight="2"
-    android:background="?attr/messageViewBackgroundColor">
+    android:layout_height="match_parent">
 
-    <com.fsck.k9.view.NonLockingScrollView
+    <com.fsck.k9.ui.messageview.MessageTopView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/message_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="3">
+        android:layout_weight="2"
+        android:background="?attr/messageViewBackgroundColor"
+        android:orientation="vertical">
 
-        <LinearLayout
-            android:orientation="vertical"
+        <com.fsck.k9.view.NonLockingScrollView
             android:layout_width="match_parent"
-	        android:layout_height="match_parent">
-
-	        <!-- Header area -->
-	        <include layout="@layout/message_view_header"/>
-
-            <Button
-                android:id="@+id/show_pictures"
-                style="?android:attr/buttonStyleSmall"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="right"
-                android:layout_marginBottom="4dip"
-                android:layout_marginLeft="6dip"
-                android:layout_marginRight="6dip"
-                android:layout_marginTop="4dip"
-                android:text="@string/message_view_show_pictures_action"
-                android:visibility="gone"
-                tools:visibility="visible"/>
+            android:layout_height="match_parent"
+            android:layout_weight="3">
 
             <LinearLayout
-                android:orientation="vertical"
-                android:id="@+id/message_containers"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content">
-                <ProgressBar
-                    android:id="@+id/progressBar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <!-- Header area -->
+                <include layout="@layout/message_view_header" />
+
+                <Button
+                    android:id="@+id/show_pictures"
+                    style="?android:attr/buttonStyleSmall"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:indeterminate="true"
-                    style="@style/Widget.AppCompat.ProgressBar"
-                    />
+                    android:layout_gravity="right"
+                    android:layout_marginBottom="4dip"
+                    android:layout_marginLeft="6dip"
+                    android:layout_marginRight="6dip"
+                    android:layout_marginTop="4dip"
+                    android:text="@string/message_view_show_pictures_action"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
+
+                <LinearLayout
+                    android:id="@+id/message_containers"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <ProgressBar
+                        android:id="@+id/progressBar"
+                        style="@style/Widget.AppCompat.ProgressBar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:indeterminate="true" />
+                </LinearLayout>
+
             </LinearLayout>
 
-	    </LinearLayout>
+        </com.fsck.k9.view.NonLockingScrollView>
 
-    </com.fsck.k9.view.NonLockingScrollView>
+        <Button
+            android:id="@+id/download_remainder"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/message_view_download_remainder"
+            android:visibility="gone" />
 
-    <Button android:id="@+id/download_remainder"
-        android:text="@string/message_view_download_remainder"
+    </com.fsck.k9.ui.messageview.MessageTopView>
+
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:layout_width="fill_parent"/>
+        android:layout_margin="16dp"
+        android:clickable="true"
+        android:src="@drawable/ic_reply_white_48dp"
+        app:layout_anchor="@id/message_view"
+        app:layout_anchorGravity="bottom|right|end" />
 
-</com.fsck.k9.ui.messageview.MessageTopView>
+</android.support.design.widget.CoordinatorLayout>

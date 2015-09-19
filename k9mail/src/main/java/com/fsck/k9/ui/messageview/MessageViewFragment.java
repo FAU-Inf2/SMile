@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -24,6 +25,7 @@ import com.fsck.k9.Account;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.activity.ChooseFolder;
+import com.fsck.k9.activity.MessageCompose;
 import com.fsck.k9.activity.MessageReference;
 import com.fsck.k9.activity.RemindMeList;
 import com.fsck.k9.controller.MessagingController;
@@ -47,6 +49,8 @@ import java.util.Collections;
 import java.util.Locale;
 
 import de.fau.cs.mad.smile.android.R;
+
+import static butterknife.ButterKnife.findById;
 
 public final class MessageViewFragment extends Fragment
         implements ConfirmationDialogFragmentListener,
@@ -129,7 +133,7 @@ public final class MessageViewFragment extends Fragment
         final LayoutInflater layoutInflater = LayoutInflater.from(mContext);
         View view = layoutInflater.inflate(R.layout.message, container, false);
 
-        mMessageView = (MessageTopView) view.findViewById(R.id.message_view);
+        mMessageView = findById(view, R.id.message_view);
         mMessageView.setAttachmentCallback(new AttachmentCallback(mContext, mController, handler, this));
         mMessageView.setCryptoHeaderViewCallback(this);
         mMessageView.setOnToggleFlagClickListener(new OnClickListener() {
@@ -148,6 +152,13 @@ public final class MessageViewFragment extends Fragment
 
         mFragmentListener.messageHeaderViewAvailable(mMessageView.getMessageHeaderView());
 
+        FloatingActionButton actionButton = findById(view, R.id.fab);
+        actionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MessageCompose.actionReply(getActivity(), mMessage, false, mPgpData.getDecryptedData());
+            }
+        });
         return view;
     }
 

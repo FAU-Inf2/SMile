@@ -55,6 +55,8 @@ import com.fsck.k9.activity.misc.Attachment;
 import com.fsck.k9.adapter.IdentityAdapter;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.controller.MessagingListener;
+import com.fsck.k9.crypto.OpenPgpMessageCompose;
+import com.fsck.k9.crypto.OpenPgpSignEncryptCallback;
 import com.fsck.k9.crypto.PgpData;
 import com.fsck.k9.fragment.ProgressDialogFragment;
 import com.fsck.k9.helper.ContactItem;
@@ -185,7 +187,7 @@ public class MessageCompose extends K9Activity implements View.OnClickListener,
     private static final int CONTACT_PICKER_CC2 = 8;
     private static final int CONTACT_PICKER_BCC2 = 9;
 
-    private static final int REQUEST_CODE_SIGN_ENCRYPT_OPENPGP = 12;
+    public static final int REQUEST_CODE_SIGN_ENCRYPT_OPENPGP = 12;
 
     /**
      * Regular expression to remove the first localized "Re:" prefix in subjects.
@@ -297,6 +299,7 @@ public class MessageCompose extends K9Activity implements View.OnClickListener,
     private OpenPgpServiceConnection mOpenPgpServiceConnection;
     private SMimeServiceConnection mSmimeServiceConnection;
     private SMimeApi sMimeApi;
+    private OpenPgpMessageCompose openPgpMessageCompose;
 
     private String mReferences;
     private String mInReplyTo;
@@ -363,7 +366,7 @@ public class MessageCompose extends K9Activity implements View.OnClickListener,
      */
     private WaitingAction mWaitingForAttachments = WaitingAction.NONE;
 
-    private Handler mHandler = new MessageComposeHandler(this);
+    private MessageComposeHandler mHandler = new MessageComposeHandler(this);
     private Listener mListener = new Listener();
 
     private FontSizes mFontSizes = K9.getFontSizes();
@@ -1152,7 +1155,7 @@ public class MessageCompose extends K9Activity implements View.OnClickListener,
         return recipients;
     }
 
-    private TextBody buildText(boolean isDraft) {
+    protected TextBody buildText(boolean isDraft) {
         return createMessageBuilder(isDraft).buildText();
     }
 
@@ -1237,7 +1240,7 @@ public class MessageCompose extends K9Activity implements View.OnClickListener,
         }
     }
 
-    private void onSend() {
+    protected void onSend() {
         if (mToView.getRecipients().size() == 0 && mCcView.getRecipients().size() == 0 && mBccView.getRecipients().size() == 0) {
             mToView.setError(getString(R.string.message_compose_error_no_recipients));
             Toast.makeText(this, getString(R.string.message_compose_error_no_recipients), Toast.LENGTH_LONG).show();
@@ -1299,7 +1302,8 @@ public class MessageCompose extends K9Activity implements View.OnClickListener,
 
         switch (selectedCryptoProvider) {
             case PGP:
-                handlePgp();
+                openPgpMessageCompose = new OpenPgpMessageCompose(buildText(false), mOpenPgpServiceConnection, getRecipientAddresses(), mPgpData, mHandler, this, mAccount);
+                openPgpMessageCompose.handlePgp(mEncryptCheckbox.isChecked(), mCryptoSignatureCheckbox.isChecked());
                 break;
             case SMIME:
                 handleSmime();
@@ -1311,38 +1315,6 @@ public class MessageCompose extends K9Activity implements View.OnClickListener,
         // onSend() is called again in OpenPgpSignEncryptCallback and with
         // encryptedData set in pgpData!
         return true;
-    }
-
-    private void handlePgp() {
-        if(mPgpData.getEncryptedData() != null) {
-            return;
-        }
-        // OpenPGP Provider API
-        String[] emailsArray = null;
-        if (mEncryptCheckbox.isChecked()) {
-            // get emails as array
-            List<String> emails = new ArrayList<String>();
-
-            for (Address address : getRecipientAddresses()) {
-                emails.add(address.getAddress());
-            }
-            emailsArray = emails.toArray(new String[emails.size()]);
-        }
-
-        if (mEncryptCheckbox.isChecked() && mCryptoSignatureCheckbox.isChecked()) {
-            Intent intent = new Intent(OpenPgpApi.ACTION_SIGN_AND_ENCRYPT);
-            intent.putExtra(OpenPgpApi.EXTRA_USER_IDS, emailsArray);
-            intent.putExtra(OpenPgpApi.EXTRA_SIGN_KEY_ID, mAccount.getPgpKey());
-            executeOpenPgpMethod(intent);
-        } else if (mCryptoSignatureCheckbox.isChecked()) {
-            Intent intent = new Intent(OpenPgpApi.ACTION_SIGN);
-            intent.putExtra(OpenPgpApi.EXTRA_SIGN_KEY_ID, mAccount.getPgpKey());
-            executeOpenPgpMethod(intent);
-        } else if (mEncryptCheckbox.isChecked()) {
-            Intent intent = new Intent(OpenPgpApi.ACTION_ENCRYPT);
-            intent.putExtra(OpenPgpApi.EXTRA_USER_IDS, emailsArray);
-            executeOpenPgpMethod(intent);
-        }
     }
 
     private void handleSmime() {
@@ -1437,24 +1409,6 @@ public class MessageCompose extends K9Activity implements View.OnClickListener,
         }
     }
 
-    private InputStream getOpenPgpInputStream() {
-        String text = buildText(false).getText();
-
-        return new ByteArrayInputStream(text.getBytes(Charset.forName("UTF-8")));
-    }
-
-    private void executeOpenPgpMethod(Intent intent) {
-        intent.putExtra(OpenPgpApi.EXTRA_REQUEST_ASCII_ARMOR, true);
-
-        final InputStream inputStream = getOpenPgpInputStream();
-        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-
-        OpenPgpSignEncryptCallback callback = new OpenPgpSignEncryptCallback(outputStream, REQUEST_CODE_SIGN_ENCRYPT_OPENPGP);
-
-        OpenPgpApi api = new OpenPgpApi(this, mOpenPgpServiceConnection.getService());
-        api.executeApiAsync(intent, inputStream, outputStream, callback);
-    }
-
     private class SmimeSignEncryptCallback implements SMimeApi.ISMimeCallback {
         private final CountDownLatch latch;
 
@@ -1478,73 +1432,6 @@ public class MessageCompose extends K9Activity implements View.OnClickListener,
                     break;
             }
         }
-    }
-
-    /**
-     * Called on successful encrypt/verify
-     */
-    private final class OpenPgpSignEncryptCallback implements OpenPgpApi.IOpenPgpCallback {
-        final ByteArrayOutputStream os;
-        final int requestCode;
-
-        private OpenPgpSignEncryptCallback(final ByteArrayOutputStream os, final int requestCode) {
-            this.os = os;
-            this.requestCode = requestCode;
-        }
-
-        @Override
-        public void onReturn(Intent result) {
-            final int resultCode = result.getIntExtra(OpenPgpApi.RESULT_CODE, OpenPgpApi.RESULT_CODE_ERROR);
-            switch (resultCode) {
-                case OpenPgpApi.RESULT_CODE_SUCCESS: {
-                    try {
-                        final String output = os.toString("UTF-8");
-
-                        if (K9.DEBUG) {
-                            Log.d(OpenPgpApi.TAG, "result: " + os.toByteArray().length +
-                                    " str=" + output);
-                        }
-
-                        mPgpData.setEncryptedData(output);
-                        onSend();
-                    } catch (UnsupportedEncodingException e) {
-                        Log.e(K9.LOG_TAG, "UnsupportedEncodingException", e);
-                    }
-
-                    break;
-                }
-                case OpenPgpApi.RESULT_CODE_USER_INTERACTION_REQUIRED: {
-                    PendingIntent pi = result.getParcelableExtra(OpenPgpApi.RESULT_INTENT);
-                    try {
-                        startIntentSenderForResult(pi.getIntentSender(),
-                                requestCode, null, 0, 0, 0);
-                    } catch (IntentSender.SendIntentException e) {
-                        Log.e(K9.LOG_TAG, "SendIntentException", e);
-                    }
-                    break;
-                }
-                case OpenPgpApi.RESULT_CODE_ERROR: {
-                    OpenPgpError error = result.getParcelableExtra(OpenPgpApi.RESULT_ERROR);
-                    handleOpenPgpErrors(error);
-                    break;
-                }
-            }
-        }
-    }
-
-    private void handleOpenPgpErrors(final OpenPgpError error) {
-        runOnUiThread(new Runnable() {
-
-            @Override
-            public void run() {
-                Log.e(K9.LOG_TAG, "OpenPGP Error ID:" + error.getErrorId());
-                Log.e(K9.LOG_TAG, "OpenPGP Error Message:" + error.getMessage());
-
-                Toast.makeText(MessageCompose.this,
-                        getString(R.string.openpgp_error, error.getMessage()),
-                        Toast.LENGTH_LONG).show();
-            }
-        });
     }
 
     private void onDiscard() {
@@ -1752,7 +1639,7 @@ public class MessageCompose extends K9Activity implements View.OnClickListener,
              * interaction. They also contain results from the user interaction
              * which happened, for example selected key ids.
              */
-            executeOpenPgpMethod(data);
+            openPgpMessageCompose.executeOpenPgpMethod(data);
 
             return;
         }

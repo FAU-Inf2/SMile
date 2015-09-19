@@ -4,8 +4,6 @@ import android.content.Context;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.AttributeSet;
 
-import com.fsck.k9.fragment.MessageListHandler;
-
 import de.fau.cs.mad.smile.android.R;
 
 import static butterknife.ButterKnife.findById;
@@ -31,9 +29,5 @@ public class RefreshableMessageList extends SwipeRefreshLayout {
 
     public MessageListView getMessageListView() {
         return messageListView;
-    }
-
-    public void setHandler(MessageListHandler handler) {
-        messageListView.setHandler(handler);
     }
 }

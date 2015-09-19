@@ -19,7 +19,6 @@ import java.util.List;
 
 public class MessageListView extends RecyclerView implements IMessageListView {
     private final List<LocalMessage> messages;
-    private MessageListHandler handler;
     private IMessageListPresenter presenter;
 
     public MessageListView(Context context, AttributeSet attrs) {
@@ -40,16 +39,10 @@ public class MessageListView extends RecyclerView implements IMessageListView {
                     public void onItemClick(View view, int position) {
                         LocalMessage message = messages.get(position);
                         Log.d(K9.LOG_TAG, message.toString());
-                        if(handler != null) {
-                            handler.openMessage(message.makeMessageReference());
-                        }
+                        presenter.openMessage(message.makeMessageReference());
                     }
                 })
         );
-    }
-
-    public void setHandler(MessageListHandler handler) {
-        this.handler = handler;
     }
 
     @Override
@@ -61,5 +54,6 @@ public class MessageListView extends RecyclerView implements IMessageListView {
     public void showMessageList(List<LocalMessage> messageList) {
         messages.clear();
         messages.addAll(messageList);
+        getAdapter().notifyDataSetChanged();
     }
 }

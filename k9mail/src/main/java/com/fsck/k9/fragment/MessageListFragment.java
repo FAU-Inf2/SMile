@@ -109,7 +109,6 @@ public class MessageListFragment extends Fragment
     private NotificationHelper notificationHelper;
     private String[] mAccountUuids;
     private int mUnreadMessageCount = 0;
-    private int mUniqueIdColumn;
     private boolean mRemoteSearchPerformed = false;
     private Future<?> mRemoteSearchFuture = null;
     private String mTitle;
@@ -194,7 +193,7 @@ public class MessageListFragment extends Fragment
         restoreInstanceState(savedInstanceState);
         decodeArguments();
         createCacheBroadcastReceiver(appContext);
-        setPresenter(new MessageListPresenter(mAccount, (LocalFolder) mCurrentFolder.folder));
+        setPresenter(new MessageListPresenter(mAccount, (LocalFolder) mCurrentFolder.folder, mHandler));
 
         mInitialized = true;
     }
@@ -205,7 +204,7 @@ public class MessageListFragment extends Fragment
         View view = inflater.inflate(R.layout.message_list_fragment, container, false);
         mPullToRefreshView = (RefreshableMessageList)view;
         setView(mPullToRefreshView.getMessageListView());
-        mPullToRefreshView.setHandler(mHandler);
+        messageListView.setPresenter(presenter);
         //initializePullToRefresh(inflater, view);
         /*mListView = findById(view, R.id.message_list);
         mListView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
@@ -1411,7 +1410,7 @@ public class MessageListFragment extends Fragment
     }
 
     private Map<Account, List<LocalMessage>> groupMessagesByAccount(final List<LocalMessage> messages) {
-        Map<Account, List<LocalMessage>> messagesByAccount = new HashMap<Account, List<LocalMessage>>();
+        Map<Account, List<LocalMessage>> messagesByAccount = new HashMap<>();
         for (LocalMessage message : messages) {
             Account account = message.getAccount();
 
@@ -1841,7 +1840,7 @@ public class MessageListFragment extends Fragment
     public void onDelete() {
         LocalMessage message = getSelectedMessage();
         if (message != null) {
-            onDelete(Collections.singletonList(message));
+            onDelete(message);
         }
     }
 
@@ -1960,7 +1959,7 @@ public class MessageListFragment extends Fragment
      * Close the context menu when the message it was opened for is no longer in the message list.
      */
     private void updateContextMenu(Cursor cursor) {
-        if (mContextMenuUniqueId == 0) {
+        /*if (mContextMenuUniqueId == 0) {
             return;
         }
 
@@ -1975,11 +1974,11 @@ public class MessageListFragment extends Fragment
         Activity activity = getActivity();
         if (activity != null) {
             activity.closeContextMenu();
-        }
+        }*/
     }
 
     private void cleanupSelected(Cursor cursor) {
-        if (mSelected.isEmpty()) {
+        /*if (mSelected.isEmpty()) {
             return;
         }
 
@@ -1991,7 +1990,7 @@ public class MessageListFragment extends Fragment
             }
         }
 
-        mSelected = selected;
+        mSelected = selected;*/
     }
 
     /**
@@ -2329,7 +2328,7 @@ public class MessageListFragment extends Fragment
             switch (item.getItemId()) {
                 case R.id.delete: {
                     List<LocalMessage> messages = getCheckedMessages();
-                    onDelete(messages);
+                    //TODO: onDelete(messages);
                     mSelectedCount = 0;
                     break;
                 }

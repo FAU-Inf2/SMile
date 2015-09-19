@@ -9,6 +9,7 @@ import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.activity.MessageReference;
 import com.fsck.k9.fragment.IMessageListPresenter;
+import com.fsck.k9.fragment.MessageListHandler;
 import com.fsck.k9.mail.Flag;
 import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.MessageRetrievalListener;
@@ -30,8 +31,9 @@ public class MessageListPresenter implements IMessageListPresenter {
     private List<LocalMessage> messages;
     private final Account account;
     private final LocalFolder folder;
+    private final MessageListHandler handler;
 
-    public MessageListPresenter(final Account account, final LocalFolder folder) {
+    public MessageListPresenter(final Account account, final LocalFolder folder, final MessageListHandler handler) {
         this.messages = new ArrayList<>();
         EnumMap<SortType, Comparator<LocalMessage>> sortMap = new EnumMap<>(SortType.class);
         sortMap.put(SortType.SORT_ATTACHMENT, new AttachmentComparator());
@@ -46,6 +48,7 @@ public class MessageListPresenter implements IMessageListPresenter {
         this.sortMap = Collections.unmodifiableMap(sortMap);
         this.account = account;
         this.folder = folder;
+        this.handler = handler;
         loadMessages(folder);
     }
 
@@ -87,7 +90,7 @@ public class MessageListPresenter implements IMessageListPresenter {
 
     @Override
     public void openMessage(MessageReference messageReference) {
-
+        handler.openMessage(messageReference);
     }
 
     @Override

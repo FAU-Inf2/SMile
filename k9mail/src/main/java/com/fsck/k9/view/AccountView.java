@@ -65,7 +65,8 @@ public class AccountView extends RelativeLayout {
 
     public void setCurrentAccount(Account currentAccount) {
         mail.setSelection(this.accounts.indexOf(currentAccount));
-        setName(currentAccount.getName());
+        if(currentAccount != null)
+            setName(currentAccount.getName());
     }
 
     static class AccountSpinnerAdapter extends ArrayAdapter<Account> {

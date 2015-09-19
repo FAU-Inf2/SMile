@@ -27,6 +27,7 @@ dependencies {
     compile group: androidSupportGroup, name: 'support-v13', version: supportLibsVersion
     compile group: androidSupportGroup, name: 'cardview-v7', version: supportLibsVersion
     compile group: androidSupportGroup, name: 'recyclerview-v7', version: supportLibsVersion
+    compile group: androidSupportGroup, name: 'design', version: supportLibsVersion
     compile 'net.sourceforge.htmlcleaner:htmlcleaner:2.10'
     compile 'net.danlew:android.joda:2.8.2'
     compile 'de.cketti.library.changelog:ckchangelog:1.2.2'

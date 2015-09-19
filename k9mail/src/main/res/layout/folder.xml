@@ -5,11 +5,6 @@
     android:layout_height="match_parent"
     android:elevation="7dp">
 
-    <android.support.design.widget.CoordinatorLayout
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -36,18 +31,6 @@
 
             </com.fsck.k9.view.ViewSwitcher>
         </LinearLayout>
-
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/fab"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:clickable="true"
-            android:src="@drawable/ic_create_white_48dp"
-            app:layout_anchor="@id/container"
-            app:layout_anchorGravity="bottom|right|end" />
-
-    </android.support.design.widget.CoordinatorLayout>
 
     <android.support.v7.widget.RecyclerView
             android:id="@+id/RecyclerView"

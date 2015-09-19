@@ -261,14 +261,6 @@ public class MessageList extends K9Activity
         initializeActionBar();
         initializeNavigationDrawer();
 
-        FloatingActionButton actionButton = findById(this, R.id.fab);
-        actionButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                MessageCompose.actionCompose(MessageList.this, mAccount);
-            }
-        });
-
         findFragments();
         initializeDisplayMode(savedInstanceState);
         initializeLayout();

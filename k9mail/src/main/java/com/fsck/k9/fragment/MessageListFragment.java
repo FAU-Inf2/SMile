@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -39,6 +40,7 @@ import com.fsck.k9.Account.SortType;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.activity.ChooseFolder;
+import com.fsck.k9.activity.MessageCompose;
 import com.fsck.k9.activity.MessageReference;
 import com.fsck.k9.activity.RemindMeList;
 import com.fsck.k9.fragment.comparator.ArrivalComparator;
@@ -303,6 +305,15 @@ public class MessageListFragment extends Fragment
         View view = inflater.inflate(R.layout.message_list_fragment, container, false);
         initializePullToRefresh(inflater, view);
         initializeLayout();
+
+        FloatingActionButton actionButton = findById(view, R.id.fab);
+        actionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MessageCompose.actionCompose(getActivity(), mAccount);
+            }
+        });
+
         mListView.setVerticalFadingEdgeEnabled(false);
 
         return view;

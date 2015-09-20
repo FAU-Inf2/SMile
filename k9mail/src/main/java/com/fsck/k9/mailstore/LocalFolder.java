@@ -751,8 +751,8 @@ public class LocalFolder extends Folder<LocalMessage> implements Serializable {
         this.localStore.database.execute(false, new DbCallback<Void>() {
             @Override
             public Void doDbWork(final SQLiteDatabase db) throws WrappedException, MessagingException {
-                Cursor cursor = db.query("message_parts", new String[] { "header" }, "id = ?",
-                        new String[] { Long.toString(message.getMessagePartId()) }, null, null, null);
+                Cursor cursor = db.query("message_parts", new String[]{"header"}, "id = ?",
+                        new String[]{Long.toString(message.getMessagePartId())}, null, null, null);
                 try {
                     if (cursor.moveToFirst()) {
                         byte[] header = cursor.getBlob(0);
@@ -882,6 +882,32 @@ public class LocalFolder extends Folder<LocalMessage> implements Serializable {
             }
         }
         return messages;
+    }
+
+    public List<LocalMessage> getThreadById(final long threadId, final MessageRetrievalListener<LocalMessage> listener) throws MessagingException{
+        try {
+        return  localStore.database.execute(false, new DbCallback<List<LocalMessage>>() {
+            @Override
+            public List<LocalMessage> doDbWork(final SQLiteDatabase db) throws WrappedException, UnavailableStorageException {
+                try {
+                    open(OPEN_MODE_RW);
+                    return LocalFolder.this.localStore.getMessages(listener, LocalFolder.this,
+                            "SELECT " + LocalStore.GET_MESSAGES_COLS +
+                                    "FROM messages " +
+                                    "LEFT JOIN threads ON (threads.message_id = messages.id) " +
+                                    "WHERE (empty IS NULL OR empty != 1) AND " +
+                                    "deleted = 0 AND threads.root = ? AND " +
+                                    "folder_id = ? ORDER BY date DESC",
+                            new String[] { String.valueOf(threadId), Long.toString(mFolderId) });
+                } catch (MessagingException e) {
+                    throw new WrappedException(e);
+                }
+            }
+        });
+    } catch (WrappedException e) {
+        throw(MessagingException) e.getCause();
+    }
+
     }
 
     @Override

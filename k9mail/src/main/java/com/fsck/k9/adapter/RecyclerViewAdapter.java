@@ -13,86 +13,40 @@ import com.fsck.k9.view.AccountView;
 import de.fau.cs.mad.smile.android.R;
 
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder> {
-
-    /*TODO: Use a spinner for email-address to switch easily between accounts */
-
-    private static final int TYPE_HEADER = 0;
-    private static final int TYPE_ITEM = 1;
-    private final Account account;
-
-    enum ItemType {
-        HEADER,
-        ITEM
-    }
-
     private String mNavigationTitles[];
     private int mIcons[];
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        ItemType type;
-        AccountView header;
-
         TextView textView;
         ImageView imageView;
 
-        public ViewHolder(View itemView, int ViewType) {
+        public ViewHolder(View itemView) {
             super(itemView);
-
-            if (ViewType == TYPE_ITEM) {
-                textView = (TextView) itemView.findViewById(R.id.rowText);
-                imageView = (ImageView) itemView.findViewById(R.id.rowIcon);
-                type = ItemType.ITEM;
-            } else {
-                header = (AccountView)itemView;
-                type = ItemType.HEADER;
-            }
+            textView = (TextView) itemView.findViewById(R.id.rowText);
+            imageView = (ImageView) itemView.findViewById(R.id.rowIcon);
         }
     }
 
-    public RecyclerViewAdapter(String[] titles, int[] icons, Account account) {
+    public RecyclerViewAdapter(String[] titles, int[] icons) {
         mNavigationTitles = titles;
         mIcons = icons;
-        this.account = account;
     }
 
     @Override
     public RecyclerViewAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view;
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        if (viewType == TYPE_HEADER) {
-            view = inflater.inflate(R.layout.header, parent, false);
-        } else if (viewType == TYPE_ITEM) {
-            view = inflater.inflate(R.layout.item_row, parent, false);
-        } else {
-            return null;
-        }
-
-        return new ViewHolder(view, viewType);
+        View view = inflater.inflate(R.layout.item_row, parent, false);
+        return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(RecyclerViewAdapter.ViewHolder holder, int position) {
-        if (holder.type == ItemType.ITEM) {
-            holder.textView.setText(mNavigationTitles[position - 1]);
-            holder.imageView.setImageResource(mIcons[position - 1]);
-        } else {
-            holder.header.setCurrentAccount(account);
-        }
+        holder.textView.setText(mNavigationTitles[position]);
+        holder.imageView.setImageResource(mIcons[position]);
     }
 
     @Override
     public int getItemCount() {
-        return mNavigationTitles.length + 1; //includes header view
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        if (isPositionHeader(position))
-            return TYPE_HEADER;
-        return TYPE_ITEM;
-    }
-
-    private boolean isPositionHeader(int position) {
-        return position == 0;
+        return mNavigationTitles.length;
     }
 }

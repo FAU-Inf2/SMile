@@ -30,6 +30,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
 import android.webkit.WebView;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -59,6 +60,7 @@ import com.fsck.k9.search.SearchCondition;
 import com.fsck.k9.search.SearchSpecification.SearchField;
 import com.fsck.k9.ui.messageview.MessageViewFragment;
 import com.fsck.k9.ui.messageview.MessageViewFragmentListener;
+import com.fsck.k9.view.AccountView;
 import com.fsck.k9.view.MessageHeader;
 import com.fsck.k9.view.ViewSwitcher;
 import com.fsck.k9.view.ViewSwitcher.OnSwitchCompleteListener;
@@ -549,7 +551,6 @@ public class MessageList extends K9Activity
     @Override
     public void onPause() {
         super.onPause();
-
         StorageManager.getInstance(getApplication()).removeListener(mStorageListener);
     }
 
@@ -605,12 +606,35 @@ public class MessageList extends K9Activity
     }
 
     private void initializeNavigationDrawer() {
+        final AccountView accountView = findById(this, R.id.account_view);
         mRecyclerView = (RecyclerView) findViewById(R.id.RecyclerView);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.addItemDecoration(new DividerItemDecoration(this));
 
         mTitles = new String[7];
         if(mAccount != null) {
+            accountView.setCurrentAccount(mAccount);
+            accountView.setAccountSpinnerListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    final Account selectedAccount = (Account) parent.getItemAtPosition(position);
+                    accountView.setCurrentAccount(selectedAccount);
+                    showMessageViewPlaceHolder();
+
+                    LocalSearch tmpSearch = new LocalSearch();
+                    tmpSearch.addAllowedFolder(selectedAccount.getAutoExpandFolderName());
+                    tmpSearch.addAccountUuid(selectedAccount.getUuid());
+                    MessageListFragment fragment =MessageListFragment.newInstance(tmpSearch, false,
+                            (K9.isThreadedViewEnabled() && !mNoThreading));
+                    addMessageListFragment(fragment, true);
+                    mDrawer.closeDrawers();
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+
+                }
+            });
             mTitles[0] = mAccount.getInboxFolderName();
             mTitles[1] = mAccount.getSentFolderName();
             mTitles[2] = mAccount.getDraftsFolderName();
@@ -635,7 +659,7 @@ public class MessageList extends K9Activity
             mEmail = getString(R.string.app_name);
         }
 
-        mAdapter = new RecyclerViewAdapter(mTitles, mIcons, mAccount);
+        mAdapter = new RecyclerViewAdapter(mTitles, mIcons);
         mRecyclerView.setAdapter(mAdapter);
 
         final GestureDetector mGestureDetector = new GestureDetector(MessageList.this,
@@ -1605,7 +1629,6 @@ public class MessageList extends K9Activity
     }
 
     private void fillContacts(final MessageListFragment fragment) {
-
         leftLinearLayoutContacts = (LinearLayout) findViewById(R.id.smsLikeView_leftlinear_contacts);
         leftLinearLayoutContacts.removeAllViews();
 
@@ -1691,16 +1714,15 @@ public class MessageList extends K9Activity
     }
 
     private void displayContactMessages(MessageListFragment fragment) {
-
         View vMessageList = mMessageListFragment.getView();
 
         if (vMessageList != null) {
-
             ViewGroup parent = (ViewGroup) vMessageList.getParent();
             if (parent != null) {
                 parent.removeView(vMessageList);
             }
         }
+
         FragmentManager fm = getSupportFragmentManager();
         FragmentTransaction transaction = fm.beginTransaction();
         transaction.replace(R.id.sms_message_list_container, fragment);

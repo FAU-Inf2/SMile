@@ -38,17 +38,6 @@ public class AccountView extends RelativeLayout {
         AccountSpinnerAdapter adapter = new AccountSpinnerAdapter(getContext(), accounts);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mail.setAdapter(adapter);
-        mail.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                setName(accounts.get(position).getName());
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
     }
 
     public TextView getName() {
@@ -65,8 +54,13 @@ public class AccountView extends RelativeLayout {
 
     public void setCurrentAccount(Account currentAccount) {
         mail.setSelection(this.accounts.indexOf(currentAccount));
-        if(currentAccount != null)
+        if(currentAccount != null) {
             setName(currentAccount.getName());
+        }
+    }
+
+    public void setAccountSpinnerListener(AdapterView.OnItemSelectedListener listener) {
+        mail.setOnItemSelectedListener(listener);
     }
 
     static class AccountSpinnerAdapter extends ArrayAdapter<Account> {

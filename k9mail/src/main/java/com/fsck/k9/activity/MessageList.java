@@ -30,6 +30,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
 import android.webkit.WebView;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -60,6 +61,7 @@ import com.fsck.k9.search.SearchCondition;
 import com.fsck.k9.search.SearchSpecification.SearchField;
 import com.fsck.k9.ui.messageview.MessageViewFragment;
 import com.fsck.k9.ui.messageview.MessageViewFragmentListener;
+import com.fsck.k9.view.AccountView;
 import com.fsck.k9.view.MessageHeader;
 import com.fsck.k9.view.ViewSwitcher;
 import com.fsck.k9.view.ViewSwitcher.OnSwitchCompleteListener;
@@ -261,14 +263,6 @@ public class MessageList extends K9Activity
 
         initializeActionBar();
         initializeNavigationDrawer();
-
-        FloatingActionButton actionButton = findById(this, R.id.fab);
-        actionButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                MessageCompose.actionCompose(MessageList.this, mAccount);
-            }
-        });
 
         findFragments();
         initializeDisplayMode(savedInstanceState);
@@ -558,7 +552,6 @@ public class MessageList extends K9Activity
     @Override
     public void onPause() {
         super.onPause();
-
         StorageManager.getInstance(getApplication()).removeListener(mStorageListener);
     }
 
@@ -614,16 +607,39 @@ public class MessageList extends K9Activity
     }
 
     private void initializeNavigationDrawer() {
+        final AccountView accountView = findById(this, R.id.account_view);
         mRecyclerView = (RecyclerView) findViewById(R.id.RecyclerView);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.addItemDecoration(new DividerItemDecoration(this));
 
         mTitles = new String[7];
         if(mAccount != null) {
-            mTitles[0] = FolderHelper.getDisplayName(this, mAccount, mAccount.getInboxFolderName());
-            mTitles[1] = FolderHelper.getDisplayName(this, mAccount, mAccount.getSentFolderName());
-            mTitles[2] = FolderHelper.getDisplayName(this, mAccount, mAccount.getDraftsFolderName());
-            mTitles[3] = FolderHelper.getDisplayName(this, mAccount, mAccount.getTrashFolderName());
+            accountView.setCurrentAccount(mAccount);
+            accountView.setAccountSpinnerListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    final Account selectedAccount = (Account) parent.getItemAtPosition(position);
+                    accountView.setCurrentAccount(selectedAccount);
+                    showMessageViewPlaceHolder();
+
+                    LocalSearch tmpSearch = new LocalSearch();
+                    tmpSearch.addAllowedFolder(selectedAccount.getAutoExpandFolderName());
+                    tmpSearch.addAccountUuid(selectedAccount.getUuid());
+                    MessageListFragment fragment =MessageListFragment.newInstance(tmpSearch, false,
+                            (K9.isThreadedViewEnabled() && !mNoThreading));
+                    addMessageListFragment(fragment, true);
+                    mDrawer.closeDrawers();
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+
+                }
+            });
+            mTitles[0] = mAccount.getInboxFolderName();
+            mTitles[1] = mAccount.getSentFolderName();
+            mTitles[2] = mAccount.getDraftsFolderName();
+            mTitles[3] = mAccount.getTrashFolderName();
             mTitles[4] = getResources().getString(R.string.folder_list);
             mTitles[5] = getResources().getString(R.string.preferences_title);
             mTitles[6] = getResources().getString(R.string.about_action) + " " + getResources().getString(R.string.app_name);
@@ -644,7 +660,7 @@ public class MessageList extends K9Activity
             mEmail = getString(R.string.app_name);
         }
 
-        mAdapter = new RecyclerViewAdapter(mTitles, mIcons, mName, mEmail);
+        mAdapter = new RecyclerViewAdapter(mTitles, mIcons);
         mRecyclerView.setAdapter(mAdapter);
 
         final GestureDetector mGestureDetector = new GestureDetector(MessageList.this,
@@ -666,32 +682,32 @@ public class MessageList extends K9Activity
                     int position = recyclerView.getChildPosition(child);
                     switch(position) {
                         case 0:
-                            break;
-                        case 1:
                             if(mAccount != null)
                                 onOpenFolder(mAccount.getInboxFolderName());
                             break;
-                        case 2:
+                        case 1:
                             if(mAccount != null)
                                 onOpenFolder(mAccount.getSentFolderName());
                             break;
-                        case 3:
+                        case 2:
                             if(mAccount != null)
                                 onOpenFolder(mAccount.getDraftsFolderName());
                             break;
-                        case 4:
+                        case 3:
                             if(mAccount != null)
                                 onOpenFolder(mAccount.getTrashFolderName());
                             break;
-                        case 5:
+                        case 4:
                             if(mAccount != null)
                                 onShowFolderList();
                             break;
-                        case 6:
+                        case 5:
                             onEditPrefs();
                             break;
-                        case 7:
+                        case 6:
                             onAbout();
+                            break;
+                        default:
                             break;
                     }
                     return true;
@@ -1586,7 +1602,6 @@ public class MessageList extends K9Activity
     }
 
     private void fillContacts(final MessageListFragment fragment) {
-
         leftLinearLayoutContacts = (LinearLayout) findViewById(R.id.smsLikeView_leftlinear_contacts);
         leftLinearLayoutContacts.removeAllViews();
 
@@ -1672,16 +1687,15 @@ public class MessageList extends K9Activity
     }
 
     private void displayContactMessages(MessageListFragment fragment) {
-
         View vMessageList = mMessageListFragment.getView();
 
         if (vMessageList != null) {
-
             ViewGroup parent = (ViewGroup) vMessageList.getParent();
             if (parent != null) {
                 parent.removeView(vMessageList);
             }
         }
+
         FragmentManager fm = getSupportFragmentManager();
         FragmentTransaction transaction = fm.beginTransaction();
         transaction.replace(R.id.sms_message_list_container, fragment);

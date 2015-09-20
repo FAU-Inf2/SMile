@@ -9,6 +9,8 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
@@ -31,6 +33,7 @@ import com.fsck.k9.Account.SortType;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.activity.ChooseFolder;
+import com.fsck.k9.activity.MessageCompose;
 import com.fsck.k9.activity.MessageReference;
 import com.fsck.k9.activity.RemindMeList;
 import com.fsck.k9.helper.FolderHelper;
@@ -205,6 +208,13 @@ public class MessageListFragment extends Fragment
         mPullToRefreshView = (RefreshableMessageList)view;
         setView(mPullToRefreshView.getMessageListView());
         messageListView.setPresenter(presenter);
+        FloatingActionButton actionButton = findById(view, R.id.fab);
+        actionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MessageCompose.actionCompose(getActivity(), mAccount);
+            }
+        });
         //initializePullToRefresh(inflater, view);
         /*mListView = findById(view, R.id.message_list);
         mListView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);

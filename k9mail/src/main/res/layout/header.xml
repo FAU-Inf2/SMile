@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.fsck.k9.view.AccountView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/account_view"
     android:layout_width="match_parent"
     android:layout_height="178dp"
     android:background="@drawable/poly_10_small"
@@ -22,14 +23,13 @@
             android:textSize="14sp"
             android:textStyle="bold" />
 
-        <TextView
+        <Spinner
             android:id="@+id/email"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#ffffff"
+            style="@style/Widget.SMile.Spinner"
             android:layout_marginStart="16dp"
             android:layout_marginTop="5dp"
-            android:textSize="14sp"
             android:textStyle="normal" />
     </LinearLayout>
-</RelativeLayout>
+</com.fsck.k9.view.AccountView>

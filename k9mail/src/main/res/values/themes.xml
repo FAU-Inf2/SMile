@@ -12,8 +12,9 @@
         <item name="preferenceTheme">@style/SMile.Preference</item>
         <item name="alertDialogTheme">@style/SMile.Dialog</item>
         <item name="windowActionModeOverlay">true</item>
+        <item name="android:spinnerItemStyle">@style/SMile.SpinnerItem</item>
         <item name="iconFolder">@drawable/folder_light_material</item>
-        <item name="iconListItemMenu">@drawable/dropdown_ic_arrow_normal_holo_dark</item>
+        <item name="iconListItemMenu">@drawable/ic_arrow_drop_down_white_48dp</item>
         <item name="iconMenuInfoDetails">@android:drawable/ic_menu_info_details</item>
         <item name="iconActionAddAttachment">@drawable/ic_attach_file_white_material</item>
         <item name="iconActionAddCcBcc">@drawable/ic_action_add_cc_bcc_material_dark</item>

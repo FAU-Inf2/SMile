@@ -36,7 +36,7 @@ public class AccountView extends RelativeLayout {
         name = findById(this, R.id.name);
         mail = findById(this, R.id.email);
         AccountSpinnerAdapter adapter = new AccountSpinnerAdapter(getContext(), accounts);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        adapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
         mail.setAdapter(adapter);
     }
 
@@ -72,7 +72,6 @@ public class AccountView extends RelativeLayout {
         public View getView(int position, View convertView, ViewGroup parent) {
             TextView view = (TextView)super.getView(position, convertView, parent);
             view.setText(getItem(position).getEmail());
-            view.setTextColor(Color.WHITE);
             return view;
         }
     }

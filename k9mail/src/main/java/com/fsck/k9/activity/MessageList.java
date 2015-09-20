@@ -681,32 +681,32 @@ public class MessageList extends K9Activity
                     int position = recyclerView.getChildPosition(child);
                     switch(position) {
                         case 0:
-                            break;
-                        case 1:
                             if(mAccount != null)
                                 onOpenFolder(mAccount.getInboxFolderName());
                             break;
-                        case 2:
+                        case 1:
                             if(mAccount != null)
                                 onOpenFolder(mAccount.getSentFolderName());
                             break;
-                        case 3:
+                        case 2:
                             if(mAccount != null)
                                 onOpenFolder(mAccount.getDraftsFolderName());
                             break;
-                        case 4:
+                        case 3:
                             if(mAccount != null)
                                 onOpenFolder(mAccount.getTrashFolderName());
                             break;
-                        case 5:
+                        case 4:
                             if(mAccount != null)
                                 onShowFolderList();
                             break;
-                        case 6:
+                        case 5:
                             onEditPrefs();
                             break;
-                        case 7:
+                        case 6:
                             onAbout();
+                            break;
+                        default:
                             break;
                     }
                     return true;

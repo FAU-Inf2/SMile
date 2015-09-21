@@ -245,6 +245,7 @@ public class MessageCompose extends K9Activity implements View.OnClickListener,
     private boolean mSourceMessageProcessed = false;
     private int mMaxLoaderId = 0;
     private MessagingController controller;
+    private MenuItem sendMenuButton;
 
     enum Action {
         COMPOSE,
@@ -1244,15 +1245,18 @@ public class MessageCompose extends K9Activity implements View.OnClickListener,
         if (mToView.getRecipients().size() == 0 && mCcView.getRecipients().size() == 0 && mBccView.getRecipients().size() == 0) {
             mToView.setError(getString(R.string.message_compose_error_no_recipients));
             Toast.makeText(this, getString(R.string.message_compose_error_no_recipients), Toast.LENGTH_LONG).show();
+            sendMenuButton.setEnabled(true);
             return;
         }
 
         if (mWaitingForAttachments != WaitingAction.NONE) {
+            sendMenuButton.setEnabled(true);
             return;
         }
 
         if (mNumAttachmentsLoading > 0) {
             mWaitingForAttachments = WaitingAction.SEND;
+            sendMenuButton.setEnabled(true);
             showWaitingForAttachmentDialog();
         } else {
             performSend();
@@ -1911,6 +1915,7 @@ public class MessageCompose extends K9Activity implements View.OnClickListener,
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.send:
+                sendMenuButton.setEnabled(false);
                 mPgpData.setEncryptionKeys(null);
                 onSend();
                 break;
@@ -1949,6 +1954,8 @@ public class MessageCompose extends K9Activity implements View.OnClickListener,
         if (!mAccount.hasDraftsFolder()) {
             menu.findItem(R.id.save).setEnabled(false);
         }
+
+        sendMenuButton = menu.findItem(R.id.send);
 
         return true;
     }

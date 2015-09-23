@@ -793,7 +793,7 @@ public class MessageListFragment extends Fragment
     private void initializeLayout() {
         mListView = mPullToRefreshView.getRefreshableView();
         mListView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
-        mListView.setLongClickable(true);
+        mListView.setLongClickable(false);
         mListView.setFastScrollEnabled(true);
         mListView.setScrollingCacheEnabled(false);
         mListView.setOnItemClickListener(this);

@@ -2274,14 +2274,14 @@ public class MessageListFragment extends Fragment
         }
     }
 
-    private void cleanupSelected(Cursor cursor) {
+    private void cleanupSelected() {
         if (mSelected.isEmpty()) {
             return;
         }
 
         Set<Long> selected = new HashSet<>();
-        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
-            long uniqueId = cursor.getLong(mUniqueIdColumn);
+        for (LocalMessage message : messages) {
+            long uniqueId = message.getId();
             if (mSelected.contains(uniqueId)) {
                 selected.add(uniqueId);
             }
@@ -2646,7 +2646,7 @@ public class MessageListFragment extends Fragment
                 updateTitle();
             }
 
-            cleanupSelected(cursor);
+            cleanupSelected();
             updateContextMenu(cursor);
 
             mAdapter.swapCursor(cursor);

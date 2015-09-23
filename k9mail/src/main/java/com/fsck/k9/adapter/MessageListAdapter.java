@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.CursorAdapter;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -49,13 +50,11 @@ import static butterknife.ButterKnife.findById;
 
 public class MessageListAdapter extends CursorAdapter {
     private final Context context;
-    private final boolean mCheckboxes;
     private final boolean mStars;
     private final boolean mThreadedList;
     private final MessageHelper mMessageHelper;
     private final int mPreviewLines;
     private final FontSizes mFontSizes;
-    private final boolean mSenderAboveSubject;
     private final MessageActions messageActionsCallback;
     private ContactPictureLoader mContactsPictureLoader;
     private Drawable mAttachmentIcon;
@@ -73,17 +72,15 @@ public class MessageListAdapter extends CursorAdapter {
         this.messageActionsCallback = messageActionsCallback;
         this.context = context;
         mThreadedList = threadedList;
-        mCheckboxes = K9.messageListCheckboxes();
         mStars = K9.messageListStars();
         mMessageHelper = MessageHelper.getInstance(context);
         mPreviewLines = K9.messageListPreviewLines();
         mFontSizes = K9.getFontSizes();
-        mSenderAboveSubject = K9.messageListSenderAboveSubject();
 
-        mAttachmentIcon = context.getResources().getDrawable(R.drawable.ic_email_attachment_small);
-        mAnsweredIcon = context.getResources().getDrawable(R.drawable.ic_email_answered_small);
-        mForwardedIcon = context.getResources().getDrawable(R.drawable.ic_email_forwarded_small);
-        mForwardedAnsweredIcon = context.getResources().getDrawable(R.drawable.ic_email_forwarded_answered_small);
+        mAttachmentIcon = ContextCompat.getDrawable(context, R.drawable.ic_email_attachment_small);
+        mAnsweredIcon = ContextCompat.getDrawable(context, R.drawable.ic_email_answered_small);
+        mForwardedIcon = ContextCompat.getDrawable(context, R.drawable.ic_email_forwarded_small);
+        mForwardedAnsweredIcon = ContextCompat.getDrawable(context, R.drawable.ic_email_forwarded_answered_small);
     }
 
     private String recipientSigil(boolean toMe, boolean ccMe) {
@@ -99,8 +96,7 @@ public class MessageListAdapter extends CursorAdapter {
     @Override
     public View newView(final Context context, Cursor cursor, ViewGroup parent) {
         LayoutInflater inflater = LayoutInflater.from(context);
-        MessageListItemView view = (MessageListItemView) inflater.inflate(R.layout.message_list_item, parent, false);
-        return view;
+        return inflater.inflate(R.layout.message_list_item, parent, false);
     }
 
     @Override
@@ -194,10 +190,9 @@ public class MessageListAdapter extends CursorAdapter {
             holder.getThreadCount().setVisibility(View.GONE);
         }
 
-        CharSequence beforePreviewText = (mSenderAboveSubject) ? subject : displayName;
         String sigil = recipientSigil(toMe, ccMe);
         SpannableStringBuilder messageStringBuilder = new SpannableStringBuilder(sigil)
-                .append(beforePreviewText);
+                .append(displayName);
 
         if (mPreviewLines > 0) {
             String preview = cursor.getString(MessageListFragment.PREVIEW_COLUMN);
@@ -211,12 +206,10 @@ public class MessageListAdapter extends CursorAdapter {
         Spannable str = (Spannable) holder.getPreview().getText();
 
         // Create a span section for the sender, and assign the correct font size and weight
-        int fontSize = (mSenderAboveSubject) ?
-                mFontSizes.getMessageListSubject() :
-                mFontSizes.getMessageListSender();
+        int fontSize = mFontSizes.getMessageListSender();
 
         AbsoluteSizeSpan span = new AbsoluteSizeSpan(fontSize, true);
-        str.setSpan(span, 0, beforePreviewText.length() + sigil.length(),
+        str.setSpan(span, 0, displayName.length() + sigil.length(),
                 Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
         //TODO: make this part of the theme
@@ -225,7 +218,7 @@ public class MessageListAdapter extends CursorAdapter {
                 Color.rgb(160, 160, 160);
 
         // Set span (color) for preview message
-        str.setSpan(new ForegroundColorSpan(color), beforePreviewText.length() + sigil.length(),
+        str.setSpan(new ForegroundColorSpan(color), displayName.length() + sigil.length(),
                 str.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
         Drawable statusHolder = null;
@@ -239,27 +232,15 @@ public class MessageListAdapter extends CursorAdapter {
 
         if (holder.getFrom() != null) {
             holder.getFrom().setTypeface(Typeface.create(holder.getFrom().getTypeface(), maybeBoldTypeface));
-            if (mSenderAboveSubject) {
-                holder.getFrom().setCompoundDrawablesWithIntrinsicBounds(
-                        statusHolder, // left
-                        null, // top
-                        hasAttachments ? mAttachmentIcon : null, // right
-                        null); // bottom
-
-                holder.getFrom().setText(displayName);
-            } else {
-                holder.getFrom().setText(new SpannableStringBuilder(sigil).append(displayName));
-            }
+            holder.getFrom().setText(new SpannableStringBuilder(sigil).append(displayName));
         }
 
         if (holder.getSubject() != null) {
-            if (!mSenderAboveSubject) {
-                holder.getSubject().setCompoundDrawablesWithIntrinsicBounds(
-                        statusHolder, // left
-                        null, // top
-                        hasAttachments ? mAttachmentIcon : null, // right
-                        null); // bottom
-            }
+            holder.getSubject().setCompoundDrawablesWithIntrinsicBounds(
+                    statusHolder, // left
+                    null, // top
+                    hasAttachments ? mAttachmentIcon : null, // right
+                    null); // bottom
 
             holder.getSubject().setTypeface(Typeface.create(holder.getSubject().getTypeface(), maybeBoldTypeface));
             holder.getSubject().setText(subject);

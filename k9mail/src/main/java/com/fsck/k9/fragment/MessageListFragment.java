@@ -1977,14 +1977,7 @@ public class MessageListFragment extends Fragment
         List<MessageReference> messageRefs = new ArrayList<MessageReference>();
 
         for (int i = 0, len = mAdapter.getCount(); i < len; i++) {
-            Cursor cursor = (Cursor) mAdapter.getItem(i);
-
-            String accountUuid = cursor.getString(ACCOUNT_UUID_COLUMN);
-            String folderName = cursor.getString(FOLDER_NAME_COLUMN);
-            String messageUid = cursor.getString(UID_COLUMN);
-            MessageReference ref = new MessageReference(accountUuid, folderName, messageUid, null);
-
-            messageRefs.add(ref);
+            messageRefs.add(getReferenceForPosition(i));
         }
 
         return messageRefs;
@@ -2044,12 +2037,12 @@ public class MessageListFragment extends Fragment
     }
 
     private MessageReference getReferenceForPosition(int position) {
-        Cursor cursor = (Cursor) mAdapter.getItem(position);
+        LocalMessage message = getMessageAtPosition(position);
+        if(message == null) {
+            return null;
+        }
 
-        String accountUuid = cursor.getString(ACCOUNT_UUID_COLUMN);
-        String folderName = cursor.getString(FOLDER_NAME_COLUMN);
-        String messageUid = cursor.getString(UID_COLUMN);
-        return new MessageReference(accountUuid, folderName, messageUid, null);
+        return message.makeMessageReference();
     }
 
     protected void openMessageAtPosition(int position) {
@@ -2070,21 +2063,8 @@ public class MessageListFragment extends Fragment
     }
 
     private int getPosition(MessageReference messageReference) {
-        for (int i = 0, len = mAdapter.getCount(); i < len; i++) {
-            Cursor cursor = (Cursor) mAdapter.getItem(i);
-
-            String accountUuid = cursor.getString(ACCOUNT_UUID_COLUMN);
-            String folderName = cursor.getString(FOLDER_NAME_COLUMN);
-            String uid = cursor.getString(UID_COLUMN);
-
-            if (accountUuid.equals(messageReference.getAccountUuid()) &&
-                    folderName.equals(messageReference.getFolderName()) &&
-                    uid.equals(messageReference.getUid())) {
-                return i;
-            }
-        }
-
-        return -1;
+        LocalMessage message = messageReference.restoreToLocalMessage(getContext());
+        return getPositionForUniqueId(message.getId());
     }
 
     public void onReverseSort() {

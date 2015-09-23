@@ -2,6 +2,7 @@ package com.fsck.k9.view;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.CheckBox;
@@ -135,6 +136,7 @@ public class MessageListItemView extends SwipeLayout {
         public void onReveal(View view, DragEdge dragEdge, float v, int i) {
             ImageView archive = findById(view, R.id.pull_out_archive);
             ImageView remindMe = findById(view, R.id.pull_out_remind_me);
+
             if (v <= 0.2) {
                 img_set1 = img_set2 = false;
                 archive.setVisibility(View.INVISIBLE);
@@ -155,11 +157,14 @@ public class MessageListItemView extends SwipeLayout {
                 archive.setVisibility(View.VISIBLE);
             }
 
+            final Context context = view.getContext();
+            final int remindmeOrange = ContextCompat.getColor(context, R.color.remindme_orange);
+
             if (v <= 0.2) {
                 view.setBackgroundColor(view.getSolidColor());
             } else {
                 if (0.2 < v && v < 0.5) {
-                    view.setBackgroundColor(Color.YELLOW);
+                    view.setBackgroundColor(remindmeOrange);
                 } else {
                     view.setBackgroundColor(Color.GREEN);
                 }

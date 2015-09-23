@@ -2084,7 +2084,7 @@ public class MessageListFragment extends Fragment
     }
 
     private int getPositionForUniqueId(long uniqueId) {
-        for (int position = 0, end = mAdapter.getCount(); position < end; position++) {
+        for (int position = 0; position < mAdapter.getCount(); position++) {
             Cursor cursor = (Cursor) mAdapter.getItem(position);
             if (cursor.getLong(mUniqueIdColumn) == uniqueId) {
                 return position;
@@ -2142,21 +2142,25 @@ public class MessageListFragment extends Fragment
     }
 
     public void onToggleFlagged() {
-        onToggleFlag(Flag.FLAGGED, FLAGGED_COLUMN);
+        onToggleFlag(Flag.FLAGGED);
     }
 
     public void onToggleRead() {
-        onToggleFlag(Flag.SEEN, READ_COLUMN);
+        onToggleFlag(Flag.SEEN);
     }
 
-    private void onToggleFlag(Flag flag, int flagColumn) {
+    private void onToggleFlag(Flag flag) {
         int adapterPosition = getAdapterPositionForSelectedMessage();
         if (adapterPosition == ListView.INVALID_POSITION) {
             return;
         }
 
-        Cursor cursor = (Cursor) mAdapter.getItem(adapterPosition);
-        boolean flagState = (cursor.getInt(flagColumn) == 1);
+        LocalMessage message = getMessageAtPosition(adapterPosition);
+        if(message == null) {
+            return;
+        }
+
+        boolean flagState = message.isSet(flag);
         setFlag(adapterPosition, flag, !flagState);
     }
 

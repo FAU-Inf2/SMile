@@ -442,9 +442,8 @@ public class MessageListFragment extends Fragment
         outState.putLongArray(STATE_SELECTED_MESSAGES, selected);
     }
 
-    public static String getSenderAddressFromCursor(Cursor cursor) {
-        String fromList = cursor.getString(SENDER_LIST_COLUMN);
-        Address[] fromAddrs = Address.unpack(fromList);
+    public static String getSenderAddressFromCursor(LocalMessage message) {
+        Address[] fromAddrs = message.getFrom();
         return (fromAddrs.length > 0) ? fromAddrs[0].getAddress() : null;
     }
 
@@ -1176,11 +1175,7 @@ public class MessageListFragment extends Fragment
                 break;
             }
             case R.id.same_sender: {
-                Cursor cursor = (Cursor) mAdapter.getItem(adapterPosition);
-                String senderAddress = getSenderAddressFromCursor(cursor);
-                if (senderAddress != null) {
-                    mFragmentListener.showMoreFromSameSender(senderAddress);
-                }
+                onSameSender(getMessageAtPosition(adapterPosition));
                 break;
             }
             case R.id.delete: {
@@ -1230,6 +1225,13 @@ public class MessageListFragment extends Fragment
 
         mContextMenuUniqueId = 0;
         return true;
+    }
+
+    private void onSameSender(LocalMessage message) {
+        String senderAddress = getSenderAddressFromCursor(message);
+        if (senderAddress != null) {
+            mFragmentListener.showMoreFromSameSender(senderAddress);
+        }
     }
 
     @Override
@@ -1421,9 +1423,8 @@ public class MessageListFragment extends Fragment
     }
 
     private void toggleMessageFlagWithAdapterPosition(int adapterPosition) {
-        Cursor cursor = (Cursor) mAdapter.getItem(adapterPosition);
-        boolean flagged = (cursor.getInt(FLAGGED_COLUMN) == 1);
-
+        LocalMessage message = getMessageAtPosition(adapterPosition);
+        boolean flagged = message.isSet(Flag.FLAGGED);
         setFlag(adapterPosition, Flag.FLAGGED, !flagged);
     }
 
@@ -1569,7 +1570,6 @@ public class MessageListFragment extends Fragment
                 continue;
             }
 
-            Cursor cursor = (Cursor) mAdapter.getItem(position);
             long uniqueId = message.getId();
 
             if (mSelected.contains(uniqueId)) {
@@ -2114,20 +2114,21 @@ public class MessageListFragment extends Fragment
     }
 
     private List<LocalMessage> getCheckedMessages() {
-        List<LocalMessage> messages = new ArrayList<>(mSelected.size());
-        for (int position = 0, end = mAdapter.getCount(); position < end; position++) {
-            Cursor cursor = (Cursor) mAdapter.getItem(position);
-            long uniqueId = cursor.getLong(mUniqueIdColumn);
+        List<LocalMessage> checkedMessages = new ArrayList<>(mSelected.size());
+        for (int position = 0; position < mAdapter.getCount(); position++) {
+            LocalMessage message = getMessageAtPosition(position);
+            if (message == null) {
+                continue;
+            }
+
+            long uniqueId = message.getId();
 
             if (mSelected.contains(uniqueId)) {
-                LocalMessage message = getMessageAtPosition(position);
-                if (message != null) {
-                    messages.add(message);
-                }
+                    checkedMessages.add(message);
             }
         }
 
-        return messages;
+        return checkedMessages;
     }
 
     public void onDelete() {
@@ -2255,13 +2256,13 @@ public class MessageListFragment extends Fragment
     /**
      * Close the context menu when the message it was opened for is no longer in the message list.
      */
-    private void updateContextMenu(Cursor cursor) {
+    private void updateContextMenu() {
         if (mContextMenuUniqueId == 0) {
             return;
         }
 
-        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
-            long uniqueId = cursor.getLong(mUniqueIdColumn);
+        for (LocalMessage message : messages) {
+            long uniqueId = message.getId();
             if (uniqueId == mContextMenuUniqueId) {
                 return;
             }
@@ -2330,12 +2331,18 @@ public class MessageListFragment extends Fragment
         }
 
         mSelectedCount = 0;
-        for (int i = 0, end = mAdapter.getCount(); i < end; i++) {
-            Cursor cursor = (Cursor) mAdapter.getItem(i);
-            long uniqueId = cursor.getLong(mUniqueIdColumn);
+        for (int i = 0; i < mAdapter.getCount(); i++) {
+            LocalMessage message = getMessageAtPosition(i);
+            long uniqueId = message.getId();
 
             if (mSelected.contains(uniqueId)) {
-                int threadCount = cursor.getInt(THREAD_COUNT_COLUMN);
+                int threadCount = 0;
+                try {
+                    threadCount = message.getFolder().getThreadCount(message.getRootId());
+                } catch (MessagingException e) {
+                    Log.e(K9.LOG_TAG, "recalculateSelectionCount", e);
+                }
+                
                 mSelectedCount += (threadCount > 1) ? threadCount : 1;
             }
         }
@@ -2647,7 +2654,7 @@ public class MessageListFragment extends Fragment
             }
 
             cleanupSelected();
-            updateContextMenu(cursor);
+            updateContextMenu();
 
             mAdapter.swapCursor(cursor);
 

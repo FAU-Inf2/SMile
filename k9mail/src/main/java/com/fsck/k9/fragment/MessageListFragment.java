@@ -222,7 +222,7 @@ public class MessageListFragment extends Fragment
     private Set<Long> mSelected = new HashSet<>();
     private ActionMode mActionMode;
     private Boolean mHasConnectivity;
-
+    private List<LocalMessage> messages;
     /**
      * Relevant messages for the current context when we have to remember the chosen messages
      * between user interactions (e.g. selecting a folder for move operation).
@@ -2582,7 +2582,7 @@ public class MessageListFragment extends Fragment
             }
 
             String selection = query.toString();
-            String[] selectionArgs = queryArgs.toArray(new String[0]);
+            String[] selectionArgs = queryArgs.toArray(new String[queryArgs.size()]);
 
             String sortOrder = buildSortOrder();
 
@@ -2604,7 +2604,6 @@ public class MessageListFragment extends Fragment
 
             // Remove the "Loading..." view
             mPullToRefreshView.setEmptyView(null);
-
             setPullToRefreshEnabled(isPullToRefreshAllowed());
 
             final int loaderId = loader.getId();
@@ -2620,19 +2619,31 @@ public class MessageListFragment extends Fragment
                 mUniqueIdColumn = ID_COLUMN;
             }
 
-            if (mIsThreadDisplay) {
-                if (cursor.moveToFirst()) {
-                    mTitle = cursor.getString(SUBJECT_COLUMN);
-                    if (!TextUtils.isEmpty(mTitle)) {
-                        mTitle = Utility.stripSubject(mTitle);
-                    }
-                    if (TextUtils.isEmpty(mTitle)) {
-                        mTitle = getString(R.string.general_no_subject);
-                    }
-                    updateTitle();
-                } else {
-                    //TODO: empty thread view -> return to full message list
+            messages = new ArrayList<>(cursor.getCount());
+            for(cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+                long folderId = cursor.getLong(cursor.getColumnIndex(MessageColumns.FOLDER_ID));
+                String messageUid = cursor.getString(cursor.getColumnIndex(MessageColumns.UID));
+                Account account = getAccountFromCursor(cursor);
+                LocalFolder folder = FolderHelper.getFolderById(account, folderId);
+                try {
+                    messages.add(folder.getMessage(messageUid));
+                } catch (MessagingException e) {
+                    Log.e(K9.LOG_TAG, "error in onLoadFinished", e);
                 }
+            }
+
+            if (mIsThreadDisplay && messages.size() > 0) {
+                LocalMessage message = messages.get(0);
+                mTitle = message.getSubject();
+                if (!TextUtils.isEmpty(mTitle)) {
+                    mTitle = Utility.stripSubject(mTitle);
+                }
+
+                if (TextUtils.isEmpty(mTitle)) {
+                    mTitle = getString(R.string.general_no_subject);
+                }
+
+                updateTitle();
             }
 
             cleanupSelected(cursor);

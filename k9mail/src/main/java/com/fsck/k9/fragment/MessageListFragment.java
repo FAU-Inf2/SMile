@@ -1237,20 +1237,20 @@ public class MessageListFragment extends Fragment
         super.onCreateContextMenu(menu, v, menuInfo);
 
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
-        Cursor cursor = (Cursor) mListView.getItemAtPosition(info.position);
+        LocalMessage message = getMessageAtPosition(info.position);
 
-        if (cursor == null) {
+        if (message == null) {
             return;
         }
 
         getActivity().getMenuInflater().inflate(R.menu.message_list_item_context, menu);
 
-        mContextMenuUniqueId = cursor.getLong(mUniqueIdColumn);
-        Account account = getAccountFromCursor(cursor);
+        mContextMenuUniqueId = message.getId();
+        Account account = message.getAccount();
 
-        String subject = cursor.getString(SUBJECT_COLUMN);
-        boolean read = (cursor.getInt(READ_COLUMN) == 1);
-        boolean flagged = (cursor.getInt(FLAGGED_COLUMN) == 1);
+        String subject = message.getSubject();
+        boolean read = message.isSet(Flag.SEEN);
+        boolean flagged = message.isSet(Flag.FLAGGED);
 
         menu.setHeaderTitle(subject);
 
@@ -1374,12 +1374,18 @@ public class MessageListFragment extends Fragment
 
             mSelectedCount = 0;
             for (int i = 0, end = mAdapter.getCount(); i < end; i++) {
-                Cursor cursor = (Cursor) mAdapter.getItem(i);
-                long uniqueId = cursor.getLong(mUniqueIdColumn);
+                LocalMessage message = getMessageAtPosition(i);
+                long uniqueId = message.getId();
                 mSelected.add(uniqueId);
 
                 if (mThreadedList) {
-                    int threadCount = cursor.getInt(THREAD_COUNT_COLUMN);
+                    int threadCount = 0;
+                    try {
+                        threadCount = message.getFolder().getThreadCount(message.getRootId());
+                    } catch (MessagingException e) {
+                        Log.e(K9.LOG_TAG, "error in setSelectionState ", e);
+                    }
+
                     mSelectedCount += (threadCount > 1) ? threadCount : 1;
                 } else {
                     mSelectedCount++;
@@ -1389,6 +1395,7 @@ public class MessageListFragment extends Fragment
             if (mActionMode == null) {
                 startAndPrepareActionMode();
             }
+
             computeBatchDirection();
             updateActionModeTitle();
             computeSelectAllVisibility();
@@ -1421,8 +1428,12 @@ public class MessageListFragment extends Fragment
     }
 
     private void toggleMessageSelectWithAdapterPosition(int adapterPosition) {
-        Cursor cursor = (Cursor) mAdapter.getItem(adapterPosition);
-        long uniqueId = cursor.getLong(mUniqueIdColumn);
+        LocalMessage message = getMessageAtPosition(adapterPosition);
+        if(message == null) {
+            return;
+        }
+
+        long uniqueId = message.getId();
 
         boolean selected = mSelected.contains(uniqueId);
         if (!selected) {
@@ -1433,7 +1444,12 @@ public class MessageListFragment extends Fragment
 
         int selectedCountDelta = 1;
         if (mThreadedList) {
-            int threadCount = cursor.getInt(THREAD_COUNT_COLUMN);
+            int threadCount = 0;
+            try {
+                threadCount = message.getFolder().getThreadCount(message.getRootId());
+            } catch (MessagingException e) {
+                Log.e(K9.LOG_TAG, "toggleMessageSelectWithAdapterPosition: ", e);
+            }
             if (threadCount > 1) {
                 selectedCountDelta = threadCount;
             }
@@ -1476,12 +1492,16 @@ public class MessageListFragment extends Fragment
         boolean isBatchRead = false;
 
         for (int i = 0, end = mAdapter.getCount(); i < end; i++) {
-            Cursor cursor = (Cursor) mAdapter.getItem(i);
-            long uniqueId = cursor.getLong(mUniqueIdColumn);
+            LocalMessage message = getMessageAtPosition(i);
+            if(message == null) {
+                continue;
+            }
+
+            long uniqueId = message.getId();
 
             if (mSelected.contains(uniqueId)) {
-                boolean read = (cursor.getInt(READ_COLUMN) == 1);
-                boolean flagged = (cursor.getInt(FLAGGED_COLUMN) == 1);
+                boolean read = message.isSet(Flag.SEEN);
+                boolean flagged = message.isSet(Flag.FLAGGED);
 
                 if (!flagged) {
                     isBatchFlag = true;
@@ -1506,16 +1526,28 @@ public class MessageListFragment extends Fragment
             return;
         }
 
-        Cursor cursor = (Cursor) mAdapter.getItem(adapterPosition);
-        Account account = mPreferences.getAccount(cursor.getString(ACCOUNT_UUID_COLUMN));
+        LocalMessage message = getMessageAtPosition(adapterPosition);
+        if(message == null) {
+            return;
+        }
 
-        if (mThreadedList && cursor.getInt(THREAD_COUNT_COLUMN) > 1) {
-            long threadRootId = cursor.getLong(THREAD_ROOT_COLUMN);
+        Account account = message.getAccount();
+        LocalFolder folder = message.getFolder();
+        int threadCount = 0;
+
+        try {
+            threadCount = folder.getThreadCount(message.getRootId());
+        } catch (MessagingException e) {
+            Log.e(K9.LOG_TAG, "error in setFlag ", e);
+        }
+
+        if (mThreadedList && threadCount > 1) {
+            long threadRootId = message.getRootId();
             mController.setFlagForThreads(account,
-                    Collections.singletonList(Long.valueOf(threadRootId)), flag, newState);
+                    Collections.singletonList(threadRootId), flag, newState);
         } else {
-            long id = cursor.getLong(ID_COLUMN);
-            mController.setFlag(account, Collections.singletonList(Long.valueOf(id)), flag,
+            long id = message.getId();
+            mController.setFlag(account, Collections.singletonList(id), flag,
                     newState);
         }
 
@@ -1527,35 +1559,47 @@ public class MessageListFragment extends Fragment
             return;
         }
 
-        Map<Account, List<Long>> messageMap = new HashMap<Account, List<Long>>();
-        Map<Account, List<Long>> threadMap = new HashMap<Account, List<Long>>();
-        Set<Account> accounts = new HashSet<Account>();
+        Map<Account, List<Long>> messageMap = new HashMap<>();
+        Map<Account, List<Long>> threadMap = new HashMap<>();
+        Set<Account> accounts = new HashSet<>();
 
-        for (int position = 0, end = mAdapter.getCount(); position < end; position++) {
+        for (int position = 0; position < mAdapter.getCount(); position++) {
+            LocalMessage message = getMessageAtPosition(position);
+            if(message == null) {
+                continue;
+            }
+
             Cursor cursor = (Cursor) mAdapter.getItem(position);
-            long uniqueId = cursor.getLong(mUniqueIdColumn);
+            long uniqueId = message.getId();
 
             if (mSelected.contains(uniqueId)) {
-                String uuid = cursor.getString(ACCOUNT_UUID_COLUMN);
-                Account account = mPreferences.getAccount(uuid);
+                Account account = message.getAccount();
                 accounts.add(account);
+                LocalFolder folder = message.getFolder();
+                int threadCount = 0;
 
-                if (mThreadedList && cursor.getInt(THREAD_COUNT_COLUMN) > 1) {
+                try {
+                    threadCount = folder.getThreadCount(message.getRootId());
+                } catch (MessagingException e) {
+                    Log.e(K9.LOG_TAG, "error in setFlag ", e);
+                }
+
+                if (mThreadedList && threadCount > 1) {
                     List<Long> threadRootIdList = threadMap.get(account);
                     if (threadRootIdList == null) {
-                        threadRootIdList = new ArrayList<Long>();
+                        threadRootIdList = new ArrayList<>();
                         threadMap.put(account, threadRootIdList);
                     }
 
-                    threadRootIdList.add(cursor.getLong(THREAD_ROOT_COLUMN));
+                    threadRootIdList.add(message.getRootId());
                 } else {
                     List<Long> messageIdList = messageMap.get(account);
                     if (messageIdList == null) {
-                        messageIdList = new ArrayList<Long>();
+                        messageIdList = new ArrayList<>();
                         messageMap.put(account, messageIdList);
                     }
 
-                    messageIdList.add(cursor.getLong(ID_COLUMN));
+                    messageIdList.add(message.getId());
                 }
             }
         }
@@ -1606,7 +1650,6 @@ public class MessageListFragment extends Fragment
     }
 
     private void onRemindMe(LocalMessage message) {
-        // TODO: build Intent?
         startActivity(RemindMeList.createRemindMe(this.getActivity(), message));
     }
 
@@ -1686,18 +1729,19 @@ public class MessageListFragment extends Fragment
     }
 
     private Map<Account, List<LocalMessage>> groupMessagesByAccount(final List<LocalMessage> messages) {
-        Map<Account, List<LocalMessage>> messagesByAccount = new HashMap<Account, List<LocalMessage>>();
+        Map<Account, List<LocalMessage>> messagesByAccount = new HashMap<>();
         for (LocalMessage message : messages) {
             Account account = message.getAccount();
 
             List<LocalMessage> msgList = messagesByAccount.get(account);
             if (msgList == null) {
-                msgList = new ArrayList<LocalMessage>();
+                msgList = new ArrayList<>();
                 messagesByAccount.put(account, msgList);
             }
 
             msgList.add(message);
         }
+
         return messagesByAccount;
     }
 
@@ -1742,7 +1786,6 @@ public class MessageListFragment extends Fragment
      */
     private boolean checkCopyOrMovePossible(final List<LocalMessage> messages,
                                             final FolderOperation operation) {
-
         if (messages.isEmpty()) {
             return false;
         }
@@ -1825,7 +1868,7 @@ public class MessageListFragment extends Fragment
 
             List<LocalMessage> outMessages = folderMap.get(folderName);
             if (outMessages == null) {
-                outMessages = new ArrayList<LocalMessage>();
+                outMessages = new ArrayList<>();
                 folderMap.put(folderName, outMessages);
             }
 

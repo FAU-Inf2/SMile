@@ -63,7 +63,6 @@ public class MessageListAdapter extends CursorAdapter {
     private Drawable mAnsweredIcon;
     private Drawable mForwardedAnsweredIcon;
 
-
     public MessageListAdapter(Context context, MessageActions messageActionsCallback, boolean threadedList) {
         super(context, null, 0);
 

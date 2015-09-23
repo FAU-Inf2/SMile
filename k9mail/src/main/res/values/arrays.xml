@@ -763,12 +763,12 @@
     </string-array>
 
     <array name="remindme_time_icons" translateable="false">
-        <item>@drawable/ic_remindme_later_today</item>
-        <item>@drawable/ic_remindme_this_evening</item>
-        <item>@drawable/ic_remindme_tomorrow</item>
-        <item>@drawable/ic_remindme_next_week</item>
-        <item>@drawable/ic_remindme_next_month</item>
-        <item>@drawable/ic_remindme_custom</item>
+        <item>@drawable/ic_remindme_later_today_black</item>
+        <item>@drawable/ic_remindme_this_evening_black</item>
+        <item>@drawable/ic_remindme_tomorrow_black</item>
+        <item>@drawable/ic_remindme_next_week_black</item>
+        <item>@drawable/ic_remindme_next_month_black</item>
+        <item>@drawable/ic_remindme_custom_black</item>
     </array>
 
     <string-array name="default_crypto_entries">

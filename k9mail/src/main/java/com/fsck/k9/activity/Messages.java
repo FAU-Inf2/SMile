@@ -34,6 +34,7 @@ import com.fsck.k9.search.SearchCondition;
 import com.fsck.k9.search.SearchSpecification;
 import com.fsck.k9.ui.messageview.MessageViewFragment;
 import com.fsck.k9.ui.messageview.MessageViewFragmentListener;
+import com.fsck.k9.view.IMessageListView;
 import com.fsck.k9.view.MessageHeader;
 import com.fsck.k9.view.MessageListView;
 
@@ -232,7 +233,7 @@ public class Messages extends SmileActivity
     // implement IMessageListPresenter
 
     @Override
-    public void setView(MessageListView messageListView) {
+    public void setView(IMessageListView messageListView) {
 
     }
 

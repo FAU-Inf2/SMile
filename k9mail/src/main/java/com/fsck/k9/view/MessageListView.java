@@ -17,43 +17,15 @@ import com.fsck.k9.mailstore.LocalMessage;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MessageListView extends RecyclerView implements IMessageListView {
-    private final List<LocalMessage> messages;
-    private IMessageListPresenter presenter;
-
+public class MessageListView extends RecyclerView {
     public MessageListView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        messages = new ArrayList<>();
     }
 
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        final MessageAdapter messageAdapter = new MessageAdapter(messages);
         final RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getContext());
         setLayoutManager(layoutManager);
-        setAdapter(messageAdapter);
-        addOnItemTouchListener(
-                new RecyclerItemClickListener(getContext(), new RecyclerItemClickListener.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(View view, int position) {
-                        LocalMessage message = messages.get(position);
-                        Log.d(K9.LOG_TAG, message.toString());
-                        presenter.openMessage(message.makeMessageReference());
-                    }
-                })
-        );
-    }
-
-    @Override
-    public void setPresenter(IMessageListPresenter presenter) {
-        this.presenter = presenter;
-    }
-
-    @Override
-    public void showMessageList(List<LocalMessage> messageList) {
-        messages.clear();
-        messages.addAll(messageList);
-        getAdapter().notifyDataSetChanged();
     }
 }

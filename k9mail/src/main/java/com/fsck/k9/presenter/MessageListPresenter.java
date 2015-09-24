@@ -16,6 +16,7 @@ import com.fsck.k9.mail.MessageRetrievalListener;
 import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.mailstore.LocalMessage;
+import com.fsck.k9.view.IMessageListView;
 import com.fsck.k9.view.MessageListView;
 
 import java.util.ArrayList;
@@ -27,7 +28,7 @@ import java.util.Map;
 
 public class MessageListPresenter implements IMessageListPresenter {
     final Map<SortType, Comparator<LocalMessage>> sortMap;
-    private MessageListView messageListView;
+    private IMessageListView messageListView;
     private List<LocalMessage> messages;
     private final Account account;
     private final LocalFolder folder;
@@ -53,7 +54,7 @@ public class MessageListPresenter implements IMessageListPresenter {
     }
 
     @Override
-    public void setView(MessageListView messageListView) {
+    public void setView(IMessageListView messageListView) {
         this.messageListView = messageListView;
         this.messageListView.showMessageList(messages);
     }

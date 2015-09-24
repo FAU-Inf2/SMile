@@ -40,6 +40,7 @@ import com.fsck.k9.activity.ChooseFolder;
 import com.fsck.k9.activity.MessageCompose;
 import com.fsck.k9.activity.MessageReference;
 import com.fsck.k9.activity.RemindMeList;
+import com.fsck.k9.adapter.MessageAdapter;
 import com.fsck.k9.helper.FolderHelper;
 import com.fsck.k9.holder.FolderInfoHolder;
 import com.fsck.k9.listener.ActivityListener;
@@ -194,6 +195,7 @@ public class MessageListFragment extends Fragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        messages = new ArrayList<>();
 
         Context appContext = getActivity().getApplicationContext();
         mPreferences = Preferences.getPreferences(appContext);
@@ -213,9 +215,22 @@ public class MessageListFragment extends Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.message_list_fragment, container, false);
-        mPullToRefreshView = (RefreshableMessageList)view;
-        setView(mPullToRefreshView.getMessageListView());
-        messageListView.setPresenter(presenter);
+
+        mPullToRefreshView = findById(view, R.id.swipeRefreshLayout);
+        messageListView = mPullToRefreshView.getMessageListView();
+        messageListView.addOnItemTouchListener(
+                new RecyclerItemClickListener(getContext(), new RecyclerItemClickListener.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(View view, int position) {
+                        LocalMessage message = messages.get(position);
+                        Log.d(K9.LOG_TAG, message.toString());
+                        presenter.openMessage(message.makeMessageReference());
+                    }
+                })
+        );
+
+        final MessageAdapter messageAdapter = new MessageAdapter(messages);
+        messageListView.setAdapter(messageAdapter);
         FloatingActionButton actionButton = findById(view, R.id.fab);
         actionButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -223,17 +238,8 @@ public class MessageListFragment extends Fragment
                 MessageCompose.actionCompose(getActivity(), mAccount);
             }
         });
-        //initializePullToRefresh(inflater, view);
-        /*mListView = findById(view, R.id.message_list);
-        mListView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
-        mListView.setLongClickable(true);
-        mListView.setFastScrollEnabled(true);
-        mListView.setScrollingCacheEnabled(false);
-        mListView.setOnItemClickListener(this);
 
-        registerForContextMenu(mListView);
-        mListView.setVerticalFadingEdgeEnabled(false);
-        */
+        setView(this);
         return view;
     }
 
@@ -774,8 +780,7 @@ public class MessageListFragment extends Fragment
     }
 
     @Override
-    public void setView(MessageListView messageListView) {
-        this.messageListView = messageListView;
+    public void setView(IMessageListView messageListView) {
         this.presenter.setView(messageListView);
     }
 
@@ -2184,7 +2189,9 @@ public class MessageListFragment extends Fragment
 
     @Override
     public void showMessageList(List<LocalMessage> messageList) {
-
+        messages.clear();
+        messages.addAll(messageList);
+        messageListView.getAdapter().notifyDataSetChanged();
     }
 
     private enum FolderOperation {

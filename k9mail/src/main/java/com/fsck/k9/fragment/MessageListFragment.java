@@ -752,7 +752,6 @@ public class MessageListFragment extends Fragment
     @Override
     public void enableThreadedList(boolean enable) {
         mThreadedList = enable;
-        presenter.enableThreadedList(enable);
     }
 
     /**
@@ -1281,6 +1280,11 @@ public class MessageListFragment extends Fragment
         //mActionModeCallback.showSelectAll(mSelected.size() != mAdapter.getCount());
     }
 
+    @Override
+    public void setFlag(LocalMessage message, final Flag flag) {
+        presenter.setFlag(message, flag);
+    }
+
     private void computeBatchDirection() {
         /*boolean isBatchFlag = false;
         boolean isBatchRead = false;
@@ -1313,11 +1317,6 @@ public class MessageListFragment extends Fragment
 
         mActionModeCallback.showMarkAsRead(isBatchRead);
         mActionModeCallback.showFlag(isBatchFlag);*/
-    }
-
-    @Override
-    public void setFlag(LocalMessage message, final Flag flag) {
-        presenter.setFlag(message, flag);
     }
 
     private void setFlagForSelected(final Flag flag, final boolean newState) {
@@ -2109,6 +2108,7 @@ public class MessageListFragment extends Fragment
     @Override
     public void setPresenter(IMessageListPresenter presenter) {
         this.presenter = presenter;
+        this.presenter.enableThreadedList(mThreadedList);
     }
 
     @Override

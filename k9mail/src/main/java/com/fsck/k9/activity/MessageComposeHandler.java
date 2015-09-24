@@ -10,6 +10,8 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.fsck.k9.K9;
+import com.fsck.k9.mail.MessagingException;
+import com.fsck.k9.mail.internet.MimeMessage;
 
 import org.openintents.openpgp.OpenPgpError;
 import org.openintents.openpgp.util.OpenPgpApi;
@@ -23,9 +25,11 @@ public class MessageComposeHandler extends Handler {
     private final int MSG_SEND = 7;
     private final int MSG_INTENT_SENDER_FOR_RESULT = 8;
     private final int MSG_OPEN_PGP_ERRORS = 9;
+    private final int MSG_SMIME_ERRORS = 10;
     private final String INTENT_KEY = "PENDING_INTENT";
     private final String REQUEST_CODE_KEY = "REQUEST_CODE";
     private final String ERROR_KEY = "PGP_ERROR";
+    private final String SMIME_ERROR_KEY = "SMIME_ERROR";
 
     public MessageComposeHandler(final MessageCompose messageViewFragment) {
         reference = new WeakReference<>(messageViewFragment);
@@ -50,6 +54,37 @@ public class MessageComposeHandler extends Handler {
         android.os.Message msg = obtainMessage(MSG_OPEN_PGP_ERRORS);
         Bundle data = new Bundle();
         data.putParcelable(ERROR_KEY, error);
+        msg.setData(data);
+        msg.sendToTarget();
+    }
+
+    public void sendSmime(MimeMessage currentMessage) {
+        MessageCompose compose = reference.get();
+        if (compose == null) {
+            return;
+        }
+        compose.setMessage(currentMessage);
+        android.os.Message msg = obtainMessage(MSG_SEND);
+        msg.sendToTarget();
+    }
+
+    public MimeMessage createMimeMessage() {
+        MessageCompose compose = reference.get();
+        if (compose == null) {
+            return null;
+        }
+        try {
+            return compose.createMessage();
+        } catch (MessagingException e) {
+            Log.e(K9.LOG_TAG, "Error creating Message", e);
+            return null;
+        }
+    }
+
+    public void smimeError(String message) {
+        android.os.Message msg = obtainMessage(MSG_SMIME_ERRORS);
+        Bundle data = new Bundle();
+        data.putString(SMIME_ERROR_KEY, message);
         msg.setData(data);
         msg.sendToTarget();
     }
@@ -119,6 +154,11 @@ public class MessageComposeHandler extends Handler {
                         compose.getString(R.string.openpgp_error, error.getMessage()),
                         Toast.LENGTH_LONG).show();
                 break;
+            case MSG_SMIME_ERRORS:
+                String message = data.getString(SMIME_ERROR_KEY);
+                Toast.makeText(compose,
+                        compose.getString(R.string.openpgp_error, message),
+                        Toast.LENGTH_LONG).show();
             default:
                 super.handleMessage(msg);
                 break;

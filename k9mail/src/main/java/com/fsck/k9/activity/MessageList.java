@@ -1069,7 +1069,9 @@ public class MessageList extends K9Activity
             // MessageList
             case R.id.check_mail: {
                 mMessageListFragment.checkMail();
-                if (mDisplayMode == DisplayMode.SMS_LIST) fillContacts(mMessageListFragment);
+                if (mDisplayMode == DisplayMode.SMS_LIST) {
+                    fillContacts(mMessageListFragment);
+                }
                 return true;
             }
             /*case R.id.select_all: {

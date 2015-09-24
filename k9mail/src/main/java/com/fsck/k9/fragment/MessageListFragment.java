@@ -1754,11 +1754,11 @@ public class MessageListFragment extends Fragment
     }
 
     public List<MessageReference> getMessageReferences() {
-        List<MessageReference> messageRefs = new ArrayList<MessageReference>();
-        /*
-        for (int i = 0, len = mAdapter.getCount(); i < len; i++) {
-            messageRefs.add(getReferenceForPosition(i));
-        }*/
+        List<MessageReference> messageRefs = new ArrayList<>();
+
+        for (int i = 0; i < messages.size(); i++) {
+            messageRefs.add(messages.get(i).makeMessageReference());
+        }
 
         return messageRefs;
     }

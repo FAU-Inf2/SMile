@@ -1,5 +1,6 @@
 package com.fsck.k9.presenter;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
@@ -33,8 +34,10 @@ public class MessageListPresenter implements IMessageListPresenter {
     private final Account account;
     private final LocalFolder folder;
     private final MessageListHandler handler;
+    private final Context context;
 
-    public MessageListPresenter(final Account account, final LocalFolder folder, final MessageListHandler handler) {
+    public MessageListPresenter(final Context context, final Account account, final LocalFolder folder, final MessageListHandler handler) {
+        this.context = context;
         this.messages = new ArrayList<>();
         EnumMap<SortType, Comparator<LocalMessage>> sortMap = new EnumMap<>(SortType.class);
         sortMap.put(SortType.SORT_ATTACHMENT, new AttachmentComparator());
@@ -96,12 +99,44 @@ public class MessageListPresenter implements IMessageListPresenter {
 
     @Override
     public boolean openPreviousMessage(MessageReference messageReference) {
-        return false;
+        int position = getPosition(messageReference);
+        if (position <= 0) {
+            return false;
+        }
+
+        openMessageAtPosition(position - 1);
+        return true;
     }
 
     @Override
     public boolean openNextMessage(MessageReference messageReference) {
+        int position = getPosition(messageReference);
+        if (position < 0 || position == messages.size() - 1) {
+            return false;
+        }
+
+        openMessageAtPosition(position + 1);
         return false;
+    }
+
+    private int getPosition(MessageReference messageReference) {
+        LocalMessage message = messageReference.restoreToLocalMessage(context);
+        return getPositionForUniqueId(message.getId());
+    }
+
+    private int getPositionForUniqueId(long uniqueId) {
+        for (int position = 0; position < messages.size(); position++) {
+            if (messages.get(position).getId() == uniqueId) {
+                return position;
+            }
+        }
+
+        return -1;
+    }
+
+    private void openMessageAtPosition(int position) {
+        MessageReference ref = messages.get(position).makeMessageReference();
+        handler.openMessage(ref);
     }
 
     @Override

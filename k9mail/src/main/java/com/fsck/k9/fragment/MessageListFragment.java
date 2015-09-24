@@ -206,7 +206,7 @@ public class MessageListFragment extends Fragment
         restoreInstanceState(savedInstanceState);
         decodeArguments();
         createCacheBroadcastReceiver(appContext);
-        setPresenter(new MessageListPresenter(mAccount, (LocalFolder) mCurrentFolder.folder, mHandler));
+        setPresenter(new MessageListPresenter(getContext(), mAccount, (LocalFolder) mCurrentFolder.folder, mHandler));
 
         mInitialized = true;
     }
@@ -1789,29 +1789,16 @@ public class MessageListFragment extends Fragment
     }
 
     public boolean openPreviousMessage(MessageReference messageReference) {
-        int position = getPosition(messageReference);
-        if (position <= 0) {
-            return false;
-        }
-
-        openMessageAtPosition(position - 1);
-        return true;
+        return presenter.openPreviousMessage(messageReference);
     }
 
     @Override
     public boolean openNextMessage(MessageReference messageReference) {
-        int position = getPosition(messageReference);
-        if (position < 0 || position == messages.size() - 1) {
-            return false;
-        }
-
-        openMessageAtPosition(position + 1);
-        return false;
+        return presenter.openNextMessage(messageReference);
     }
 
     public boolean isFirst(MessageReference messageReference) {
-        //return mAdapter.isEmpty() || messageReference.equals(getReferenceForPosition(0));
-        return false;
+        return messages.size() == 0 || messageReference.equals(getReferenceForPosition(0));
     }
 
     public boolean isLast(MessageReference messageReference) {

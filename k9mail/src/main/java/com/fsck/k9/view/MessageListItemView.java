@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.support.v7.widget.CardView;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -39,8 +40,9 @@ import de.fau.cs.mad.smile.android.R;
 
 import static butterknife.ButterKnife.findById;
 
-public class MessageListItemView extends SwipeLayout {
+public class MessageListItemView extends CardView {
     private FontSizes fontSizes;
+    private SwipeLayout swipeLayout;
     private TextView subject;
     private TextView preview;
     private TextView from;
@@ -83,6 +85,7 @@ public class MessageListItemView extends SwipeLayout {
         threadCount = findById(this, R.id.thread_count);
         flagged = findById(this, R.id.flagged);
         contactBadge = findById(this, R.id.contact_badge);
+        swipeLayout = findById(this, R.id.swipe_layout);
         configureView();
     }
 
@@ -91,10 +94,10 @@ public class MessageListItemView extends SwipeLayout {
         final int previewLines = K9.messageListPreviewLines();
         preview.setLines(Math.max(previewLines, 1));
 
-        this.addDrag(SwipeLayout.DragEdge.Left, findViewById(R.id.pull_out));
-        this.addDrag(SwipeLayout.DragEdge.Right, findViewById(R.id.delete));
-        this.addRevealListener(R.id.delete, new DeleteRevealListener());
-        this.addRevealListener(R.id.pull_out, new LeftToRightRevealListener());
+        this.swipeLayout.addDrag(SwipeLayout.DragEdge.Left, findViewById(R.id.pull_out));
+        this.swipeLayout.addDrag(SwipeLayout.DragEdge.Right, findViewById(R.id.delete));
+        this.swipeLayout.addRevealListener(R.id.delete, new DeleteRevealListener());
+        this.swipeLayout.addRevealListener(R.id.pull_out, new LeftToRightRevealListener());
     }
 
     private void setFontSize() {
@@ -248,7 +251,7 @@ public class MessageListItemView extends SwipeLayout {
         }
 
         getDate().setText(displayDate);
-        addSwipeListener(new ExecuteSwipeListener());
+        swipeLayout.addSwipeListener(new ExecuteSwipeListener());
     }
 
     private String recipientSigil(boolean toMe, boolean ccMe) {
@@ -309,9 +312,9 @@ public class MessageListItemView extends SwipeLayout {
         this.messageActionsCallback = messageActionsCallback;
     }
 
-    private static class DeleteRevealListener implements OnRevealListener {
+    private static class DeleteRevealListener implements SwipeLayout.OnRevealListener {
         @Override
-        public void onReveal(View view, DragEdge dragEdge, float v, int i) {
+        public void onReveal(View view, SwipeLayout.DragEdge dragEdge, float v, int i) {
             ImageView trash = findById(view, R.id.trash);
             if (v > 0.25) {
                 view.setBackgroundColor(Color.RED);
@@ -323,12 +326,12 @@ public class MessageListItemView extends SwipeLayout {
         }
     }
 
-    private static class LeftToRightRevealListener implements OnRevealListener {
+    private static class LeftToRightRevealListener implements SwipeLayout.OnRevealListener {
         private boolean img_set1 = false;
         private boolean img_set2 = false;
 
         @Override
-        public void onReveal(View view, DragEdge dragEdge, float v, int i) {
+        public void onReveal(View view, SwipeLayout.DragEdge dragEdge, float v, int i) {
             ImageView archive = findById(view, R.id.pull_out_archive);
             ImageView remindMe = findById(view, R.id.pull_out_remind_me);
 
@@ -371,7 +374,7 @@ public class MessageListItemView extends SwipeLayout {
 
         @Override
         public void onHandRelease(SwipeLayout layout, float xvel, float yvel) {
-            MessageListItemView itemView = (MessageListItemView) layout;
+            MessageListItemView itemView = (MessageListItemView) layout.getParent();
 
             /*if(messageActionsCallback == null) {
                 throw new IllegalStateException("messageActionsCallback was not set");

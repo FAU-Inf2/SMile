@@ -1,66 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.fsck.k9.view.MessageListItemView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:swipe="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/swipe_layout"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/card_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    swipe:leftEdgeSwipeOffset="0dp"
-    swipe:rightEdgeSwipeOffset="0dp">
+    card_view:cardCornerRadius="4dp">
 
-    <RelativeLayout
-        android:id="@+id/pull_out"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="left"
-        android:layout_toLeftOf="@+id/msg"
-        android:background="@color/background_floating_material_light">
-
-        <ImageView
-            android:id="@+id/pull_out_remind_me"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:layout_marginRight="10dip"
-            android:layout_weight="1"
-            android:src="@drawable/ic_alarm_add_black_48dp" />
-
-        <ImageView
-            android:id="@+id/pull_out_archive"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:layout_marginRight="10dip"
-            android:layout_weight="1"
-            android:src="@drawable/ic_action_archive_material_light" />
-    </RelativeLayout>
-
-    <RelativeLayout
-        android:id="@+id/delete"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#FF5534"
-        android:gravity="left"
-        android:tag="Delete"
-        android:weightSum="10">
-
-        <ImageView
-            android:id="@+id/trash"
-            android:layout_width="50dp"
-            android:layout_height="30dp"
-            android:layout_centerVertical="true"
-            android:src="@drawable/ic_action_delete_material_light" />
-    </RelativeLayout>
-
-    <android.support.v7.widget.CardView
-        xmlns:card_view="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/card_view"
+    <com.daimajia.swipe.SwipeLayout
+        xmlns:swipe="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/swipe_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        card_view:cardCornerRadius="4dp">
+        swipe:leftEdgeSwipeOffset="0dp"
+        swipe:rightEdgeSwipeOffset="0dp">
+
+        <RelativeLayout
+            android:id="@+id/pull_out"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="left"
+            android:layout_toLeftOf="@+id/msg"
+            android:background="@color/background_floating_material_light">
+
+            <ImageView
+                android:id="@+id/pull_out_remind_me"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="10dip"
+                android:layout_weight="1"
+                android:src="@drawable/ic_alarm_add_black_48dp" />
+
+            <ImageView
+                android:id="@+id/pull_out_archive"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="10dip"
+                android:layout_weight="1"
+                android:src="@drawable/ic_action_archive_material_light" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/delete"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#FF5534"
+            android:gravity="left"
+            android:tag="Delete"
+            android:weightSum="10">
+
+            <ImageView
+                android:id="@+id/trash"
+                android:layout_width="50dp"
+                android:layout_height="30dp"
+                android:layout_centerVertical="true"
+                android:src="@drawable/ic_action_delete_material_light" />
+        </RelativeLayout>
 
         <LinearLayout
             android:id="@+id/msg"
@@ -174,5 +174,5 @@
             </RelativeLayout>
 
         </LinearLayout>
-    </android.support.v7.widget.CardView>
+    </com.daimajia.swipe.SwipeLayout>
 </com.fsck.k9.view.MessageListItemView>

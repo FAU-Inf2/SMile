@@ -53,7 +53,9 @@ public class AccountView extends RelativeLayout {
     }
 
     public void setCurrentAccount(Account currentAccount) {
-        mail.setSelection(this.accounts.indexOf(currentAccount));
+        final int currentAccountIndex = this.accounts.indexOf(currentAccount);
+        mail.setTag(currentAccountIndex);
+        mail.setSelection(currentAccountIndex);
         if(currentAccount != null) {
             setName(currentAccount.getName());
         }

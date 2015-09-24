@@ -618,10 +618,15 @@ public class MessageList extends K9Activity
 
         mTitles = new String[7];
         if(mAccount != null) {
+            accountView.setAccountSpinnerListener(null);
             accountView.setCurrentAccount(mAccount);
             accountView.setAccountSpinnerListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    Object tag = parent.getTag();
+                    if(tag instanceof Integer && ((Integer)tag) == position) {
+                        return;
+                    }
                     final Account selectedAccount = (Account) parent.getItemAtPosition(position);
                     accountView.setCurrentAccount(selectedAccount);
                     showMessageViewPlaceHolder();
@@ -629,7 +634,7 @@ public class MessageList extends K9Activity
                     LocalSearch tmpSearch = new LocalSearch();
                     tmpSearch.addAllowedFolder(selectedAccount.getAutoExpandFolderName());
                     tmpSearch.addAccountUuid(selectedAccount.getUuid());
-                    MessageListFragment fragment =MessageListFragment.newInstance(tmpSearch, false,
+                    MessageListFragment fragment = MessageListFragment.newInstance(tmpSearch, false,
                             (K9.isThreadedViewEnabled() && !mNoThreading));
                     addMessageListFragment(fragment, true);
                     mDrawer.closeDrawers();

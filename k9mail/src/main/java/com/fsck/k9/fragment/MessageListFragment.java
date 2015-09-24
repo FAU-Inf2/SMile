@@ -937,6 +937,10 @@ public class MessageListFragment extends Fragment
                 selectAll();
                 return true;
             }
+            case R.id.mark_all_as_read: {
+                markAllAsRead();
+                return true;
+            }
         }
 
         if (!mSingleAccountMode) {

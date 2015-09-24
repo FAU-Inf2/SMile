@@ -1092,10 +1092,6 @@ public class MessageList extends K9Activity
                 mMessageListFragment.onRemoteSearch();
                 return true;
             }
-            case R.id.mark_all_as_read: {
-                mMessageListFragment.markAllAsRead();
-                return true;
-            }
             case R.id.show_folder_list: {
                 onShowFolderList();
                 return true;

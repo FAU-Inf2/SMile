@@ -235,7 +235,11 @@ public class MessageListFragment extends Fragment
             public void onClick(View v) {
                 switch (v.getId()) {
                     case R.id.flagged: {
-                        onToggleFlagged();
+                        MessageListItemView itemView = (MessageListItemView)messageListView.findChildViewUnder(v.getX(), v.getY());
+                        LocalMessage message = itemView.getMessage();
+                        Flag flag = Flag.FLAGGED;
+                        boolean flagState = message.isSet(flag);
+                        setFlag(message, flag, !flagState);
                         break;
                     }
                     default: {

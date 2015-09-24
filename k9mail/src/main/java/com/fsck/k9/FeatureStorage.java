@@ -40,13 +40,19 @@ public class FeatureStorage {
     private final MessagingListener listener;
 
     public FeatureStorage(Account account, Context context) throws MessagingException {
-        this.mAccount = account;
         this.absolutePath = context.getFilesDir().getAbsolutePath();
         this.messagingController = MessagingController.getInstance(context);
         this.listener = new MyMessagingListener();
         this.messagingController.addListener(listener);
-        this.localRemindMe = new LocalRemindMe(account.getLocalStore());
-        this.appendText = new IMAPAppendText(account, context, messagingController);
+        if(account != null) {
+            this.mAccount = account;
+            this.localRemindMe = new LocalRemindMe(account.getLocalStore());
+            this.appendText = new IMAPAppendText(account, context, messagingController);
+        } else {
+            mAccount = null;
+            appendText = null;
+            localRemindMe = null;
+        }
     }
 
     @Override
@@ -78,6 +84,10 @@ public class FeatureStorage {
     private class UpdateAddSaveManager extends AsyncTask<Void, Void, Void> {
         @Override
         protected Void doInBackground(Void... params) {
+            if(localRemindMe == null || mAccount == null || appendText == null) {
+                return null;
+            }
+
             if (localFile == null) {
                 String filePath = FilenameUtils.concat(absolutePath, "smilestorage.json");
                 localFile = new File(filePath);

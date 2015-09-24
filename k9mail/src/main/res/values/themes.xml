@@ -60,7 +60,7 @@
         <item name="messageListCheckbox">@drawable/btn_check_message_list_light</item>
         <item name="messageViewBackgroundColor">#ffffffff</item>
         <item name="messageViewAttachmentBackground">@drawable/attachment_text_box_light</item>
-        <item name="messageComposeAddContactImage">@drawable/ic_person_add_white_48dp</item>
+        <item name="messageComposeAddContactImage">@drawable/ic_person_add_black_48dp</item>
         <item name="compatDividerVertical">?attr/messageListDividerColor</item>
         <item name="compatSelectableItemBackground">@android:color/transparent</item>
         <item name="contactPictureFallbackDefaultBackgroundColor">#ffababab</item>

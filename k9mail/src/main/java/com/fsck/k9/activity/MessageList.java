@@ -4,14 +4,12 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences.Editor;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
@@ -38,11 +36,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.fsck.k9.Account;
-import com.fsck.k9.Account.SortType;
 import com.fsck.k9.K9;
 import com.fsck.k9.adapter.DividerItemDecoration;
 import com.fsck.k9.adapter.RecyclerViewAdapter;
-import com.fsck.k9.helper.FolderHelper;
 import com.fsck.k9.preferences.SplitViewMode;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.crypto.PgpData;
@@ -1546,7 +1542,7 @@ public class MessageList extends K9Activity
     private boolean showNextMessage() {
         MessageReference ref = mMessageViewFragment.getMessageReference();
         if (ref != null) {
-            if (mMessageListFragment.openNext(ref)) {
+            if (mMessageListFragment.openNextMessage(ref)) {
                 mLastDirection = NEXT;
                 return true;
             }
@@ -1558,7 +1554,7 @@ public class MessageList extends K9Activity
     private boolean showPreviousMessage() {
         MessageReference ref = mMessageViewFragment.getMessageReference();
         if (ref != null) {
-            if (mMessageListFragment.openPrevious(ref)) {
+            if (mMessageListFragment.openPreviousMessage(ref)) {
                 mLastDirection = PREVIOUS;
                 return true;
             }

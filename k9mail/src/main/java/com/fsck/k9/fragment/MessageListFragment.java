@@ -1788,7 +1788,7 @@ public class MessageListFragment extends Fragment
         }*/
     }
 
-    public boolean openPrevious(MessageReference messageReference) {
+    public boolean openPreviousMessage(MessageReference messageReference) {
         int position = getPosition(messageReference);
         if (position <= 0) {
             return false;
@@ -1798,13 +1798,14 @@ public class MessageListFragment extends Fragment
         return true;
     }
 
-    public boolean openNext(MessageReference messageReference) {
-        /*int position = getPosition(messageReference);
-        if (position < 0 || position == mAdapter.getCount() - 1) {
+    @Override
+    public boolean openNextMessage(MessageReference messageReference) {
+        int position = getPosition(messageReference);
+        if (position < 0 || position == messages.size() - 1) {
             return false;
         }
 
-        openMessageAtPosition(position + 1);*/
+        openMessageAtPosition(position + 1);
         return false;
     }
 
@@ -1828,20 +1829,12 @@ public class MessageListFragment extends Fragment
     }
 
     protected void openMessageAtPosition(int position) {
-        // Scroll message into view if necessary
-        /*int listViewPosition = adapterToListViewPosition(position);
-        if (listViewPosition != AdapterView.INVALID_POSITION &&
-                (listViewPosition < mListView.getFirstVisiblePosition() ||
-                        listViewPosition > mListView.getLastVisiblePosition())) {
-            mListView.setSelection(listViewPosition);
-        }
-
         MessageReference ref = getReferenceForPosition(position);
 
         // For some reason the mListView.setSelection() above won't do anything when we call
         // onOpenMessage() (and consequently mAdapter.notifyDataSetChanged()) right away. So we
         // defer the call using MessageListHandler.
-        mHandler.openMessage(ref);*/
+        mHandler.openMessage(ref);
     }
 
     private int getPosition(MessageReference messageReference) {
@@ -1868,34 +1861,21 @@ public class MessageListFragment extends Fragment
     }
 
     private int getPositionForUniqueId(long uniqueId) {
-        /*for (int position = 0; position < mAdapter.getCount(); position++) {
-            Cursor cursor = (Cursor) mAdapter.getItem(position);
-            if (cursor.getLong(mUniqueIdColumn) == uniqueId) {
+        for (int position = 0; position < messages.size(); position++) {
+            if (messages.get(position).getId() == uniqueId) {
                 return position;
             }
-        }*/
+        }
 
         return AdapterView.INVALID_POSITION;
     }
 
-    private LocalMessage getMessageAtPosition(int adapterPosition) {
-        /*if (adapterPosition == AdapterView.INVALID_POSITION) {
+    private LocalMessage getMessageAtPosition(int position) {
+        if (position < 0 || position >= messages.size()) {
             return null;
         }
 
-        Cursor cursor = (Cursor) mAdapter.getItem(adapterPosition);
-        String uid = cursor.getString(UID_COLUMN);
-
-        Account account = getAccountFromCursor(cursor);
-        long folderId = cursor.getLong(FOLDER_ID_COLUMN);
-        LocalFolder folder = FolderHelper.getFolderById(account, folderId);
-
-        try {
-            return folder.getMessage(uid);
-        } catch (MessagingException e) {
-            throw new RuntimeException(e);
-        }*/
-        return null;
+        return messages.get(position);
     }
 
     private List<LocalMessage> getCheckedMessages() {

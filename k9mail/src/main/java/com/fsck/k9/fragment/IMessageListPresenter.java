@@ -13,6 +13,8 @@ public interface IMessageListPresenter {
     void remindMe(LocalMessage message);
     void reply(LocalMessage message);
     void replyAll(LocalMessage message);
-    void openMessage(MessageReference messageReference);
     void sort(SortType sortType, Boolean ascending);
+    void openMessage(MessageReference messageReference);
+    boolean openNextMessage(MessageReference messageReference);
+    boolean openPreviousMessage(MessageReference messageReference);
 }

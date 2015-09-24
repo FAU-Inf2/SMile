@@ -50,7 +50,7 @@ import java.util.List;
 
 import de.fau.cs.mad.smile.android.R;
 
-public class Messages extends SmileActivity
+public abstract class Messages extends SmileActivity
         implements IMessageListPresenter,
         MessageViewFragmentListener,RemindMeDialog.NoticeDialogListener,
         TimePickerDialog.OnTimeSetListener,

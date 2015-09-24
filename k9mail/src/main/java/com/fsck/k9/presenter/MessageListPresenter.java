@@ -95,6 +95,16 @@ public class MessageListPresenter implements IMessageListPresenter {
     }
 
     @Override
+    public boolean openPreviousMessage(MessageReference messageReference) {
+        return false;
+    }
+
+    @Override
+    public boolean openNextMessage(MessageReference messageReference) {
+        return false;
+    }
+
+    @Override
     public void sort(SortType sortType, Boolean ascending) {
         saveSort(sortType, ascending);
         Collections.sort(messages, getComparator(sortType, ascending));

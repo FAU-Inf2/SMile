@@ -1,7 +1,9 @@
 package com.fsck.k9;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -45,13 +47,19 @@ public class FeatureStorage {
 
     public FeatureStorage(Account account, Context context) throws MessagingException {
         this.mContext = context;
-        this.mAccount = account;
         this.absolutePath = context.getFilesDir().getAbsolutePath();
         this.messagingController = MessagingController.getInstance(context);
         this.listener = new MyMessagingListener();
         this.messagingController.addListener(listener);
-        this.localRemindMe = new LocalRemindMe(account.getLocalStore());
-        this.appendText = new IMAPAppendText(account, context, messagingController);
+        if(account != null) {
+            this.mAccount = account;
+            this.localRemindMe = new LocalRemindMe(account.getLocalStore());
+            this.appendText = new IMAPAppendText(account, context, messagingController);
+        } else {
+            mAccount = null;
+            appendText = null;
+            localRemindMe = null;
+        }
     }
 
     @Override
@@ -83,6 +91,18 @@ public class FeatureStorage {
     private class UpdateAddSaveManager extends AsyncTask<Void, Void, Void> {
         @Override
         protected Void doInBackground(Void... params) {
+            if(localRemindMe == null || mAccount == null || appendText == null) {
+                return null;
+            }
+
+
+            SharedPreferences preferences =  PreferenceManager.getDefaultSharedPreferences(mContext);
+            if (preferences.contains("SmileStorageUpdateTimestamp")) {
+                lastUpdate = preferences.getLong("SmileStorageUpdateTimestamp", -1);
+            } else {
+                setLastUpdate(lastUpdate);
+            }
+
             if (localFile == null) {
                 String filePath = FilenameUtils.concat(absolutePath, "smilestorage.json");
                 localFile = new File(filePath);
@@ -90,7 +110,7 @@ public class FeatureStorage {
 
             if (!localFile.exists()) {
                 try {
-                    lastUpdate = -1;
+                    setLastUpdate(-1);
                     K9.logDebug( "smilestorage.json does not exist -- create file.");
                     localFile.createNewFile();
                 } catch (IOException e) {
@@ -107,7 +127,12 @@ public class FeatureStorage {
                 synchronizeRemindMeFolder();
                 // Is external version newer than the version which is saved locally?
                 String newerMessageId = hasUpdate();
-                if(newerMessageId != null) {
+                if(newerMessageId == null) { //external and internal version are the same
+                    if(!hasLocalChanges()) { // did local version change since last time?
+                        K9.logDebug("No local changes, no update on server, do not update.");
+                        return null; // nope --> do not update
+                    }
+                } else {
                     mergeLocalExternalVersion(newerMessageId); // Merge external and local version
                 }
 
@@ -124,17 +149,25 @@ public class FeatureStorage {
             return null;
         }
 
+        private void setLastUpdate(long newLastUpdate) {
+            lastUpdate = newLastUpdate;
+            SharedPreferences preferences =  PreferenceManager.getDefaultSharedPreferences(mContext);
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putLong("SmileStorageUpdateTimestamp", newLastUpdate);
+            editor.apply();
+        }
+
         /**
          * Checks whether file on server is newer than local version
          * @return MessageId of newest version or null if local version is the newest one
          */
         private String hasUpdate() { //external file has changed
-            K9.logDebug( "Check whether there is a newer version of smilestorage.json on"+
-                    " the mailserver.");
+            K9.logDebug("Check whether there is a newer version of smilestorage.json on" +
+                     " the mailserver.");
 
             String currentMessageId = appendText.getCurrentMessageId();
-            K9.logDebug( "Latest local version is from: " + lastUpdate);
-            K9.logDebug( "Current MessageId from server: " + currentMessageId);
+            K9.logDebug("Latest local version is from: " + lastUpdate);
+            K9.logDebug("Current MessageId from server: " + currentMessageId);
             if (currentMessageId == null)
                 return null;
 
@@ -147,6 +180,22 @@ public class FeatureStorage {
                 Log.e(K9.LOG_TAG, "error in FeatureStorage.hasUpdate", e);
             }
             return null;
+        }
+
+        private Boolean hasLocalChanges(){
+            K9.logDebug("Check for new local RemindMes.");
+            try {
+                List<RemindMe> allRemindMes = localRemindMe.getAllRemindMes();
+                for(RemindMe r : allRemindMes) {
+                    if(r.getLastModified().getTime() > lastUpdate) {
+                        return true;
+                    }
+                }
+            } catch (MessagingException e) {
+                K9.logDebug("Error while getting all RemindMes.");
+            }
+
+            return false;
         }
 
         /**
@@ -165,9 +214,9 @@ public class FeatureStorage {
                             SmileFeaturesJsonRoot.class);
                 } catch (Exception e) {
                     // currentContent was not valid or was null -- nothing to merge
-                    K9.logDebug( "External version was empty/invalid -- nothing to merge.");
-                    lastUpdate = Long.parseLong(newerMessageId.replace(
-                            appendText.MESSAGE_ID_MAGIC_STRING, ""));
+                    K9.logDebug("External version was empty/invalid -- nothing to merge.");
+                    setLastUpdate(Long.parseLong(newerMessageId.replace(
+                            appendText.MESSAGE_ID_MAGIC_STRING, "")));
                     return;
                 }
                 try {
@@ -179,8 +228,8 @@ public class FeatureStorage {
                     externalRoot.setAllRemindMes(mergeRemindMes(externalRoot.getAllRemindMes(),
                             null));
                     objectMapper.writeValue(localFile, externalRoot);
-                    lastUpdate = Long.parseLong(newerMessageId.replace(
-                            appendText.MESSAGE_ID_MAGIC_STRING, ""));
+                    setLastUpdate(Long.parseLong(newerMessageId.replace(
+                            appendText.MESSAGE_ID_MAGIC_STRING, "")));
                     return;
                 }
 
@@ -209,8 +258,8 @@ public class FeatureStorage {
                 K9.logDebug( "New version from mergeLocalExternalVersion(): " + objectMapper.
                         writerWithDefaultPrettyPrinter().writeValueAsString(internalRoot));
                 objectMapper.writeValue(localFile, internalRoot);
-                lastUpdate = Long.parseLong(newerMessageId.replace(
-                        appendText.MESSAGE_ID_MAGIC_STRING, ""));
+                setLastUpdate(Long.parseLong(newerMessageId.replace(
+                        appendText.MESSAGE_ID_MAGIC_STRING, "")));
 
                 } catch (IOException e) {
                     Log.e(K9.LOG_TAG, "Error in jackson mapper while writing to file: " +
@@ -401,7 +450,7 @@ public class FeatureStorage {
             try {
                 K9.logDebug( "New content to append: " + newContent);
                 long newTimestamp = appendText.appendNewContent(newContent);
-                lastUpdate = newTimestamp;
+                setLastUpdate(newTimestamp);
             } catch (MessagingException e) {
                 Log.e(K9.LOG_TAG, "Failed to append new content from FeatureStorage.");
                 return;

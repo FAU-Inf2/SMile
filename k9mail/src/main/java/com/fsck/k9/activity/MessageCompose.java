@@ -3,18 +3,15 @@ package com.fsck.k9.activity;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
-import android.app.PendingIntent;
 import android.content.ClipData;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentSender;
 import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.Parcelable;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
@@ -56,8 +53,9 @@ import com.fsck.k9.adapter.IdentityAdapter;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.controller.MessagingListener;
 import com.fsck.k9.crypto.OpenPgpMessageCompose;
-import com.fsck.k9.crypto.OpenPgpSignEncryptCallback;
 import com.fsck.k9.crypto.PgpData;
+import com.fsck.k9.crypto.SmimeMessageCompose;
+import com.fsck.k9.crypto.SmimeSignEncryptCallback;
 import com.fsck.k9.fragment.ProgressDialogFragment;
 import com.fsck.k9.helper.ContactItem;
 import com.fsck.k9.helper.Contacts;
@@ -92,18 +90,11 @@ import org.htmlcleaner.CleanerProperties;
 import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.SimpleHtmlSerializer;
 import org.htmlcleaner.TagNode;
-import org.openintents.openpgp.OpenPgpError;
-import org.openintents.openpgp.util.OpenPgpApi;
 import org.openintents.openpgp.util.OpenPgpServiceConnection;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1164,7 +1155,7 @@ public class MessageCompose extends K9Activity implements View.OnClickListener,
         return createMessageBuilder(true).build();
     }
 
-    private MimeMessage createMessage() throws MessagingException {
+    protected MimeMessage createMessage() throws MessagingException {
         return createMessageBuilder(false).build();
     }
 
@@ -1310,7 +1301,8 @@ public class MessageCompose extends K9Activity implements View.OnClickListener,
                 openPgpMessageCompose.handlePgp(mEncryptCheckbox.isChecked(), mCryptoSignatureCheckbox.isChecked());
                 break;
             case SMIME:
-                handleSmime();
+                SmimeMessageCompose smimeMessageCompose = new SmimeMessageCompose(mEncryptCheckbox.isChecked(), mCryptoSignatureCheckbox.isChecked(), getRecipientAddresses(), mIdentity, sMimeApi, mHandler);
+                smimeMessageCompose.handleSmime();
                 break;
             case NONE:
                 return false;
@@ -1319,123 +1311,6 @@ public class MessageCompose extends K9Activity implements View.OnClickListener,
         // onSend() is called again in OpenPgpSignEncryptCallback and with
         // encryptedData set in pgpData!
         return true;
-    }
-
-    private void handleSmime() {
-        if (mCryptoSignatureCheckbox.isChecked() && mEncryptCheckbox.isChecked()) {
-            handleSmimeSignAndEncrypt();
-            return;
-        }
-
-        if (mCryptoSignatureCheckbox.isChecked()) {
-            handleSmimeSign();
-            return;
-        }
-
-        if (mEncryptCheckbox.isChecked()) {
-            handleSmimeEncrypt();
-        }
-    }
-
-    private void handleSmimeEncrypt() {
-        List<String> recipients = new ArrayList<>();
-
-        for (Address recipient : this.mToView.getRecipients()) {
-            recipients.add(recipient.getAddress());
-        }
-
-        final Intent intent = SMimeApi.encryptMessage(recipients);
-        executeSmimeMethod(intent);
-    }
-
-    private void handleSmimeSignAndEncrypt() {
-        List<String> recipients = new ArrayList<>();
-
-        for (Address recipient : this.mToView.getRecipients()) {
-            recipients.add(recipient.getAddress());
-        }
-
-        final Intent intent = SMimeApi.signAndEncryptMessage(this.mIdentity.getEmail(), recipients);
-        executeSmimeMethod(intent);
-    }
-
-    private void handleSmimeSign() {
-        final Intent intent = SMimeApi.signMessage(this.mIdentity.getEmail());
-        executeSmimeMethod(intent);
-    }
-
-    private PipedInputStream getSmimeInputStream() {
-        final PipedInputStream pipedInputStream = new PipedInputStream();
-        // TODO: async task/runnable class?
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    final PipedOutputStream out = new PipedOutputStream(pipedInputStream);
-                    currentMessage = createMessage();
-                    if(currentMessage != null) {
-                        currentMessage.writeTo(out); // TODO: only send body part
-                    }
-                } catch (Exception e) {
-                    Log.e(K9.LOG_TAG, "Failed to write: ", e);
-                }
-            }
-        }).start();
-
-        return pipedInputStream;
-    }
-
-    private void executeSmimeMethod(final Intent intent) {
-        final PipedInputStream pipedInputStream = getSmimeInputStream();
-        final PipedOutputStream pipedOutputStream = new PipedOutputStream();
-        final CountDownLatch latch = new CountDownLatch(1);
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    PipedInputStream inputStream = new PipedInputStream(pipedOutputStream);
-                    MimeMessage resultMessage = new MimeMessage(inputStream, true);
-                    latch.await();
-                    if(currentMessage != null) {
-                        currentMessage = resultMessage;
-                        onSend();
-                    }
-                } catch (IOException | MessagingException | InterruptedException e) {
-                    Log.e(K9.LOG_TAG, "error retrieving processed message from smime service", e);
-                }
-            }
-        }).start();
-
-        if(sMimeApi != null) {
-            sMimeApi.executeApiAsync(intent, pipedInputStream, pipedOutputStream, new SmimeSignEncryptCallback(latch));
-        } else {
-            Toast.makeText(this, "SMIME-API was null", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private class SmimeSignEncryptCallback implements SMimeApi.ISMimeCallback {
-        private final CountDownLatch latch;
-
-        public SmimeSignEncryptCallback(CountDownLatch latch) {
-            this.latch = latch;
-        }
-
-        @Override
-        public void onReturn(Intent result) {
-            K9.logDebug( "SMime api returned: " + result);
-            final int resultCode = result.getIntExtra(SMimeApi.EXTRA_RESULT_CODE, SMimeApi.RESULT_CODE_ERROR);
-            switch (resultCode) {
-                case SMimeApi.RESULT_CODE_SUCCESS:
-                    latch.countDown();
-                    K9.logDebug( "crypto operation success");
-                    break;
-                case SMimeApi.RESULT_CODE_ERROR:
-                    currentMessage = null;
-                    latch.countDown();
-                    K9.logDebug( "crypto operation fail");
-                    break;
-            }
-        }
     }
 
     private void onDiscard() {
@@ -3459,6 +3334,12 @@ public class MessageCompose extends K9Activity implements View.OnClickListener,
         @Override
         public void onLoaderReset(Loader<Attachment> loader) {
             onFetchAttachmentFinished();
+        }
+    }
+
+    protected void setMessage(MimeMessage message) {
+        if(message != null) {
+            currentMessage = message;
         }
     }
 }

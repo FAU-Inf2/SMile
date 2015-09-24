@@ -183,7 +183,7 @@ public class MessageListItemView extends CardView {
 
         TypedValue outValue = new TypedValue();
         getContext().getTheme().resolveAttribute(res, outValue, true);
-        setBackgroundColor(outValue.data);
+        //setBackgroundColor(outValue.data);
 
         // Thread count
         /*if (threadCount > 1) {

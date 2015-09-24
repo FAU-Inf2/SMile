@@ -1788,6 +1788,7 @@ public class MessageListFragment extends Fragment
         }*/
     }
 
+    @Override
     public boolean openPreviousMessage(MessageReference messageReference) {
         return presenter.openPreviousMessage(messageReference);
     }
@@ -1797,36 +1798,14 @@ public class MessageListFragment extends Fragment
         return presenter.openNextMessage(messageReference);
     }
 
+    @Override
     public boolean isFirst(MessageReference messageReference) {
-        return messages.size() == 0 || messageReference.equals(getReferenceForPosition(0));
+        return presenter.isFirst(messageReference);
     }
 
+    @Override
     public boolean isLast(MessageReference messageReference) {
-        //return mAdapter.isEmpty() || messageReference.equals(getReferenceForPosition(mAdapter.getCount() - 1));
-        return false;
-    }
-
-    private MessageReference getReferenceForPosition(int position) {
-        LocalMessage message = getMessageAtPosition(position);
-        if(message == null) {
-            return null;
-        }
-
-        return message.makeMessageReference();
-    }
-
-    protected void openMessageAtPosition(int position) {
-        MessageReference ref = getReferenceForPosition(position);
-
-        // For some reason the mListView.setSelection() above won't do anything when we call
-        // onOpenMessage() (and consequently mAdapter.notifyDataSetChanged()) right away. So we
-        // defer the call using MessageListHandler.
-        mHandler.openMessage(ref);
-    }
-
-    private int getPosition(MessageReference messageReference) {
-        LocalMessage message = messageReference.restoreToLocalMessage(getContext());
-        return getPositionForUniqueId(message.getId());
+        return presenter.isLast(messageReference);
     }
 
     public void onReverseSort() {
@@ -1845,16 +1824,6 @@ public class MessageListFragment extends Fragment
         //int listViewPosition = mListView.getSelectedItemPosition();
         //return listViewToAdapterPosition(listViewPosition);
         return -1;
-    }
-
-    private int getPositionForUniqueId(long uniqueId) {
-        for (int position = 0; position < messages.size(); position++) {
-            if (messages.get(position).getId() == uniqueId) {
-                return position;
-            }
-        }
-
-        return AdapterView.INVALID_POSITION;
     }
 
     private LocalMessage getMessageAtPosition(int position) {

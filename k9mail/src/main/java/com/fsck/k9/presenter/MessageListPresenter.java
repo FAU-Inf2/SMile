@@ -119,6 +119,16 @@ public class MessageListPresenter implements IMessageListPresenter {
         return false;
     }
 
+    @Override
+    public boolean isFirst(MessageReference messageReference) {
+        return messages.isEmpty() || messageReference.equals(getReferenceForPosition(0));
+    }
+
+    @Override
+    public boolean isLast(MessageReference messageReference) {
+        return messages.isEmpty() || messageReference.equals(getReferenceForPosition(messages.size() - 1));
+    }
+
     private int getPosition(MessageReference messageReference) {
         LocalMessage message = messageReference.restoreToLocalMessage(context);
         return getPositionForUniqueId(message.getId());
@@ -135,8 +145,17 @@ public class MessageListPresenter implements IMessageListPresenter {
     }
 
     private void openMessageAtPosition(int position) {
-        MessageReference ref = messages.get(position).makeMessageReference();
+        MessageReference ref = getReferenceForPosition(position);
         handler.openMessage(ref);
+    }
+
+    private MessageReference getReferenceForPosition(int position) {
+        LocalMessage message = messages.get(position);
+        if(message == null) {
+            return null;
+        }
+
+        return message.makeMessageReference();
     }
 
     @Override

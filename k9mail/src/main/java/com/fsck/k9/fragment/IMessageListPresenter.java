@@ -17,4 +17,6 @@ public interface IMessageListPresenter {
     void openMessage(MessageReference messageReference);
     boolean openNextMessage(MessageReference messageReference);
     boolean openPreviousMessage(MessageReference messageReference);
+    boolean isFirst(MessageReference messageReference);
+    boolean isLast(MessageReference messageReference);
 }

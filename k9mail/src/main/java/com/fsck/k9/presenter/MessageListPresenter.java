@@ -9,6 +9,7 @@ import com.fsck.k9.Account.SortType;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.activity.MessageReference;
+import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.fragment.IMessageListPresenter;
 import com.fsck.k9.fragment.MessageListHandler;
 import com.fsck.k9.mail.Flag;
@@ -31,10 +32,12 @@ public class MessageListPresenter implements IMessageListPresenter {
     final Map<SortType, Comparator<LocalMessage>> sortMap;
     private IMessageListView messageListView;
     private List<LocalMessage> messages;
+    private boolean mThreadedList;
     private final Account account;
     private final LocalFolder folder;
     private final MessageListHandler handler;
     private final Context context;
+    private final MessagingController mController;
 
     public MessageListPresenter(final Context context, final Account account, final LocalFolder folder, final MessageListHandler handler) {
         this.context = context;
@@ -53,6 +56,7 @@ public class MessageListPresenter implements IMessageListPresenter {
         this.account = account;
         this.folder = folder;
         this.handler = handler;
+        this.mController = MessagingController.getInstance(context);
         loadMessages(folder);
     }
 
@@ -60,6 +64,10 @@ public class MessageListPresenter implements IMessageListPresenter {
     public void setView(IMessageListView messageListView) {
         this.messageListView = messageListView;
         this.messageListView.showMessageList(messages);
+    }
+
+    public void enableThreadedList(boolean enable) {
+        mThreadedList = enable;
     }
 
     @Override
@@ -90,6 +98,40 @@ public class MessageListPresenter implements IMessageListPresenter {
     @Override
     public void replyAll(LocalMessage message) {
 
+    }
+
+    @Override
+    public void setFlag(LocalMessage message, Flag flag) {
+        boolean flagState = message.isSet(flag);
+        setFlag(message, flag, !flagState);
+    }
+
+    private void setFlag(LocalMessage message, final Flag flag, final boolean newState) {
+        if(message == null) {
+            return;
+        }
+
+        Account account = message.getAccount();
+        LocalFolder folder = message.getFolder();
+        int threadCount = 0;
+
+        try {
+            threadCount = folder.getThreadCount(message.getRootId());
+        } catch (MessagingException e) {
+            Log.e(K9.LOG_TAG, "error in setFlag ", e);
+        }
+
+        if (mThreadedList && threadCount > 1) {
+            long threadRootId = message.getRootId();
+            mController.setFlagForThreads(account,
+                    Collections.singletonList(threadRootId), flag, newState);
+        } else {
+            long id = message.getId();
+            mController.setFlag(account, Collections.singletonList(id), flag,
+                    newState);
+        }
+
+        // TODO: selected computeBatchDirection();
     }
 
     @Override

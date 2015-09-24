@@ -5,18 +5,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.CursorLoader;
-import android.support.v4.content.Loader;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.view.ActionMode;
@@ -58,10 +52,8 @@ import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.presenter.MessageListPresenter;
-import com.fsck.k9.provider.EmailProvider;
 import com.fsck.k9.search.LocalSearch;
 import com.fsck.k9.search.SearchSpecification;
-import com.fsck.k9.search.SqlQueryBuilder;
 import com.fsck.k9.view.IMessageListView;
 import com.fsck.k9.view.MessageListItemView;
 import com.fsck.k9.view.MessageListView;
@@ -69,7 +61,6 @@ import com.fsck.k9.view.RefreshableMessageList;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -219,16 +210,6 @@ public class MessageListFragment extends Fragment
 
         mPullToRefreshView = findById(view, R.id.swipeRefreshLayout);
         messageListView = mPullToRefreshView.getMessageListView();
-        /*messageListView.addOnItemTouchListener(
-                new RecyclerItemClickListener(getContext(), new RecyclerItemClickListener.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(View view, int position) {
-                        LocalMessage message = messages.get(position);
-                        Log.d(K9.LOG_TAG, message.toString());
-                        presenter.openMessage(message.makeMessageReference());
-                    }
-                })
-        );*/
 
         final MessageAdapter messageAdapter = new MessageAdapter(messages, new View.OnClickListener() {
             @Override
@@ -237,9 +218,7 @@ public class MessageListFragment extends Fragment
                     case R.id.flagged: {
                         MessageListItemView itemView = (MessageListItemView)messageListView.findChildViewUnder(v.getX(), v.getY());
                         LocalMessage message = itemView.getMessage();
-                        Flag flag = Flag.FLAGGED;
-                        boolean flagState = message.isSet(flag);
-                        setFlag(message, flag, !flagState);
+                        presenter.setFlag(message, Flag.FLAGGED);
                         break;
                     }
                     default: {
@@ -250,6 +229,7 @@ public class MessageListFragment extends Fragment
                 }
             }
         });
+
         messageListView.setAdapter(messageAdapter);
         FloatingActionButton actionButton = findById(view, R.id.fab);
         actionButton.setOnClickListener(new View.OnClickListener() {
@@ -473,7 +453,7 @@ public class MessageListFragment extends Fragment
     private void decodeArguments() {
         Bundle args = getArguments();
 
-        mThreadedList = args.getBoolean(ARG_THREADED_LIST, false);
+        enableThreadedList(args.getBoolean(ARG_THREADED_LIST, false));
         mIsThreadDisplay = args.getBoolean(ARG_IS_THREAD_DISPLAY, false);
         mSearch = args.getParcelable(ARG_SEARCH);
         mTitle = mSearch.getName();
@@ -729,36 +709,50 @@ public class MessageListFragment extends Fragment
         changeSort(sorts[curIndex]);
     }
 
+    @Override
     public void move(LocalMessage message, String destFolder) {
         onMove(message);
     }
 
+    @Override
     public void delete(LocalMessage message){
         onDelete(message);
     }
 
+    @Override
     public void archive(LocalMessage message) {
         onArchive(message);
     }
 
+    @Override
     public void remindMe(LocalMessage message) {
         onRemindMe(message);
     }
 
+    @Override
     public void reply(LocalMessage message) {
         onReply(message);
     }
 
+    @Override
     public void replyAll(LocalMessage message){
         onReplyAll(message);
     }
 
+    @Override
     public void openMessage(MessageReference messageReference) {
         mHandler.openMessage(messageReference);
     }
 
+    @Override
     public void sort(SortType sortType, Boolean ascending) {
         presenter.sort(sortType, ascending);
+    }
+
+    @Override
+    public void enableThreadedList(boolean enable) {
+        mThreadedList = enable;
+        presenter.enableThreadedList(enable);
     }
 
     /**
@@ -1224,8 +1218,7 @@ public class MessageListFragment extends Fragment
 
     private void toggleMessageFlagWithAdapterPosition(int adapterPosition) {
         LocalMessage message = getMessageAtPosition(adapterPosition);
-        boolean flagged = message.isSet(Flag.FLAGGED);
-        setFlag(message, Flag.FLAGGED, !flagged);
+        setFlag(message, Flag.FLAGGED);
     }
 
     private void toggleMessageSelectWithAdapterPosition(int adapterPosition) {
@@ -1322,32 +1315,9 @@ public class MessageListFragment extends Fragment
         mActionModeCallback.showFlag(isBatchFlag);*/
     }
 
-    private void setFlag(LocalMessage message, final Flag flag, final boolean newState) {
-        if(message == null) {
-            return;
-        }
-
-        Account account = message.getAccount();
-        LocalFolder folder = message.getFolder();
-        int threadCount = 0;
-
-        try {
-            threadCount = folder.getThreadCount(message.getRootId());
-        } catch (MessagingException e) {
-            Log.e(K9.LOG_TAG, "error in setFlag ", e);
-        }
-
-        if (mThreadedList && threadCount > 1) {
-            long threadRootId = message.getRootId();
-            mController.setFlagForThreads(account,
-                    Collections.singletonList(threadRootId), flag, newState);
-        } else {
-            long id = message.getId();
-            mController.setFlag(account, Collections.singletonList(id), flag,
-                    newState);
-        }
-
-        computeBatchDirection();
+    @Override
+    public void setFlag(LocalMessage message, final Flag flag) {
+        presenter.setFlag(message, flag);
     }
 
     private void setFlagForSelected(final Flag flag, final boolean newState) {
@@ -1897,8 +1867,7 @@ public class MessageListFragment extends Fragment
             return;
         }
 
-        boolean flagState = message.isSet(flag);
-        setFlag(message, flag, !flagState);
+        setFlag(message, flag);
     }
 
     public void onMove() {

@@ -2,6 +2,7 @@ package com.fsck.k9.fragment;
 
 import com.fsck.k9.Account.SortType;
 import com.fsck.k9.activity.MessageReference;
+import com.fsck.k9.mail.Flag;
 import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.view.IMessageListView;
 
@@ -19,4 +20,6 @@ public interface IMessageListPresenter {
     boolean openPreviousMessage(MessageReference messageReference);
     boolean isFirst(MessageReference messageReference);
     boolean isLast(MessageReference messageReference);
+    void setFlag(LocalMessage message, Flag flag);
+    void enableThreadedList(boolean enable);
 }

@@ -16,9 +16,9 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     public static class MessageViewHolder extends RecyclerView.ViewHolder {
         MessageListItemView itemView;
 
-        public MessageViewHolder(View itemView) {
+        public MessageViewHolder(MessageListItemView itemView) {
             super(itemView);
-            this.itemView = (MessageListItemView)itemView;
+            this.itemView = itemView;
         }
 
         public MessageListItemView getItemView() {
@@ -27,15 +27,19 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     }
 
     private final List<LocalMessage> mMessages;
+    private final View.OnClickListener onClickListener;
 
-    public MessageAdapter(final List<LocalMessage> messages) {
+    public MessageAdapter(final List<LocalMessage> messages, View.OnClickListener onClickListener) {
         this.mMessages = messages;
+        this.onClickListener = onClickListener;
     }
 
     @Override
     public MessageViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        View view = inflater.inflate(R.layout.message_list_item, parent, false);
+        MessageListItemView view = (MessageListItemView)inflater.inflate(R.layout.message_list_item, parent, false);
+        view.setOnClickListener(onClickListener);
+        view.getFlagged().setOnClickListener(onClickListener);
         MessageViewHolder holder = new MessageViewHolder(view);
         return holder;
     }

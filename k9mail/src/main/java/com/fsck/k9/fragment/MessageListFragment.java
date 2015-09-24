@@ -63,6 +63,7 @@ import com.fsck.k9.search.LocalSearch;
 import com.fsck.k9.search.SearchSpecification;
 import com.fsck.k9.search.SqlQueryBuilder;
 import com.fsck.k9.view.IMessageListView;
+import com.fsck.k9.view.MessageListItemView;
 import com.fsck.k9.view.MessageListView;
 import com.fsck.k9.view.RefreshableMessageList;
 
@@ -218,7 +219,7 @@ public class MessageListFragment extends Fragment
 
         mPullToRefreshView = findById(view, R.id.swipeRefreshLayout);
         messageListView = mPullToRefreshView.getMessageListView();
-        messageListView.addOnItemTouchListener(
+        /*messageListView.addOnItemTouchListener(
                 new RecyclerItemClickListener(getContext(), new RecyclerItemClickListener.OnItemClickListener() {
                     @Override
                     public void onItemClick(View view, int position) {
@@ -227,9 +228,24 @@ public class MessageListFragment extends Fragment
                         presenter.openMessage(message.makeMessageReference());
                     }
                 })
-        );
+        );*/
 
-        final MessageAdapter messageAdapter = new MessageAdapter(messages);
+        final MessageAdapter messageAdapter = new MessageAdapter(messages, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                switch (v.getId()) {
+                    case R.id.flagged: {
+                        onToggleFlagged();
+                        break;
+                    }
+                    default: {
+                        MessageListItemView itemView = (MessageListItemView)v;
+                        LocalMessage message = itemView.getMessage();
+                        presenter.openMessage(message.makeMessageReference());
+                    }
+                }
+            }
+        });
         messageListView.setAdapter(messageAdapter);
         FloatingActionButton actionButton = findById(view, R.id.fab);
         actionButton.setOnClickListener(new View.OnClickListener() {
@@ -1205,7 +1221,7 @@ public class MessageListFragment extends Fragment
     private void toggleMessageFlagWithAdapterPosition(int adapterPosition) {
         LocalMessage message = getMessageAtPosition(adapterPosition);
         boolean flagged = message.isSet(Flag.FLAGGED);
-        setFlag(adapterPosition, Flag.FLAGGED, !flagged);
+        setFlag(message, Flag.FLAGGED, !flagged);
     }
 
     private void toggleMessageSelectWithAdapterPosition(int adapterPosition) {
@@ -1302,12 +1318,7 @@ public class MessageListFragment extends Fragment
         mActionModeCallback.showFlag(isBatchFlag);*/
     }
 
-    private void setFlag(int adapterPosition, final Flag flag, final boolean newState) {
-        /*if (adapterPosition == AdapterView.INVALID_POSITION) {
-            return;
-        }
-
-        LocalMessage message = getMessageAtPosition(adapterPosition);
+    private void setFlag(LocalMessage message, final Flag flag, final boolean newState) {
         if(message == null) {
             return;
         }
@@ -1332,7 +1343,7 @@ public class MessageListFragment extends Fragment
                     newState);
         }
 
-        computeBatchDirection();*/
+        computeBatchDirection();
     }
 
     private void setFlagForSelected(final Flag flag, final boolean newState) {
@@ -1883,7 +1894,7 @@ public class MessageListFragment extends Fragment
         }
 
         boolean flagState = message.isSet(flag);
-        setFlag(adapterPosition, flag, !flagState);
+        setFlag(message, flag, !flagState);
     }
 
     public void onMove() {

@@ -90,11 +90,6 @@ public class MessageListItemView extends SwipeLayout {
         setFontSize();
         final int previewLines = K9.messageListPreviewLines();
         preview.setLines(Math.max(previewLines, 1));
-        flagged.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-            }
-        });
 
         this.addDrag(SwipeLayout.DragEdge.Left, findViewById(R.id.pull_out));
         this.addDrag(SwipeLayout.DragEdge.Right, findViewById(R.id.delete));

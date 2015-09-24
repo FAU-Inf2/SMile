@@ -89,7 +89,7 @@ public class FeatureStorage {
             SharedPreferences preferences =  PreferenceManager.getDefaultSharedPreferences(mContext);
             if (preferences.contains("SmileStorageUpdateTimestamp")) {
                 lastUpdate = preferences.getLong("SmileStorageUpdateTimestamp", -1);
-            } {
+            } else {
                 setLastUpdate(lastUpdate);
             }
 

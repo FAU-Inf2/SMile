@@ -187,7 +187,6 @@ public abstract class Message implements Part, CompositeBody {
         return mFlags.contains(flag);
     }
 
-
     public void destroy() throws MessagingException {}
 
     @Override

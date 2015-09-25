@@ -100,15 +100,15 @@ public class RemindMeDialog extends DialogFragment {
             int iconResourceId = (int) parent.getItemAtPosition(position);
             RemindMe remindMe = getRemindMe();
             switch (iconResourceId) {
-                case R.drawable.ic_remindme_later_today:
+                case R.drawable.ic_remindme_later_today_black:
                     Log.d(K9.LOG_TAG, "later today was clicked");
                     remindMe.setRemindMeInterval(RemindMe.RemindMeInterval.LATER);
                     break;
-                case R.drawable.ic_remindme_this_evening:
+                case R.drawable.ic_remindme_this_evening_black:
                     Log.d(K9.LOG_TAG, "this evening was clicked");
                     remindMe.setRemindMeInterval(RemindMe.RemindMeInterval.EVENING);
                     break;
-                case R.drawable.ic_remindme_tomorrow:
+                case R.drawable.ic_remindme_tomorrow_black:
                     Log.d(K9.LOG_TAG, "tomorrow was clicked");
                     remindMe.setRemindMeInterval(RemindMe.RemindMeInterval.TOMORROW);
                     break;
@@ -116,11 +116,11 @@ public class RemindMeDialog extends DialogFragment {
                     Log.d(K9.LOG_TAG, "next week was clicked");
                     remindMe.setRemindMeInterval(RemindMe.RemindMeInterval.NEXT_WEEK);
                     break;
-                case R.drawable.ic_remindme_next_month:
+                case R.drawable.ic_remindme_next_month_black:
                     Log.d(K9.LOG_TAG, "next month was clicked");
                     remindMe.setRemindMeInterval(RemindMe.RemindMeInterval.NEXT_MONTH);
                     break;
-                case R.drawable.ic_remindme_custom:
+                case R.drawable.ic_remindme_custom_black:
                     Log.d(K9.LOG_TAG, "custom was clicked");
                     remindMe.setRemindMeInterval(RemindMe.RemindMeInterval.CUSTOM);
                     break;
@@ -161,7 +161,6 @@ public class RemindMeDialog extends DialogFragment {
             if (convertView == null) {
                 // if it's not recycled, initialize some attributes
                 imageView = new ImageView(context);
-                imageView.setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN);
                 Resources resources = context.getResources();
                 DisplayMetrics metrics = resources.getDisplayMetrics();
                 int width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80, metrics);
@@ -173,7 +172,7 @@ public class RemindMeDialog extends DialogFragment {
                 imageView = (ImageView) convertView;
             }
 
-            final int iconId = icons.getResourceId(position, R.drawable.ic_remindme_tomorrow);
+            final int iconId = icons.getResourceId(position, R.drawable.ic_remindme_tomorrow_black);
             imageView.setImageResource(iconId);
             return imageView;
 

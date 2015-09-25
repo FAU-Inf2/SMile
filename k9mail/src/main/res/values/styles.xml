@@ -19,6 +19,19 @@
         <item name="textAppearanceListItem">@android:style/TextAppearance.Small</item>
     </style>
 
+    <style name="SMile.SpinnerItem" parent="Widget.AppCompat.TextView.SpinnerItem">
+        <item name="android:textAppearance">@style/TextAppearance.SMile.Widget.TextView.SpinnerItem</item>
+    </style>
+
+    <style name="Widget.SMile.Spinner" parent="Widget.AppCompat.Spinner">
+        <item name="colorControlNormal">@color/accent</item>
+    </style>
+
+    <style name="TextAppearance.SMile.Widget.TextView.SpinnerItem" parent="@style/TextAppearance.AppCompat.Widget.TextView.SpinnerItem">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+
     <!--
       Fix a bug with AutoCompleteTextView
       See https://code.google.com/p/android/issues/detail?id=5237
@@ -34,6 +47,7 @@
     <style name="Widget.K9.Toolbar" parent="Widget.AppCompat.Toolbar">
         <item name="android:background">?attr/colorPrimary</item>
         <item name="theme">@style/ThemeOverlay.AppCompat.Dark.ActionBar</item>
+        <item name="popupTheme">@style/ThemeOverlay.AppCompat.Dark</item>
     </style>
 
     <style name="UnreadWidgetContainer">

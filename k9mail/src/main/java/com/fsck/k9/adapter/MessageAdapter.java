@@ -9,10 +9,16 @@ import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.view.MessageListItemView;
 
 import java.util.List;
+import com.daimajia.swipe.adapters.RecyclerSwipeAdapter;
 
 import de.fau.cs.mad.smile.android.R;
 
-public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageViewHolder> {
+public class MessageAdapter extends RecyclerSwipeAdapter<MessageAdapter.MessageViewHolder> {
+    @Override
+    public int getSwipeLayoutResourceId(int i) {
+        return R.id.swipe_layout;
+    }
+
     public static class MessageViewHolder extends RecyclerView.ViewHolder {
         MessageListItemView itemView;
 
@@ -38,8 +44,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     public MessageViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         MessageListItemView view = (MessageListItemView)inflater.inflate(R.layout.message_list_item, parent, false);
-        view.setOnClickListener(onClickListener);
-        view.getFlagged().setOnClickListener(onClickListener);
         MessageViewHolder holder = new MessageViewHolder(view);
         return holder;
     }
@@ -47,7 +51,10 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     @Override
     public void onBindViewHolder(MessageViewHolder holder, final int position) {
         final LocalMessage message = mMessages.get(position);
-        holder.getItemView().setMessage(message);
+        MessageListItemView itemView = holder.getItemView();
+        itemView.setOnClickListener(onClickListener);
+        itemView.getFlagged().setOnClickListener(onClickListener);
+        itemView.setMessage(message);
     }
 
     @Override

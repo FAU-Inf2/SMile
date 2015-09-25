@@ -14,11 +14,14 @@ import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.view.ActionMode;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -210,25 +213,10 @@ public class MessageListFragment extends Fragment
 
         mPullToRefreshView = findById(view, R.id.swipeRefreshLayout);
         messageListView = mPullToRefreshView.getMessageListView();
+        View.OnClickListener clickListener = new MessageItemViewOnClickListener();
+        //messageListView.addOnItemTouchListener(new MessageItemViewOnTouchListener(mContext, clickListener));
 
-        final MessageAdapter messageAdapter = new MessageAdapter(messages, new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                switch (v.getId()) {
-                    case R.id.flagged: {
-                        MessageListItemView itemView = (MessageListItemView)messageListView.findChildViewUnder(v.getX(), v.getY());
-                        LocalMessage message = itemView.getMessage();
-                        presenter.setFlag(message, Flag.FLAGGED);
-                        break;
-                    }
-                    default: {
-                        MessageListItemView itemView = (MessageListItemView)v;
-                        LocalMessage message = itemView.getMessage();
-                        presenter.openMessage(message.makeMessageReference());
-                    }
-                }
-            }
-        });
+        final MessageAdapter messageAdapter = new MessageAdapter(messages, clickListener);
 
         messageListView.setAdapter(messageAdapter);
         FloatingActionButton actionButton = findById(view, R.id.fab);
@@ -2643,6 +2631,70 @@ public class MessageListFragment extends Fragment
             if (mActionMode != null) {
                 mFlag.setVisible(show);
                 mUnflag.setVisible(!show);
+            }
+        }
+    }
+
+    private static class MessageItemViewOnTouchListener implements RecyclerView.OnItemTouchListener {
+        private final Context context;
+        private final View.OnClickListener clickListener;
+        private final GestureDetector detector;
+
+        public MessageItemViewOnTouchListener(Context context, View.OnClickListener clickListener) {
+            this.context = context;
+            this.clickListener = clickListener;
+            detector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
+                @Override
+                public boolean onDown(MotionEvent e) {
+                    return true;
+                }
+
+                @Override
+                public boolean onSingleTapUp(MotionEvent e) {
+                    return true;
+                }
+            });
+        }
+
+        @Override
+        public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
+            View view = rv.findChildViewUnder(e.getX(), e.getY());
+            if(view instanceof MessageListItemView && detector.onTouchEvent(e)) {
+                if(clickListener != null) {
+                    clickListener.onClick(view);
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        @Override
+        public void onTouchEvent(RecyclerView rv, MotionEvent e) {
+        }
+
+        @Override
+        public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+            K9.logDebug("onRequestDisallow");
+        }
+    }
+
+    private class MessageItemViewOnClickListener implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()) {
+                case R.id.flagged: {
+                    MessageListItemView itemView = (MessageListItemView)messageListView.findChildViewUnder(v.getX(), v.getY());
+                    LocalMessage message = itemView.getMessage();
+                    presenter.setFlag(message, Flag.FLAGGED);
+                    break;
+                }
+                default: {
+                    MessageListItemView itemView = (MessageListItemView)v;
+                    LocalMessage message = itemView.getMessage();
+                    presenter.openMessage(message.makeMessageReference());
+                }
             }
         }
     }

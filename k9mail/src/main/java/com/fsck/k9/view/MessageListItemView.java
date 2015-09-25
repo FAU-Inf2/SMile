@@ -98,6 +98,7 @@ public class MessageListItemView extends CardView {
         this.swipeLayout.addDrag(SwipeLayout.DragEdge.Right, findViewById(R.id.delete));
         this.swipeLayout.addRevealListener(R.id.delete, new DeleteRevealListener());
         this.swipeLayout.addRevealListener(R.id.pull_out, new LeftToRightRevealListener());
+        setClickable(true);
     }
 
     private void setFontSize() {

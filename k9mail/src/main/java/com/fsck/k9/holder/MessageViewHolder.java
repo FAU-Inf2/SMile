@@ -26,7 +26,7 @@ public class MessageViewHolder implements View.OnClickListener {
     private float fraction;
 
     public MessageViewHolder(View rootView) {
-        swipeLayout = findById(rootView, R.id.swipe_layout);
+        //swipeLayout = findById(rootView, R.id.swipe_layout);
         date = findById(rootView, R.id.date);
         chip = findById(rootView, R.id.chip);
         contactBadge = findById(rootView, R.id.contact_badge);

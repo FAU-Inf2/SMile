@@ -14,10 +14,12 @@ import android.text.style.ForegroundColorSpan;
 import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 import android.util.TypedValue;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.daimajia.swipe.SimpleSwipeListener;
 import com.daimajia.swipe.SwipeLayout;
@@ -307,6 +309,10 @@ public class MessageListItemView extends CardView {
 
     public LocalMessage getMessage() {
         return message;
+    }
+
+    public SwipeLayout getSwipeLayout() {
+        return swipeLayout;
     }
 
     public void setMessageActionsCallback(IMessageListPresenter messageActionsCallback) {

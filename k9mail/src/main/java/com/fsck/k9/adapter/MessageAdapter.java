@@ -4,6 +4,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.view.MessageListItemView;
@@ -13,16 +14,12 @@ import com.daimajia.swipe.adapters.RecyclerSwipeAdapter;
 
 import de.fau.cs.mad.smile.android.R;
 
-public class MessageAdapter extends RecyclerSwipeAdapter<MessageAdapter.MessageViewHolder> {
-    @Override
-    public int getSwipeLayoutResourceId(int i) {
-        return R.id.swipe_layout;
-    }
+public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageViewHolder> {
 
     public static class MessageViewHolder extends RecyclerView.ViewHolder {
         MessageListItemView itemView;
 
-        public MessageViewHolder(MessageListItemView itemView) {
+        public MessageViewHolder(final MessageListItemView itemView) {
             super(itemView);
             this.itemView = itemView;
         }
@@ -52,7 +49,7 @@ public class MessageAdapter extends RecyclerSwipeAdapter<MessageAdapter.MessageV
     public void onBindViewHolder(MessageViewHolder holder, final int position) {
         final LocalMessage message = mMessages.get(position);
         MessageListItemView itemView = holder.getItemView();
-        itemView.setOnClickListener(onClickListener);
+        itemView.getSwipeLayout().setOnClickListener(onClickListener);
         itemView.getFlagged().setOnClickListener(onClickListener);
         itemView.setMessage(message);
     }

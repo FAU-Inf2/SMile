@@ -29,6 +29,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.daimajia.swipe.SwipeLayout;
 import com.fsck.k9.Account;
 import com.fsck.k9.Account.SortType;
 import com.fsck.k9.K9;
@@ -2425,13 +2426,15 @@ public class MessageListFragment extends Fragment
         private MenuItem mUnflag;
         private final Account mAccount;
         private final Preferences mPreferences;
-        private boolean mSingleAccountMode;
+        private final MessagingController mController;
+        private final boolean mSingleAccountMode;
 
-
-        public ActionModeCallback(Account mAccount, boolean mSingleAccountMode) {
-            this.mAccount = mAccount;
-            this.mPreferences = Preferences.getPreferences(K9.getApplication());
-            this.mSingleAccountMode = mSingleAccountMode;
+        public ActionModeCallback(Account account, boolean singleAccountMode) {
+            this.mAccount = account;
+            final Context context = K9.getApplication();
+            this.mPreferences = Preferences.getPreferences(context);
+            this.mController = MessagingController.getInstance(context);
+            this.mSingleAccountMode = singleAccountMode;
         }
 
         @Override
@@ -2635,51 +2638,6 @@ public class MessageListFragment extends Fragment
         }
     }
 
-    private static class MessageItemViewOnTouchListener implements RecyclerView.OnItemTouchListener {
-        private final Context context;
-        private final View.OnClickListener clickListener;
-        private final GestureDetector detector;
-
-        public MessageItemViewOnTouchListener(Context context, View.OnClickListener clickListener) {
-            this.context = context;
-            this.clickListener = clickListener;
-            detector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
-                @Override
-                public boolean onDown(MotionEvent e) {
-                    return true;
-                }
-
-                @Override
-                public boolean onSingleTapUp(MotionEvent e) {
-                    return true;
-                }
-            });
-        }
-
-        @Override
-        public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
-            View view = rv.findChildViewUnder(e.getX(), e.getY());
-            if(view instanceof MessageListItemView && detector.onTouchEvent(e)) {
-                if(clickListener != null) {
-                    clickListener.onClick(view);
-                }
-
-                return true;
-            }
-
-            return false;
-        }
-
-        @Override
-        public void onTouchEvent(RecyclerView rv, MotionEvent e) {
-        }
-
-        @Override
-        public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
-            K9.logDebug("onRequestDisallow");
-        }
-    }
-
     private class MessageItemViewOnClickListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {
@@ -2691,9 +2649,12 @@ public class MessageListFragment extends Fragment
                     break;
                 }
                 default: {
-                    MessageListItemView itemView = (MessageListItemView)v;
-                    LocalMessage message = itemView.getMessage();
-                    presenter.openMessage(message.makeMessageReference());
+                    if(v instanceof SwipeLayout) {
+                        SwipeLayout swipeLayout = (SwipeLayout) v; // workaround, otherwise we don't get click events
+                        MessageListItemView itemView = (MessageListItemView) swipeLayout.getParent();
+                        LocalMessage message = itemView.getMessage();
+                        presenter.openMessage(message.makeMessageReference());
+                    }
                 }
             }
         }

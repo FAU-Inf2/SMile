@@ -18,8 +18,10 @@ import com.fsck.k9.mail.MessageRetrievalListener;
 import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.mailstore.LocalMessage;
+import com.fsck.k9.mailstore.LocalStore;
+import com.fsck.k9.search.LocalSearch;
+import com.fsck.k9.search.SearchSpecification;
 import com.fsck.k9.view.IMessageListView;
-import com.fsck.k9.view.MessageListView;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,13 +35,13 @@ public class MessageListPresenter implements IMessageListPresenter {
     private IMessageListView messageListView;
     private List<LocalMessage> messages;
     private boolean mThreadedList;
-    private final Account account;
+    private final List<Account> accounts;
     private final LocalFolder folder;
     private final MessageListHandler handler;
     private final Context context;
     private final MessagingController mController;
 
-    public MessageListPresenter(final Context context, final Account account, final LocalFolder folder, final MessageListHandler handler) {
+    public MessageListPresenter(final Context context, final List<Account> accounts, final LocalFolder folder, final MessageListHandler handler) {
         this.context = context;
         this.messages = new ArrayList<>();
         EnumMap<SortType, Comparator<LocalMessage>> sortMap = new EnumMap<>(SortType.class);
@@ -53,7 +55,7 @@ public class MessageListPresenter implements IMessageListPresenter {
 
         // make it immutable to prevent accidental alteration (content is immutable already)
         this.sortMap = Collections.unmodifiableMap(sortMap);
-        this.account = account;
+        this.accounts = accounts;
         this.folder = folder;
         this.handler = handler;
         this.mController = MessagingController.getInstance(context);
@@ -102,7 +104,9 @@ public class MessageListPresenter implements IMessageListPresenter {
 
     @Override
     public void refreshList() {
-        loadMessages(folder);
+        for(Account account : accounts) {
+            loadMessages(account);
+        }
     }
 
     @Override
@@ -215,7 +219,8 @@ public class MessageListPresenter implements IMessageListPresenter {
     private void saveSort(SortType sortType, Boolean ascending) {
         final Preferences preferences = Preferences.getPreferences(K9.getApplication());
         boolean mSortAscending;
-        if (account != null) {
+        if (accounts.size() == 1) {
+            final Account account = accounts.get(0);
             account.setSortType(sortType);
 
             if (ascending == null) {
@@ -243,9 +248,17 @@ public class MessageListPresenter implements IMessageListPresenter {
         }
     }
 
-    private void loadMessages(final LocalFolder folder) {
+    private void loadMessages(final Account account) {
+        LocalSearch search = new LocalSearch();
+        search.addAccountUuid(account.getUuid());
+
+        if(folder != null) {
+            search.addAllowedFolder(folder.getName());
+        }
+
         try {
-            folder.getMessages(new MessageRetrievalListener() {
+            LocalStore localStore = account.getLocalStore();
+            localStore.searchForMessages(new MessageRetrievalListener() {
                 @Override
                 public void messageStarted(String uid, int number, int ofTotal) {
 
@@ -260,7 +273,7 @@ public class MessageListPresenter implements IMessageListPresenter {
                 public void messagesFinished(int total) {
 
                 }
-            }, false);
+            }, search);
         } catch (MessagingException e) {
             Log.e(K9.LOG_TAG, "failed to retrieve messages");
         }

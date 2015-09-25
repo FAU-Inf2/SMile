@@ -99,6 +99,7 @@ public class MessageListFragment extends Fragment
     protected FolderInfoHolder mCurrentFolder;
     protected MessagingController mController;
     protected Account mAccount;
+    private String[] mAccountUuids;
 
     /**
      * Stores the name of the folder that we want to open as soon as possible after load.
@@ -116,7 +117,6 @@ public class MessageListFragment extends Fragment
     private RefreshableMessageList mPullToRefreshView;
     private MessageListView messageListView;
     private NotificationHelper notificationHelper;
-    private String[] mAccountUuids;
     private int mUnreadMessageCount = 0;
     private boolean mRemoteSearchPerformed = false;
     private Future<?> mRemoteSearchFuture = null;
@@ -209,7 +209,12 @@ public class MessageListFragment extends Fragment
             localFolder = (LocalFolder) mCurrentFolder.folder;
         }
 
-        setPresenter(new MessageListPresenter(getContext(), mAccount, localFolder, mHandler));
+        final List<Account> accounts = new ArrayList<>();
+        for(String accountUuid : mAccountUuids) {
+            accounts.add(mPreferences.getAccount(accountUuid));
+        }
+
+        setPresenter(new MessageListPresenter(getContext(), accounts, localFolder, mHandler));
 
         mInitialized = true;
     }

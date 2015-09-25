@@ -20,12 +20,6 @@ public class RefreshableMessageList extends SwipeRefreshLayout {
     protected void onFinishInflate() {
         super.onFinishInflate();
         messageListView = findById(this, R.id.message_list);
-        setOnRefreshListener(new OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                setRefreshing(false);
-            }
-        });
     }
 
     public MessageListView getMessageListView() {

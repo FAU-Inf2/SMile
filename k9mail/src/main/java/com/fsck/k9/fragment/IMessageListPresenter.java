@@ -22,4 +22,5 @@ public interface IMessageListPresenter {
     boolean isLast(MessageReference messageReference);
     void setFlag(LocalMessage message, Flag flag);
     void enableThreadedList(boolean enable);
+    void refreshList();
 }

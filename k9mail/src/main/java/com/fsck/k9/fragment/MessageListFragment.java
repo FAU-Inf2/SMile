@@ -12,6 +12,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.view.ActionMode;
 import android.support.v7.widget.RecyclerView;
@@ -202,7 +203,13 @@ public class MessageListFragment extends Fragment
         restoreInstanceState(savedInstanceState);
         decodeArguments();
         createCacheBroadcastReceiver(appContext);
-        setPresenter(new MessageListPresenter(getContext(), mAccount, (LocalFolder) mCurrentFolder.folder, mHandler));
+
+        LocalFolder localFolder = null;
+        if(mCurrentFolder != null) {
+            localFolder = (LocalFolder) mCurrentFolder.folder;
+        }
+
+        setPresenter(new MessageListPresenter(getContext(), mAccount, localFolder, mHandler));
 
         mInitialized = true;
     }
@@ -213,10 +220,16 @@ public class MessageListFragment extends Fragment
         View view = inflater.inflate(R.layout.message_list_fragment, container, false);
 
         mPullToRefreshView = findById(view, R.id.swipeRefreshLayout);
+        mPullToRefreshView.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                mPullToRefreshView.setRefreshing(true);
+                presenter.refreshList();
+                mPullToRefreshView.setRefreshing(false);
+            }
+        });
         messageListView = mPullToRefreshView.getMessageListView();
         View.OnClickListener clickListener = new MessageItemViewOnClickListener();
-        //messageListView.addOnItemTouchListener(new MessageItemViewOnTouchListener(mContext, clickListener));
-
         final MessageAdapter messageAdapter = new MessageAdapter(messages, clickListener);
 
         messageListView.setAdapter(messageAdapter);
@@ -741,6 +754,13 @@ public class MessageListFragment extends Fragment
     @Override
     public void enableThreadedList(boolean enable) {
         mThreadedList = enable;
+    }
+
+    @Override
+    public void refreshList() {
+        mPullToRefreshView.setRefreshing(true);
+        presenter.refreshList();
+        mPullToRefreshView.setRefreshing(false);
     }
 
     /**

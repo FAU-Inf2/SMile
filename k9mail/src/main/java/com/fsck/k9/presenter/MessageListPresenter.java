@@ -57,7 +57,7 @@ public class MessageListPresenter implements IMessageListPresenter {
         this.folder = folder;
         this.handler = handler;
         this.mController = MessagingController.getInstance(context);
-        loadMessages(folder);
+        this.refreshList();
     }
 
     @Override
@@ -98,6 +98,11 @@ public class MessageListPresenter implements IMessageListPresenter {
     @Override
     public void replyAll(LocalMessage message) {
 
+    }
+
+    @Override
+    public void refreshList() {
+        loadMessages(folder);
     }
 
     @Override

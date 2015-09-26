@@ -358,6 +358,69 @@ public class AccountPreferences extends SmilePreferenceFragment {
             }
         });
 
+        incoming_displayCount = (ListPreference) findPreference(PREFERENCE_DISPLAY_COUNT);
+        incoming_displayCount.setValue(String.valueOf(mAccount.getDisplayCount()));
+        incoming_displayCount.setSummary(incoming_displayCount.getEntry());
+        incoming_displayCount.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                final String summary = newValue.toString();
+                int index = incoming_displayCount.findIndexOfValue(summary);
+                incoming_displayCount.setSummary(incoming_displayCount.getEntries()[index]);
+                incoming_displayCount.setValue(summary);
+                return false;
+            }
+        });
+
+        incoming_messageAge = (ListPreference) findPreference(PREFERENCE_MESSAGE_AGE);
+
+        if (!mAccount.isSearchByDateCapable()) {
+            ((PreferenceScreen) findPreference(PREFERENCE_SCREEN_INCOMING)).removePreference(incoming_messageAge);
+        } else {
+            incoming_messageAge.setValue(String.valueOf(mAccount.getMaximumPolledMessageAge()));
+            incoming_messageAge.setSummary(incoming_messageAge.getEntry());
+            incoming_messageAge.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                public boolean onPreferenceChange(Preference preference, Object newValue) {
+                    final String summary = newValue.toString();
+                    int index = incoming_messageAge.findIndexOfValue(summary);
+                    incoming_messageAge.setSummary(incoming_messageAge.getEntries()[index]);
+                    incoming_messageAge.setValue(summary);
+                    return false;
+                }
+            });
+
+        }
+
+        incoming_checkFrequency = (ListPreference) findPreference(PREFERENCE_FREQUENCY);
+        incoming_checkFrequency.setValue(String.valueOf(mAccount.getAutomaticCheckIntervalMinutes()));
+        incoming_checkFrequency.setSummary(incoming_checkFrequency.getEntry());
+        incoming_checkFrequency.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                final String summary = newValue.toString();
+                int index = incoming_checkFrequency.findIndexOfValue(summary);
+                incoming_checkFrequency.setSummary(incoming_checkFrequency.getEntries()[index]);
+                incoming_checkFrequency.setValue(summary);
+                return false;
+            }
+        });
+
+        findPreference(PREFERENCE_INCOMING).setOnPreferenceClickListener(
+                new Preference.OnPreferenceClickListener() {
+                    public boolean onPreferenceClick(Preference preference) {
+                        mIncomingChanged = true;
+                        onIncomingSettings();
+                        return true;
+                    }
+                });
+
+        Preference outgoing = findPreference(PREFERENCE_OUTGOING);
+        outgoing.setOnPreferenceClickListener(
+                new Preference.OnPreferenceClickListener() {
+                    public boolean onPreferenceClick(Preference preference) {
+                        onOutgoingSettings();
+                        return true;
+                    }
+                });
+
         setupCryptoCategory();
 
         // IMAP-specific preferences
@@ -454,38 +517,6 @@ public class AccountPreferences extends SmilePreferenceFragment {
             return;
         }
 
-        incoming_displayCount = (ListPreference) findPreference(PREFERENCE_DISPLAY_COUNT);
-        incoming_displayCount.setValue(String.valueOf(mAccount.getDisplayCount()));
-        incoming_displayCount.setSummary(incoming_displayCount.getEntry());
-        incoming_displayCount.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
-                final String summary = newValue.toString();
-                int index = incoming_displayCount.findIndexOfValue(summary);
-                incoming_displayCount.setSummary(incoming_displayCount.getEntries()[index]);
-                incoming_displayCount.setValue(summary);
-                return false;
-            }
-        });
-
-        incoming_messageAge = (ListPreference) findPreference(PREFERENCE_MESSAGE_AGE);
-
-        if (!mAccount.isSearchByDateCapable()) {
-            ((PreferenceScreen) findPreference(PREFERENCE_SCREEN_INCOMING)).removePreference(incoming_messageAge);
-        } else {
-            incoming_messageAge.setValue(String.valueOf(mAccount.getMaximumPolledMessageAge()));
-            incoming_messageAge.setSummary(incoming_messageAge.getEntry());
-            incoming_messageAge.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    final String summary = newValue.toString();
-                    int index = incoming_messageAge.findIndexOfValue(summary);
-                    incoming_messageAge.setSummary(incoming_messageAge.getEntries()[index]);
-                    incoming_messageAge.setValue(summary);
-                    return false;
-                }
-            });
-
-        }
-
         incoming_messageSize = (ListPreference) findPreference(PREFERENCE_MESSAGE_SIZE);
         incoming_messageSize.setValue(String.valueOf(mAccount.getMaximumAutoDownloadMessageSize()));
         incoming_messageSize.setSummary(incoming_messageSize.getEntry());
@@ -495,19 +526,6 @@ public class AccountPreferences extends SmilePreferenceFragment {
                 int index = incoming_messageSize.findIndexOfValue(summary);
                 incoming_messageSize.setSummary(incoming_messageSize.getEntries()[index]);
                 incoming_messageSize.setValue(summary);
-                return false;
-            }
-        });
-
-        incoming_checkFrequency = (ListPreference) findPreference(PREFERENCE_FREQUENCY);
-        incoming_checkFrequency.setValue(String.valueOf(mAccount.getAutomaticCheckIntervalMinutes()));
-        incoming_checkFrequency.setSummary(incoming_checkFrequency.getEntry());
-        incoming_checkFrequency.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
-                final String summary = newValue.toString();
-                int index = incoming_checkFrequency.findIndexOfValue(summary);
-                incoming_checkFrequency.setSummary(incoming_checkFrequency.getEntries()[index]);
-                incoming_checkFrequency.setValue(summary);
                 return false;
             }
         });
@@ -578,15 +596,6 @@ public class AccountPreferences extends SmilePreferenceFragment {
         } else {
             getPreferenceScreen().removePreference(incoming_expungePolicy);
         }
-
-        findPreference(PREFERENCE_INCOMING).setOnPreferenceClickListener(
-                new Preference.OnPreferenceClickListener() {
-                    public boolean onPreferenceClick(Preference preference) {
-                        mIncomingChanged = true;
-                        onIncomingSettings();
-                        return true;
-                    }
-                });
     }
 
     private void setupComposingScreen() {
@@ -659,15 +668,6 @@ public class AccountPreferences extends SmilePreferenceFragment {
         // Call the onPreferenceChange() handler on startup to update the Preference dialogue based
         // upon the existing quote style setting.
         quoteStyleListener.onPreferenceChange(composing_quoteStyle, mAccount.getQuoteStyle().name());
-
-        Preference outgoing = findPreference(PREFERENCE_OUTGOING);
-        outgoing.setOnPreferenceClickListener(
-                new Preference.OnPreferenceClickListener() {
-                    public boolean onPreferenceClick(Preference preference) {
-                        onOutgoingSettings();
-                        return true;
-                    }
-                });
     }
 
     private void setupFolderScreen() {
@@ -823,10 +823,8 @@ public class AccountPreferences extends SmilePreferenceFragment {
         }
 
         if(isIncomingScreen()) {
-            final int checkFrequency = Integer.parseInt(incoming_checkFrequency.getValue());
-            needsRefresh = mAccount.setAutomaticCheckIntervalMinutes(checkFrequency);
             FolderMode mode = FolderMode.valueOf(incoming_SyncMode.getValue());
-            needsRefresh |= mAccount.setFolderSyncMode(mode);
+            needsRefresh = mAccount.setFolderSyncMode(mode);
 
             //IMAP specific stuff
             if (mIsPushCapable) {
@@ -868,6 +866,14 @@ public class AccountPreferences extends SmilePreferenceFragment {
             mAccount.setPgpKey(mCryptoKey.getValue());
         }
 
+        mAccount.setDisplayCount(Integer.parseInt(incoming_displayCount.getValue()));
+        if (mAccount.isSearchByDateCapable()) {
+            mAccount.setMaximumPolledMessageAge(Integer.parseInt(incoming_messageAge.getValue()));
+        }
+
+        final int checkFrequency = Integer.parseInt(incoming_checkFrequency.getValue());
+        mAccount.setAutomaticCheckIntervalMinutes(checkFrequency);
+
         mAccount.setSmimeProvider(mSmimeApp.getValue());
         mAccount.setDefaultCryptoProvider(defaultCryptoProvider.getValue());
 
@@ -887,11 +893,7 @@ public class AccountPreferences extends SmilePreferenceFragment {
             return;
         }
 
-        mAccount.setDisplayCount(Integer.parseInt(incoming_displayCount.getValue()));
         mAccount.setMaximumAutoDownloadMessageSize(Integer.parseInt(incoming_messageSize.getValue()));
-        if (mAccount.isSearchByDateCapable()) {
-            mAccount.setMaximumPolledMessageAge(Integer.parseInt(incoming_messageAge.getValue()));
-        }
 
         mAccount.setDeletePolicy(DeletePolicy.fromInt(Integer.parseInt(incoming_deletePolicy.getValue())));
 

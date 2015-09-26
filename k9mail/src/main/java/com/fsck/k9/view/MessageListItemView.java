@@ -14,12 +14,10 @@ import android.text.style.ForegroundColorSpan;
 import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 import android.util.TypedValue;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.daimajia.swipe.SimpleSwipeListener;
 import com.daimajia.swipe.SwipeLayout;
@@ -56,7 +54,7 @@ public class MessageListItemView extends CardView {
     private QuickContactBadge contactBadge;
     private int position; // TODO: remove this once cursor is no longer used
     private ContactPictureLoader contactsPictureLoader;
-    private IMessageListPresenter messageActionsCallback;
+    private IMessageListPresenter presenter;
 
     private Drawable mAttachmentIcon;
     private Drawable mForwardedIcon;
@@ -315,8 +313,8 @@ public class MessageListItemView extends CardView {
         return swipeLayout;
     }
 
-    public void setMessageActionsCallback(IMessageListPresenter messageActionsCallback) {
-        this.messageActionsCallback = messageActionsCallback;
+    public void setPresenter(IMessageListPresenter presenter) {
+        this.presenter = presenter;
     }
 
     private static class DeleteRevealListener implements SwipeLayout.OnRevealListener {
@@ -394,17 +392,17 @@ public class MessageListItemView extends CardView {
 
             LocalMessage message = itemView.getMessage();
             if (archive.isShown()) {
-                messageActionsCallback.archive(message);
+                presenter.archive(message);
                 archive.setVisibility(View.INVISIBLE);
             }
 
             if (remindMe.isShown()) {
-                messageActionsCallback.remindMe(message);
+                presenter.remindMe(message);
                 remindMe.setVisibility(View.INVISIBLE);
             }
 
             if (delete.isShown()) {
-                messageActionsCallback.delete(message);
+                presenter.delete(message);
             }
         }
     }

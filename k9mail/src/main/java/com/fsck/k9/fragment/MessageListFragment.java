@@ -204,11 +204,6 @@ public class MessageListFragment extends Fragment
         decodeArguments();
         createCacheBroadcastReceiver(appContext);
 
-        LocalFolder localFolder = null;
-        if(mCurrentFolder != null) {
-            localFolder = (LocalFolder) mCurrentFolder.folder;
-        }
-
         final List<Account> accounts = new ArrayList<>();
         for(String accountUuid : mAccountUuids) {
             accounts.add(mPreferences.getAccount(accountUuid));
@@ -235,7 +230,7 @@ public class MessageListFragment extends Fragment
         });
         messageListView = mPullToRefreshView.getMessageListView();
         View.OnClickListener clickListener = new MessageItemViewOnClickListener();
-        final MessageAdapter messageAdapter = new MessageAdapter(messages, clickListener);
+        final MessageAdapter messageAdapter = new MessageAdapter(messages, clickListener, presenter);
 
         messageListView.setAdapter(messageAdapter);
         FloatingActionButton actionButton = findById(view, R.id.fab);

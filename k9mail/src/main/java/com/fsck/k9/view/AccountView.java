@@ -67,7 +67,7 @@ public class AccountView extends RelativeLayout {
 
     static class AccountSpinnerAdapter extends ArrayAdapter<Account> {
         public AccountSpinnerAdapter(Context context, List<Account> accounts) {
-            super(context, android.R.layout.simple_spinner_item, accounts);
+            super(context, R.layout.account_view_spinner_item, accounts);
         }
 
         @Override

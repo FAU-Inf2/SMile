@@ -148,6 +148,7 @@ public final class FolderList extends K9Activity {
 
     @Override
     public final void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
         setIntent(intent); // onNewIntent doesn't autoset our "internal" intent
 
         mUnreadMessageCount = 0;

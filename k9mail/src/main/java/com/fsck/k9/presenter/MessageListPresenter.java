@@ -9,6 +9,7 @@ import com.fsck.k9.Account.SortType;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
 import com.fsck.k9.activity.MessageReference;
+import com.fsck.k9.activity.RemindMeList;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.fragment.IMessageListPresenter;
 import com.fsck.k9.fragment.MessageListHandler;
@@ -89,7 +90,7 @@ public class MessageListPresenter implements IMessageListPresenter {
 
     @Override
     public void remindMe(LocalMessage message) {
-
+        context.startActivity(RemindMeList.createRemindMe(context, message));
     }
 
     @Override

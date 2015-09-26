@@ -728,7 +728,7 @@ public class MessageListFragment extends Fragment
 
     @Override
     public void remindMe(LocalMessage message) {
-        onRemindMe(message);
+        presenter.remindMe(message);
     }
 
     @Override

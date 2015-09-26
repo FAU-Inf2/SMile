@@ -3,6 +3,7 @@ package com.fsck.k9.presenter;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.Account.SortType;
@@ -11,6 +12,7 @@ import com.fsck.k9.Preferences;
 import com.fsck.k9.activity.MessageReference;
 import com.fsck.k9.activity.RemindMeList;
 import com.fsck.k9.controller.MessagingController;
+import com.fsck.k9.fragment.FolderOperation;
 import com.fsck.k9.fragment.IMessageListPresenter;
 import com.fsck.k9.fragment.MessageListHandler;
 import com.fsck.k9.mail.Flag;
@@ -28,8 +30,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import de.fau.cs.mad.smile.android.R;
 
 public class MessageListPresenter implements IMessageListPresenter {
     final Map<SortType, Comparator<LocalMessage>> sortMap;
@@ -75,7 +80,24 @@ public class MessageListPresenter implements IMessageListPresenter {
 
     @Override
     public void move(LocalMessage message, String destFolder) {
+        if (!mController.isMoveCapable(message)) {
+            return;
+        }
 
+        final String folderName = message.getFolder().getName();
+        final Account account = message.getAccount();
+        if (folderName.equals(destFolder)) {
+            // Skip messages already in the destination folder
+            return;
+        }
+
+        List<LocalMessage> moveMessages = Collections.singletonList(message);
+
+        if (mThreadedList) {
+            mController.moveMessagesInThread(account, folderName, moveMessages, destFolder);
+        } else {
+            mController.moveMessages(account, folderName, moveMessages, destFolder, null);
+        }
     }
 
     @Override

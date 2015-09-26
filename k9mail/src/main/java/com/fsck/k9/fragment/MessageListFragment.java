@@ -15,14 +15,11 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.view.ActionMode;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -54,7 +51,6 @@ import com.fsck.k9.mail.Flag;
 import com.fsck.k9.mail.Folder;
 import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.MessagingException;
-import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.presenter.MessageListPresenter;
 import com.fsck.k9.search.LocalSearch;
@@ -1422,10 +1418,6 @@ public class MessageListFragment extends Fragment
                 messages);
     }
 
-    private void onRemindMe(LocalMessage message) {
-        startActivity(RemindMeList.createRemindMe(this.getActivity(), message));
-    }
-
     private void onCopy(LocalMessage message) {
         onCopy(Collections.singletonList(message));
     }
@@ -2125,10 +2117,6 @@ public class MessageListFragment extends Fragment
         messages.clear();
         messages.addAll(messageList);
         messageListView.getAdapter().notifyDataSetChanged();
-    }
-
-    private enum FolderOperation {
-        COPY, MOVE
     }
 
     class MessageListActivityListener extends ActivityListener {

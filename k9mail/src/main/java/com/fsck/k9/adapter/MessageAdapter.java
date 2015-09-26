@@ -4,6 +4,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 
 import com.fsck.k9.fragment.IMessageListPresenter;
 import com.fsck.k9.mailstore.LocalMessage;
@@ -12,6 +13,8 @@ import com.fsck.k9.view.MessageListItemView;
 import java.util.List;
 
 import de.fau.cs.mad.smile.android.R;
+
+import static butterknife.ButterKnife.findById;
 
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageViewHolder> {
 
@@ -51,7 +54,9 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         final LocalMessage message = mMessages.get(position);
         MessageListItemView itemView = holder.getItemView();
         itemView.setPresenter(presenter);
-        itemView.getSwipeLayout().setOnClickListener(onClickListener);
+        LinearLayout msg = findById(itemView, R.id.msg);
+        msg.setOnClickListener(onClickListener);
+        //itemView.getSwipeLayout().setOnClickListener(onClickListener);
         itemView.getFlagged().setOnClickListener(onClickListener);
         itemView.setMessage(message);
     }

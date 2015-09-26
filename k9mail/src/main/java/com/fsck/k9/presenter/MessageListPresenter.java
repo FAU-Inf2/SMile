@@ -98,6 +98,8 @@ public class MessageListPresenter implements IMessageListPresenter {
         } else {
             mController.moveMessages(account, folderName, moveMessages, destFolder, null);
         }
+
+        refreshList();
     }
 
     @Override
@@ -133,6 +135,9 @@ public class MessageListPresenter implements IMessageListPresenter {
     public void refreshList() {
         for(Account account : accounts) {
             loadMessages(account);
+            if(messageListView != null) {
+                messageListView.showMessageList(messages);
+            }
         }
     }
 

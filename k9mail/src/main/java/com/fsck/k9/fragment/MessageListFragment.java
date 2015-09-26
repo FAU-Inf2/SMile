@@ -2656,13 +2656,13 @@ public class MessageListFragment extends Fragment
                     presenter.setFlag(message, Flag.FLAGGED);
                     break;
                 }
-                default: {
-                    if(v instanceof SwipeLayout) {
-                        SwipeLayout swipeLayout = (SwipeLayout) v; // workaround, otherwise we don't get click events
-                        MessageListItemView itemView = (MessageListItemView) swipeLayout.getParent();
-                        LocalMessage message = itemView.getMessage();
-                        presenter.openMessage(message.makeMessageReference());
-                    }
+                case R.id.msg: {
+                    SwipeLayout swipeLayout = (SwipeLayout) v.getParent(); // workaround, otherwise we don't get click events
+                    MessageListItemView itemView = (MessageListItemView) swipeLayout.getParent();
+                    LocalMessage message = itemView.getMessage();
+                    presenter.openMessage(message.makeMessageReference());
+
+                    break;
                 }
             }
         }

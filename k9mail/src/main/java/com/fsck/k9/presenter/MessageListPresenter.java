@@ -36,12 +36,12 @@ public class MessageListPresenter implements IMessageListPresenter {
     private List<LocalMessage> messages;
     private boolean mThreadedList;
     private final List<Account> accounts;
-    private final LocalFolder folder;
     private final MessageListHandler handler;
     private final Context context;
     private final MessagingController mController;
+    private final LocalSearch search;
 
-    public MessageListPresenter(final Context context, final List<Account> accounts, final LocalFolder folder, final MessageListHandler handler) {
+    public MessageListPresenter(final Context context, final List<Account> accounts, final LocalSearch search, final MessageListHandler handler) {
         this.context = context;
         this.messages = new ArrayList<>();
         EnumMap<SortType, Comparator<LocalMessage>> sortMap = new EnumMap<>(SortType.class);
@@ -56,7 +56,7 @@ public class MessageListPresenter implements IMessageListPresenter {
         // make it immutable to prevent accidental alteration (content is immutable already)
         this.sortMap = Collections.unmodifiableMap(sortMap);
         this.accounts = accounts;
-        this.folder = folder;
+        this.search = search;
         this.handler = handler;
         this.mController = MessagingController.getInstance(context);
         this.refreshList();
@@ -249,12 +249,8 @@ public class MessageListPresenter implements IMessageListPresenter {
     }
 
     private void loadMessages(final Account account) {
-        LocalSearch search = new LocalSearch();
-        search.addAccountUuid(account.getUuid());
-
-        if(folder != null) {
-            search.addAllowedFolder(folder.getName());
-        }
+        LocalSearch localSearch = search.clone();
+        localSearch.addAccountUuid(account.getUuid());
 
         try {
             LocalStore localStore = account.getLocalStore();
@@ -273,7 +269,7 @@ public class MessageListPresenter implements IMessageListPresenter {
                 public void messagesFinished(int total) {
 
                 }
-            }, search);
+            }, localSearch);
         } catch (MessagingException e) {
             Log.e(K9.LOG_TAG, "failed to retrieve messages");
         }

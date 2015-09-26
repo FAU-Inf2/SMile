@@ -214,7 +214,7 @@ public class MessageListFragment extends Fragment
             accounts.add(mPreferences.getAccount(accountUuid));
         }
 
-        setPresenter(new MessageListPresenter(getContext(), accounts, localFolder, mHandler));
+        setPresenter(new MessageListPresenter(getContext(), accounts, mSearch, mHandler));
 
         mInitialized = true;
     }

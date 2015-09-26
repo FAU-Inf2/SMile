@@ -1618,7 +1618,7 @@ public class MessageListFragment extends Fragment
     private void copyOrMove(List<LocalMessage> messages, final String destination,
                             final FolderOperation operation) {
 
-        Map<String, List<LocalMessage>> folderMap = new HashMap<String, List<LocalMessage>>();
+        Map<String, List<LocalMessage>> folderMap = new HashMap<>();
 
         for (LocalMessage message : messages) {
             if ((operation == FolderOperation.MOVE && !mController.isMoveCapable(message)) ||

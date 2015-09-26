@@ -85,7 +85,11 @@ public class MessageListPresenter implements IMessageListPresenter {
 
     @Override
     public void archive(LocalMessage message) {
-
+        final Account account = message.getAccount();
+        final String archiveFolder = account.getArchiveFolderName();
+        if (!K9.FOLDER_NONE.equals(archiveFolder)) {
+            move(message, archiveFolder);
+        }
     }
 
     @Override

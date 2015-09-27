@@ -74,14 +74,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_margin="16dp"
+        android:layout_alignParentEnd="true"
         fab:menu_animationDelayPerItem="0"
         fab:menu_colorNormal="@color/accent"
         fab:menu_colorPressed="@color/accent"
         fab:menu_colorRipple="@color/accent"
-        app:layout_anchor="@id/message_view"
-        app:layout_anchorGravity="bottom|right|end"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
         >
 
         <com.github.clans.fab.FloatingActionButton

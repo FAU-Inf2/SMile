@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    >
+    xmlns:fab="http://schemas.android.com/apk/res-auto">
 
     <com.fsck.k9.ui.messageview.MessageTopView xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
@@ -69,53 +69,44 @@
 
     </com.fsck.k9.ui.messageview.MessageTopView>
 
-    <RelativeLayout
-        android:id="@+id/fab_container"
+    <com.github.clans.fab.FloatingActionMenu
+        android:id="@+id/menu2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:clipChildren="false"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_margin="16dp"
+        fab:menu_animationDelayPerItem="0"
+        fab:menu_colorNormal="@color/accent"
+        fab:menu_colorPressed="@color/accent"
+        fab:menu_colorRipple="@color/accent"
         app:layout_anchor="@id/message_view"
         app:layout_anchorGravity="bottom|right|end"
         >
 
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/fab"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:clickable="true"
-            android:src="@drawable/ic_create_white_48dp"
-            app:fabSize="normal"
-            />
-
-        <android.support.design.widget.FloatingActionButton
+        <com.github.clans.fab.FloatingActionButton
             android:id="@+id/fab_forward"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:clickable="true"
             android:src="@drawable/ic_forward_white_24dp"
-            app:fabSize="mini"
-            />
+            fab:fab_label="@string/compose_title_forward"
+            style="@style/MenuButtonsSmall" />
 
-        <android.support.design.widget.FloatingActionButton
+        <com.github.clans.fab.FloatingActionButton
             android:id="@+id/fab_reply_all"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:clickable="true"
             android:src="@drawable/ic_reply_all_white_24dp"
-            app:fabSize="mini"
-            />
+            fab:fab_label="@string/compose_title_reply_all"
+            style="@style/MenuButtonsSmall" />
 
-        <android.support.design.widget.FloatingActionButton
+        <com.github.clans.fab.FloatingActionButton
             android:id="@+id/fab_reply"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:clickable="true"
             android:src="@drawable/ic_reply_white_24dp"
-            app:fabSize="mini"
-            />
-    </RelativeLayout>
+            fab:fab_label="@string/compose_title_reply"
+            style="@style/MenuButtonsSmall" />
+
+    </com.github.clans.fab.FloatingActionMenu>
 </android.support.design.widget.CoordinatorLayout>

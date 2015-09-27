@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -19,7 +18,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.Toast;
 
 import com.fsck.k9.Account;
@@ -45,6 +43,7 @@ import com.fsck.k9.ui.crypto.MessageCryptoCallback;
 import com.fsck.k9.ui.crypto.MessageCryptoHelper;
 import com.fsck.k9.ui.crypto.PgpMessageCryptoHelper;
 import com.fsck.k9.ui.crypto.SmimeMessageCryptoHelper;
+import com.github.clans.fab.FloatingActionButton;
 
 import java.util.Collections;
 import java.util.Locale;
@@ -154,7 +153,6 @@ public final class MessageViewFragment extends Fragment
         mFragmentListener.messageHeaderViewAvailable(mMessageView.getMessageHeaderView());
 
         final FloatingActionButton fabReply = findById(view, R.id.fab_reply);
-        fabReply.hide();
         fabReply.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -164,7 +162,6 @@ public final class MessageViewFragment extends Fragment
         });
 
         final FloatingActionButton fabReplyAll = findById(view, R.id.fab_reply_all);
-        fabReplyAll.hide();
         fabReplyAll.setOnClickListener(new View.OnClickListener(){
 
             @Override
@@ -174,28 +171,11 @@ public final class MessageViewFragment extends Fragment
         });
 
         final FloatingActionButton fabForward = findById(view, R.id.fab_forward);
-        fabForward.hide();
         fabForward.setOnClickListener(new View.OnClickListener(){
 
             @Override
             public void onClick(View v) {
                 onForward();
-            }
-        });
-
-        final FloatingActionButton fab = findById(view, R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(fabForward.isShown()) {
-                    fabForward.hide();
-                    fabReplyAll.hide();
-                    fabReply.hide();
-                } else {
-                    fabReply.show();
-                    fabReplyAll.show();
-                    fabForward.show();
-                }
             }
         });
 

@@ -66,6 +66,19 @@
         <item name="android:shadowDy">1</item>
         <item name="android:shadowRadius">4.0</item>
     </style>
+    <style name="MenuButtonsStyle">
+        <item name="fab_size">mini</item>
+        <item name="fab_shadowColor">#444</item>
+        <item name="fab_colorNormal">#FFB805</item>
+        <item name="fab_colorPressed">#F2AB00</item>
+        <item name="fab_colorRipple">#D99200</item>
+    </style>
 
+    <style name="MenuButtonsSmall">
+        <item name="fab_size">mini</item>
+        <item name="fab_colorNormal">#D8D8D8</item>
+        <item name="fab_colorPressed">#D8D8D8</item>
+        <item name="fab_colorRipple">#D8D8D8</item>
+    </style>
 </resources>
 

@@ -19,6 +19,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.Toast;
 
 import com.fsck.k9.Account;
@@ -152,13 +153,52 @@ public final class MessageViewFragment extends Fragment
 
         mFragmentListener.messageHeaderViewAvailable(mMessageView.getMessageHeaderView());
 
-        FloatingActionButton actionButton = findById(view, R.id.fab);
-        actionButton.setOnClickListener(new View.OnClickListener() {
+        final FloatingActionButton fabReply = findById(view, R.id.fab_reply);
+        fabReply.hide();
+        fabReply.setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View v) {
-                MessageCompose.actionReply(getActivity(), mMessage, false, mPgpData.getDecryptedData());
+                onReply();
             }
         });
+
+        final FloatingActionButton fabReplyAll = findById(view, R.id.fab_reply_all);
+        fabReplyAll.hide();
+        fabReplyAll.setOnClickListener(new View.OnClickListener(){
+
+            @Override
+            public void onClick(View v) {
+                onReplyAll();
+            }
+        });
+
+        final FloatingActionButton fabForward = findById(view, R.id.fab_forward);
+        fabForward.hide();
+        fabForward.setOnClickListener(new View.OnClickListener(){
+
+            @Override
+            public void onClick(View v) {
+                onForward();
+            }
+        });
+
+        final FloatingActionButton fab = findById(view, R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(fabForward.isShown()) {
+                    fabForward.hide();
+                    fabReplyAll.hide();
+                    fabReply.hide();
+                } else {
+                    fabReply.show();
+                    fabReplyAll.show();
+                    fabForward.show();
+                }
+            }
+        });
+
         return view;
     }
 

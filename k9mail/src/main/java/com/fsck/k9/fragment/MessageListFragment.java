@@ -35,7 +35,6 @@ import com.fsck.k9.Preferences;
 import com.fsck.k9.activity.ChooseFolder;
 import com.fsck.k9.activity.MessageCompose;
 import com.fsck.k9.activity.MessageReference;
-import com.fsck.k9.activity.RemindMeList;
 import com.fsck.k9.adapter.MessageAdapter;
 import com.fsck.k9.helper.FolderHelper;
 import com.fsck.k9.holder.FolderInfoHolder;
@@ -89,7 +88,7 @@ public class MessageListFragment extends Fragment
     private static final String STATE_REMOTE_SEARCH_PERFORMED = "remoteSearchPerformed";
     private static final String STATE_MESSAGE_LIST = "listState";
 
-    protected final ActivityListener mListener = new MessageListActivityListener();
+    protected ActivityListener mListener;
     public List<Message> mExtraSearchResults;
     protected View mFooterView;
     protected FolderInfoHolder mCurrentFolder;
@@ -189,6 +188,7 @@ public class MessageListFragment extends Fragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         messages = new ArrayList<>();
+        mListener = new MessageListActivityListener(mHandler, mContext);
 
         Context appContext = getActivity().getApplicationContext();
         mPreferences = Preferences.getPreferences(appContext);
@@ -224,11 +224,12 @@ public class MessageListFragment extends Fragment
                 mPullToRefreshView.setRefreshing(false);
             }
         });
+
         messageListView = mPullToRefreshView.getMessageListView();
         View.OnClickListener clickListener = new MessageItemViewOnClickListener();
         final MessageAdapter messageAdapter = new MessageAdapter(messages, clickListener, presenter);
-
         messageListView.setAdapter(messageAdapter);
+        
         FloatingActionButton actionButton = findById(view, R.id.fab);
         actionButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -2120,16 +2121,21 @@ public class MessageListFragment extends Fragment
     }
 
     class MessageListActivityListener extends ActivityListener {
+        private final MessageListHandler mHandler;
+        private final Context context;
+
+        public MessageListActivityListener(final MessageListHandler mHandler, final Context context) {
+            this.mHandler = mHandler;
+            this.context = context;
+        }
+
         @Override
         public void remoteSearchFailed(String folder, final String err) {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    Activity activity = getActivity();
-                    if (activity != null) {
-                        Toast.makeText(activity, R.string.remote_search_error,
-                                Toast.LENGTH_LONG).show();
-                    }
+                    Toast.makeText(context, R.string.remote_search_error,
+                            Toast.LENGTH_LONG).show();
                 }
             });
         }

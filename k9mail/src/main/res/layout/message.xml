@@ -79,6 +79,16 @@
         >
 
         <android.support.design.widget.FloatingActionButton
+            android:id="@+id/fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:clickable="true"
+            android:src="@drawable/ic_create_white_48dp"
+            app:fabSize="normal"
+            />
+
+        <android.support.design.widget.FloatingActionButton
             android:id="@+id/fab_forward"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -106,16 +116,6 @@
             android:clickable="true"
             android:src="@drawable/ic_reply_white_24dp"
             app:fabSize="mini"
-            />
-
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/fab"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:clickable="true"
-            android:src="@drawable/ic_create_white_48dp"
-            app:fabSize="normal"
             />
     </RelativeLayout>
 </android.support.design.widget.CoordinatorLayout>

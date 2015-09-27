@@ -15,7 +15,9 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.view.ActionMode;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -229,7 +231,8 @@ public class MessageListFragment extends Fragment
         View.OnClickListener clickListener = new MessageItemViewOnClickListener();
         final MessageAdapter messageAdapter = new MessageAdapter(messages, clickListener, presenter);
         messageListView.setAdapter(messageAdapter);
-        
+        registerForContextMenu(messageListView);
+
         FloatingActionButton actionButton = findById(view, R.id.fab);
         actionButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -647,11 +650,11 @@ public class MessageListFragment extends Fragment
     }
 
     public void onReply(LocalMessage message) {
-        mFragmentListener.onReply(message);
+        presenter.reply(message);
     }
 
     public void onReplyAll(LocalMessage message) {
-        mFragmentListener.onReplyAll(message);
+        presenter.replyAll(message);
     }
 
     public void onForward(LocalMessage message) {
@@ -710,7 +713,7 @@ public class MessageListFragment extends Fragment
 
     @Override
     public void move(LocalMessage message, String destFolder) {
-        onMove(message);
+        presenter.move(message, destFolder);
     }
 
     @Override
@@ -720,7 +723,7 @@ public class MessageListFragment extends Fragment
 
     @Override
     public void archive(LocalMessage message) {
-        onArchive(message);
+        presenter.archive(message);
     }
 
     @Override
@@ -730,17 +733,17 @@ public class MessageListFragment extends Fragment
 
     @Override
     public void reply(LocalMessage message) {
-        onReply(message);
+        presenter.reply(message);
     }
 
     @Override
     public void replyAll(LocalMessage message){
-        onReplyAll(message);
+        presenter.replyAll(message);
     }
 
     @Override
     public void openMessage(MessageReference messageReference) {
-        mHandler.openMessage(messageReference);
+        presenter.openMessage(messageReference);
     }
 
     @Override
@@ -750,7 +753,7 @@ public class MessageListFragment extends Fragment
 
     @Override
     public void enableThreadedList(boolean enable) {
-        mThreadedList = enable;
+        mThreadedList = enable; // workaround presenter is null
     }
 
     @Override
@@ -988,93 +991,6 @@ public class MessageListFragment extends Fragment
     public void onSendPendingMessages() {
         mController.sendPendingMessages(mAccount, null);
     }
-/*
-    @Override
-    public boolean onContextItemSelected(android.view.MenuItem item) {
-        if (mContextMenuUniqueId == 0) {
-            return false;
-        }
-
-        int adapterPosition = getPositionForUniqueId(mContextMenuUniqueId);
-        if (adapterPosition == AdapterView.INVALID_POSITION) {
-            return false;
-        }
-
-        switch (item.getItemId()) {
-            case R.id.deselect:
-            case R.id.select: {
-                toggleMessageSelectWithAdapterPosition(adapterPosition);
-                break;
-            }
-            case R.id.reply: {
-                onReply(getMessageAtPosition(adapterPosition));
-                break;
-            }
-            case R.id.reply_all: {
-                onReplyAll(getMessageAtPosition(adapterPosition));
-                break;
-            }
-            case R.id.forward: {
-                onForward(getMessageAtPosition(adapterPosition));
-                break;
-            }
-            case R.id.send_again: {
-                onResendMessage(getMessageAtPosition(adapterPosition));
-                mSelectedCount = 0;
-                break;
-            }
-            case R.id.same_sender: {
-                onSameSender(getMessageAtPosition(adapterPosition));
-                break;
-            }
-            case R.id.delete: {
-                LocalMessage message = getMessageAtPosition(adapterPosition);
-                onDelete(message);
-                break;
-            }
-            case R.id.mark_as_read: {
-                setFlag(adapterPosition, Flag.SEEN, true);
-                break;
-            }
-            case R.id.mark_as_unread: {
-                setFlag(adapterPosition, Flag.SEEN, false);
-                break;
-            }
-            case R.id.flag: {
-                setFlag(adapterPosition, Flag.FLAGGED, true);
-                break;
-            }
-            case R.id.unflag: {
-                setFlag(adapterPosition, Flag.FLAGGED, false);
-                break;
-            }
-
-            // only if the account supports this
-            case R.id.archive: {
-                onArchive(getMessageAtPosition(adapterPosition));
-                break;
-            }
-            case R.id.spam: {
-                onSpam(getMessageAtPosition(adapterPosition));
-                break;
-            }
-            case R.id.move: {
-                onMove(getMessageAtPosition(adapterPosition));
-                break;
-            }
-            case R.id.remindme: {
-                onRemindMe(getMessageAtPosition(adapterPosition));
-                break;
-            }
-            case R.id.copy: {
-                onCopy(getMessageAtPosition(adapterPosition));
-                break;
-            }
-        }
-
-        mContextMenuUniqueId = 0;
-        return true;
-    }
 
     private void onSameSender(LocalMessage message) {
         String senderAddress = getSenderAddressFromCursor(message);
@@ -1084,65 +1000,89 @@ public class MessageListFragment extends Fragment
     }
 
     @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-        super.onCreateContextMenu(menu, v, menuInfo);
+    public boolean onContextItemSelected(MenuItem item) {
+        if (mContextMenuUniqueId == 0) {
+            return false;
+        }
+        ContextMenu.ContextMenuInfo menuInfo = item.getMenuInfo();
+        final int adapterPosition = 0;
+        LocalMessage message = getMessageAtPosition(adapterPosition);
 
-        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
-        LocalMessage message = getMessageAtPosition(info.position);
+        switch (item.getItemId()) {
+            case R.id.deselect:
+            case R.id.select: {
+                toggleMessageSelectWithAdapterPosition(adapterPosition);
+                break;
+            }
+            case R.id.reply: {
+                onReply(message);
+                break;
+            }
+            case R.id.reply_all: {
+                onReplyAll(message);
+                break;
+            }
+            case R.id.forward: {
+                onForward(message);
+                break;
+            }
+            case R.id.send_again: {
+                onResendMessage(message);
+                mSelectedCount = 0;
+                break;
+            }
+            case R.id.same_sender: {
+                onSameSender(message);
+                break;
+            }
+            case R.id.delete: {
+                onDelete(message);
+                break;
+            }
+            case R.id.mark_as_read: {
+                setFlag(message, Flag.SEEN);
+                break;
+            }
+            case R.id.mark_as_unread: {
+                setFlag(message, Flag.SEEN);
+                break;
+            }
+            case R.id.flag: {
+                setFlag(message, Flag.FLAGGED); // TODO:
+                break;
+            }
+            case R.id.unflag: {
+                setFlag(message, Flag.FLAGGED);
+                break;
+            }
 
-        if (message == null) {
-            return;
+            // only if the account supports this
+            case R.id.archive: {
+                onArchive(message);
+                break;
+            }
+            case R.id.spam: {
+                onSpam(message);
+                break;
+            }
+            case R.id.move: {
+                onMove(message);
+                break;
+            }
+            case R.id.remindme: {
+                presenter.remindMe(message);
+                break;
+            }
+            case R.id.copy: {
+                onCopy(message);
+                break;
+            }
         }
 
-        getActivity().getMenuInflater().inflate(R.menu.message_list_item_context, menu);
-
-        mContextMenuUniqueId = message.getId();
-        Account account = message.getAccount();
-
-        String subject = message.getSubject();
-        boolean read = message.isSet(Flag.SEEN);
-        boolean flagged = message.isSet(Flag.FLAGGED);
-
-        menu.setHeaderTitle(subject);
-
-        if (mSelected.contains(mContextMenuUniqueId)) {
-            menu.findItem(R.id.select).setVisible(false);
-        } else {
-            menu.findItem(R.id.deselect).setVisible(false);
-        }
-
-        if (read) {
-            menu.findItem(R.id.mark_as_read).setVisible(false);
-        } else {
-            menu.findItem(R.id.mark_as_unread).setVisible(false);
-        }
-
-        if (flagged) {
-            menu.findItem(R.id.flag).setVisible(false);
-        } else {
-            menu.findItem(R.id.unflag).setVisible(false);
-        }
-
-        if (!mController.isCopyCapable(account)) {
-            menu.findItem(R.id.copy).setVisible(false);
-        }
-
-        if (!mController.isMoveCapable(account)) {
-            menu.findItem(R.id.move).setVisible(false);
-            menu.findItem(R.id.archive).setVisible(false);
-            menu.findItem(R.id.spam).setVisible(false);
-        }
-
-        if (!account.hasArchiveFolder()) {
-            menu.findItem(R.id.archive).setVisible(false);
-        }
-
-        if (!account.hasSpamFolder()) {
-            menu.findItem(R.id.spam).setVisible(false);
-        }
-
+        mContextMenuUniqueId = 0;
+        return true;
     }
-
+/*
     protected int listViewToAdapterPosition(int position) {
         if (position > 0 && position <= mAdapter.getCount()) {
             return position - 1;

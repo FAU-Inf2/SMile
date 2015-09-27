@@ -4,10 +4,10 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 
 import com.fsck.k9.fragment.IMessageListPresenter;
 import com.fsck.k9.mailstore.LocalMessage;
+import com.fsck.k9.view.MessageListItemContextMenu;
 import com.fsck.k9.view.MessageListItemView;
 
 import java.util.List;
@@ -31,12 +31,12 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         }
     }
 
-    private final List<LocalMessage> mMessages;
+    private final List<LocalMessage> messages;
     private final View.OnClickListener onClickListener;
     private final IMessageListPresenter presenter;
 
     public MessageAdapter(final List<LocalMessage> messages, View.OnClickListener onClickListener, IMessageListPresenter presenter) {
-        this.mMessages = messages;
+        this.messages = messages;
         this.onClickListener = onClickListener;
         this.presenter = presenter;
     }
@@ -45,24 +45,36 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     public MessageViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         MessageListItemView view = (MessageListItemView)inflater.inflate(R.layout.message_list_item, parent, false);
+        view.setOnCreateContextMenuListener(new MessageListItemContextMenu());
         MessageViewHolder holder = new MessageViewHolder(view);
         return holder;
     }
 
     @Override
     public void onBindViewHolder(MessageViewHolder holder, final int position) {
-        final LocalMessage message = mMessages.get(position);
+        final LocalMessage message = messages.get(position);
         MessageListItemView itemView = holder.getItemView();
         itemView.setPresenter(presenter);
-        LinearLayout msg = findById(itemView, R.id.msg);
-        msg.setOnClickListener(onClickListener);
-        //itemView.getSwipeLayout().setOnClickListener(onClickListener);
+        itemView.getMessageContainer().setOnClickListener(onClickListener);
         itemView.getFlagged().setOnClickListener(onClickListener);
         itemView.setMessage(message);
     }
 
     @Override
+    public long getItemId(int position) {
+        return messages.get(position).getId();
+    }
+
+    @Override
+    public void onViewRecycled(MessageViewHolder holder) {
+        super.onViewRecycled(holder);
+        MessageListItemView itemView = holder.getItemView();
+        itemView.getFlagged().setOnClickListener(null);
+        itemView.getMessageContainer().setOnClickListener(null);
+    }
+
+    @Override
     public int getItemCount() {
-        return mMessages.size();
+        return messages.size();
     }
 }

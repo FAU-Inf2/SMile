@@ -9,6 +9,7 @@ import com.fsck.k9.Account;
 import com.fsck.k9.Account.SortType;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
+import com.fsck.k9.activity.MessageCompose;
 import com.fsck.k9.activity.MessageReference;
 import com.fsck.k9.activity.RemindMeList;
 import com.fsck.k9.controller.MessagingController;
@@ -123,12 +124,13 @@ public class MessageListPresenter implements IMessageListPresenter {
 
     @Override
     public void reply(LocalMessage message) {
+        MessageCompose.actionReply(context, message, false, null);
 
     }
 
     @Override
     public void replyAll(LocalMessage message) {
-
+        MessageCompose.actionReply(context, message, true, null);
     }
 
     @Override

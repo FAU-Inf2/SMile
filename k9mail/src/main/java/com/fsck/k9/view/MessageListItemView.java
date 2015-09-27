@@ -61,6 +61,7 @@ public class MessageListItemView extends CardView {
     private Drawable mAnsweredIcon;
     private Drawable mForwardedAnsweredIcon;
     private LocalMessage message;
+    private View messageContainer;
 
     public MessageListItemView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -86,6 +87,7 @@ public class MessageListItemView extends CardView {
         flagged = findById(this, R.id.flagged);
         contactBadge = findById(this, R.id.contact_badge);
         swipeLayout = findById(this, R.id.swipe_layout);
+        messageContainer = findById(this, R.id.msg);
         configureView();
     }
 
@@ -315,6 +317,10 @@ public class MessageListItemView extends CardView {
 
     public void setPresenter(IMessageListPresenter presenter) {
         this.presenter = presenter;
+    }
+
+    public View getMessageContainer() {
+        return messageContainer;
     }
 
     private static class DeleteRevealListener implements SwipeLayout.OnRevealListener {

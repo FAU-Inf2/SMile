@@ -5,6 +5,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.View;
 
 import com.fsck.k9.K9;
@@ -27,5 +28,21 @@ public class MessageListView extends RecyclerView {
         super.onFinishInflate();
         final RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getContext());
         setLayoutManager(layoutManager);
+    }
+
+    @Override
+    public boolean showContextMenuForChild(View originalView) {
+        final int longPressPosition = getChildAdapterPosition(originalView);
+        if (longPressPosition >= 0) {
+            final long longPressId = getAdapter().getItemId(longPressPosition);
+            //mContextMenuInfo = createContextMenuInfo(longPressPosition, longPressId);
+            return super.showContextMenuForChild(originalView);
+        }
+        return false;
+    }
+
+    @Override
+    protected ContextMenu.ContextMenuInfo getContextMenuInfo() {
+        return super.getContextMenuInfo();
     }
 }

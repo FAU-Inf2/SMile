@@ -89,7 +89,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/ic_forward_white_24dp"
-            fab:fab_label="@string/compose_title_forward"
             style="@style/MenuButtonsSmall" />
 
         <com.github.clans.fab.FloatingActionButton
@@ -97,7 +96,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/ic_reply_all_white_24dp"
-            fab:fab_label="@string/compose_title_reply_all"
             style="@style/MenuButtonsSmall" />
 
         <com.github.clans.fab.FloatingActionButton
@@ -105,7 +103,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/ic_reply_white_24dp"
-            fab:fab_label="@string/compose_title_reply"
             style="@style/MenuButtonsSmall" />
 
     </com.github.clans.fab.FloatingActionMenu>

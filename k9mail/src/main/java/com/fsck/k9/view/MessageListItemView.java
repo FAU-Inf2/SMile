@@ -119,7 +119,7 @@ public class MessageListItemView extends SwipeLayout {
         public void onReveal(View view, DragEdge dragEdge, float v, int i) {
             ImageView trash = (ImageView) view.findViewById(R.id.trash);
             if (v > 0.25) {
-                view.setBackgroundColor(Color.RED);
+                view.setBackgroundColor(Color.GRAY);
                 trash.setVisibility(View.VISIBLE);
             } else {
                 view.setBackgroundColor(view.getSolidColor());
@@ -158,7 +158,7 @@ public class MessageListItemView extends SwipeLayout {
             }
 
             final Context context = view.getContext();
-            final int remindmeOrange = ContextCompat.getColor(context, R.color.remindme_orange);
+            final int remindmeOrange = ContextCompat.getColor(context, R.color.tw_light);
 
             if (v <= 0.2) {
                 view.setBackgroundColor(view.getSolidColor());
@@ -166,7 +166,7 @@ public class MessageListItemView extends SwipeLayout {
                 if (0.2 < v && v < 0.5) {
                     view.setBackgroundColor(remindmeOrange);
                 } else {
-                    view.setBackgroundColor(Color.GREEN);
+                    view.setBackgroundColor(ContextCompat.getColor(context, R.color.tw_enlightenment));
                 }
             }
         }

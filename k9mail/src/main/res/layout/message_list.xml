@@ -39,7 +39,7 @@
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:src="@drawable/ic_create_white_24dp"
-        app:fab_colorNormal="@color/accent"
-        app:fab_colorPressed="@color/accent"/>
+        app:fab_colorNormal="@color/tw_dark"
+        app:fab_colorPressed="@color/tw_light"/>
 
 </android.support.design.widget.CoordinatorLayout>

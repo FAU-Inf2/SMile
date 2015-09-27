@@ -7,6 +7,11 @@
     <color name="red">#CC0000</color>
     <color name="purple">#9933CC</color>
 
+    <color name="tw_enlightenment">#e0e0e0</color>
+    <color name="tw_light">#D8D8D8</color>
+    <color name="tw_dark">#757575</color>
+    <color name="tw_truth">#424242</color>
+
     <color name="message_list_item_footer_background">@color/white</color>
     <color name="remindme_orange">#FF8000</color>
 
@@ -18,7 +23,7 @@
 
     <color name="default_contact_name_color">#ff00008f</color>
 
-    <color name="ColorPrimary">#3F51B5</color>
-    <color name="ColorPrimaryDark">#303F9F</color>
-    <color name="accent">#F50057</color>
+    <color name="ColorPrimary">@color/tw_dark</color>
+    <color name="ColorPrimaryDark">@color/tw_truth</color>
+    <color name="accent">@color/tw_dark</color>
 </resources>

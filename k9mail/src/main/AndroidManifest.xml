@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="de.fau.cs.mad.smile.android"
     android:versionCode="3"
-    android:versionName="1.1" >
+    android:versionName="Exclusive grey version" >
 
     <uses-feature
         android:name="android.hardware.touchscreen"
@@ -65,7 +65,7 @@
     <application
         android:name="com.fsck.k9.K9"
         android:allowTaskReparenting="false"
-        android:icon="@drawable/icon"
+        android:icon="@drawable/android_sample"
         android:label="@string/app_name"
         android:theme="@style/Theme.K9.Light" >
         <meta-data

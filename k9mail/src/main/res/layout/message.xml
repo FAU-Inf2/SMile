@@ -114,7 +114,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
             android:clickable="true"
-            android:src="@drawable/ic_reply_white_48dp"
+            android:src="@drawable/ic_create_white_48dp"
             app:fabSize="normal"
             />
     </RelativeLayout>

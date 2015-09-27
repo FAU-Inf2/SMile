@@ -1200,4 +1200,8 @@ Please submit bug reports, contribute new features and ask questions at
 
     <string name="app_preference_none">None</string>
     <string name="app_preference_install_via">Install %1$s via %2$s</string>
+    <string name="title_activity_about">About</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
 </resources>

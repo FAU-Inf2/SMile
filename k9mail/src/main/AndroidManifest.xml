@@ -1,232 +1,222 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="de.fau.cs.mad.smile.android"
-    xmlns:android="http://schemas.android.com/apk/res/android"
     android:versionCode="3"
-    android:versionName="1.1">
+    android:versionName="1.1" >
 
     <uses-feature
         android:name="android.hardware.touchscreen"
-        android:required="false"/>
+        android:required="false" />
 
     <supports-screens
         android:anyDensity="true"
         android:largeScreens="true"
         android:normalScreens="true"
-        android:smallScreens="true"/>
+        android:smallScreens="true" />
 
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-    <uses-permission android:name="android.permission.READ_CONTACTS"/>
-    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
 
     <!-- Needed to mark a contact as contacted -->
-    <uses-permission android:name="android.permission.WRITE_CONTACTS"/>
-
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.VIBRATE"/>
-    <uses-permission android:name="android.permission.WAKE_LOCK"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_CONTACTS" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <permission
         android:name="${applicationId}.permission.READ_ATTACHMENT"
         android:description="@string/read_attachment_desc"
         android:label="@string/read_attachment_label"
         android:permissionGroup="android.permission-group.MESSAGES"
-        android:protectionLevel="dangerous"/>
-    <uses-permission android:name="${applicationId}.permission.READ_ATTACHMENT"/>
+        android:protectionLevel="dangerous" />
+
+    <uses-permission android:name="${applicationId}.permission.READ_ATTACHMENT" />
 
     <permission
         android:name="${applicationId}.permission.REMOTE_CONTROL"
         android:description="@string/remote_control_desc"
         android:label="@string/remote_control_label"
         android:permissionGroup="android.permission-group.MESSAGES"
-        android:protectionLevel="dangerous"/>
-    <uses-permission android:name="${applicationId}.permission.REMOTE_CONTROL"/>
+        android:protectionLevel="dangerous" />
+
+    <uses-permission android:name="${applicationId}.permission.REMOTE_CONTROL" />
 
     <permission
         android:name="${applicationId}.permission.READ_MESSAGES"
         android:description="@string/read_messages_desc"
         android:label="@string/read_messages_label"
         android:permissionGroup="android.permission-group.MESSAGES"
-        android:protectionLevel="dangerous"/>
-    <uses-permission android:name="${applicationId}.permission.READ_MESSAGES"/>
+        android:protectionLevel="dangerous" />
+
+    <uses-permission android:name="${applicationId}.permission.READ_MESSAGES" />
 
     <permission
         android:name="${applicationId}.permission.DELETE_MESSAGES"
         android:description="@string/delete_messages_desc"
         android:label="@string/delete_messages_label"
         android:permissionGroup="android.permission-group.MESSAGES"
-        android:protectionLevel="dangerous"/>
-    <uses-permission android:name="${applicationId}.permission.DELETE_MESSAGES"/>
+        android:protectionLevel="dangerous" />
 
+    <uses-permission android:name="${applicationId}.permission.DELETE_MESSAGES" />
 
     <application
         android:name="com.fsck.k9.K9"
         android:allowTaskReparenting="false"
         android:icon="@drawable/icon"
         android:label="@string/app_name"
-        android:theme="@style/Theme.K9.Light">
-
+        android:theme="@style/Theme.K9.Light" >
         <meta-data
             android:name="android.app.default_searchable"
-            android:value="com.fsck.k9.activity.Search"/>
+            android:value="com.fsck.k9.activity.Search" />
 
         <activity
             android:name="com.fsck.k9.activity.Accounts"
             android:configChanges="locale"
             android:label="@string/app_name"
             android:launchMode="singleTop"
-            android:uiOptions="splitActionBarWhenNarrow">
+            android:uiOptions="splitActionBarWhenNarrow" >
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
+                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
-                <data android:mimeType="application/x-k9settings"/>
+                <action android:name="android.intent.action.VIEW" />
 
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:mimeType="application/x-k9settings" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
             </intent-filter>
         </activity>
-
         <activity
             android:name="com.fsck.k9.activity.Settings"
             android:configChanges="locale"
             android:excludeFromRecents="true"
             android:label="@string/prefs_title"
             android:parentActivityName="com.fsck.k9.activity.Accounts" />
-
         <activity
             android:name="com.fsck.k9.activity.setup.WelcomeMessage"
             android:configChanges="locale"
-            android:label="@string/welcome_message_title"/>
-
+            android:label="@string/welcome_message_title" />
         <activity
             android:name="com.fsck.k9.activity.setup.FontSizePreferences"
             android:configChanges="locale"
-            android:label="@string/font_size_settings_title"/>
-
+            android:label="@string/font_size_settings_title" />
         <activity
             android:name="com.fsck.k9.activity.setup.AccountSetupBasics"
             android:configChanges="locale"
-            android:label="@string/account_setup_basics_title"/>
-
+            android:label="@string/account_setup_basics_title" />
         <activity
             android:name="com.fsck.k9.activity.setup.AccountSetupAccountType"
             android:configChanges="locale"
-            android:label="@string/account_setup_account_type_title"/>
-
+            android:label="@string/account_setup_account_type_title" />
         <activity
             android:name="com.fsck.k9.activity.setup.AccountSetupIncoming"
             android:configChanges="locale"
-            android:label="@string/account_setup_incoming_title"/>
-
+            android:label="@string/account_setup_incoming_title" />
         <activity
             android:name="com.fsck.k9.activity.setup.AccountSetupComposition"
             android:configChanges="locale"
-            android:label="@string/account_settings_composition_title"/>
-
+            android:label="@string/account_settings_composition_title" />
         <activity
             android:name="com.fsck.k9.activity.setup.AccountSetupOutgoing"
             android:configChanges="locale"
-            android:label="@string/account_setup_outgoing_title"/>
-
+            android:label="@string/account_setup_outgoing_title" />
         <activity
             android:name="com.fsck.k9.activity.setup.AccountSetupOptions"
             android:configChanges="locale"
-            android:label="@string/account_setup_options_title"/>
-
+            android:label="@string/account_setup_options_title" />
         <activity
             android:name="com.fsck.k9.activity.setup.AccountSetupNames"
             android:configChanges="locale"
-            android:label="@string/account_setup_names_title"/>
-
+            android:label="@string/account_setup_names_title" />
         <activity
             android:name="com.fsck.k9.activity.ChooseFolder"
             android:configChanges="locale"
             android:label="@string/choose_folder_title"
             android:noHistory="true"
-            android:theme="@style/Theme.K9Dialog"/>
-
+            android:theme="@style/Theme.K9Dialog" />
         <activity
             android:name="com.fsck.k9.activity.ChooseIdentity"
             android:configChanges="locale"
             android:label="@string/choose_identity_title"
-            android:theme="@style/Theme.K9Dialog"/>
-
+            android:theme="@style/Theme.K9Dialog" />
         <activity
             android:name="com.fsck.k9.activity.ManageIdentities"
             android:configChanges="locale"
-            android:label="@string/manage_identities_title"/>
-
+            android:label="@string/manage_identities_title" />
         <activity
             android:name="com.fsck.k9.activity.EditIdentity"
             android:configChanges="locale"
-            android:label="@string/edit_identity_title"/>
-
+            android:label="@string/edit_identity_title" />
         <activity
             android:name="com.fsck.k9.activity.NotificationDeleteConfirmation"
             android:excludeFromRecents="true"
             android:launchMode="singleTop"
             android:taskAffinity=""
-            android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
-        <!-- XXX Note: this activity is hacked to ignore config changes,
-             since it doesn't currently handle them correctly in code. -->
+        <!--
+             XXX Note: this activity is hacked to ignore config changes,
+             since it doesn't currently handle them correctly in code.
+        -->
         <activity
             android:name="com.fsck.k9.activity.setup.AccountSetupCheckSettings"
             android:configChanges="keyboardHidden|orientation|locale"
-            android:label="@string/account_setup_check_settings_title"/>
-
+            android:label="@string/account_setup_check_settings_title" />
         <activity
             android:name="com.fsck.k9.activity.FolderList"
             android:configChanges="locale"
-            android:uiOptions="splitActionBarWhenNarrow"
-            android:parentActivityName="com.fsck.k9.activity.Accounts">
+            android:parentActivityName="com.fsck.k9.activity.Accounts"
+            android:uiOptions="splitActionBarWhenNarrow" >
             <intent-filter>
+
                 <!-- This action is only to allow an entry point for launcher shortcuts -->
-                <action android:name="android.intent.action.MAIN"/>
+                <action android:name="android.intent.action.MAIN" />
             </intent-filter>
         </activity>
-
         <activity
             android:name="com.fsck.k9.activity.RemindMeList"
             android:configChanges="locale"
             android:launchMode="singleTop"
-            android:uiOptions="splitActionBarWhenNarrow"
-            android:parentActivityName="com.fsck.k9.activity.MessageList">
+            android:parentActivityName="com.fsck.k9.activity.MessageList"
+            android:uiOptions="splitActionBarWhenNarrow" >
         </activity>
-
         <activity
             android:name="com.fsck.k9.activity.MessageList"
             android:configChanges="locale"
             android:launchMode="singleTop"
-            android:uiOptions="splitActionBarWhenNarrow"
-            android:parentActivityName="com.fsck.k9.activity.FolderList">
-            <intent-filter>-->
+            android:parentActivityName="com.fsck.k9.activity.FolderList"
+            android:uiOptions="splitActionBarWhenNarrow" >
+            <intent-filter>
+-->
                 <!-- This action is only to allow an entry point for launcher shortcuts -->
-                <action android:name="android.intent.action.MAIN"/>
+                <action android:name="android.intent.action.MAIN" />
             </intent-filter>
             <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
+                <action android:name="android.intent.action.VIEW" />
+
                 <data
                     android:host="messages"
-                    android:scheme="email"/>
-                <category android:name="android.intent.category.DEFAULT"/>
+                    android:scheme="email" />
+
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-
         <activity
             android:name="com.fsck.k9.activity.Messages"
             android:configChanges="locale"
             android:launchMode="singleTop"
-            android:uiOptions="splitActionBarWhenNarrow"
-            android:parentActivityName="com.fsck.k9.activity.FolderList">
-            <!--<intent-filter>
+            android:parentActivityName="com.fsck.k9.activity.FolderList"
+            android:uiOptions="splitActionBarWhenNarrow" >
+
+            <!--
+            <intent-filter>
                 This action is only to allow an entry point for launcher shortcuts
                 <action android:name="android.intent.action.MAIN"/>
             </intent-filter>
@@ -236,35 +226,42 @@
                     android:host="messages"
                     android:scheme="email"/>
                 <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>-->
+            </intent-filter>
+            -->
         </activity>
-
         <activity
             android:name="com.fsck.k9.activity.MessageCompose"
             android:configChanges="locale"
             android:enabled="false"
-            android:label="@string/app_name">
+            android:label="@string/app_name" >
             <intent-filter>
-                <action android:name="android.intent.action.SENDTO"/>
-                <data android:scheme="mailto"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.SEND"/>
-                <data android:mimeType="*/*"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.SEND_MULTIPLE"/>
-                <data android:mimeType="*/*"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
-                <data android:scheme="mailto"/>
+                <action android:name="android.intent.action.SENDTO" />
 
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="mailto" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+
+                <data android:mimeType="*/*" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+
+                <data android:mimeType="*/*" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <data android:scheme="mailto" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
             </intent-filter>
         </activity>
 
@@ -273,83 +270,80 @@
             android:name="com.fsck.k9.activity.Search"
             android:configChanges="locale"
             android:label="@string/search_action"
-            android:uiOptions="splitActionBarWhenNarrow">
+            android:uiOptions="splitActionBarWhenNarrow" >
             <intent-filter>
-                <action android:name="android.intent.action.SEARCH"/>
-                <category android:name="android.intent.category.DEFAULT"/>
+                <action android:name="android.intent.action.SEARCH" />
+
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+
             <meta-data
                 android:name="android.app.searchable"
-                android:resource="@xml/searchable"/>
+                android:resource="@xml/searchable" />
         </activity>
-
         <activity
             android:name="com.fsck.k9.activity.LauncherShortcuts"
             android:configChanges="locale"
-            android:label="@string/shortcuts_title">
+            android:label="@string/shortcuts_title" >
             <intent-filter>
-                <action android:name="android.intent.action.CREATE_SHORTCUT"/>
-                <category android:name="android.intent.category.DEFAULT"/>
+                <action android:name="android.intent.action.CREATE_SHORTCUT" />
+
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-
         <activity
             android:name="com.fsck.k9.activity.EmailAddressList"
-            android:configChanges="locale"/>
-
-        <activity android:name="com.fsck.k9.activity.UnreadWidgetConfiguration">
+            android:configChanges="locale" />
+        <activity android:name="com.fsck.k9.activity.UnreadWidgetConfiguration" >
             <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>
         </activity>
-
         <activity
             android:name="com.fsck.k9.activity.UpgradeDatabases"
-            android:label="@string/upgrade_databases_title"/>
+            android:label="@string/upgrade_databases_title" />
 
         <receiver
             android:name="com.fsck.k9.service.BootReceiver"
-            android:enabled="true">
+            android:enabled="true" >
             <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
             <intent-filter>
-                <action android:name="android.intent.action.DEVICE_STORAGE_LOW"/>
+                <action android:name="android.intent.action.DEVICE_STORAGE_LOW" />
             </intent-filter>
             <intent-filter>
-                <action android:name="android.intent.action.DEVICE_STORAGE_OK"/>
+                <action android:name="android.intent.action.DEVICE_STORAGE_OK" />
             </intent-filter>
             <intent-filter>
-                <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
             </intent-filter>
             <intent-filter>
-                <action android:name="android.net.conn.BACKGROUND_DATA_SETTING_CHANGED"/>
+                <action android:name="android.net.conn.BACKGROUND_DATA_SETTING_CHANGED" />
             </intent-filter>
             <intent-filter>
-                <action android:name="com.android.sync.SYNC_CONN_STATUS_CHANGED"/>
+                <action android:name="com.android.sync.SYNC_CONN_STATUS_CHANGED" />
             </intent-filter>
         </receiver>
-
         <receiver
             android:name="com.fsck.k9.service.RemoteControlReceiver"
             android:enabled="true"
-            android:permission="${applicationId}.permission.REMOTE_CONTROL">
+            android:permission="${applicationId}.permission.REMOTE_CONTROL" >
             <intent-filter>
-                <action android:name="${applicationId}.K9RemoteControl.set"/>
+                <action android:name="${applicationId}.K9RemoteControl.set" />
             </intent-filter>
             <intent-filter>
-                <action android:name="${applicationId}.K9RemoteControl.requestAccounts"/>
+                <action android:name="${applicationId}.K9RemoteControl.requestAccounts" />
             </intent-filter>
         </receiver>
-
         <receiver
             android:name="com.fsck.k9.service.CoreReceiver"
-            android:exported="false"/>
-
+            android:exported="false" />
         <receiver
             android:name="com.fsck.k9.service.StorageReceiver"
-            android:enabled="true">
+            android:enabled="true" >
             <intent-filter>
+
                 <!--
                 android.intent.action.MEDIA_MOUNTED
 
@@ -357,63 +351,53 @@
                      * The path to the mount point for the removed media is contained in the Intent.mData field.
                      * The Intent contains an extra with name "read-only" and Boolean value to indicate if the
                      * media was mounted read only.
-
-                 -->
-                <action android:name="android.intent.action.MEDIA_MOUNTED"/>
+                -->
+                <action android:name="android.intent.action.MEDIA_MOUNTED" />
                 <!--
-
                 MEDIA_EJECT and MEDIA_UNMOUNTED are not defined here: they have to be dynamically registered
                 otherwise it would make K-9 start at the wrong time
-
-                 -->
-                <data android:scheme="file"/>
+                -->
+                <data android:scheme="file" />
             </intent-filter>
         </receiver>
-
         <receiver
             android:name="com.fsck.k9.provider.UnreadWidgetProvider"
             android:icon="@drawable/icon"
-            android:label="@string/unread_widget_label">
+            android:label="@string/unread_widget_label" >
             <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
+
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/unread_widget_info"/>
+                android:resource="@xml/unread_widget_info" />
         </receiver>
 
         <service
             android:name="com.fsck.k9.service.MailService"
-            android:enabled="true"/>
-
+            android:enabled="true" />
         <service
             android:name="com.fsck.k9.service.RemindMeService"
-            android:enabled="true"/>
-
+            android:enabled="true" />
         <service
             android:name="com.fsck.k9.service.NotificationActionService"
-            android:enabled="true"/>
-
+            android:enabled="true" />
         <service
             android:name="com.fsck.k9.service.PushService"
-            android:enabled="true"/>
-
+            android:enabled="true" />
         <service
             android:name="com.fsck.k9.service.PollService"
-            android:enabled="true"/>
-
+            android:enabled="true" />
         <service
             android:name="com.fsck.k9.service.RemoteControlService"
             android:enabled="true"
-            android:permission="${applicationId}.permission.REMOTE_CONTROL"/>
-
+            android:permission="${applicationId}.permission.REMOTE_CONTROL" />
         <service
             android:name="com.fsck.k9.service.SleepService"
-            android:enabled="true"/>
-
+            android:enabled="true" />
         <service
             android:name="com.fsck.k9.service.DatabaseUpgradeService"
-            android:exported="false"/>
+            android:exported="false" />
 
         <provider
             android:name="com.fsck.k9.provider.AttachmentProvider"
@@ -421,8 +405,7 @@
             android:exported="true"
             android:grantUriPermissions="true"
             android:multiprocess="true"
-            android:readPermission="${applicationId}.permission.READ_ATTACHMENT"/>
-
+            android:readPermission="${applicationId}.permission.READ_ATTACHMENT" />
         <provider
             android:name="com.fsck.k9.provider.MessageProvider"
             android:authorities="${applicationId}.messageprovider"
@@ -430,24 +413,25 @@
             android:grantUriPermissions="true"
             android:multiprocess="true"
             android:readPermission="${applicationId}.permission.READ_MESSAGES"
-            android:writePermission="${applicationId}.permission.DELETE_MESSAGES"/>
-
+            android:writePermission="${applicationId}.permission.DELETE_MESSAGES" />
         <provider
             android:name="com.fsck.k9.provider.EmailProvider"
             android:authorities="${applicationId}.provider.email"
-            android:exported="false"/>
-
+            android:exported="false" />
         <provider
             android:name="com.fsck.k9.provider.K9FileProvider"
             android:authorities="${applicationId}.fileprovider"
             android:exported="false"
-            android:grantUriPermissions="true">
-
+            android:grantUriPermissions="true" >
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/allowed_file_provider_paths" />
-
         </provider>
 
+        <activity
+            android:name="com.fsck.k9.activity.About"
+            android:label="@string/title_activity_about" >
+        </activity>
     </application>
+
 </manifest>

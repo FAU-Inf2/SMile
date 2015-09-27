@@ -1,8 +1,6 @@
 package com.fsck.k9.activity;
-import android.app.AlertDialog;
 import android.app.SearchManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -27,7 +25,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
-import android.webkit.WebView;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -62,7 +59,6 @@ import com.fsck.k9.view.MessageHeader;
 import com.fsck.k9.view.ViewSwitcher;
 import com.fsck.k9.view.ViewSwitcher.OnSwitchCompleteListener;
 
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -968,83 +964,9 @@ public class MessageList extends K9Activity
         Settings.actionAccountPreferences(this, mAccount);
     }
 
-    //copied from Accounts.java
     private void onAbout() {
-        String appName = getString(R.string.app_name);
-        int year = Calendar.getInstance().get(Calendar.YEAR);
-        WebView wv = new WebView(this);
-        StringBuilder html = new StringBuilder()
-                .append("<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\" />")
-                .append("<img src=\"file:///android_asset/icon.png\" alt=\"").append(appName).append("\"/>")
-                .append("<h1>")
-                .append(String.format(getString(R.string.about_title_fmt),
-                        "<a href=\"" + getString(R.string.app_webpage_url)) + "\">")
-                .append(appName)
-                .append("</a>")
-                .append("</h1><p>")
-                .append(appName)
-                .append(" ")
-                .append(String.format(getString(R.string.debug_version_fmt), getVersionNumber()))
-                .append("</p><p>")
-                .append(String.format(getString(R.string.app_authors_fmt),
-                        getString(R.string.app_authors)))
-                .append("</p><p>")
-                .append(String.format(getString(R.string.app_revision_fmt),
-                        "<a href=\"" + getString(R.string.app_revision_url) + "\">" +
-                                getString(R.string.app_revision_url) +
-                                "</a>"))
-                .append("</p><hr/><p>")
-                .append(String.format(getString(R.string.app_copyright_fmt), year, year))
-                .append("</p><hr/><p>")
-                .append(getString(R.string.app_license))
-                .append("</p><hr/><p>");
-
-        StringBuilder libs = new StringBuilder().append("<ul>");
-        for (String[] library : K9.USED_LIBRARIES) {
-            libs.append("<li><a href=\"").append(library[1]).append("\">").append(library[0]).append("</a></li>");
-        }
-        libs.append("</ul>");
-
-        html.append(String.format(getString(R.string.app_libraries), libs.toString()))
-                .append("</p><hr/><p>")
-                .append(String.format(getString(R.string.app_emoji_icons),
-                        "<div>TypePad \u7d75\u6587\u5b57\u30a2\u30a4\u30b3\u30f3\u753b\u50cf " +
-                                "(<a href=\"http://typepad.jp/\">Six Apart Ltd</a>) / " +
-                                "<a href=\"http://creativecommons.org/licenses/by/2.1/jp/\">CC BY 2.1</a></div>"))
-                .append("</p><hr/><p>")
-                .append(getString(R.string.app_htmlcleaner_license));
-
-
-        wv.loadDataWithBaseURL("file:///android_res/drawable/", html.toString(), "text/html", "utf-8", null);
-        new AlertDialog.Builder(this)
-                .setView(wv)
-                .setCancelable(true)
-                .setPositiveButton(R.string.okay_action, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface d, int c) {
-                        d.dismiss();
-                    }
-                })
-                .setNeutralButton(R.string.changelog_full_title, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface d, int c) {
-                        new ChangeLog(MessageList.this).getFullLogDialog().show();
-                    }
-                })
-                .show();
-    }
-    /**
-     * Get current version number.
-     *
-     * @return String version
-     */
-    private String getVersionNumber() {
-        String version = "?";
-        try {
-            PackageInfo pi = getPackageManager().getPackageInfo(getPackageName(), 0);
-            version = pi.versionName;
-        } catch (PackageManager.NameNotFoundException e) {
-            //Log.e(TAG, "Package name not found", e);
-        }
-        return version;
+        Intent i = new Intent(this, About.class);
+        startActivity(i);
     }
 
     @Override

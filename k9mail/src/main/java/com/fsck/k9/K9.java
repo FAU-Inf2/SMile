@@ -351,6 +351,7 @@ public class K9 extends Application {
             new String[]{"AndroidSwipeLayout", "https://github.com/daimajia/AndroidSwipeLayout"},
             new String[]{"Material Design Icons", "https://www.google.com/design/icons/"},
             new String[]{"Polygon Background", "http://blog.spoongraphics.co.uk/"},
+            new String[]{"FloatingActionButton", "https://github.com/Clans/FloatingActionButton"},
             new String[]{"jutf7", "http://jutf7.sourceforge.net/"},
             new String[]{"JZlib", "http://www.jcraft.com/jzlib/"},
             new String[]{"Commons IO", "http://commons.apache.org/io/"},

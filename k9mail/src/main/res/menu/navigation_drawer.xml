@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:id="@+id/drawer_special_accounts" android:checkableBehavior="single">
+        <item
+            android:id="@+id/drawer_unified_inbox"
+            android:icon="@drawable/ic_inbox_black_24dp"
+            android:title="@string/integrated_inbox_title" />
+        <item
+            android:id="@+id/drawer_all_messages"
+            android:icon="@drawable/ic_inbox_black_24dp"
+            android:title="@string/search_all_messages_title" />
+    </group>
+    <group android:id="@+id/drawer_folders" android:checkableBehavior="single">
+        <item
+            android:id="@+id/drawer_inbox"
+            android:icon="@drawable/ic_inbox_black_24dp"
+            android:title="@string/special_mailbox_name_inbox" />
+        <item
+            android:id="@+id/drawer_sent"
+            android:icon="@drawable/ic_send_black_24dp"
+            android:title="@string/special_mailbox_name_sent" />
+        <item
+            android:id="@+id/drawer_drafts"
+            android:icon="@drawable/ic_drafts_black_24dp"
+            android:title="@string/special_mailbox_name_drafts" />
+        <item
+            android:id="@+id/drawer_trash"
+            android:icon="@drawable/ic_send_black_24dp"
+            android:title="@string/special_mailbox_name_trash" />
+        <item
+            android:id="@+id/drawer_all_folders"
+            android:icon="@drawable/ic_list_black_24dp"
+            android:title="@string/folder_list" />
+    </group>
+    <group android:id="@+id/drawer_settings" android:checkableBehavior="single">
+        <item
+            android:id="@+id/drawer_settings_item"
+            android:icon="@drawable/ic_settings_black_24dp"
+            android:title="@string/preferences_title" />
+    </group>
+    <group android:id="@+id/drawer_about" android:checkableBehavior="single">
+        <item
+            android:id="@+id/drawer_about_item"
+            android:icon="@drawable/ic_info_black_24dp"
+            android:title="@string/about_action" />
+    </group>
+</menu>

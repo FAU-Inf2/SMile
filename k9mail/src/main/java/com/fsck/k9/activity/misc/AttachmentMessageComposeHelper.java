@@ -42,7 +42,7 @@ public class AttachmentMessageComposeHelper {
         attachment.contentType = contentType;
         attachment.loaderId = messageCompose.increaseAndReturnMaxLoadId();
 
-        addAttachmentView(messageCompose, messageCompose.getmAttachments(), attachment);
+        addAttachmentView(messageCompose, messageCompose.getAttachments(), attachment);
 
         initAttachmentInfoLoader(messageCompose, attachmentLoaderCallbacks, attachment);
     }

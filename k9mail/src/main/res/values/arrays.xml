@@ -795,14 +795,4 @@
         <item>@string/account_preferences_notifications_key</item>
         <item>@string/account_preferences_search_key</item>
     </string-array>
-
-    <array name="navigation_drawer_icons">
-        <item>@drawable/ic_inbox_black_24dp</item>
-        <item>@drawable/ic_send_black_24dp</item>
-        <item>@drawable/ic_drafts_black_24dp</item>
-        <item>@drawable/ic_delete_black_24dp</item>
-        <item>@drawable/ic_list_black_24dp</item>
-        <item>@drawable/ic_settings_black_24dp</item>
-        <item>@drawable/ic_info_black_24dp</item>
-    </array>
 </resources>

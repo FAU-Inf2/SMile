@@ -173,9 +173,6 @@ public class MessageList extends K9Activity
     private TextView mActionBarUnread;
     private Menu mMenu;
 
-    private RecyclerView mRecyclerView;
-    private RecyclerView.Adapter mAdapter;
-    private RecyclerView.LayoutManager mLayoutManager;
     private DrawerLayout mDrawer;
     private ActionBarDrawerToggle mDrawerToggle;
 
@@ -594,48 +591,6 @@ public class MessageList extends K9Activity
                 getLayoutInflater().inflate(R.layout.actionbar_indeterminate_progress_actionview, null);
     }
 
-    public static class NavigationDrawerItem {
-        private int icon;
-        private String displayName;
-
-        public NavigationDrawerItem(@DrawableRes int icon, @StringRes int displayName) {
-            this.icon = icon;
-            this.displayName = K9.getApplication().getResources().getString(displayName);
-        }
-
-        public int getIcon() {
-            return icon;
-        }
-
-        public String getDisplayName() {
-            return displayName;
-        }
-
-        private static NavigationDrawerItem create(@DrawableRes int icon, @StringRes int displayName) {
-            return new NavigationDrawerItem(icon, displayName);
-        }
-
-        public static NavigationDrawerItem getUnifiedInbox() {
-            return create(R.drawable.ic_inbox_black_24dp, R.string.integrated_inbox_title);
-        }
-
-        public static NavigationDrawerItem getAllMessages() {
-            return create(R.drawable.ic_inbox_black_24dp, R.string.search_all_messages_title);
-        }
-
-        public static NavigationDrawerItem getInbox() {
-            return create(R.drawable.ic_inbox_black_24dp, R.string.special_mailbox_name_inbox);
-        }
-
-        public static NavigationDrawerItem getSent() {
-            return create(R.drawable.ic_send_black_24dp, R.string.special_mailbox_name_sent);
-        }
-
-        public static NavigationDrawerItem getDrafts() {
-            return create(R.drawable.ic_send_black_24dp, R.string.special_mailbox_name_sent);
-        }
-    }
-
     private void initializeNavigationDrawer() {
         mDrawer = findById(this, R.id.DrawerLayout);
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawer, R.string.app_name,
@@ -698,168 +653,6 @@ public class MessageList extends K9Activity
             });
         }
     }
-
-    /*private void initializeNavigationDrawer() {
-        final AccountView accountView = findById(this, R.id.account_view);
-        mRecyclerView = (RecyclerView) findViewById(R.id.RecyclerView);
-        mRecyclerView.setHasFixedSize(true);
-        mRecyclerView.addItemDecoration(new DividerItemDecoration(this));
-
-        List<NavigationDrawerItem> items = new ArrayList<>();
-        items.add(NavigationDrawerItem.getUnifiedInbox());
-        items.add(NavigationDrawerItem.getAllMessages());
-        items.add(NavigationDrawerItem.getInbox());
-        items.add(NavigationDrawerItem.getSent());
-        items.add(new NavigationDrawerItem(R.drawable.ic_drafts_black_24dp, R.string.special_mailbox_name_drafts));
-        items.add(new NavigationDrawerItem(R.drawable.ic_delete_black_24dp, R.string.special_mailbox_name_trash));
-        items.add(new NavigationDrawerItem(R.drawable.ic_list_black_24dp, R.string.folder_list));
-        items.add(new NavigationDrawerItem(R.drawable.ic_settings_black_24dp, R.string.preferences_title));
-        items.add(new NavigationDrawerItem(R.drawable.ic_info_black_24dp, R.string.about_action));
-        //titles and icons for ListView
-        int icons[] = {
-                R.drawable.ic_inbox_black_24dp,
-                R.drawable.ic_inbox_black_24dp,
-                R.drawable.ic_inbox_black_24dp,
-                R.drawable.ic_send_black_24dp,
-                R.drawable.ic_drafts_black_24dp,
-                R.drawable.ic_delete_black_24dp,
-                R.drawable.ic_list_black_24dp,
-                R.drawable.ic_settings_black_24dp,
-                R.drawable.ic_info_black_24dp
-        };
-
-        String titles[] = new String[] {
-                "Unified Inbox",
-                "All messages",
-                getResources().getString(R.string.special_mailbox_name_inbox),
-                getResources().getString(R.string.special_mailbox_name_sent),
-                getResources().getString(R.string.special_mailbox_name_drafts),
-                getResources().getString(R.string.special_mailbox_name_trash),
-                getResources().getString(R.string.folder_list),
-                getResources().getString(R.string.preferences_title),
-                getResources().getString(R.string.about_action) + " " + getResources().getString(R.string.app_name)
-        };
-
-        int titleCount = 2;
-
-        if(mAccount != null) {
-            accountView.setAccountSpinnerListener(null);
-            accountView.setCurrentAccount(mAccount);
-            accountView.setAccountSpinnerListener(new AdapterView.OnItemSelectedListener() {
-                @Override
-                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                    Object tag = parent.getTag();
-                    if(tag instanceof Integer && ((Integer)tag) == position) {
-                        return;
-                    }
-                    final Account selectedAccount = (Account) parent.getItemAtPosition(position);
-                    accountView.setCurrentAccount(selectedAccount);
-                    showMessageViewPlaceHolder();
-
-                    LocalSearch tmpSearch = new LocalSearch();
-                    tmpSearch.addAllowedFolder(selectedAccount.getAutoExpandFolderName());
-                    tmpSearch.addAccountUuid(selectedAccount.getUuid());
-                    MessageListFragment fragment = MessageListFragment.newInstance(tmpSearch, false,
-                            (K9.isThreadedViewEnabled() && !mNoThreading));
-                    addMessageListFragment(fragment, true);
-                    mDrawer.closeDrawers();
-                }
-
-                @Override
-                public void onNothingSelected(AdapterView<?> parent) {
-
-                }
-            });
-
-            titles[titleCount++] = mAccount.getInboxFolderName();
-            titles[titleCount++] = mAccount.getSentFolderName();
-            titles[titleCount++] = mAccount.getDraftsFolderName();
-            titles[titleCount++] = mAccount.getTrashFolderName();
-        }
-
-        mAdapter = new RecyclerViewAdapter(titles, icons);
-        mRecyclerView.setAdapter(mAdapter);
-
-        final GestureDetector mGestureDetector = new GestureDetector(MessageList.this,
-                new GestureDetector.SimpleOnGestureListener() {
-                    @Override
-                    public boolean onSingleTapUp(MotionEvent e) {
-                        return true;
-                    }
-                });
-
-        mRecyclerView.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
-            @Override
-            public boolean onInterceptTouchEvent(RecyclerView recyclerView, MotionEvent motionEvent) {
-                View child = recyclerView.findChildViewUnder(motionEvent.getX(), motionEvent.getY());
-
-                if (child != null && mGestureDetector.onTouchEvent(motionEvent)) {
-                    mDrawer.closeDrawers();
-
-                    int position = recyclerView.getChildAdapterPosition(child);
-
-                    switch(position) {
-                        case 0:
-                            if(mAccount != null)
-                                onOpenFolder(mAccount.getInboxFolderName());
-                            break;
-                        case 1:
-                            if(mAccount != null)
-                                onOpenFolder(mAccount.getSentFolderName());
-                            break;
-                        case 2:
-                            if(mAccount != null)
-                                onOpenFolder(mAccount.getDraftsFolderName());
-                            break;
-                        case 3:
-                            if(mAccount != null)
-                                onOpenFolder(mAccount.getTrashFolderName());
-                            break;
-                        case 4:
-                            if(mAccount != null)
-                                onShowFolderList();
-                            break;
-                        case 5:
-                            onEditPrefs();
-                            break;
-                        case 6:
-                            onAbout();
-                            break;
-                        default:
-                            break;
-                    }
-                    return true;
-                }
-                return false;
-            }
-
-            @Override
-            public void onTouchEvent(RecyclerView recyclerView, MotionEvent motionEvent) {
-            }
-
-            @Override
-            public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
-            }
-        });
-
-        mLayoutManager = new LinearLayoutManager(this);
-        mRecyclerView.setLayoutManager(mLayoutManager);
-        mDrawer = (DrawerLayout) findViewById(R.id.DrawerLayout);
-        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawer, R.string.app_name,
-                R.string.app_name) { //TODO: set correct strings
-            @Override
-            public void onDrawerOpened(View drawerView) {
-                super.onDrawerOpened(drawerView);
-            }
-
-            @Override
-            public void onDrawerClosed(View drawerView) {
-                super.onDrawerClosed(drawerView);
-            }
-        };
-        mDrawer.setDrawerListener(mDrawerToggle);
-        mDrawerToggle.syncState();
-    }*/
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
@@ -1073,11 +866,6 @@ public class MessageList extends K9Activity
         Settings.actionPreferences(this);
     }
 
-    private void onAbout() {
-        Intent i = new Intent(this, About.class);
-        startActivity(i);
-    }
-
     @Override
     public boolean onSearchRequested() {
         return mMessageListFragment.onSearchRequested();
@@ -1136,10 +924,10 @@ public class MessageList extends K9Activity
                 mMessageListFragment.changeSort(SortType.SORT_ATTACHMENT);
                 return true;
             }
-            /*case R.id.select_all: {
+            case R.id.select_all: {
                 mMessageListFragment.selectAll();
                 return true;
-            }*/
+            }
             case R.id.settings: {
                 onEditPrefs();
                 return true;

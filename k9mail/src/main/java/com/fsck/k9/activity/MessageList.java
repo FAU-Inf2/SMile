@@ -655,17 +655,17 @@ public class MessageList extends K9Activity
 
         final NavigationView navigationView = findById(this, R.id.navigation);
         final AccountView accountView = findById(navigationView, R.id.account_view);
-        Menu menu = navigationView.getMenu();
-        NavigationMenuItemClickListener clickListener = new NavigationMenuItemClickListener(this, mDrawer, mAccount);
-        menu.findItem(R.id.drawer_unified_inbox).setOnMenuItemClickListener(clickListener);
-        menu.findItem(R.id.drawer_all_messages).setOnMenuItemClickListener(clickListener);
-        menu.findItem(R.id.drawer_inbox).setOnMenuItemClickListener(clickListener);
-        menu.findItem(R.id.drawer_sent).setOnMenuItemClickListener(clickListener);
-        menu.findItem(R.id.drawer_drafts).setOnMenuItemClickListener(clickListener);
-        menu.findItem(R.id.drawer_trash).setOnMenuItemClickListener(clickListener);
-        menu.findItem(R.id.drawer_all_folders).setOnMenuItemClickListener(clickListener);
-        menu.findItem(R.id.drawer_settings_item).setOnMenuItemClickListener(clickListener);
-        menu.findItem(R.id.drawer_about_item).setOnMenuItemClickListener(clickListener);
+        final Menu menu = navigationView.getMenu();
+        final NavigationMenuItemClickListener drawerMenuClickListener = new NavigationMenuItemClickListener(this, mDrawer, mAccount);
+        menu.findItem(R.id.drawer_unified_inbox).setOnMenuItemClickListener(drawerMenuClickListener);
+        menu.findItem(R.id.drawer_all_messages).setOnMenuItemClickListener(drawerMenuClickListener);
+        menu.findItem(R.id.drawer_inbox).setOnMenuItemClickListener(drawerMenuClickListener);
+        menu.findItem(R.id.drawer_sent).setOnMenuItemClickListener(drawerMenuClickListener);
+        menu.findItem(R.id.drawer_drafts).setOnMenuItemClickListener(drawerMenuClickListener);
+        menu.findItem(R.id.drawer_trash).setOnMenuItemClickListener(drawerMenuClickListener);
+        menu.findItem(R.id.drawer_all_folders).setOnMenuItemClickListener(drawerMenuClickListener);
+        menu.findItem(R.id.drawer_settings_item).setOnMenuItemClickListener(drawerMenuClickListener);
+        menu.findItem(R.id.drawer_about_item).setOnMenuItemClickListener(drawerMenuClickListener);
 
         if(mAccount != null) {
             accountView.setAccountSpinnerListener(null);
@@ -679,6 +679,7 @@ public class MessageList extends K9Activity
                     }
                     final Account selectedAccount = (Account) parent.getItemAtPosition(position);
                     accountView.setCurrentAccount(selectedAccount);
+                    drawerMenuClickListener.setAccount(selectedAccount);
                     showMessageViewPlaceHolder();
 
                     LocalSearch tmpSearch = new LocalSearch();
@@ -2034,14 +2035,18 @@ public class MessageList extends K9Activity
         return true;
     }
 
-    private class NavigationMenuItemClickListener implements MenuItem.OnMenuItemClickListener {
-        private final Account account;
+    private static class NavigationMenuItemClickListener implements MenuItem.OnMenuItemClickListener {
+        private Account account;
         private final Context context;
         private final DrawerLayout drawerLayout;
 
         public NavigationMenuItemClickListener(Context context, DrawerLayout drawerLayout, Account account) {
             this.context = context;
             this.drawerLayout = drawerLayout;
+            this.account = account;
+        }
+
+        public void setAccount(Account account) {
             this.account = account;
         }
 

@@ -23,8 +23,6 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -192,7 +190,7 @@ public class MessageListFragment extends Fragment
      */
     protected String mFolderName;
     protected LocalSearch mSearch = null;
-    protected int mSelectedCount = 0;
+    private int mSelectedCount = 0;
     protected MessageListFragmentListener mFragmentListener;
     protected boolean mThreadedList;
     // package visible so handler can access it
@@ -228,7 +226,7 @@ public class MessageListFragment extends Fragment
      * between user interactions (e.g. selecting a folder for move operation).
      */
     private List<LocalMessage> mActiveMessages;
-    private ActionModeCallback mActionModeCallback;
+    private MessageListActionModeCallback mActionModeCallback;
     private boolean mIsThreadDisplay;
     private Context mContext;
     private Preferences mPreferences;
@@ -382,9 +380,9 @@ public class MessageListFragment extends Fragment
             return;
         }
 
-        Log.d(K9.LOG_TAG, "showing message at position: " + position);
+        K9.logDebug("showing message at position: " + position);
 
-        if (mSelectedCount > 0) {
+        if (getmSelectedCount() > 0) {
             toggleMessageSelect(position);
         } else {
             if (mThreadedList && cursor.getInt(THREAD_COUNT_COLUMN) > 1) {
@@ -643,7 +641,7 @@ public class MessageListFragment extends Fragment
             }
         }
 
-        mActionModeCallback = new ActionModeCallback(mAccount, mSingleAccountMode);
+        mActionModeCallback = new MessageListActionModeCallback(mAccount, mSingleAccountMode, this);
     }
 
     private void initializeMessageList() {
@@ -962,7 +960,7 @@ public class MessageListFragment extends Fragment
         onDelete(Collections.singletonList(message));
     }
 
-    private void onDelete(List<LocalMessage> messages) {
+    public void onDelete(List<LocalMessage> messages) {
         if (K9.confirmDelete()) {
             // remember the message selection for #onCreateDialog(int)
             mActiveMessages = messages;
@@ -1171,7 +1169,7 @@ public class MessageListFragment extends Fragment
             }
             case R.id.send_again: {
                 onResendMessage(getMessageAtPosition(adapterPosition));
-                mSelectedCount = 0;
+                setmSelectedCount(0);
                 break;
             }
             case R.id.same_sender: {
@@ -1374,7 +1372,7 @@ public class MessageListFragment extends Fragment
                 return;
             }
 
-            mSelectedCount = 0;
+            setmSelectedCount(0);
             for (int i = 0, end = mAdapter.getCount(); i < end; i++) {
                 LocalMessage message = getMessageAtPosition(i);
                 long uniqueId = message.getId();
@@ -1388,9 +1386,9 @@ public class MessageListFragment extends Fragment
                         Log.e(K9.LOG_TAG, "error in setSelectionState ", e);
                     }
 
-                    mSelectedCount += (threadCount > 1) ? threadCount : 1;
+                    setmSelectedCount(getmSelectedCount() + ((threadCount > 1) ? threadCount : 1));
                 } else {
-                    mSelectedCount++;
+                    setmSelectedCount(getmSelectedCount() + 1);
                 }
             }
 
@@ -1403,7 +1401,7 @@ public class MessageListFragment extends Fragment
             computeSelectAllVisibility();
         } else {
             mSelected.clear();
-            mSelectedCount = 0;
+            setmSelectedCount(0);
             if (mActionMode != null) {
                 mActionMode.finish();
                 mActionMode = null;
@@ -1457,7 +1455,7 @@ public class MessageListFragment extends Fragment
         }
 
         if (mActionMode != null) {
-            if (mSelectedCount == selectedCountDelta && selected) {
+            if (getmSelectedCount() == selectedCountDelta && selected) {
                 mActionMode.finish();
                 mActionMode = null;
                 return;
@@ -1467,9 +1465,9 @@ public class MessageListFragment extends Fragment
         }
 
         if (selected) {
-            mSelectedCount -= selectedCountDelta;
+            setmSelectedCount(getmSelectedCount() - selectedCountDelta);
         } else {
-            mSelectedCount += selectedCountDelta;
+            setmSelectedCount(getmSelectedCount() + selectedCountDelta);
         }
 
         computeBatchDirection();
@@ -1481,7 +1479,7 @@ public class MessageListFragment extends Fragment
     }
 
     private void updateActionModeTitle() {
-        mActionMode.setTitle(String.format(getString(R.string.actionbar_selected), mSelectedCount));
+        mActionMode.setTitle(getString(R.string.actionbar_selected, getmSelectedCount()));
     }
 
     private void computeSelectAllVisibility() {
@@ -1555,7 +1553,7 @@ public class MessageListFragment extends Fragment
         computeBatchDirection();
     }
 
-    private void setFlagForSelected(final Flag flag, final boolean newState) {
+    public void setFlagForSelected(final Flag flag, final boolean newState) {
         if (mSelected.isEmpty()) {
             return;
         }
@@ -1629,7 +1627,7 @@ public class MessageListFragment extends Fragment
      *
      * @param messages Never {@code null}.
      */
-    private void onMove(List<LocalMessage> messages) {
+    public void onMove(List<LocalMessage> messages) {
         if (!checkCopyOrMovePossible(messages, FolderOperation.MOVE)) {
             return;
         }
@@ -1662,7 +1660,7 @@ public class MessageListFragment extends Fragment
      *
      * @param messages Never {@code null}.
      */
-    private void onCopy(List<LocalMessage> messages) {
+    public void onCopy(List<LocalMessage> messages) {
         if (!checkCopyOrMovePossible(messages, FolderOperation.COPY)) {
             return;
         }
@@ -1715,7 +1713,7 @@ public class MessageListFragment extends Fragment
         onArchive(Collections.singletonList(message));
     }
 
-    private void onArchive(final List<LocalMessage> messages) {
+    public void onArchive(final List<LocalMessage> messages) {
         Map<Account, List<LocalMessage>> messagesByAccount = groupMessagesByAccount(messages);
 
         for (Entry<Account, List<LocalMessage>> entry : messagesByAccount.entrySet()) {
@@ -1754,7 +1752,7 @@ public class MessageListFragment extends Fragment
      *
      * @param messages The messages to move to the spam folder. Never {@code null}.
      */
-    private void onSpam(List<LocalMessage> messages) {
+    public void onSpam(List<LocalMessage> messages) {
         if (K9.confirmSpam()) {
             // remember the message selection for #onCreateDialog(int)
             mActiveMessages = messages;
@@ -2113,7 +2111,7 @@ public class MessageListFragment extends Fragment
         }
     }
 
-    private List<LocalMessage> getCheckedMessages() {
+    public List<LocalMessage> getCheckedMessages() {
         List<LocalMessage> checkedMessages = new ArrayList<>(mSelected.size());
         for (int position = 0; position < mAdapter.getCount(); position++) {
             LocalMessage message = getMessageAtPosition(position);
@@ -2124,7 +2122,7 @@ public class MessageListFragment extends Fragment
             long uniqueId = message.getId();
 
             if (mSelected.contains(uniqueId)) {
-                    checkedMessages.add(message);
+                checkedMessages.add(message);
             }
         }
 
@@ -2326,11 +2324,11 @@ public class MessageListFragment extends Fragment
      */
     private void recalculateSelectionCount() {
         if (!mThreadedList) {
-            mSelectedCount = mSelected.size();
+            setmSelectedCount(mSelected.size());
             return;
         }
 
-        mSelectedCount = 0;
+        setmSelectedCount(0);
         for (int i = 0; i < mAdapter.getCount(); i++) {
             LocalMessage message = getMessageAtPosition(i);
             long uniqueId = message.getId();
@@ -2343,7 +2341,7 @@ public class MessageListFragment extends Fragment
                     Log.e(K9.LOG_TAG, "recalculateSelectionCount", e);
                 }
                 
-                mSelectedCount += (threadCount > 1) ? threadCount : 1;
+                setmSelectedCount(getmSelectedCount() + ((threadCount > 1) ? threadCount : 1));
             }
         }
     }
@@ -2414,6 +2412,14 @@ public class MessageListFragment extends Fragment
 
     private boolean isPullToRefreshAllowed() {
         return (isRemoteSearchAllowed() || isCheckMailAllowed());
+    }
+
+    public int getmSelectedCount() {
+        return mSelectedCount;
+    }
+
+    public void setmSelectedCount(int mSelectedCount) {
+        this.mSelectedCount = mSelectedCount;
     }
 
     private static enum FolderOperation {
@@ -2743,220 +2749,4 @@ public class MessageListFragment extends Fragment
         }
     }
 
-    public class ActionModeCallback implements ActionMode.Callback {
-        private MenuItem mSelectAll;
-        private MenuItem mMarkAsRead;
-        private MenuItem mMarkAsUnread;
-        private MenuItem mFlag;
-        private MenuItem mUnflag;
-        private final Account mAccount;
-        private final Preferences mPreferences;
-        private final boolean mSingleAccountMode;
-
-        public ActionModeCallback(Account mAccount, boolean mSingleAccountMode) {
-            this.mAccount = mAccount;
-            this.mPreferences = Preferences.getPreferences(K9.getApplication());
-            this.mSingleAccountMode = mSingleAccountMode;
-        }
-
-        @Override
-        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-            MenuInflater inflater = mode.getMenuInflater();
-            inflater.inflate(R.menu.message_list_context, menu);
-
-            // check capabilities
-            setContextCapabilities(mAccount, menu);
-
-            return true;
-        }
-
-        @Override
-        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-            mSelectAll = menu.findItem(R.id.select_all);
-            mMarkAsRead = menu.findItem(R.id.mark_as_read);
-            mMarkAsUnread = menu.findItem(R.id.mark_as_unread);
-            mFlag = menu.findItem(R.id.flag);
-            mUnflag = menu.findItem(R.id.unflag);
-
-            // we don't support cross account actions atm
-            if (!mSingleAccountMode) {
-                // show all
-                menu.findItem(R.id.move).setVisible(true);
-                menu.findItem(R.id.archive).setVisible(true);
-                menu.findItem(R.id.spam).setVisible(true);
-                menu.findItem(R.id.copy).setVisible(true);
-
-                Set<String> accountUuids = getAccountUuidsForSelected();
-
-                for (String accountUuid : accountUuids) {
-                    Account account = mPreferences.getAccount(accountUuid);
-                    if (account != null) {
-                        setContextCapabilities(account, menu);
-                    }
-                }
-
-            }
-            return true;
-        }
-
-        @Override
-        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-            /*
-             * In the following we assume that we can't move or copy
-             * mails to the same folder. Also that spam isn't available if we are
-             * in the spam folder,same for archive.
-             *
-             * This is the case currently so safe assumption.
-             */
-            switch (item.getItemId()) {
-                case R.id.delete: {
-                    List<LocalMessage> messages = getCheckedMessages();
-                    onDelete(messages);
-                    mSelectedCount = 0;
-                    break;
-                }
-                case R.id.mark_as_read: {
-                    setFlagForSelected(Flag.SEEN, true);
-                    break;
-                }
-                case R.id.mark_as_unread: {
-                    setFlagForSelected(Flag.SEEN, false);
-                    break;
-                }
-                case R.id.flag: {
-                    setFlagForSelected(Flag.FLAGGED, true);
-                    break;
-                }
-                case R.id.unflag: {
-                    setFlagForSelected(Flag.FLAGGED, false);
-                    break;
-                }
-                case R.id.select_all: {
-                    selectAll();
-                    break;
-                }
-
-                // only if the account supports this
-                case R.id.archive: {
-                    onArchive(getCheckedMessages());
-                    mSelectedCount = 0;
-                    break;
-                }
-                case R.id.spam: {
-                    onSpam(getCheckedMessages());
-                    mSelectedCount = 0;
-                    break;
-                }
-                case R.id.move: {
-                    onMove(getCheckedMessages());
-                    mSelectedCount = 0;
-                    break;
-                }
-                case R.id.copy: {
-                    onCopy(getCheckedMessages());
-                    mSelectedCount = 0;
-                    break;
-                }
-            }
-            if (mSelectedCount == 0) {
-                mActionMode.finish();
-            }
-
-            return true;
-        }
-
-        @Override
-        public void onDestroyActionMode(ActionMode mode) {
-            mActionMode = null;
-            mSelectAll = null;
-            mMarkAsRead = null;
-            mMarkAsUnread = null;
-            mFlag = null;
-            mUnflag = null;
-            setSelectionState(false);
-        }
-
-        /**
-         * Get the set of account UUIDs for the selected messages.
-         */
-        private Set<String> getAccountUuidsForSelected() {
-            int maxAccounts = mAccountUuids.length;
-            Set<String> accountUuids = new HashSet<String>(maxAccounts);
-
-            for (int position = 0, end = mAdapter.getCount(); position < end; position++) {
-                Cursor cursor = (Cursor) mAdapter.getItem(position);
-                long uniqueId = cursor.getLong(mUniqueIdColumn);
-
-                if (mSelected.contains(uniqueId)) {
-                    String accountUuid = cursor.getString(ACCOUNT_UUID_COLUMN);
-                    accountUuids.add(accountUuid);
-
-                    if (accountUuids.size() == mAccountUuids.length) {
-                        break;
-                    }
-                }
-            }
-
-            return accountUuids;
-        }
-
-        /**
-         * Disables menu options not supported by the account type or current "search view".
-         *
-         * @param account The account to query for its capabilities.
-         * @param menu    The menu to adapt.
-         */
-        private void setContextCapabilities(Account account, Menu menu) {
-            if (!mSingleAccountMode) {
-                // We don't support cross-account copy/move operations right now
-                menu.findItem(R.id.move).setVisible(false);
-                menu.findItem(R.id.copy).setVisible(false);
-
-                //TODO: we could support the archive and spam operations if all selected messages
-                // belong to non-POP3 accounts
-                menu.findItem(R.id.archive).setVisible(false);
-                menu.findItem(R.id.spam).setVisible(false);
-
-            } else {
-                // hide unsupported
-                if (!mController.isCopyCapable(account)) {
-                    menu.findItem(R.id.copy).setVisible(false);
-                }
-
-                if (!mController.isMoveCapable(account)) {
-                    menu.findItem(R.id.move).setVisible(false);
-                    menu.findItem(R.id.archive).setVisible(false);
-                    menu.findItem(R.id.spam).setVisible(false);
-                }
-
-                if (!account.hasArchiveFolder()) {
-                    menu.findItem(R.id.archive).setVisible(false);
-                }
-
-                if (!account.hasSpamFolder()) {
-                    menu.findItem(R.id.spam).setVisible(false);
-                }
-            }
-        }
-
-        public void showSelectAll(boolean show) {
-            if (mActionMode != null) {
-                mSelectAll.setVisible(show);
-            }
-        }
-
-        public void showMarkAsRead(boolean show) {
-            if (mActionMode != null) {
-                mMarkAsRead.setVisible(show);
-                mMarkAsUnread.setVisible(!show);
-            }
-        }
-
-        public void showFlag(boolean show) {
-            if (mActionMode != null) {
-                mFlag.setVisible(show);
-                mUnflag.setVisible(!show);
-            }
-        }
-    }
 }

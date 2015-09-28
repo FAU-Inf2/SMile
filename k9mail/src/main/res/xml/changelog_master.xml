@@ -8,9 +8,13 @@
      They are automatically updated with "ant bump-version".
 -->
 <changelog>
+    <release version="2.0" versioncode="00004">
+        <change>Introduce Material Design</change>
+    </release>
+
     <release version="1.1" versioncode="00003">
-        <change>added S/MIME support</change>
-        <change>for S/MIME to work you need to install <![CDATA[<a href="market://details?id=de.fau.cs.mad.smile.android.encryption">SMileCE</a>]]> and configure it in the cryptography settings of the account</change>
+        <change>Added S/MIME support</change>
+        <change>For S/MIME to work you need to install <![CDATA[<a href="market://details?id=de.fau.cs.mad.smile.android.encryption">SMileCE</a>]]> and configure it in the cryptography settings of the account</change>
     </release>
 
     <release version="1.01" versioncode="00002">

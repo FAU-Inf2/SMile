@@ -57,10 +57,6 @@ public class About extends ActionBarActivity {
                 .append(String.format(getString(R.string.app_authors_fmt),
                         getString(R.string.app_authors)))
                 .append("</p><p>")
-                .append(String.format(getString(R.string.app_revision_fmt),
-                        "<a href=\"" + getString(R.string.app_revision_url) + "\">" +
-                                getString(R.string.app_revision_url) +
-                                "</a>"))
                 .append("</p><hr/><p>")
                 .append(getString(R.string.app_license_apache_1)
                         + "<a href=\"" + getString(R.string.app_license_apache_url) + "\">" + getString(R.string.app_license_apache_url) + "</a>"

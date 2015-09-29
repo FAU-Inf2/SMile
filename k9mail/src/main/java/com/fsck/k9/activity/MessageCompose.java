@@ -1372,12 +1372,28 @@ public class MessageCompose extends K9Activity implements View.OnClickListener,
         if (isCryptoProviderEnabled()) {
             Toast.makeText(this, R.string.attachment_encryption_unsupported, Toast.LENGTH_LONG).show();
         }
-        Intent i = new Intent(Intent.ACTION_GET_CONTENT);
-        i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-        i.addCategory(Intent.CATEGORY_OPENABLE);
-        i.setType(mime_type);
-        mIgnoreOnPause = true;
-        startActivityForResult(Intent.createChooser(i, null), ACTIVITY_REQUEST_PICK_ATTACHMENT);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(getResources().getString(R.string.warning));
+        builder.setMessage(getResources().getString(R.string.attachment_not_supported));
+
+        builder.setPositiveButton(R.string.okay_action, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.dismiss();
+            }
+        });
+        builder.setNegativeButton(R.string.ignore_action, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int id) {
+                Intent i = new Intent(Intent.ACTION_GET_CONTENT);
+                i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                i.addCategory(Intent.CATEGORY_OPENABLE);
+                i.setType(mime_type);
+                mIgnoreOnPause = true;
+                startActivityForResult(Intent.createChooser(i, null), ACTIVITY_REQUEST_PICK_ATTACHMENT);
+            }
+        });
+        builder.create().show();
     }
 
     public int increaseAndReturnMaxLoadId() {

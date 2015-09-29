@@ -107,6 +107,7 @@ Um Fehler zu melden, neue Funktionen vorzuschlagen oder Fragen zu stellen, besuc
     <string name="previous_action">Zurück</string>
 
     <!--Used to confirm acceptance of dialog boxes, warnings, errors, etc.-->
+    <string name="warning">Warnung</string>
     <string name="okay_action">OK</string>
     <string name="cancel_action">Abbrechen</string>
     <string name="send_action">Senden</string>
@@ -138,6 +139,7 @@ Um Fehler zu melden, neue Funktionen vorzuschlagen oder Fragen zu stellen, besuc
     <string name="folder_settings_action">Ordnereinstellungen</string>
     <string name="global_settings_action">Globale Einstellungen</string>
     <string name="remove_account_action">Konto entfernen</string>
+    <string name="ignore_action">Ignorieren</string>
     <string name="clear_pending_action">Ausstehende Aktionen löschen (Achtung!)</string>
 
     <string name="mark_as_read_action">Als gelesen markieren</string>
@@ -789,6 +791,7 @@ Um Fehler zu melden, neue Funktionen vorzuschlagen oder Fragen zu stellen, besuc
     <string name="unknown_crypto_signature_user_id">&lt;unbekannt&gt;</string>
     <string name="pgp_mime_unsupported">PGP/MIME-Nachrichten werden noch nicht unterstützt.</string>
     <string name="attachment_encryption_unsupported">Achtung: Anhänge werden zur Zeit weder signiert noch verschlüsselt.</string>
+    <string name="attachment_not_supported">Anhänge werden derzeit nicht unterstützt.</string>
     <string name="send_aborted">Senden abgebrochen.</string>
     <string name="save_or_discard_draft_message_dlg_title">Entwurf speichern?</string>
     <string name="save_or_discard_draft_message_instructions_fmt">Entwurf speichern oder verwerfen?</string>

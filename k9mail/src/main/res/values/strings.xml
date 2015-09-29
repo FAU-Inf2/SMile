@@ -113,6 +113,7 @@ Please submit bug reports, contribute new features and ask questions at
     <string name="next_action">Next</string>
     <string name="previous_action">Previous</string>
     <!-- Used to confirm acceptance of dialog boxes, warnings, errors, etc. -->
+    <string name="warning">Warning</string>
     <string name="okay_action">OK</string>
     <string name="cancel_action">Cancel</string>
     <string name="send_action">Send</string>
@@ -145,6 +146,7 @@ Please submit bug reports, contribute new features and ask questions at
     <string name="folder_settings_action">Folder settings</string>
     <string name="global_settings_action">Global settings</string>
     <string name="remove_account_action">Remove account</string>
+    <string name="ignore_action">Ignore</string>
     <string name="clear_pending_action">Clear pending actions (danger!)</string>
 
     <string name="mark_as_read_action">Mark as read</string>
@@ -925,6 +927,7 @@ Please submit bug reports, contribute new features and ask questions at
     <string name="unknown_crypto_signature_user_id">&lt;unknown&gt;</string>
     <string name="pgp_mime_unsupported">PGP/MIME messages are not supported yet.</string>
     <string name="attachment_encryption_unsupported">Warning: attachments are NOT signed or encrypted yet.</string>
+    <string name="attachment_not_supported">Attachments are currently not supported.</string>
     <string name="send_aborted">Send aborted.</string>
 
     <string name="save_or_discard_draft_message_dlg_title">Save draft message?</string>

@@ -17,7 +17,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.AppCompatDelegate;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.ActionMode;
 import android.text.TextUtils;
 import android.util.Log;
@@ -2311,8 +2311,8 @@ public class MessageListFragment extends Fragment
     }
 
     private void startAndPrepareActionMode() {
-        AppCompatDelegate appCompatDelegate = AppCompatDelegate.create(getActivity(), null);
-        mActionMode = appCompatDelegate.startSupportActionMode(mActionModeCallback);
+        AppCompatActivity appCompatActivity = (AppCompatActivity) getActivity();
+        mActionMode = appCompatActivity.startSupportActionMode(mActionModeCallback);
         mActionMode.invalidate();
     }
 
@@ -2751,8 +2751,7 @@ public class MessageListFragment extends Fragment
         private MenuItem mUnflag;
         private final Account mAccount;
         private final Preferences mPreferences;
-        private boolean mSingleAccountMode;
-
+        private final boolean mSingleAccountMode;
 
         public ActionModeCallback(Account mAccount, boolean mSingleAccountMode) {
             this.mAccount = mAccount;

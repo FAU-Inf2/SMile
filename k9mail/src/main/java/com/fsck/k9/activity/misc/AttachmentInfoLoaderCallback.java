@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.view.View;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.fsck.k9.activity.MessageCompose;
@@ -32,7 +31,7 @@ public class AttachmentInfoLoaderCallback implements LoaderManager.LoaderCallbac
     public void onLoadFinished(Loader<Attachment> loader, Attachment attachment) {
         int loaderId = loader.getId();
 
-        View view = AttachmentMessageComposeHelper.getAttachmentView(messageCompose.getmAttachments(), loaderId);
+        View view = AttachmentMessageComposeHelper.getAttachmentView(messageCompose.getAttachments(), loaderId);
         if (view != null) {
             view.setTag(attachment);
 

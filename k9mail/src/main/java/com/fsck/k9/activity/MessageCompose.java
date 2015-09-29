@@ -3173,7 +3173,7 @@ public class MessageCompose extends K9Activity implements View.OnClickListener,
         }
     }
 
-    public LinearLayout getmAttachments() {
+    public LinearLayout getAttachments() {
         return mAttachments;
     }
 }

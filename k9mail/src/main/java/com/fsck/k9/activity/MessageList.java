@@ -6,8 +6,12 @@ import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.DrawableRes;
+import android.support.annotation.StringRes;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -58,11 +62,14 @@ import com.fsck.k9.view.MessageHeader;
 import com.fsck.k9.view.ViewSwitcher;
 import com.fsck.k9.view.ViewSwitcher.OnSwitchCompleteListener;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.TreeSet;
 
+import butterknife.BindDrawable;
+import butterknife.BindString;
 import butterknife.ButterKnife;
 import de.cketti.library.changelog.ChangeLog;
 import de.fau.cs.mad.smile.android.R;
@@ -161,24 +168,11 @@ public class MessageList extends K9Activity
 
     private StorageManager.StorageListener mStorageListener = new StorageListenerImplementation();
 
-    // Name and email in HeaderView -- TODO: for SMile-UI -> get from resources
-    String mName;
-    String mEmail;
-    //titles and icons for ListView
-    int mIcons[] = {R.drawable.ic_inbox_black_24dp, R.drawable.ic_send_black_24dp,
-            R.drawable.ic_drafts_black_24dp, R.drawable.ic_delete_black_24dp,
-            R.drawable.ic_list_black_24dp, R.drawable.ic_settings_black_24dp,
-            R.drawable.ic_info_black_24dp};
-    String mTitles[];
-
     private Toolbar toolbar;
     private ActionBar actionBar;
     private TextView mActionBarUnread;
     private Menu mMenu;
 
-    private RecyclerView mRecyclerView;
-    private RecyclerView.Adapter mAdapter;
-    private RecyclerView.LayoutManager mLayoutManager;
     private DrawerLayout mDrawer;
     private ActionBarDrawerToggle mDrawerToggle;
 
@@ -598,12 +592,36 @@ public class MessageList extends K9Activity
     }
 
     private void initializeNavigationDrawer() {
-        final AccountView accountView = findById(this, R.id.account_view);
-        mRecyclerView = (RecyclerView) findViewById(R.id.RecyclerView);
-        mRecyclerView.setHasFixedSize(true);
-        mRecyclerView.addItemDecoration(new DividerItemDecoration(this));
+        mDrawer = findById(this, R.id.DrawerLayout);
+        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawer, R.string.app_name,
+                R.string.app_name) { //TODO: set correct strings
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+            }
 
-        mTitles = new String[7];
+            @Override
+            public void onDrawerClosed(View drawerView) {
+                super.onDrawerClosed(drawerView);
+            }
+        };
+        mDrawer.setDrawerListener(mDrawerToggle);
+        mDrawerToggle.syncState();
+
+        final NavigationView navigationView = findById(this, R.id.navigation);
+        final AccountView accountView = findById(navigationView, R.id.account_view);
+        final Menu menu = navigationView.getMenu();
+        final NavigationMenuItemClickListener drawerMenuClickListener = new NavigationMenuItemClickListener(this, mDrawer, mAccount);
+        menu.findItem(R.id.drawer_unified_inbox).setOnMenuItemClickListener(drawerMenuClickListener);
+        menu.findItem(R.id.drawer_all_messages).setOnMenuItemClickListener(drawerMenuClickListener);
+        menu.findItem(R.id.drawer_inbox).setOnMenuItemClickListener(drawerMenuClickListener);
+        menu.findItem(R.id.drawer_sent).setOnMenuItemClickListener(drawerMenuClickListener);
+        menu.findItem(R.id.drawer_drafts).setOnMenuItemClickListener(drawerMenuClickListener);
+        menu.findItem(R.id.drawer_trash).setOnMenuItemClickListener(drawerMenuClickListener);
+        menu.findItem(R.id.drawer_all_folders).setOnMenuItemClickListener(drawerMenuClickListener);
+        menu.findItem(R.id.drawer_settings_item).setOnMenuItemClickListener(drawerMenuClickListener);
+        menu.findItem(R.id.drawer_about_item).setOnMenuItemClickListener(drawerMenuClickListener);
+
         if(mAccount != null) {
             accountView.setAccountSpinnerListener(null);
             accountView.setCurrentAccount(mAccount);
@@ -611,11 +629,12 @@ public class MessageList extends K9Activity
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                     Object tag = parent.getTag();
-                    if(tag instanceof Integer && ((Integer)tag) == position) {
+                    if (tag instanceof Integer && ((Integer) tag) == position) {
                         return;
                     }
                     final Account selectedAccount = (Account) parent.getItemAtPosition(position);
                     accountView.setCurrentAccount(selectedAccount);
+                    drawerMenuClickListener.setAccount(selectedAccount);
                     showMessageViewPlaceHolder();
 
                     LocalSearch tmpSearch = new LocalSearch();
@@ -632,120 +651,8 @@ public class MessageList extends K9Activity
 
                 }
             });
-            mTitles[0] = mAccount.getInboxFolderName();
-            mTitles[1] = mAccount.getSentFolderName();
-            mTitles[2] = mAccount.getDraftsFolderName();
-            mTitles[3] = mAccount.getTrashFolderName();
-            mTitles[4] = getResources().getString(R.string.folder_list);
-            mTitles[5] = getResources().getString(R.string.preferences_title);
-            mTitles[6] = getResources().getString(R.string.about_action) + " " + getResources().getString(R.string.app_name);
-
-            mName = mAccount.getName();
-            mEmail = mAccount.getEmail();
-        } else {
-            mTitles[0] = getResources().getString(R.string.special_mailbox_name_inbox);
-            mTitles[1] = getResources().getString(R.string.special_mailbox_name_sent);
-            mTitles[2] = getResources().getString(R.string.special_mailbox_name_drafts);
-            mTitles[3] = getResources().getString(R.string.special_mailbox_name_trash);
-            mTitles[4] = getResources().getString(R.string.folder_list);
-            mTitles[5] = getResources().getString(R.string.preferences_title);
-            mTitles[6] = getResources().getString(R.string.about_action) + " " + getResources().getString(R.string.app_name);
-
-            //TODO: just a workaround to display something
-            mName = getString(R.string.app_name);
-            mEmail = getString(R.string.app_name);
         }
-
-        mAdapter = new RecyclerViewAdapter(mTitles, mIcons);
-        mRecyclerView.setAdapter(mAdapter);
-
-        final GestureDetector mGestureDetector = new GestureDetector(MessageList.this,
-                new GestureDetector.SimpleOnGestureListener() {
-                    @Override
-                    public boolean onSingleTapUp(MotionEvent e) {
-                        return true;
-                    }
-                });
-
-        mRecyclerView.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
-            @Override
-            public boolean onInterceptTouchEvent(RecyclerView recyclerView, MotionEvent motionEvent) {
-                View child = recyclerView.findChildViewUnder(motionEvent.getX(), motionEvent.getY());
-
-                if (child != null && mGestureDetector.onTouchEvent(motionEvent)) {
-                    mDrawer.closeDrawers();
-
-                    int position = recyclerView.getChildPosition(child);
-                    switch(position) {
-                        case 0:
-                            if(mAccount != null)
-                                onOpenFolder(mAccount.getInboxFolderName());
-                            break;
-                        case 1:
-                            if(mAccount != null)
-                                onOpenFolder(mAccount.getSentFolderName());
-                            break;
-                        case 2:
-                            if(mAccount != null)
-                                onOpenFolder(mAccount.getDraftsFolderName());
-                            break;
-                        case 3:
-                            if(mAccount != null)
-                                onOpenFolder(mAccount.getTrashFolderName());
-                            break;
-                        case 4:
-                            if(mAccount != null)
-                                onShowFolderList();
-                            break;
-                        case 5:
-                            onEditPrefs();
-                            break;
-                        case 6:
-                            onAbout();
-                            break;
-                        default:
-                            break;
-                    }
-                    return true;
-                }
-                return false;
-            }
-
-            @Override
-            public void onTouchEvent(RecyclerView recyclerView, MotionEvent motionEvent) {
-            }
-
-            @Override
-            public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
-            }
-        });
-
-        mLayoutManager = new LinearLayoutManager(this);
-        mRecyclerView.setLayoutManager(mLayoutManager);
-        mDrawer = (DrawerLayout) findViewById(R.id.DrawerLayout);
-        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawer, R.string.app_name,
-                R.string.app_name) { //TODO: set correct strings
-            @Override
-            public void onDrawerOpened(View drawerView) {
-                super.onDrawerOpened(drawerView);
-            }
-
-            @Override
-            public void onDrawerClosed(View drawerView) {
-                super.onDrawerClosed(drawerView);
-            }
-        };
-        mDrawer.setDrawerListener(mDrawerToggle);
-        mDrawerToggle.syncState();
     }
-
-    private void onOpenFolder(final String folder) {
-        LocalSearch search = new LocalSearch(folder);
-        search.addAccountUuid(mAccount.getUuid());
-        search.addAllowedFolder(folder);
-        MessageList.actionDisplaySearch(this, search, false, false);
-    }
-
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
@@ -959,15 +866,6 @@ public class MessageList extends K9Activity
         Settings.actionPreferences(this);
     }
 
-    private void onEditAccount() {
-        Settings.actionAccountPreferences(this, mAccount);
-    }
-
-    private void onAbout() {
-        Intent i = new Intent(this, About.class);
-        startActivity(i);
-    }
-
     @Override
     public boolean onSearchRequested() {
         return mMessageListFragment.onSearchRequested();
@@ -1026,10 +924,10 @@ public class MessageList extends K9Activity
                 mMessageListFragment.changeSort(SortType.SORT_ATTACHMENT);
                 return true;
             }
-            /*case R.id.select_all: {
+            case R.id.select_all: {
                 mMessageListFragment.selectAll();
                 return true;
-            }*/
+            }
             case R.id.settings: {
                 onEditPrefs();
                 return true;
@@ -1923,5 +1821,83 @@ public class MessageList extends K9Activity
         }
 
         return true;
+    }
+
+    private static class NavigationMenuItemClickListener implements MenuItem.OnMenuItemClickListener {
+        private Account account;
+        private final Context context;
+        private final DrawerLayout drawerLayout;
+
+        public NavigationMenuItemClickListener(Context context, DrawerLayout drawerLayout, Account account) {
+            this.context = context;
+            this.drawerLayout = drawerLayout;
+            this.account = account;
+        }
+
+        public void setAccount(Account account) {
+            this.account = account;
+        }
+
+        @Override
+        public boolean onMenuItemClick(MenuItem item) {
+            final int itemId = item.getItemId();
+            if(itemId == R.id.drawer_settings_item) {
+                Settings.actionPreferences(context);
+            }
+
+            if(itemId == R.id.drawer_about_item) {
+                Intent i = new Intent(context, About.class);
+                context.startActivity(i);
+            }
+
+            LocalSearch search = null;
+            if(account != null) {
+                switch (itemId) {
+                    case R.id.drawer_inbox:
+                        search = getSearch(account.getInboxFolderName());
+                        break;
+                    case R.id.drawer_sent:
+                        search = getSearch(account.getSentFolderName());
+                        break;
+                    case R.id.drawer_drafts:
+                        search = getSearch(account.getDraftsFolderName());
+                        break;
+                    case R.id.drawer_trash:
+                        search = getSearch(account.getTrashFolderName());
+                        break;
+                    case R.id.drawer_all_folders: {
+                        FolderList.actionHandleAccount(context, account);
+                        break;
+                    }
+                }
+            }
+
+            switch(itemId) {
+                case R.id.drawer_all_messages: {
+                    SearchAccount searchAccount = SearchAccount.createAllMessagesAccount(context);
+                    search = searchAccount.getRelatedSearch();
+                    break;
+                }
+                case R.id.drawer_unified_inbox: {
+                    SearchAccount searchAccount = SearchAccount.createUnifiedInboxAccount(context);
+                    search = searchAccount.getRelatedSearch();
+                    break;
+                }
+            }
+
+            if(search != null) {
+                MessageList.actionDisplaySearch(context, search, false, false);
+            }
+
+            drawerLayout.closeDrawer(GravityCompat.START);
+            return true;
+        }
+
+        private LocalSearch getSearch(final String folder) {
+            LocalSearch search = new LocalSearch(folder);
+            search.addAccountUuid(account.getUuid());
+            search.addAllowedFolder(folder);
+            return search;
+        }
     }
 }

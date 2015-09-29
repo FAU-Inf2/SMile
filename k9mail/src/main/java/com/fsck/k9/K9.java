@@ -349,8 +349,6 @@ public class K9 extends Application {
             new String[]{"jackson", "https://github.com/FasterXML/jackson", "Apache License 2.0"},
             new String[]{"OpenPGP API library", "https://github.com/FAU-Inf2/SMile/tree/master/plugins/openpgp-api-library", "Apache License 2.0"},
             new String[]{"AndroidSwipeLayout", "https://github.com/daimajia/AndroidSwipeLayout", "MIT"},
-            new String[]{"Material Design Icons", "https://www.google.com/design/icons/", "CC BY 4.0"},
-            new String[]{"Polygon Background", "http://blog.spoongraphics.co.uk/", "CC BY 2.0"},
             new String[]{"FloatingActionButton", "https://github.com/Clans/FloatingActionButton", "Apache License 2.0"},
             new String[]{"Android-PullToRefresh", "https://github.com/chrisbanes/Android-PullToRefresh", "Apache License 2.0"},
             new String[]{"HoloColorPicker", "https://github.com/LarsWerkman/HoloColorPicker", "Apache License 2.0"},

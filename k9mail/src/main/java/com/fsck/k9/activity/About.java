@@ -79,8 +79,16 @@ public class About extends ActionBarActivity {
                 .append("</p><hr/><p>")
                 .append(String.format(getString(R.string.app_emoji_icons),
                         "<div>TypePad \u7d75\u6587\u5b57\u30a2\u30a4\u30b3\u30f3\u753b\u50cf " +
-                                "(<a href=\"http://typepad.jp/\">Six Apart Ltd</a>) / " +
-                                "<a href=\"http://creativecommons.org/licenses/by/2.1/jp/\">CC BY 2.1</a></div>"))
+                                ", <a href=\"http://typepad.jp/\">Six Apart Ltd</a> " +
+                                "(<a href=\"http://creativecommons.org/licenses/by/2.1/jp/\">CC BY 2.1</a>)</div>"))
+                .append("</p><p>")
+                .append(String.format(getString(R.string.app_md_icons),
+                        "<div><a href=\"https://www.google.com/design/icons/\">Google</a> " +
+                                "(<a href=\"http://creativecommons.org/licenses/by/4.0/\">CC BY 4.0</a>)</div>"))
+                .append("</p><p>")
+                .append(String.format(getString(R.string.app_polygon),
+                        "<div><a href=\"http://blog.spoongraphics.co.uk/\">Blog.SpoonGraphics</a> " +
+                                "(<a href=\"http://creativecommons.org/licenses/by/2.0/uk/\">CC BY 2.0</a>)</div>"))
                 .append("</p><hr/><p>")
                 .append(getString(R.string.app_htmlcleaner_license));
 

@@ -16,8 +16,9 @@
 
 
     <!-- Used in the about dialog -->
-    <string name="app_authors">Google, The K-9 Dog Walkers.</string>
-    <string name="app_copyright_fmt">Copyright 2008-<xliff:g>%s</xliff:g> The K-9 Dog Walkers. Portions Copyright 2006-<xliff:g>%s</xliff:g> the Android Open Source Project.</string>
+    <string name="app_authors">Developed by students in "Mobile Application Development" at Friedrich-Alexander-University
+        Erlangen-Nuremberg. \"K-9 Mail\" was developed by Google, The K-9 Dog Walkers.</string>
+    <string name="app_copyright_fmt">\u00a9 2015 SMile, Copyright 2008-<xliff:g>%s</xliff:g> The K-9 Dog Walkers. Portions Copyright 2006-<xliff:g>%s</xliff:g> the Android Open Source Project.</string>
     <string name="app_license">Licensed under the Apache License, Version 2.0.</string>
 
 

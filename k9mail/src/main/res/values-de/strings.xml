@@ -14,8 +14,10 @@
 
 
     <!--Used in the about dialog-->
-    <string name="app_authors">Google, das K-9-Team und viele Weitere.</string>
-    <string name="app_copyright_fmt">\u00a9 2008-<xliff:g>%s</xliff:g> The K-9 Dog Walkers.
+    <string name="app_authors">SMile wurde während des Projekts \"Mobile Application Development\"
+        an der Friedrich-Alexander-Universität Erlangen-Nürnberg erstellt. \"K-9 Mail\" ist ein Projekt
+        von Google, dem K-9-Team und vielen weiteren.</string>
+    <string name="app_copyright_fmt">\u00a9 2015 SMile, \u00a9 2008-<xliff:g>%s</xliff:g> The K-9 Dog Walkers.
 Teile \u00a9 2006-<xliff:g>%s</xliff:g> Android Open Source Project.</string>
     <string name="app_license">Lizenziert unter der Apache-Lizenz, Version 2.0.</string>
 

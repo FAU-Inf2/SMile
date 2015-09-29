@@ -62,14 +62,20 @@ public class About extends ActionBarActivity {
                                 getString(R.string.app_revision_url) +
                                 "</a>"))
                 .append("</p><hr/><p>")
-                .append(String.format(getString(R.string.app_copyright_fmt), year, year))
+                .append(getString(R.string.app_license_apache_1)
+                        + "<a href=\"" + getString(R.string.app_license_apache_url) + "\">" + getString(R.string.app_license_apache_url) + "</a>"
+                        + getString(R.string.app_license_apache_2))
                 .append("</p><hr/><p>")
-                .append(getString(R.string.app_license))
+                .append(String.format(getString(R.string.app_copyright_fmt), year, year))
                 .append("</p><hr/><p>");
 
         StringBuilder libs = new StringBuilder().append("<ul>");
         for (String[] library : K9.USED_LIBRARIES) {
-            libs.append("<li><a href=\"").append(library[1]).append("\">").append(library[0]).append("</a></li>");
+            if(library.length > 2)
+                libs.append("<li><a href=\"").append(library[1]).append("\">").append(library[0]).append("</a>").
+                        append(" (").append(library[2]).append(")</li>");
+            else
+                libs.append("<li><a href=\"").append(library[1]).append("\">").append(library[0]).append("</a></li>");
         }
         libs.append("</ul>");
 

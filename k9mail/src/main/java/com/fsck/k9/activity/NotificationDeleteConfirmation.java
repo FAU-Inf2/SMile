@@ -1,12 +1,11 @@
 package com.fsck.k9.activity;
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.K9;
@@ -18,11 +17,9 @@ import java.util.ArrayList;
 
 import de.fau.cs.mad.smile.android.R;
 
-public class NotificationDeleteConfirmation extends Activity {
+public class NotificationDeleteConfirmation extends AppCompatActivity {
     private final static String EXTRA_ACCOUNT = "account";
     private final static String EXTRA_MESSAGE_LIST = "messages";
-
-    private final static int DIALOG_CONFIRM = 1;
 
     private Account mAccount;
     private ArrayList<MessageReference> mMessageRefs;
@@ -55,48 +52,28 @@ public class NotificationDeleteConfirmation extends Activity {
             triggerDelete();
             finish();
         } else {
-            showDialog(DIALOG_CONFIRM);
+            final int messageCount = mMessageRefs.size();
+            Resources resources = getResources();
+            ConfirmationDialog dialog = ConfirmationDialog.create(
+                R.string.dialog_confirm_delete_title, resources.getQuantityString(
+                            R.plurals.dialog_confirm_delete_messages, messageCount, messageCount),
+                R.string.dialog_confirm_delete_confirm_button,
+                R.string.dialog_confirm_delete_cancel_button,
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        triggerDelete();
+                        finish();
+                    }
+                },
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        finish();
+                    }
+                });
+            dialog.show(getSupportFragmentManager(), null);
         }
-    }
-
-    @Override
-    public Dialog onCreateDialog(int id) {
-        switch (id) {
-        case DIALOG_CONFIRM:
-            return ConfirmationDialog.create(this, id,
-                    R.string.dialog_confirm_delete_title, "",
-                    R.string.dialog_confirm_delete_confirm_button,
-                    R.string.dialog_confirm_delete_cancel_button,
-                    new Runnable() {
-                        @Override
-                        public void run() {
-                            triggerDelete();
-                            finish();
-                        }
-                    },
-                    new Runnable() {
-                        @Override
-                        public void run() {
-                            finish();
-                        }
-                    });
-        }
-
-        return super.onCreateDialog(id);
-    }
-
-    @Override
-    public void onPrepareDialog(int id, Dialog d) {
-        AlertDialog alert = (AlertDialog) d;
-        switch (id) {
-        case DIALOG_CONFIRM:
-            int messageCount = mMessageRefs.size();
-            alert.setMessage(getResources().getQuantityString(
-                    R.plurals.dialog_confirm_delete_messages, messageCount, messageCount));
-            break;
-        }
-
-        super.onPrepareDialog(id, d);
     }
 
     private void triggerDelete() {

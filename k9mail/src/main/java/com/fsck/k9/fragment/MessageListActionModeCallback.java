@@ -97,7 +97,7 @@ public class MessageListActionModeCallback implements ActionMode.Callback {
         switch (item.getItemId()) {
             case R.id.delete: {
                 fragment.onDelete(checkedMessages);
-                fragment.setmSelectedCount(0);
+                fragment.setSelectedCount(0);
                 break;
             }
             case R.id.mark_as_read: {
@@ -124,22 +124,22 @@ public class MessageListActionModeCallback implements ActionMode.Callback {
             // only if the account supports this
             case R.id.archive: {
                 fragment.onArchive(checkedMessages);
-                fragment.setmSelectedCount(0);
+                fragment.setSelectedCount(0);
                 break;
             }
             case R.id.spam: {
                 fragment.onSpam(checkedMessages);
-                fragment.setmSelectedCount(0);
+                fragment.setSelectedCount(0);
                 break;
             }
             case R.id.move: {
                 fragment.onMove(checkedMessages);
-                fragment.setmSelectedCount(0);
+                fragment.setSelectedCount(0);
                 break;
             }
             case R.id.copy: {
                 fragment.onCopy(checkedMessages);
-                fragment.setmSelectedCount(0);
+                fragment.setSelectedCount(0);
                 break;
             }
         }

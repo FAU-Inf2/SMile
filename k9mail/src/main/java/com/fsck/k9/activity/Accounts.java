@@ -15,6 +15,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatDialog;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -94,11 +95,6 @@ public class Accounts extends K9Activity implements OnItemClickListener {
      * Number of special accounts ('Unified Inbox' and 'All Messages')
      */
     private static final int SPECIAL_ACCOUNTS_COUNT = 2;
-
-    private static final int DIALOG_REMOVE_ACCOUNT = 1;
-    private static final int DIALOG_CLEAR_ACCOUNT = 2;
-    private static final int DIALOG_RECREATE_ACCOUNT = 3;
-    private static final int DIALOG_NO_FILE_MANAGER = 4;
 
     private static String ACCOUNT_STATS = "accountStats";
     private static String STATE_UNREAD_COUNT = "unreadCount";
@@ -883,142 +879,36 @@ public class Accounts extends K9Activity implements OnItemClickListener {
         }
     }
 
-    private void onDeleteAccount(Account account) {
-        mSelectedContextAccount = account;
-        showDialog(DIALOG_REMOVE_ACCOUNT);
+    private void onDeleteAccount(final Account account) {
+        ConfirmationDialog dialog = ConfirmationDialog.create(
+                R.string.account_delete_dlg_title,
+                getString(R.string.account_delete_dlg_instructions_fmt,
+                        mSelectedContextAccount.getDescription()),
+                R.string.okay_action,
+                R.string.cancel_action,
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            account.getLocalStore().delete();
+                        } catch (Exception e) {
+                            // Ignore, this may lead to localStores on sd-cards that
+                            // are currently not inserted to be left
+                        }
+                        MessagingController.getInstance(getApplication())
+                                .deleteAccount(Accounts.this, account);
+                        Preferences.getPreferences(Accounts.this)
+                                .deleteAccount(account);
+                        K9.setServicesEnabled(Accounts.this);
+                        refresh();
+                    }
+                });
+
+        dialog.show(getSupportFragmentManager(), null);
     }
 
     private void onEditAccount(Account account) {
         Settings.actionAccountPreferences(this, account);
-    }
-
-    @Override
-    public Dialog onCreateDialog(int id) {
-        // Android recreates our dialogs on configuration changes even when they have been
-        // dismissed. Make sure we have all information necessary before creating a new dialog.
-        switch (id) {
-            case DIALOG_REMOVE_ACCOUNT: {
-                if (mSelectedContextAccount == null) {
-                    return null;
-                }
-
-                return ConfirmationDialog.create(this, id,
-                        R.string.account_delete_dlg_title,
-                        getString(R.string.account_delete_dlg_instructions_fmt,
-                                mSelectedContextAccount.getDescription()),
-                        R.string.okay_action,
-                        R.string.cancel_action,
-                        new Runnable() {
-                            @Override
-                            public void run() {
-                                if (mSelectedContextAccount instanceof Account) {
-                                    Account realAccount = (Account) mSelectedContextAccount;
-                                    try {
-                                        realAccount.getLocalStore().delete();
-                                    } catch (Exception e) {
-                                        // Ignore, this may lead to localStores on sd-cards that
-                                        // are currently not inserted to be left
-                                    }
-                                    MessagingController.getInstance(getApplication())
-                                            .deleteAccount(Accounts.this, realAccount);
-                                    Preferences.getPreferences(Accounts.this)
-                                            .deleteAccount(realAccount);
-                                    K9.setServicesEnabled(Accounts.this);
-                                    refresh();
-                                }
-                            }
-                        });
-            }
-            case DIALOG_CLEAR_ACCOUNT: {
-                if (mSelectedContextAccount == null) {
-                    return null;
-                }
-
-                return ConfirmationDialog.create(this, id,
-                        R.string.account_clear_dlg_title,
-                        getString(R.string.account_clear_dlg_instructions_fmt,
-                                mSelectedContextAccount.getDescription()),
-                        R.string.okay_action,
-                        R.string.cancel_action,
-                        new Runnable() {
-                            @Override
-                            public void run() {
-                                if (mSelectedContextAccount instanceof Account) {
-                                    Account realAccount = (Account) mSelectedContextAccount;
-                                    mHandler.workingAccount(realAccount,
-                                            R.string.clearing_account);
-                                    MessagingController.getInstance(getApplication())
-                                            .clear(realAccount, null);
-                                }
-                            }
-                        });
-            }
-            case DIALOG_RECREATE_ACCOUNT: {
-                if (mSelectedContextAccount == null) {
-                    return null;
-                }
-
-                return ConfirmationDialog.create(this, id,
-                        R.string.account_recreate_dlg_title,
-                        getString(R.string.account_recreate_dlg_instructions_fmt,
-                                mSelectedContextAccount.getDescription()),
-                        R.string.okay_action,
-                        R.string.cancel_action,
-                        new Runnable() {
-                            @Override
-                            public void run() {
-                                if (mSelectedContextAccount instanceof Account) {
-                                    Account realAccount = (Account) mSelectedContextAccount;
-                                    mHandler.workingAccount(realAccount,
-                                            R.string.recreating_account);
-                                    MessagingController.getInstance(getApplication())
-                                            .recreate(realAccount, null);
-                                }
-                            }
-                        });
-            }
-            case DIALOG_NO_FILE_MANAGER: {
-                return ConfirmationDialog.create(this, id,
-                        R.string.import_dialog_error_title,
-                        getString(R.string.import_dialog_error_message),
-                        R.string.open_market,
-                        R.string.close,
-                        new Runnable() {
-                            @Override
-                            public void run() {
-                                Uri uri = Uri.parse(ANDROID_MARKET_URL);
-                                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-                                startActivity(intent);
-                            }
-                        });
-            }
-        }
-
-        return super.onCreateDialog(id);
-    }
-
-    @Override
-    public void onPrepareDialog(int id, Dialog d) {
-        AlertDialog alert = (AlertDialog) d;
-        switch (id) {
-            case DIALOG_REMOVE_ACCOUNT: {
-                alert.setMessage(getString(R.string.account_delete_dlg_instructions_fmt,
-                        mSelectedContextAccount.getDescription()));
-                break;
-            }
-            case DIALOG_CLEAR_ACCOUNT: {
-                alert.setMessage(getString(R.string.account_clear_dlg_instructions_fmt,
-                        mSelectedContextAccount.getDescription()));
-                break;
-            }
-            case DIALOG_RECREATE_ACCOUNT: {
-                alert.setMessage(getString(R.string.account_recreate_dlg_instructions_fmt,
-                        mSelectedContextAccount.getDescription()));
-                break;
-            }
-        }
-
-        super.onPrepareDialog(id, d);
     }
 
     @Override
@@ -1067,12 +957,48 @@ public class Accounts extends K9Activity implements OnItemClickListener {
         return true;
     }
 
-    private void onClear(Account account) {
-        showDialog(DIALOG_CLEAR_ACCOUNT);
+    private void onClear(final Account account) {
+        if (account == null) {
+            return;
+        }
+
+        ConfirmationDialog dialog = ConfirmationDialog.create(R.string.account_clear_dlg_title,
+                getString(R.string.account_clear_dlg_instructions_fmt,
+                        account.getDescription()),
+                R.string.okay_action,
+                R.string.cancel_action,
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        mHandler.workingAccount(account,
+                                R.string.clearing_account);
+                        MessagingController.getInstance(getApplication())
+                                .clear(account, null);
+                    }
+                });
+        dialog.show(getSupportFragmentManager(), null);
     }
 
-    private void onRecreate(Account account) {
-        showDialog(DIALOG_RECREATE_ACCOUNT);
+    private void onRecreate(final Account account) {
+        if (account == null) {
+            return;
+        }
+
+        ConfirmationDialog dialog = ConfirmationDialog.create(R.string.account_recreate_dlg_title,
+                getString(R.string.account_recreate_dlg_instructions_fmt,
+                        mSelectedContextAccount.getDescription()),
+                R.string.okay_action,
+                R.string.cancel_action,
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        mHandler.workingAccount(account,
+                                R.string.recreating_account);
+                        MessagingController.getInstance(getApplication())
+                                .recreate(account, null);
+                    }
+                });
+        dialog.show(getSupportFragmentManager(), null);
     }
 
     private void onMove(final Account account, final boolean up) {
@@ -1183,7 +1109,19 @@ public class Accounts extends K9Activity implements OnItemClickListener {
             startActivityForResult(Intent.createChooser(i, null),
                     ACTIVITY_REQUEST_PICK_SETTINGS_FILE);
         } else {
-            showDialog(DIALOG_NO_FILE_MANAGER);
+            ConfirmationDialog dialog = ConfirmationDialog.create(R.string.import_dialog_error_title,
+                    getString(R.string.import_dialog_error_message),
+                    R.string.open_market,
+                    R.string.close,
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            Uri uri = Uri.parse(ANDROID_MARKET_URL);
+                            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                            startActivity(intent);
+                        }
+                    });
+            dialog.show(getSupportFragmentManager(), null);
         }
     }
 

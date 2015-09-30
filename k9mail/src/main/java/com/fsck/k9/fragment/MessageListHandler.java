@@ -29,7 +29,7 @@ public class MessageListHandler extends Handler {
     private WeakReference<MessageListFragment> mFragment;
 
     public MessageListHandler(MessageListFragment fragment) {
-        mFragment = new WeakReference<MessageListFragment>(fragment);
+        mFragment = new WeakReference<>(fragment);
     }
 
     public void folderLoading(String folder, boolean loading) {

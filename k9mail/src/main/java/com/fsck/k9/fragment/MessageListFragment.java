@@ -178,7 +178,7 @@ public class MessageListFragment extends Fragment
         SORT_COMPARATORS = Collections.unmodifiableMap(map);
     }
 
-    protected final ActivityListener mListener = new MessageListActivityListener();
+    protected ActivityListener mListener;
     public List<Message> mExtraSearchResults;
     protected View mFooterView;
     protected FolderInfoHolder mCurrentFolder;
@@ -287,6 +287,7 @@ public class MessageListFragment extends Fragment
         mPreferences = Preferences.getPreferences(appContext);
         mController = MessagingController.getInstance(appContext);
         notificationHelper = NotificationHelper.getInstance(appContext);
+        mListener = new MessageListActivityListener(getActivity(), mHandler);
 
         restoreInstanceState(savedInstanceState);
         decodeArguments();
@@ -1169,7 +1170,7 @@ public class MessageListFragment extends Fragment
             }
             case R.id.send_again: {
                 onResendMessage(getMessageAtPosition(adapterPosition));
-                setmSelectedCount(0);
+                setSelectedCount(0);
                 break;
             }
             case R.id.same_sender: {
@@ -1372,7 +1373,7 @@ public class MessageListFragment extends Fragment
                 return;
             }
 
-            setmSelectedCount(0);
+            setSelectedCount(0);
             for (int i = 0, end = mAdapter.getCount(); i < end; i++) {
                 LocalMessage message = getMessageAtPosition(i);
                 long uniqueId = message.getId();
@@ -1386,9 +1387,9 @@ public class MessageListFragment extends Fragment
                         Log.e(K9.LOG_TAG, "error in setSelectionState ", e);
                     }
 
-                    setmSelectedCount(getmSelectedCount() + ((threadCount > 1) ? threadCount : 1));
+                    setSelectedCount(getmSelectedCount() + ((threadCount > 1) ? threadCount : 1));
                 } else {
-                    setmSelectedCount(getmSelectedCount() + 1);
+                    setSelectedCount(getmSelectedCount() + 1);
                 }
             }
 
@@ -1401,7 +1402,7 @@ public class MessageListFragment extends Fragment
             computeSelectAllVisibility();
         } else {
             mSelected.clear();
-            setmSelectedCount(0);
+            setSelectedCount(0);
             if (mActionMode != null) {
                 mActionMode.finish();
                 mActionMode = null;
@@ -1465,9 +1466,9 @@ public class MessageListFragment extends Fragment
         }
 
         if (selected) {
-            setmSelectedCount(getmSelectedCount() - selectedCountDelta);
+            setSelectedCount(getmSelectedCount() - selectedCountDelta);
         } else {
-            setmSelectedCount(getmSelectedCount() + selectedCountDelta);
+            setSelectedCount(getmSelectedCount() + selectedCountDelta);
         }
 
         computeBatchDirection();
@@ -2324,11 +2325,11 @@ public class MessageListFragment extends Fragment
      */
     private void recalculateSelectionCount() {
         if (!mThreadedList) {
-            setmSelectedCount(mSelected.size());
+            setSelectedCount(mSelected.size());
             return;
         }
 
-        setmSelectedCount(0);
+        setSelectedCount(0);
         for (int i = 0; i < mAdapter.getCount(); i++) {
             LocalMessage message = getMessageAtPosition(i);
             long uniqueId = message.getId();
@@ -2341,7 +2342,7 @@ public class MessageListFragment extends Fragment
                     Log.e(K9.LOG_TAG, "recalculateSelectionCount", e);
                 }
                 
-                setmSelectedCount(getmSelectedCount() + ((threadCount > 1) ? threadCount : 1));
+                setSelectedCount(getmSelectedCount() + ((threadCount > 1) ? threadCount : 1));
             }
         }
     }
@@ -2418,7 +2419,7 @@ public class MessageListFragment extends Fragment
         return mSelectedCount;
     }
 
-    public void setmSelectedCount(int mSelectedCount) {
+    public void setSelectedCount(int mSelectedCount) {
         this.mSelectedCount = mSelectedCount;
     }
 
@@ -2431,16 +2432,21 @@ public class MessageListFragment extends Fragment
     }
 
     class MessageListActivityListener extends ActivityListener {
+        private final Context mContext;
+        private final MessageListHandler mHandler;
+
+        public MessageListActivityListener(Context mContext, MessageListHandler mHandler) {
+            this.mContext = mContext;
+            this.mHandler = mHandler;
+        }
+
         @Override
         public void remoteSearchFailed(String folder, final String err) {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    Activity activity = getActivity();
-                    if (activity != null) {
-                        Toast.makeText(activity, R.string.remote_search_error,
-                                Toast.LENGTH_LONG).show();
-                    }
+                    Toast.makeText(mContext, R.string.remote_search_error,
+                            Toast.LENGTH_LONG).show();
                 }
             });
         }
@@ -2547,7 +2553,7 @@ public class MessageListFragment extends Fragment
         private final Context context;
         private final Preferences mPreferences;
 
-        public MessageListLoaderCallback(Context context) {
+        public MessageListLoaderCallback(final Context context) {
             this.context = context;
             this.mPreferences = Preferences.getPreferences(context);
         }

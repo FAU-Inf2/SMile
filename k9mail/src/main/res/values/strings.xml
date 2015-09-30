@@ -16,10 +16,44 @@
 
 
     <!-- Used in the about dialog -->
-    <string name="app_authors">Google, The K-9 Dog Walkers.</string>
-    <string name="app_copyright_fmt">Copyright 2008-<xliff:g>%s</xliff:g> The K-9 Dog Walkers. Portions Copyright 2006-<xliff:g>%s</xliff:g> the Android Open Source Project.</string>
+    <string name="app_authors">Developed by students in "Mobile Application Development" at Friedrich-Alexander-University
+        Erlangen-Nuremberg. \"K-9 Mail\" was developed by Google, The K-9 Dog Walkers.</string>
+    <string name="app_copyright_fmt">\u00a9 2015 SMile,&lt;br /&gt;\u00a9 2008-<xliff:g>%s</xliff:g>
+        The K-9 Dog Walkers,&lt;br /&gt;Portions \u00a9 2006-<xliff:g>%s</xliff:g> the Android Open Source Project.</string>
     <string name="app_license">Licensed under the Apache License, Version 2.0.</string>
+    <string name="app_license_apache_full">Copyright 2015 SMile
+        &lt;br /&gt;
+        &lt;br /&gt;Licensed under the Apache License, Version 2.0 (the "License");
+        you may not use this file except in compliance with the License.
+        You may obtain a copy of the License at
+        &lt;br /&gt;
+        &lt;br /&gt;&#160;&#160;&#160;&#160;http://www.apache.org/licenses/LICENSE-2.0
+        &lt;br /&gt;
+        &lt;br /&gt;Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
+    </string>
 
+    <string name="app_license_apache_1">Copyright 2015 SMile
+        &lt;br /&gt;
+        &lt;br /&gt;Licensed under the Apache License, Version 2.0 (the "License");
+        you may not use this file except in compliance with the License.
+        You may obtain a copy of the License at
+        &lt;br /&gt;
+        &lt;br /&gt;&#160;&#160;&#160;&#160;
+    </string>
+    <string name="app_license_apache_url">http://www.apache.org/licenses/LICENSE-2.0
+    </string>
+    <string name="app_license_apache_2">
+        &lt;br /&gt;
+        &lt;br /&gt;Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
+    </string>
 
     <!-- Welcome message -->
     <string name="welcome_message_title">Welcome to SMile</string>
@@ -78,6 +112,8 @@ Please submit bug reports, contribute new features and ask questions at
     <string name="app_revision_fmt">Revision Information: <xliff:g id="app_revision_url">%s</xliff:g></string>
     <string name="app_libraries">We\'re using the following third-party libraries: <xliff:g id="app_libraries_list">%s</xliff:g></string>
     <string name="app_emoji_icons">Emoji icons: <xliff:g id="app_emoji_icons_link">%s</xliff:g></string>
+    <string name="app_md_icons">Material Design Icons: <xliff:g id="app_md_icons_link">%s</xliff:g></string>
+    <string name="app_polygon">Polygon Background: <xliff:g id="app_polygon_link">%s</xliff:g></string>
 
     <string name="read_attachment_label">read Email attachments</string>
     <string name="read_attachment_desc">Allows this application to read your Email attachments.</string>
@@ -113,6 +149,7 @@ Please submit bug reports, contribute new features and ask questions at
     <string name="next_action">Next</string>
     <string name="previous_action">Previous</string>
     <!-- Used to confirm acceptance of dialog boxes, warnings, errors, etc. -->
+    <string name="warning">Warning</string>
     <string name="okay_action">OK</string>
     <string name="cancel_action">Cancel</string>
     <string name="send_action">Send</string>
@@ -145,6 +182,7 @@ Please submit bug reports, contribute new features and ask questions at
     <string name="folder_settings_action">Folder settings</string>
     <string name="global_settings_action">Global settings</string>
     <string name="remove_account_action">Remove account</string>
+    <string name="ignore_action">Ignore</string>
     <string name="clear_pending_action">Clear pending actions (danger!)</string>
 
     <string name="mark_as_read_action">Mark as read</string>
@@ -925,6 +963,7 @@ Please submit bug reports, contribute new features and ask questions at
     <string name="unknown_crypto_signature_user_id">&lt;unknown&gt;</string>
     <string name="pgp_mime_unsupported">PGP/MIME messages are not supported yet.</string>
     <string name="attachment_encryption_unsupported">Warning: attachments are NOT signed or encrypted yet.</string>
+    <string name="attachment_not_supported">Attachments are currently not supported.</string>
     <string name="send_aborted">Send aborted.</string>
 
     <string name="save_or_discard_draft_message_dlg_title">Save draft message?</string>

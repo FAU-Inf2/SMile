@@ -1355,23 +1355,17 @@ public class MessageCompose extends K9Activity implements View.OnClickListener,
     }
 
     /**
-     * Kick off a picker for whatever kind of MIME types we'll accept and let Android take over.
-     */
-    private void onAddAttachment() {
-        onAddAttachment2("*/*");
-    }
-
-    /**
      * Kick off a picker for the specified MIME type and let Android take over.
      *
      * @param mime_type
      *         The MIME type we want our attachment to have.
      */
     @SuppressLint("InlinedApi")
-    private void onAddAttachment2(final String mime_type) {
+    private void onAddAttachment(final String mime_type) {
         if (isCryptoProviderEnabled()) {
             Toast.makeText(this, R.string.attachment_encryption_unsupported, Toast.LENGTH_LONG).show();
         }
+
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(getResources().getString(R.string.warning));
         builder.setMessage(getResources().getString(R.string.attachment_not_supported));
@@ -1722,7 +1716,7 @@ public class MessageCompose extends K9Activity implements View.OnClickListener,
                 onAddCcBcc();
                 break;
             case R.id.add_attachment:
-                onAddAttachment();
+                onAddAttachment("*/*");
                 break;
             case R.id.read_receipt:
                 onReadReceipt();

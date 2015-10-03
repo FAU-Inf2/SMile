@@ -215,6 +215,8 @@ public class MessageBuilder {
             } else {
                 body = new TempFileBody(attachment.filename);
             }
+
+            final String transferEncoding = MimeUtility.getEncodingforType(contentType);
             MimeBodyPart bp = new MimeBodyPart(body);
 
             /*
@@ -226,9 +228,7 @@ public class MessageBuilder {
                     contentType,
                     EncoderUtil.encodeIfNecessary(attachment.name,
                             EncoderUtil.Usage.WORD_ENTITY, 7)));
-
-            bp.setEncoding(MimeUtility.getEncodingforType(contentType));
-
+            MimeMessageHelper.setEncoding(bp, transferEncoding);
             /*
              * TODO: Oh the joys of MIME...
              *

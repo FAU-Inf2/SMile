@@ -178,29 +178,39 @@ public class MessageListFragment extends Fragment
         SORT_COMPARATORS = Collections.unmodifiableMap(map);
     }
 
-    protected ActivityListener mListener;
     public List<Message> mExtraSearchResults;
-    protected View mFooterView;
-    protected FolderInfoHolder mCurrentFolder;
-    protected MessagingController mController;
-    protected Account mAccount;
+    private MessageListAdapter mAdapter;
+    private List<LocalMessage> messages;
+    /**
+     * Relevant messages for the current context when we have to remember the chosen messages
+     * between user interactions (e.g. selecting a folder for move operation).
+     */
+    private List<LocalMessage> mActiveMessages;
 
+    private MessageListHandler mHandler = new MessageListHandler(this);
+    protected ActivityListener mListener;
+    private MessageListActionModeCallback mActionModeCallback;
+    protected MessageListFragmentListener mFragmentListener;
+    /* package visibility for faster inner class access */
+    MessageHelper mMessageHelper;
+    protected MessagingController mController;
+
+    ListView mListView;
+    protected View mFooterView;
+    private PullToRefreshListView mPullToRefreshView;
+    private LayoutInflater mInflater;
+
+    protected FolderInfoHolder mCurrentFolder;
+    protected Account mAccount;
     /**
      * Stores the name of the folder that we want to open as soon as possible after load.
      */
     protected String mFolderName;
     protected LocalSearch mSearch = null;
     private int mSelectedCount = 0;
-    protected MessageListFragmentListener mFragmentListener;
     protected boolean mThreadedList;
     // package visible so handler can access it
     Parcelable mSavedListState;
-    ListView mListView;
-    /* package visibility for faster inner class access */
-    MessageHelper mMessageHelper;
-    private PullToRefreshListView mPullToRefreshView;
-    private MessageListAdapter mAdapter;
-    private LayoutInflater mInflater;
     private NotificationHelper notificationHelper;
     private String[] mAccountUuids;
     private int mUnreadMessageCount = 0;
@@ -213,20 +223,12 @@ public class MessageListFragment extends Fragment
     private boolean mSingleAccountMode;
     private boolean mSingleFolderMode;
     private boolean mAllAccounts;
-    private MessageListHandler mHandler = new MessageListHandler(this);
     private SortType mSortType = SortType.SORT_DATE;
     private boolean mSortAscending = true;
     private boolean mSortDateAscending = false;
     private Set<Long> mSelected = new HashSet<>();
     private ActionMode mActionMode;
     private Boolean mHasConnectivity;
-    private List<LocalMessage> messages;
-    /**
-     * Relevant messages for the current context when we have to remember the chosen messages
-     * between user interactions (e.g. selecting a folder for move operation).
-     */
-    private List<LocalMessage> mActiveMessages;
-    private MessageListActionModeCallback mActionModeCallback;
     private boolean mIsThreadDisplay;
     private Context mContext;
     private Preferences mPreferences;
@@ -254,44 +256,32 @@ public class MessageListFragment extends Fragment
      */
     private long mContextMenuUniqueId = 0;
 
-    public static MessageListFragment newInstance(LocalSearch search, boolean isThreadDisplay, boolean threadedList) {
+    public static MessageListFragment newInstance(LocalSearch search, boolean isThreadDisplay, boolean threadedList, MessageListFragmentListener listener) {
         MessageListFragment fragment = new MessageListFragment();
         Bundle args = new Bundle();
         args.putParcelable(ARG_SEARCH, search);
         args.putBoolean(ARG_IS_THREAD_DISPLAY, isThreadDisplay);
         args.putBoolean(ARG_THREADED_LIST, threadedList);
         fragment.setArguments(args);
+        fragment.mFragmentListener = listener;
         return fragment;
-    }
-
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-
-        mContext = activity.getApplicationContext();
-
-        try {
-            mFragmentListener = (MessageListFragmentListener) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.getClass() +
-                    " must implement MessageListFragmentListener");
-        }
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Context appContext = getActivity().getApplicationContext();
+        final Activity activity = getActivity();
+        mContext = activity.getApplicationContext();
 
-        mPreferences = Preferences.getPreferences(appContext);
-        mController = MessagingController.getInstance(appContext);
-        notificationHelper = NotificationHelper.getInstance(appContext);
-        mListener = new MessageListActivityListener(getActivity(), mHandler);
+        mPreferences = Preferences.getPreferences(mContext);
+        mController = MessagingController.getInstance(mContext);
+        notificationHelper = NotificationHelper.getInstance(mContext);
+        mListener = new MessageListActivityListener(activity, mHandler);
 
         restoreInstanceState(savedInstanceState);
         decodeArguments();
-        createCacheBroadcastReceiver(appContext);
+        createCacheBroadcastReceiver(mContext);
 
         mInitialized = true;
     }
@@ -811,14 +801,6 @@ public class MessageListFragment extends Fragment
         }
     }
 
-    public void onReply(LocalMessage message) {
-        mFragmentListener.onReply(message);
-    }
-
-    public void onReplyAll(LocalMessage message) {
-        mFragmentListener.onReplyAll(message);
-    }
-
     public void onForward(LocalMessage message) {
         mFragmentListener.onForward(message);
     }
@@ -930,35 +912,35 @@ public class MessageListFragment extends Fragment
     }
 
     public void move(LocalMessage message, String destFolder) {
-        //onMove(message);
+        onMove(message);
     }
 
     public void delete(LocalMessage message){
-        onDelete(message);
+        onDelete(Collections.singletonList(message));
     }
 
     public void archive(LocalMessage message) {
-        onArchive(message);
+        if (message == null) {
+            return;
+        }
+
+        onArchive(Collections.singletonList(message));
     }
 
     public void remindMe(LocalMessage message) {
-        onRemindMe(message);
+        startActivity(RemindMeList.createRemindMe(this.getActivity(), message));
     }
 
     public void reply(LocalMessage message) {
-        onReply(message);
+        mFragmentListener.onReply(message);
     }
 
     public void replyAll(LocalMessage message){
-        onReplyAll(message);
+        mFragmentListener.onReplyAll(message);
     }
 
     public void openMessage(MessageReference messageReference) {
-        Log.d(K9.LOG_TAG, "wanted to open message: " + messageReference);
-    }
-
-    private void onDelete(LocalMessage message) {
-        onDelete(Collections.singletonList(message));
+        mHandler.openMessage(messageReference);
     }
 
     public void onDelete(List<LocalMessage> messages) {
@@ -1157,11 +1139,11 @@ public class MessageListFragment extends Fragment
                 break;
             }
             case R.id.reply: {
-                onReply(getMessageAtPosition(adapterPosition));
+                reply(getMessageAtPosition(adapterPosition));
                 break;
             }
             case R.id.reply_all: {
-                onReplyAll(getMessageAtPosition(adapterPosition));
+                replyAll(getMessageAtPosition(adapterPosition));
                 break;
             }
             case R.id.forward: {
@@ -1179,7 +1161,7 @@ public class MessageListFragment extends Fragment
             }
             case R.id.delete: {
                 LocalMessage message = getMessageAtPosition(adapterPosition);
-                onDelete(message);
+                delete(message);
                 break;
             }
             case R.id.mark_as_read: {
@@ -1201,7 +1183,7 @@ public class MessageListFragment extends Fragment
 
             // only if the account supports this
             case R.id.archive: {
-                onArchive(getMessageAtPosition(adapterPosition));
+                archive(getMessageAtPosition(adapterPosition));
                 break;
             }
             case R.id.spam: {
@@ -1213,7 +1195,7 @@ public class MessageListFragment extends Fragment
                 break;
             }
             case R.id.remindme: {
-                onRemindMe(getMessageAtPosition(adapterPosition));
+                remindMe(getMessageAtPosition(adapterPosition));
                 break;
             }
             case R.id.copy: {
@@ -1642,14 +1624,9 @@ public class MessageListFragment extends Fragment
             folder = null;
         }
 
-
         displayFolderChoice(ACTIVITY_CHOOSE_FOLDER_MOVE, folder,
                 messages.get(0).getFolder().getAccountUuid(), null,
                 messages);
-    }
-
-    private void onRemindMe(LocalMessage message) {
-        startActivity(RemindMeList.createRemindMe(this.getActivity(), message));
     }
 
     private void onCopy(LocalMessage message) {
@@ -1708,10 +1685,6 @@ public class MessageListFragment extends Fragment
         // remember the selected messages for #onActivityResult
         mActiveMessages = messages;
         startActivityForResult(intent, requestCode);
-    }
-
-    private void onArchive(final LocalMessage message) {
-        onArchive(Collections.singletonList(message));
     }
 
     public void onArchive(final List<LocalMessage> messages) {
@@ -2174,7 +2147,7 @@ public class MessageListFragment extends Fragment
     public void onArchive() {
         LocalMessage message = getSelectedMessage();
         if (message != null) {
-            onArchive(message);
+            archive(message);
         }
     }
 
@@ -2250,7 +2223,6 @@ public class MessageListFragment extends Fragment
         String folderName = (mCurrentFolder != null) ? mCurrentFolder.name : null;
         return mFragmentListener.startSearch(mAccount, folderName);
     }
-
 
     /**
      * Close the context menu when the message it was opened for is no longer in the message list.

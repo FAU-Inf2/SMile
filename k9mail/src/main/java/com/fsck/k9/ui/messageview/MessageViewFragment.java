@@ -208,19 +208,6 @@ public final class MessageViewFragment extends Fragment
         outState.putSerializable(STATE_PGP_DATA, mPgpData);
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-
-        if(messageCryptoHelper != null) {
-            try {
-                messageCryptoHelper.close();
-            } catch (IOException e) {
-                Log.e(K9.LOG_TAG, "error on close crypto helper", e);
-            }
-        }
-    }
-
     private void displayMessage(final MessageReference ref, final boolean resetPgpData) {
         mMessageReference = ref;
         if (K9.DEBUG) {

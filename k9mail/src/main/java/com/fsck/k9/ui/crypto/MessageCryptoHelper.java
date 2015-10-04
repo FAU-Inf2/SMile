@@ -46,7 +46,7 @@ import de.fau.cs.mad.smime_api.SMimeApi;
 import de.fau.cs.mad.smime_api.SMimeServiceConnection;
 
 
-public abstract class MessageCryptoHelper implements Closeable {
+public abstract class MessageCryptoHelper {
     protected static final int REQUEST_CODE_CRYPTO = 1000;
     protected static final int INVALID_RESULT_CODE = -1;
     protected static final MimeBodyPart NO_REPLACEMENT_PART = null;

@@ -46,18 +46,12 @@ public class PgpMessageCryptoHelper extends MessageCryptoHelper {
     @Override
     protected void finalize() throws Throwable {
         super.finalize();
-        this.close();
-    }
-
-    @Override
-    public void close() throws IOException {
         if (this.openPgpServiceConnection != null) {
             if(this.openPgpServiceConnection.isBound()) {
                 this.openPgpServiceConnection.unbindFromService();
             }
         }
     }
-
     @Override
     void findParts(final LocalMessage message) throws MessagingException {
         if(openPgpProvider == null || openPgpProvider.equals("")) {

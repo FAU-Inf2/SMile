@@ -2,7 +2,6 @@ package com.fsck.k9.crypto;
 
 import android.content.Intent;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.fsck.k9.Identity;
 import com.fsck.k9.K9;
@@ -10,7 +9,6 @@ import com.fsck.k9.activity.MessageComposeHandler;
 import com.fsck.k9.mail.Address;
 import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mail.internet.MimeMessage;
-import com.fsck.k9.preferences.AppEntry;
 
 import java.io.IOException;
 import java.io.PipedInputStream;
@@ -27,7 +25,7 @@ import de.fau.cs.mad.smime_api.SMimeApi;
 public class SmimeMessageCompose {
 
     private MimeMessage currentMessage;
-    private boolean singChecked;
+    private boolean signChecked;
     private boolean encryptChecked;
     private List<Address> addresses;
     private Identity sender;
@@ -35,7 +33,7 @@ public class SmimeMessageCompose {
     private MessageComposeHandler messageComposeHandler;
 
     public SmimeMessageCompose(boolean singChecked, boolean encryptChecked, List<Address> addresses, Identity sender, SMimeApi sMimeApi, MessageComposeHandler messageComposeHandler) {
-        this.singChecked = singChecked;
+        this.signChecked = singChecked;
         this.encryptChecked = encryptChecked;
         this.addresses = addresses;
         this.sender = sender;
@@ -44,12 +42,12 @@ public class SmimeMessageCompose {
     }
 
     public void handleSmime() {
-        if (singChecked && encryptChecked) {
+        if (signChecked && encryptChecked) {
             handleSmimeSignAndEncrypt();
             return;
         }
 
-        if (singChecked) {
+        if (signChecked) {
             handleSmimeSign();
             return;
         }

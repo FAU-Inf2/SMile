@@ -1282,7 +1282,7 @@ public class MessageCompose extends K9Activity implements View.OnClickListener,
                 openPgpMessageCompose.handlePgp(mEncryptCheckbox.isChecked(), mCryptoSignatureCheckbox.isChecked());
                 break;
             case SMIME:
-                SmimeMessageCompose smimeMessageCompose = new SmimeMessageCompose(mEncryptCheckbox.isChecked(), mCryptoSignatureCheckbox.isChecked(), getRecipientAddresses(), mIdentity, sMimeApi, mHandler);
+                SmimeMessageCompose smimeMessageCompose = new SmimeMessageCompose(mCryptoSignatureCheckbox.isChecked(), mEncryptCheckbox.isChecked(), getRecipientAddresses(), mIdentity, sMimeApi, mHandler);
                 smimeMessageCompose.handleSmime();
                 break;
             case NONE:

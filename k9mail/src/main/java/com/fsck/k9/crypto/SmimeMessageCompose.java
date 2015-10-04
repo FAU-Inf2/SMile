@@ -86,6 +86,17 @@ public class SmimeMessageCompose {
 
     private PipedInputStream getSmimeInputStream() {
         final PipedInputStream pipedInputStream = new PipedInputStream();
+        PipedOutputStream outPipe = null;
+
+        try {
+            outPipe = new PipedOutputStream(pipedInputStream);
+        } catch (IOException e) {
+            Log.e(K9.LOG_TAG, "Failed to create pipe: ", e);
+            return null;
+        }
+
+        final PipedOutputStream out = outPipe;
+
         // TODO: async task/runnable class?
         new Thread(new Runnable() {
             @Override
@@ -93,7 +104,6 @@ public class SmimeMessageCompose {
                 try {
                     currentMessage = messageComposeHandler.createMimeMessage();
                     if(currentMessage != null) {
-                        final PipedOutputStream out = new PipedOutputStream(pipedInputStream);
                         currentMessage.writeTo(out); // TODO: only send body part
                     }
                 } catch (Exception e) {

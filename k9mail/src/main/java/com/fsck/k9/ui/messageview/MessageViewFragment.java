@@ -45,6 +45,7 @@ import com.fsck.k9.ui.crypto.PgpMessageCryptoHelper;
 import com.fsck.k9.ui.crypto.SmimeMessageCryptoHelper;
 import com.github.clans.fab.FloatingActionButton;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Locale;
 
@@ -205,6 +206,19 @@ public final class MessageViewFragment extends Fragment
         super.onSaveInstanceState(outState);
         outState.putParcelable(STATE_MESSAGE_REFERENCE, mMessageReference);
         outState.putSerializable(STATE_PGP_DATA, mPgpData);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        if(messageCryptoHelper != null) {
+            try {
+                messageCryptoHelper.close();
+            } catch (IOException e) {
+                Log.e(K9.LOG_TAG, "error on close crypto helper", e);
+            }
+        }
     }
 
     private void displayMessage(final MessageReference ref, final boolean resetPgpData) {

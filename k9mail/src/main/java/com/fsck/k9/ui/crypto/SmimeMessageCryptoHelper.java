@@ -43,9 +43,15 @@ public class SmimeMessageCryptoHelper extends MessageCryptoHelper {
     @Override
     protected void finalize() throws Throwable {
         super.finalize();
+        this.close();
+    }
 
+    @Override
+    public void close() throws IOException {
         if (this.sMimeServiceConnection != null) {
-            this.sMimeServiceConnection.unbindFromService();
+            if(this.sMimeServiceConnection.isBound()) {
+                this.sMimeServiceConnection.unbindFromService();
+            }
         }
     }
 

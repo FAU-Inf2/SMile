@@ -29,6 +29,7 @@ import org.openintents.openpgp.OpenPgpError;
 import org.openintents.openpgp.OpenPgpSignatureResult;
 import org.openintents.openpgp.util.OpenPgpApi;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
@@ -45,7 +46,7 @@ import de.fau.cs.mad.smime_api.SMimeApi;
 import de.fau.cs.mad.smime_api.SMimeServiceConnection;
 
 
-public abstract class MessageCryptoHelper {
+public abstract class MessageCryptoHelper implements Closeable {
     protected static final int REQUEST_CODE_CRYPTO = 1000;
     protected static final int INVALID_RESULT_CODE = -1;
     protected static final MimeBodyPart NO_REPLACEMENT_PART = null;

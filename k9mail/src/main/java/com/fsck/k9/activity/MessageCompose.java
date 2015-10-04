@@ -825,11 +825,15 @@ public class MessageCompose extends K9Activity implements View.OnClickListener,
         super.onDestroy();
 
         if (mOpenPgpServiceConnection != null) {
-            mOpenPgpServiceConnection.unbindFromService();
+            if(mOpenPgpServiceConnection.isBound()) {
+                mOpenPgpServiceConnection.unbindFromService();
+            }
         }
 
         if (mSmimeServiceConnection != null) {
-            mSmimeServiceConnection.unbindFromService();
+            if(mSmimeServiceConnection.isBound()) {
+                mSmimeServiceConnection.unbindFromService();
+            }
         }
     }
 

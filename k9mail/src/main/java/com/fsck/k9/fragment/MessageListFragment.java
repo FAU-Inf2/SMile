@@ -506,14 +506,18 @@ public class MessageListFragment extends Fragment
     }
 
     private void setWindowTitle() {
+        if(mFragmentListener == null) {
+            return;
+            //TODO: initialize?
+        }
+
         // regular folder content display
         if (!isManualSearch() && mSingleFolderMode) {
             Activity activity = getActivity();
             String displayName = FolderInfoHolder.getDisplayName(activity, mAccount,
                     mFolderName);
 
-            if(displayName != null)
-                mFragmentListener.setMessageListTitle(displayName);
+            mFragmentListener.setMessageListTitle(displayName);
 
             String operation = mListener.getOperation(activity);
             if (operation.length() < 1) {

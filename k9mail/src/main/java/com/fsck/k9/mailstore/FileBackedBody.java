@@ -18,7 +18,7 @@ import java.io.OutputStream;
 
 public class FileBackedBody implements Body, SizeAware, RawDataBody {
     private final File file;
-    private final String encoding;
+    private String encoding;
 
     public FileBackedBody(File file, String encoding) {
         this.file = file;
@@ -36,7 +36,8 @@ public class FileBackedBody implements Body, SizeAware, RawDataBody {
 
     @Override
     public void setEncoding(String encoding) throws MessagingException {
-        throw new RuntimeException("not supported");
+        this.encoding = encoding;
+        //throw new RuntimeException("not supported");
     }
 
     @Override

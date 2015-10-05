@@ -512,7 +512,8 @@ public class MessageListFragment extends Fragment
             String displayName = FolderInfoHolder.getDisplayName(activity, mAccount,
                     mFolderName);
 
-            mFragmentListener.setMessageListTitle(displayName);
+            if(displayName != null)
+                mFragmentListener.setMessageListTitle(displayName);
 
             String operation = mListener.getOperation(activity);
             if (operation.length() < 1) {

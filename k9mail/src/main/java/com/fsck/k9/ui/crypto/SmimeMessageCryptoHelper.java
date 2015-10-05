@@ -122,7 +122,12 @@ public class SmimeMessageCryptoHelper extends MessageCryptoHelper {
 
     private void callAsyncDecryptSmime() throws IOException {
         final CountDownLatch latch = new CountDownLatch(1);
-        final String sender = this.message.getFrom()[0].getAddress();
+        Address[] addresses = this.message.getFrom();
+        if(addresses.length == 0) {
+            return;
+        }
+
+        final String sender = addresses[0].getAddress();
         String recipient;
 
         try {
@@ -148,6 +153,10 @@ public class SmimeMessageCryptoHelper extends MessageCryptoHelper {
     private void callAsyncVerifySmime() throws IOException, MessagingException {
         PipedInputStream pipedInputStream = getPipedInputStream();
         String[] fromHeader = currentCryptoPart.part.getHeader("From");
+        if(fromHeader.length == 0) {
+            return;
+        }
+
         String sender = new Address(fromHeader[0]).getAddress();
         Intent intent = SMimeApi.verifyMessage(sender);
         sMimeApi.executeApiAsync(intent, pipedInputStream, null, new SMimeApi.ISMimeCallback() {
@@ -160,7 +169,7 @@ public class SmimeMessageCryptoHelper extends MessageCryptoHelper {
         });
     }
 
-    private final void onSmimeCryptoOperationReturned(final MimeBodyPart outputPart) {
+    private void onSmimeCryptoOperationReturned(final MimeBodyPart outputPart) {
         if (currentCryptoResult == null) {
             Log.e(K9.LOG_TAG, "Internal error: we should have a result here!");
             return;

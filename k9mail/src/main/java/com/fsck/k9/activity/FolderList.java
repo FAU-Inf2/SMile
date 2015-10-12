@@ -1,5 +1,6 @@
 package com.fsck.k9.activity;
 
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;

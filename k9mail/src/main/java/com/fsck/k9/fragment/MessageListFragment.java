@@ -2319,7 +2319,7 @@ public class MessageListFragment extends Fragment
                 } catch (MessagingException e) {
                     Log.e(K9.LOG_TAG, "recalculateSelectionCount", e);
                 }
-                
+
                 setSelectedCount(getmSelectedCount() + ((threadCount > 1) ? threadCount : 1));
             }
         }
@@ -2656,7 +2656,8 @@ public class MessageListFragment extends Fragment
                     mHandler.restoreListPosition();
                 }
 
-                mFragmentListener.updateMenu();
+                if(mFragmentListener != null)
+                    mFragmentListener.updateMenu();
             }
         }
 

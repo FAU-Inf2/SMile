@@ -2,7 +2,9 @@ package com.fsck.k9.mailstore;
 
 import android.content.Context;
 import android.net.Uri;
+import android.util.Log;
 
+import com.fsck.k9.K9;
 import com.fsck.k9.crypto.DecryptedTempFileBody;
 import com.fsck.k9.crypto.MessageDecryptVerifier;
 import com.fsck.k9.helper.HtmlConverter;
@@ -544,6 +546,7 @@ public class LocalMessageExtractor {
             return new AttachmentViewInfo(mimeType, displayName, size, uri, firstClassAttachment, part);
         } else {
             Body body = part.getBody();
+            Log.e(K9.LOG_TAG, "Body was instance of " + body.getClass());
             if (body instanceof DecryptedTempFileBody) {
                 DecryptedTempFileBody decryptedTempFileBody = (DecryptedTempFileBody) body;
                 File file = decryptedTempFileBody.getFile();

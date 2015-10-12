@@ -116,7 +116,7 @@ public class MessageListHandler extends Handler {
                 break;
             }
             case ACTION_REFRESH_TITLE: {
-                fragment.updateTitle();
+                //fragment.updateTitle();
                 break;
             }
             case ACTION_PROGRESS: {

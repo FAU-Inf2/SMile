@@ -418,10 +418,6 @@ public final class FolderList extends K9Activity {
                 onAccounts();
                 return true;
 
-            case R.id.search:
-                onSearchRequested();
-                return true;
-
             case R.id.compose:
                 MessageCompose.actionCompose(this, mAccount);
                 return true;
@@ -479,6 +475,14 @@ public final class FolderList extends K9Activity {
         return true;
     }
 
+    public final boolean onSearchRequested(String query) {
+        Bundle appData = new Bundle();
+        appData.putString(MessageList.EXTRA_SEARCH_ACCOUNT, mAccount.getUuid());
+        //startSearch(null, false, appData, false);
+        triggerSearch(query, appData);
+        return true;
+    }
+
     private final void onOpenFolder(final String folder) {
         LocalSearch search = new LocalSearch(folder);
         search.addAccountUuid(mAccount.getUuid());
@@ -496,8 +500,39 @@ public final class FolderList extends K9Activity {
         super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.folder_list_option, menu);
         mRefreshMenuItem = menu.findItem(R.id.check_mail);
+        configureSearchView(menu);
         configureFolderSearchView(menu);
         return true;
+    }
+
+    private final void configureSearchView(final Menu menu) {
+        final MenuItem folderMenuItem = menu.findItem(R.id.filter_folders);
+        final SearchView searchView = (SearchView) MenuItemCompat.getActionView(folderMenuItem);
+        searchView.setQueryHint(getString(R.string.folder_list_filter_hint));
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                MenuItemCompat.collapseActionView(folderMenuItem);
+                onSearchRequested(query);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return true;
+            }
+        });
+
+        searchView.setOnCloseListener(new SearchView.OnCloseListener() {
+
+            @Override
+            public boolean onClose() {
+                if (toolbar != null)
+                    toolbar.setTitle(getString(R.string.folders_title));
+                return false;
+            }
+        });
     }
 
     private final void configureFolderSearchView(final Menu menu) {

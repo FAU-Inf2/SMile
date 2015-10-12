@@ -5,7 +5,8 @@
         android:id="@+id/search"
         android:icon="?attr/iconActionSearch"
         app:showAsAction="always"
-        android:title="@string/search_action"/>
+        android:title="@string/search_action"
+        app:actionViewClass="android.support.v7.widget.SearchView"/>
     <item
         android:id="@+id/filter_folders"
         android:icon="?attr/iconActionSearchFolder"

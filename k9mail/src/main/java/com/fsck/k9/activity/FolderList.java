@@ -506,14 +506,15 @@ public final class FolderList extends K9Activity {
     }
 
     private final void configureSearchView(final Menu menu) {
-        final MenuItem folderMenuItem = menu.findItem(R.id.filter_folders);
+        final MenuItem folderMenuItem = menu.findItem(R.id.search);
         final SearchView searchView = (SearchView) MenuItemCompat.getActionView(folderMenuItem);
-        searchView.setQueryHint(getString(R.string.folder_list_filter_hint));
+        //searchView.setSubmitButtonEnabled(true);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 
             @Override
             public boolean onQueryTextSubmit(String query) {
                 MenuItemCompat.collapseActionView(folderMenuItem);
+                Log.d(K9.LOG_TAG, "Query finalized: " + query);
                 onSearchRequested(query);
                 return true;
             }

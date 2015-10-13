@@ -566,6 +566,8 @@ public class MessageList extends K9Activity
 
         if(toolbar != null) {
             setSupportActionBar(toolbar);
+            mActionBarUnread = (TextView) toolbar.findViewById(R.id.actionbar_unread_count);
+            mActionBarProgress = (ProgressBar) toolbar.findViewById(R.id.actionbar_progress);
         }
 
         actionBar = getSupportActionBar();
@@ -574,9 +576,7 @@ public class MessageList extends K9Activity
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeButtonEnabled(true);
         }
-
-        mActionBarUnread = (TextView) toolbar.findViewById(R.id.actionbar_unread_count);
-        mActionBarProgress = (ProgressBar) toolbar.findViewById(R.id.actionbar_progress);
+        
         mActionButtonIndeterminateProgress =
                 getLayoutInflater().inflate(R.layout.actionbar_indeterminate_progress_actionview, null);
     }

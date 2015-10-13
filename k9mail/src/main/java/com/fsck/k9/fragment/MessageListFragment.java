@@ -502,8 +502,9 @@ public class MessageListFragment extends Fragment
             }
         }
 
-        if(mFragmentListener != null)
+        if(mFragmentListener != null) {
             mFragmentListener.setMessageListProgress(level);
+        }
     }
 
     private void setWindowTitle() {

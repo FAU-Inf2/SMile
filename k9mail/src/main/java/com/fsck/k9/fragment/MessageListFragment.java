@@ -256,14 +256,13 @@ public class MessageListFragment extends Fragment
      */
     private long mContextMenuUniqueId = 0;
 
-    public static MessageListFragment newInstance(LocalSearch search, boolean isThreadDisplay, boolean threadedList, MessageListFragmentListener listener) {
+    public static MessageListFragment newInstance(LocalSearch search, boolean isThreadDisplay, boolean threadedList) {
         MessageListFragment fragment = new MessageListFragment();
         Bundle args = new Bundle();
         args.putParcelable(ARG_SEARCH, search);
         args.putBoolean(ARG_IS_THREAD_DISPLAY, isThreadDisplay);
         args.putBoolean(ARG_THREADED_LIST, threadedList);
         fragment.setArguments(args);
-        fragment.mFragmentListener = listener;
         return fragment;
     }
 
@@ -319,6 +318,7 @@ public class MessageListFragment extends Fragment
         super.onActivityCreated(savedInstanceState);
 
         mMessageHelper = MessageHelper.getInstance(getActivity());
+        mFragmentListener = (MessageListFragmentListener)getActivity();
 
         initializeMessageList();
 

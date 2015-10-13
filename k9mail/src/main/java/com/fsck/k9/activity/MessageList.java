@@ -310,7 +310,7 @@ public class MessageList extends K9Activity
         if (!hasMessageListFragment) {
             FragmentTransaction ft = fragmentManager.beginTransaction();
             mMessageListFragment = MessageListFragment.newInstance(mSearch, false,
-                    (K9.isThreadedViewEnabled() && !mNoThreading), this);
+                    (K9.isThreadedViewEnabled() && !mNoThreading));
             ft.add(R.id.message_list_container, mMessageListFragment);
             ft.commit();
         }
@@ -631,7 +631,7 @@ public class MessageList extends K9Activity
                     tmpSearch.addAllowedFolder(selectedAccount.getAutoExpandFolderName());
                     tmpSearch.addAccountUuid(selectedAccount.getUuid());
                     MessageListFragment fragment = MessageListFragment.newInstance(tmpSearch, false,
-                            (K9.isThreadedViewEnabled() && !mNoThreading), MessageList.this);
+                            (K9.isThreadedViewEnabled() && !mNoThreading));
                     addMessageListFragment(fragment, true);
                     mDrawer.closeDrawers();
                 }
@@ -1774,7 +1774,7 @@ public class MessageList extends K9Activity
         tmpSearch.addAccountUuids(mSearch.getAccountUuids());
         tmpSearch.and(SearchField.SENDER, senderAddress, Attribute.CONTAINS);
 
-        MessageListFragment fragment = MessageListFragment.newInstance(tmpSearch, false, false, this);
+        MessageListFragment fragment = MessageListFragment.newInstance(tmpSearch, false, false);
 
         addMessageListFragment(fragment, true);
     }
@@ -1792,7 +1792,7 @@ public class MessageList extends K9Activity
         tmpSearch.addAccountUuid(account.getUuid());
         tmpSearch.and(SearchField.THREAD_ID, String.valueOf(threadRootId), Attribute.EQUALS);
 
-        MessageListFragment fragment = MessageListFragment.newInstance(tmpSearch, true, false, this);
+        MessageListFragment fragment = MessageListFragment.newInstance(tmpSearch, true, false);
         addMessageListFragment(fragment, true);
     }
 

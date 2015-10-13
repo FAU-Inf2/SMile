@@ -1,6 +1,8 @@
 package com.fsck.k9.fragment;
 
 import android.app.Activity;
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -13,6 +15,8 @@ import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -28,8 +32,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.AdapterView;
+import android.widget.DatePicker;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.fsck.k9.Account;
@@ -66,6 +72,7 @@ import com.fsck.k9.mail.Flag;
 import com.fsck.k9.mail.Folder;
 import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.MessagingException;
+import com.fsck.k9.mail.RemindMe;
 import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.provider.EmailProvider;
@@ -82,10 +89,15 @@ import com.handmark.pulltorefresh.library.ILoadingLayout;
 import com.handmark.pulltorefresh.library.PullToRefreshBase;
 import com.handmark.pulltorefresh.library.PullToRefreshListView;
 
+import org.joda.time.DateTime;
+
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -181,6 +193,8 @@ public class MessageListFragment extends Fragment
     public List<Message> mExtraSearchResults;
     private MessageListAdapter mAdapter;
     private List<LocalMessage> messages;
+    private List<RemindMe> remindMeList;
+
     /**
      * Relevant messages for the current context when we have to remember the chosen messages
      * between user interactions (e.g. selecting a folder for move operation).
@@ -191,6 +205,8 @@ public class MessageListFragment extends Fragment
     protected ActivityListener mListener;
     private MessageListActionModeCallback mActionModeCallback;
     protected MessageListFragmentListener mFragmentListener;
+    private RemindMeListener remindMeListener;
+
     /* package visibility for faster inner class access */
     MessageHelper mMessageHelper;
     protected MessagingController mController;
@@ -277,10 +293,16 @@ public class MessageListFragment extends Fragment
         mController = MessagingController.getInstance(mContext);
         notificationHelper = NotificationHelper.getInstance(mContext);
         mListener = new MessageListActivityListener(activity, mHandler);
+        remindMeListener = new RemindMeListener(this);
+        remindMeList = new ArrayList<>();
 
         restoreInstanceState(savedInstanceState);
         decodeArguments();
         createCacheBroadcastReceiver(mContext);
+
+        if(mContext != null && mAccount != null) {
+            new LoadRemindMe(mContext, mAccount, this).execute();
+        }
 
         mInitialized = true;
     }
@@ -373,7 +395,7 @@ public class MessageListFragment extends Fragment
 
         K9.logDebug("showing message at position: " + position);
 
-        if (getmSelectedCount() > 0) {
+        if (getSelectedCount() > 0) {
             toggleMessageSelect(position);
         } else {
             if (mThreadedList && cursor.getInt(THREAD_COUNT_COLUMN) > 1) {
@@ -923,7 +945,14 @@ public class MessageListFragment extends Fragment
     }
 
     public void delete(LocalMessage message){
-        onDelete(Collections.singletonList(message));
+        RemindMe remindMe = isRemindMe(message);
+
+        if(remindMe == null) {
+            onDelete(Collections.singletonList(message));
+        } else {
+            move(Collections.singletonList(message), message.getAccount().getInboxFolderName());
+            delete(remindMe);
+        }
     }
 
     public void archive(LocalMessage message) {
@@ -935,7 +964,8 @@ public class MessageListFragment extends Fragment
     }
 
     public void remindMe(LocalMessage message) {
-        startActivity(RemindMeList.createRemindMe(this.getActivity(), message));
+        RemindMeDialog dialog = RemindMeDialog.newInstance(message, remindMeListener);
+        dialog.show(getFragmentManager(), "mTimeValue");
     }
 
     public void reply(LocalMessage message) {
@@ -1376,9 +1406,9 @@ public class MessageListFragment extends Fragment
                         Log.e(K9.LOG_TAG, "error in setSelectionState ", e);
                     }
 
-                    setSelectedCount(getmSelectedCount() + ((threadCount > 1) ? threadCount : 1));
+                    setSelectedCount(getSelectedCount() + ((threadCount > 1) ? threadCount : 1));
                 } else {
-                    setSelectedCount(getmSelectedCount() + 1);
+                    setSelectedCount(getSelectedCount() + 1);
                 }
             }
 
@@ -1445,7 +1475,7 @@ public class MessageListFragment extends Fragment
         }
 
         if (mActionMode != null) {
-            if (getmSelectedCount() == selectedCountDelta && selected) {
+            if (getSelectedCount() == selectedCountDelta && selected) {
                 mActionMode.finish();
                 mActionMode = null;
                 return;
@@ -1455,9 +1485,9 @@ public class MessageListFragment extends Fragment
         }
 
         if (selected) {
-            setSelectedCount(getmSelectedCount() - selectedCountDelta);
+            setSelectedCount(getSelectedCount() - selectedCountDelta);
         } else {
-            setSelectedCount(getmSelectedCount() + selectedCountDelta);
+            setSelectedCount(getSelectedCount() + selectedCountDelta);
         }
 
         computeBatchDirection();
@@ -1469,7 +1499,7 @@ public class MessageListFragment extends Fragment
     }
 
     private void updateActionModeTitle() {
-        mActionMode.setTitle(getString(R.string.actionbar_selected, getmSelectedCount()));
+        mActionMode.setTitle(getString(R.string.actionbar_selected, getSelectedCount()));
     }
 
     private void computeSelectAllVisibility() {
@@ -2321,7 +2351,7 @@ public class MessageListFragment extends Fragment
                     Log.e(K9.LOG_TAG, "recalculateSelectionCount", e);
                 }
 
-                setSelectedCount(getmSelectedCount() + ((threadCount > 1) ? threadCount : 1));
+                setSelectedCount(getSelectedCount() + ((threadCount > 1) ? threadCount : 1));
             }
         }
     }
@@ -2394,12 +2424,35 @@ public class MessageListFragment extends Fragment
         return (isRemoteSearchAllowed() || isCheckMailAllowed());
     }
 
-    public int getmSelectedCount() {
+    public int getSelectedCount() {
         return mSelectedCount;
     }
 
     public void setSelectedCount(int mSelectedCount) {
         this.mSelectedCount = mSelectedCount;
+    }
+
+    public void addRemindMe(List<RemindMe> remindMes) {
+        this.remindMeList.addAll(remindMes);
+    }
+
+    public final void add(final RemindMe remindMe) {
+        remindMeList.add(remindMe);
+        new InsertFollowUp(mContext, mAccount).execute(remindMe);
+    }
+
+    public final RemindMe isRemindMe(LocalMessage localMessage) {
+        for (RemindMe remindMe : remindMeList) {
+            if (remindMe.getUid().equals(localMessage.getUid())) {
+                return remindMe;
+            }
+        }
+
+        return null;
+    }
+
+    public final void delete(RemindMe remindMe) {
+        new DeleteFollowUp(mContext, mAccount).execute(remindMe);
     }
 
     private static enum FolderOperation {

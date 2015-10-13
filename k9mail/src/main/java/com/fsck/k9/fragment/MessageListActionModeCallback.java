@@ -144,7 +144,7 @@ public class MessageListActionModeCallback implements ActionMode.Callback {
             }
         }
 
-        if (fragment.getmSelectedCount() == 0) {
+        if (fragment.getSelectedCount() == 0) {
             mode.finish();
         }
 

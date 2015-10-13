@@ -576,7 +576,7 @@ public class MessageList extends K9Activity
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeButtonEnabled(true);
         }
-        
+
         mActionButtonIndeterminateProgress =
                 getLayoutInflater().inflate(R.layout.actionbar_indeterminate_progress_actionview, null);
     }

@@ -107,6 +107,10 @@ public class RemindMe {
     }
 
     public String getUid() {
+        if(this.uid == null && message != null) {
+            this.uid = message.getUid();
+        }
+
         return this.uid;
     }
 

@@ -68,7 +68,7 @@ public class MessageFragment extends Fragment {
         remindMeList = new ArrayList<>();
         adapter = new MessageAdapter(context, messages, mCallback);
 
-        new LoadFollowUp(context, mAccount, handler).execute();
+        //new LoadRemindMe(context, mAccount, handler).execute();
     }
 
     @Override
@@ -119,7 +119,7 @@ public class MessageFragment extends Fragment {
         return rootView;
     }
 
-    private final void handleArguments(final Bundle arguments) {
+    private void handleArguments(final Bundle arguments) {
         search = arguments.getParcelable(ARG_SEARCH);
         mFolderName = search.getFolderNames().get(0);
         String title = search.getName();
@@ -131,7 +131,7 @@ public class MessageFragment extends Fragment {
         }
     }
 
-    private final List<LocalMessage> loadMessages(final Account account, final String folderName) {
+    private List<LocalMessage> loadMessages(final Account account, final String folderName) {
         final List<LocalMessage> localMessages = new ArrayList<LocalMessage>();
         LocalFolder folder = null;
 

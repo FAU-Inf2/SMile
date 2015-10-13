@@ -95,7 +95,7 @@ public class SmsListFragment extends MessageListFragment {
 
 */
 
-        if (getmSelectedCount() > 0) {
+        if (getSelectedCount() > 0) {
             toggleMessageSelect(position);
         } else {
             if (mThreadedList && cursor.getInt(THREAD_COUNT_COLUMN) > 1) {

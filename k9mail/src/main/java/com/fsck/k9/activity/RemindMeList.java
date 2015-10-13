@@ -119,8 +119,8 @@ public class RemindMeList extends SmileActivity
             mAccount = Preferences.getPreferences(this).getAccount(accountUuid);
             folderName = message.getFolder().getName();
 
-            RemindMeDialog dialog = RemindMeDialog.newInstance(message);
-            dialog.show(getFragmentManager(), "mTimeValue");
+            RemindMeDialog dialog = RemindMeDialog.newInstance(message, this);
+            dialog.show(getSupportFragmentManager(), "mTimeValue");
         }
     }
 
@@ -160,7 +160,7 @@ public class RemindMeList extends SmileActivity
         Log.d(K9.LOG_TAG, "Selected date: " + calendar.getTime());
         currentRemindMe.setRemindTime(calendar.getTime());
         RemindMeTimePickerDialog timePickerDialog = RemindMeTimePickerDialog.newInstance(this);
-        timePickerDialog.show(getFragmentManager(), timePickerTag);
+        timePickerDialog.show(getSupportFragmentManager(), timePickerTag);
     }
 
     @Override

@@ -1,16 +1,13 @@
 package com.fsck.k9.fragment;
 
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.DialogFragment;
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.support.annotation.ArrayRes;
+import android.support.v4.app.DialogFragment;
+import android.support.v7.app.AlertDialog;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
@@ -34,37 +31,23 @@ public class RemindMeDialog extends DialogFragment {
         void onDialogClick(RemindMeDialog dialog);
     }
 
-    public static RemindMeDialog newInstance(Message message) {
-        RemindMeDialog dlg = new RemindMeDialog();
-        dlg.setRemindMe(new RemindMe());
-        dlg.getRemindMe().setReference(message);
-        return dlg;
+    public static RemindMeDialog newInstance(Message message, NoticeDialogListener dialogListener) {
+        RemindMeDialog dialog = new RemindMeDialog();
+        dialog.setRemindMe(new RemindMe());
+        dialog.getRemindMe().setReference(message);
+        dialog.listener = dialogListener;
+        return dialog;
     }
 
     public static RemindMeDialog newInstance(RemindMe remindMe) {
-        RemindMeDialog dlg = new RemindMeDialog();
-        dlg.setRemindMe(remindMe);
-        return dlg;
+        RemindMeDialog dialog = new RemindMeDialog();
+        dialog.setRemindMe(remindMe);
+        return dialog;
     }
 
     // Use this instance of the interface to deliver action events
-    private NoticeDialogListener mListener;
+    private NoticeDialogListener listener;
     private RemindMe remindMe;
-
-    // Override the Fragment.onAttach() method to instantiate the NoticeDialogListener
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        // Verify that the host activity implements the callback interface
-        try {
-            // Instantiate the NoticeDialogListener so we can send events to the host
-            mListener = (NoticeDialogListener) activity;
-        } catch (ClassCastException e) {
-            // The activity doesn't implement the interface, throw exception
-            throw new ClassCastException(activity.toString()
-                    + " must implement NoticeDialogListener");
-        }
-    }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -126,7 +109,7 @@ public class RemindMeDialog extends DialogFragment {
                     break;
             }
 
-            mListener.onDialogClick(RemindMeDialog.this);
+            listener.onDialogClick(RemindMeDialog.this);
             dialog.dismiss();
         }
     }

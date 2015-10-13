@@ -11,17 +11,18 @@ import com.fsck.k9.mail.RemindMe;
 import com.fsck.k9.mailstore.LocalRemindMe;
 import com.fsck.k9.mailstore.LocalStore;
 
+import java.lang.ref.WeakReference;
 import java.util.List;
 
-class LoadFollowUp extends AsyncTask<Void, Void, List<RemindMe>> {
-    private final MessageFragment.MessageFragmentHandler handler;
+public class LoadRemindMe extends AsyncTask<Void, Void, List<RemindMe>> {
+    private final WeakReference<MessageListFragment> weakReference;
     private Context context;
     private final Account account;
 
-    public LoadFollowUp(Context context, Account account, MessageFragment.MessageFragmentHandler handler) {
+    public LoadRemindMe(Context context, Account account, MessageListFragment fragment) {
         this.context = context;
         this.account = account;
-        this.handler = handler;
+        this.weakReference = new WeakReference<>(fragment);
     }
 
     @Override
@@ -39,6 +40,9 @@ class LoadFollowUp extends AsyncTask<Void, Void, List<RemindMe>> {
     @Override
     protected void onPostExecute(List<RemindMe> remindMes) {
         super.onPostExecute(remindMes);
-        handler.addRemindMe(remindMes);
+        MessageListFragment fragment = weakReference.get();
+        if(fragment != null) {
+            fragment.addRemindMe(remindMes);
+        }
     }
 }

@@ -266,8 +266,8 @@ public class Messages extends SmileActivity
 
     @Override
     public void remindMe(LocalMessage message) {
-        RemindMeDialog dialog = RemindMeDialog.newInstance(message);
-        dialog.show(getFragmentManager(), "mTimeValue");
+        RemindMeDialog dialog = RemindMeDialog.newInstance(message, this);
+        dialog.show(getSupportFragmentManager(), "mTimeValue");
     }
 
     @Override
@@ -352,7 +352,7 @@ public class Messages extends SmileActivity
         Log.d(K9.LOG_TAG, "Selected date: " + calendar.getTime());
         currentRemindMe.setRemindTime(calendar.getTime());
         RemindMeTimePickerDialog timePickerDialog = RemindMeTimePickerDialog.newInstance(this);
-        timePickerDialog.show(getFragmentManager(), timePickerTag);
+        timePickerDialog.show(getSupportFragmentManager(), timePickerTag);
     }
 
     @Override

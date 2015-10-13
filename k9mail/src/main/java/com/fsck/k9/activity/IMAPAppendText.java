@@ -169,7 +169,7 @@ public class IMAPAppendText{
             LocalStore localStore = mAccount.getLocalStore();
             LocalFolder localFolder = localStore.getFolder(mAccount.getSmileStorageFolderName());
             localFolder.open(Folder.OPEN_MODE_RW);
-            LocalMessage localMessage;
+            LocalMessage localMessage = null;
             int nMessages = localFolder.getMessageCount();
             if (nMessages == 0) {
                 // no messages stored
@@ -177,28 +177,62 @@ public class IMAPAppendText{
             } else if(nMessages == 1){
                 List<? extends LocalMessage> messages = localFolder.getMessages(null, false);
                 localMessage = messages.get(0);
-                if(!localMessage.getMessageId().startsWith(MESSAGE_ID_MAGIC_STRING))
+                String messageId = localMessage.getMessageId();
+                if(!messageId.startsWith(MESSAGE_ID_MAGIC_STRING))
                     return null;
+                try {
+                    long timestamp = Long.parseLong(messageId.replace(MESSAGE_ID_MAGIC_STRING, ""));
+                    K9.logDebug("Timestamp of mail in SmileStorage was: " + timestamp);
+                } catch (Exception e) {
+                    K9.logDebug("The only mail in SmileStorage did not contain a valid messageId. " +
+                    "MessageId was: " + messageId);
+                    return null;
+                }
             } else {
                 //more than one, find newest
+                K9.logDebug("Found more than one, find newest one.");
                 List<? extends LocalMessage> messages = localFolder.getMessages(null, false);
-                localMessage = messages.get(0);
-                for (LocalMessage msg : messages) {
-                    try {
-                        if(!msg.getMessageId().startsWith(MESSAGE_ID_MAGIC_STRING))
+                for(LocalMessage msg : messages) {
+                    // not valid
+                    if(!msg.getMessageId().startsWith(MESSAGE_ID_MAGIC_STRING))
+                        continue;
+
+                    if(localMessage == null) {
+                        // maybe first valid one?
+                        try {
+                            K9.logDebug("Timestamp is: " + Long.parseLong(msg.getMessageId().
+                                    replace(MESSAGE_ID_MAGIC_STRING, "")));
+                            // no error thrown -- messageId is valid
+                            K9.logDebug("MessageId was valid.");
+                            localMessage = msg;
                             continue;
+                        } catch (Exception e) {
+                            K9.logDebug("Invalid messageId, try next one.");
+                            //nope, messageId was invalid
+                            continue;
+                        }
+                    }
+
+                    try {
+                        K9.logDebug("Check for newer one...");
+                        // already found one valid mail, is this one newer?
                         if (Long.parseLong(msg.getMessageId().replace(
                                 MESSAGE_ID_MAGIC_STRING, "")) >
                                 Long.parseLong(localMessage.getMessageId().replace(
                                         MESSAGE_ID_MAGIC_STRING, ""))) {
+                            K9.logDebug("messageId was newer.");
                             localMessage = msg;
                         }
                     } catch (Exception e) {
-                        continue;
+                        K9.logDebug("Invalid messageId, try next one.");
                     }
-
                 }
             }
+            if(localMessage == null) {
+                K9.logDebug("No valid messageId found.");
+                return null;
+            }
+
             FetchProfile fp = new FetchProfile();
             fp.add(FetchProfile.Item.ENVELOPE);
             fp.add(FetchProfile.Item.BODY);

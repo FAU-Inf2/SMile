@@ -93,6 +93,10 @@ public class RemindMeService extends CoreService {
             }
 
             LocalMessage message = (LocalMessage) item.getReference();
+            if(message == null) {
+                Log.d(K9.LOG_TAG, "item.getReference() returned null object.");
+                return minDate;
+            }
             messages.add(message);
             messageIds.add(message.getId());
             item.setSeen(new Date(System.currentTimeMillis()));

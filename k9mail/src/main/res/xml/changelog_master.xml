@@ -8,6 +8,10 @@
      They are automatically updated with "ant bump-version".
 -->
 <changelog>
+    <release version="2.1.1" versioncode="00007">
+        <change>Fixed minor issues</change>
+    </release>
+
     <release version="2.1" versioncode="00006">
         <change>Sending attachments possible</change>
         <change>Bug fixes</change>

@@ -13,6 +13,7 @@ import com.fsck.k9.K9;
 import com.fsck.k9.mail.RemindMe;
 
 import org.joda.time.DateTime;
+import org.joda.time.Period;
 
 import java.lang.ref.WeakReference;
 import java.util.Calendar;
@@ -63,19 +64,13 @@ public class RemindMeListener implements RemindMeDialog.NoticeDialogListener,
 
     private Date getDelay(RemindMe.RemindMeInterval interval) {
         DateTime delay = DateTime.now();
+        Period offset = K9.getRemindMeTime(interval);
 
-        switch (interval) {
-            case LATER:
-                delay.plusMinutes(10);
-                break;
-            case EVENING:
-                delay.plusMinutes(30);
-                break;
-            case TOMORROW:
-                delay.plusDays(1);
-                break;
+        if(interval != RemindMe.RemindMeInterval.LATER) {
+            delay = delay.withTimeAtStartOfDay();
         }
 
+        delay = delay.plus(offset);
         return delay.toDate();
     }
 

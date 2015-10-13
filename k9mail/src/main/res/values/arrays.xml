@@ -771,6 +771,15 @@
         <item>@drawable/ic_remindme_custom_black</item>
     </array>
 
+    <string-array name="remindme_time_icon_labels">
+        <item>@string/remindme_time_later_label</item>
+        <item>@string/remindme_time_evening_label</item>
+        <item>@string/remindme_time_tomorrow_label</item>
+        <item>@string/remindme_time_next_week_label</item>
+        <item>@string/remindme_time_next_month_label</item>
+        <item>@string/remindme_time_custom_label</item>
+    </string-array>
+
     <string-array name="default_crypto_entries">
         <item>None</item>
         <item>OpenPGP</item>

@@ -4,8 +4,10 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.ArrayRes;
+import android.support.annotation.DrawableRes;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 import android.util.DisplayMetrics;
@@ -18,6 +20,7 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.fsck.k9.K9;
 import com.fsck.k9.mail.Message;
@@ -53,7 +56,7 @@ public class RemindMeDialog extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         Context context = getActivity();
         GridView view = (GridView) LayoutInflater.from(context).inflate(R.layout.remindme_dialog, null);
-        view.setAdapter(new RemindMeIconAdapter(context, R.array.remindme_time_icons));
+        view.setAdapter(new RemindMeIconAdapter(context, R.array.remindme_time_icons, R.array.remindme_time_icon_labels));
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setView(view);
@@ -115,22 +118,35 @@ public class RemindMeDialog extends DialogFragment {
     }
 
     static class RemindMeIconAdapter extends BaseAdapter {
-        private final TypedArray icons;
+        private final int[] icons;
+        private final CharSequence[] labels;
         private final Context context;
 
-        public RemindMeIconAdapter(Context context, @ArrayRes int icons) {
+        public RemindMeIconAdapter(Context context, @ArrayRes int icons, @ArrayRes int labels) {
             this.context = context;
-            this.icons = context.getResources().obtainTypedArray(icons);
+            TypedArray iconArray = context.getResources().obtainTypedArray(icons);
+            TypedArray labelArray = context.getResources().obtainTypedArray(labels);
+            int iconCount = iconArray.length();
+            this.icons = new int[iconCount];
+            this.labels = new CharSequence[iconCount];
+
+            for(int i = 0; i < iconCount; i++) {
+                this.icons[i] = iconArray.getResourceId(i, R.drawable.ic_remindme_later_today_black);
+                this.labels[i] = labelArray.getString(i);
+            }
+
+            iconArray.recycle();
+            labelArray.recycle();
         }
 
         @Override
         public int getCount() {
-            return icons.length();
+            return icons.length;
         }
 
         @Override
         public Object getItem(int position) {
-            return icons.getResourceId(position, -1);
+            return icons[position];
         }
 
         @Override
@@ -140,25 +156,22 @@ public class RemindMeDialog extends DialogFragment {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
+            final LayoutInflater inflater = LayoutInflater.from(context);
             ImageView imageView;
+            TextView label;
+            View itemView = convertView;
+
             if (convertView == null) {
-                // if it's not recycled, initialize some attributes
-                imageView = new ImageView(context);
-                Resources resources = context.getResources();
-                DisplayMetrics metrics = resources.getDisplayMetrics();
-                int width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80, metrics);
-                imageView.setLayoutParams(new GridView.LayoutParams(width, width));
-                imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, metrics);
-                imageView.setPadding(padding, padding, padding, padding);
-            } else {
-                imageView = (ImageView) convertView;
+                itemView = inflater.inflate(R.layout.remindme_dialog_item, null, false);
             }
 
-            final int iconId = icons.getResourceId(position, R.drawable.ic_remindme_tomorrow_black);
-            imageView.setImageResource(iconId);
-            return imageView;
+            imageView = (ImageView) itemView.findViewById(R.id.icon);
+            label = (TextView) itemView.findViewById(R.id.icon_label);
 
+            imageView.setImageResource(icons[position]);
+            label.setText(labels[position]);
+
+            return itemView;
         }
     }
 

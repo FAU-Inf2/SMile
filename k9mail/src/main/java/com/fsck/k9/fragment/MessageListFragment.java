@@ -31,6 +31,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.DatePicker;
 import android.widget.ListView;
@@ -464,15 +465,15 @@ public class MessageListFragment extends Fragment
      */
     @NonNull
     protected Comparator<Cursor> getComparator() {
-        final List<Comparator<Cursor>> chain =
-                new ArrayList<Comparator<Cursor>>(3 /* we add 3 comparators at most */);
+        /* we add 3 comparators at most */
+        final List<Comparator<Cursor>> chain = new ArrayList<>(3);
 
         // Add the specified comparator
         final Comparator<Cursor> comparator = SORT_COMPARATORS.get(mSortType);
         if (mSortAscending) {
             chain.add(comparator);
         } else {
-            chain.add(new ReverseComparator<Cursor>(comparator));
+            chain.add(new ReverseComparator<>(comparator));
         }
 
         // Add the date comparator if not already specified
@@ -481,7 +482,7 @@ public class MessageListFragment extends Fragment
             if (mSortDateAscending) {
                 chain.add(dateComparator);
             } else {
-                chain.add(new ReverseComparator<Cursor>(dateComparator));
+                chain.add(new ReverseComparator<>(dateComparator));
             }
         }
 
@@ -489,7 +490,7 @@ public class MessageListFragment extends Fragment
         chain.add(new ReverseIdComparator());
 
         // Build the comparator chain
-        return new ComparatorChain<Cursor>(chain);
+        return new ComparatorChain<>(chain);
     }
 
     void folderLoading(String folder, boolean loading) {
@@ -814,6 +815,7 @@ public class MessageListFragment extends Fragment
         mListView.setFastScrollEnabled(true);
         mListView.setScrollingCacheEnabled(false);
         mListView.setOnItemClickListener(this);
+        mListView.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
 
         registerForContextMenu(mListView);
     }
@@ -940,10 +942,12 @@ public class MessageListFragment extends Fragment
         changeSort(sorts[curIndex]);
     }
 
+    @Override
     public void move(LocalMessage message, String destFolder) {
         onMove(message);
     }
 
+    @Override
     public void delete(LocalMessage message){
         RemindMe remindMe = isRemindMe(message);
 
@@ -955,6 +959,7 @@ public class MessageListFragment extends Fragment
         }
     }
 
+    @Override
     public void archive(LocalMessage message) {
         if (message == null) {
             return;
@@ -963,19 +968,23 @@ public class MessageListFragment extends Fragment
         onArchive(Collections.singletonList(message));
     }
 
+    @Override
     public void remindMe(LocalMessage message) {
         RemindMeDialog dialog = RemindMeDialog.newInstance(message, remindMeListener);
         dialog.show(getFragmentManager(), "mTimeValue");
     }
 
+    @Override
     public void reply(LocalMessage message) {
         mFragmentListener.onReply(message);
     }
 
+    @Override
     public void replyAll(LocalMessage message){
         mFragmentListener.onReplyAll(message);
     }
 
+    @Override
     public void openMessage(MessageReference messageReference) {
         mHandler.openMessage(messageReference);
     }

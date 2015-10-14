@@ -2451,8 +2451,12 @@ public class MessageListFragment extends Fragment
     }
 
     public final RemindMe isRemindMe(LocalMessage localMessage) {
+        if(localMessage == null) {
+            return null;
+        }
+
         for (RemindMe remindMe : remindMeList) {
-            if (remindMe.getUid().equals(localMessage.getUid())) {
+            if (localMessage.getUid().equals(remindMe.getUid())) {
                 return remindMe;
             }
         }

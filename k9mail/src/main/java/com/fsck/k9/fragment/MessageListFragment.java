@@ -1266,7 +1266,7 @@ public class MessageListFragment extends Fragment
         super.onCreateContextMenu(menu, v, menuInfo);
 
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
-        LocalMessage message = getMessageAtPosition(info.position);
+        LocalMessage message = getMessageAtPosition(listViewToAdapterPosition(info.position));
 
         if (message == null) {
             return;

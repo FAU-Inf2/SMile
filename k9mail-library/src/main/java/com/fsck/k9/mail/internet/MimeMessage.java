@@ -661,11 +661,6 @@ public class MimeMessage extends Message {
     }
 
     @Override
-    public String getPreview() {
-        return "";
-    }
-
-    @Override
     public boolean hasAttachments() {
         return false;
     }

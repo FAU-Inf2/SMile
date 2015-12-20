@@ -15,6 +15,8 @@ import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mail.internet.MimeMessage;
 import com.fsck.k9.mailstore.LockableDatabase.DbCallback;
 import com.fsck.k9.mailstore.LockableDatabase.WrappedException;
+import com.fsck.k9.message.preview.PreviewResult.PreviewType;
+
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -38,6 +40,7 @@ public class LocalMessage extends MimeMessage implements Serializable {
     private long mRootId;
     private long messagePartId;
     private String mimeType;
+    private PreviewType previewType;
 
     private LocalMessage(LocalStore localStore) {
         this.localStore = localStore;
@@ -88,8 +91,14 @@ public class LocalMessage extends MimeMessage implements Serializable {
         this.setInternalDate(new Date(cursor.getLong(11)));
         this.setMessageId(cursor.getString(12));
 
-        final String preview = cursor.getString(14);
-        mPreview = (preview == null ? "" : preview);
+        String previewTypeString = cursor.getString(24);
+        DatabasePreviewType databasePreviewType = DatabasePreviewType.fromDatabaseValue(previewTypeString);
+        previewType = databasePreviewType.getPreviewType();
+        if (previewType == PreviewType.TEXT) {
+            mPreview = cursor.getString(14);
+        } else {
+            mPreview = "";
+        }
 
         if (this.mFolder == null) {
             LocalFolder f = new LocalFolder(this.localStore, cursor.getInt(13));
@@ -138,7 +147,10 @@ public class LocalMessage extends MimeMessage implements Serializable {
         super.writeTo(out);
     }
 
-    @Override
+    public PreviewType getPreviewType() {
+        return previewType;
+    }
+
     public String getPreview() {
         return mPreview;
     }

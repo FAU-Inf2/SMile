@@ -179,12 +179,12 @@ public class MimeMessage extends Message {
     }
 
     @Override
-    public String getMimeType() throws MessagingException {
+    public String getMimeType() {
         return MimeUtility.getHeaderParameter(getContentType(), null);
     }
 
     @Override
-    public boolean isMimeType(String mimeType) throws MessagingException {
+    public boolean isMimeType(String mimeType) {
         return getMimeType().equalsIgnoreCase(mimeType);
     }
 

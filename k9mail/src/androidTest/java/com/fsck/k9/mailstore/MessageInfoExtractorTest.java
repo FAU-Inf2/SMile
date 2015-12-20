@@ -10,6 +10,8 @@ import com.fsck.k9.mail.internet.MimeBodyPart;
 import com.fsck.k9.mail.internet.MimeMessage;
 import com.fsck.k9.mail.internet.MimeMultipart;
 import com.fsck.k9.mail.internet.TextBody;
+import com.fsck.k9.message.preview.MessagePreviewCreator;
+import com.fsck.k9.message.preview.PreviewResult;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,7 +29,7 @@ public class MessageInfoExtractorTest {
         TextBody body = new TextBody("Message text ");
         message.setBody(body);
 
-        String preview = new MessageInfoExtractor(getContext(), message).getMessageTextPreview();
+        PreviewResult preview = MessagePreviewCreator.newInstance().createPreview(message);
 
         assertEquals("Message text", preview);
     }
@@ -50,10 +52,10 @@ public class MessageInfoExtractorTest {
                 "560-------570-------580-------590-------600-------");
         message.setBody(body);
 
-        String preview = new MessageInfoExtractor(getContext(), message).getMessageTextPreview();
+        PreviewResult preview = MessagePreviewCreator.newInstance().createPreview(message);
 
-        assertEquals(512, preview.length());
-        assertEquals('…', preview.charAt(511));
+        assertEquals(512, preview.getPreviewText().length());
+        assertEquals('…', preview.getPreviewText().charAt(511));
     }
 
     @Test
@@ -63,7 +65,7 @@ public class MessageInfoExtractorTest {
         TextBody body = new TextBody("<html><body><pre>Message text</pre></body></html>");
         message.setBody(body);
 
-        String preview = new MessageInfoExtractor(getContext(), message).getMessageTextPreview();
+        PreviewResult preview = MessagePreviewCreator.newInstance().createPreview(message);
 
         assertEquals("Message text", preview);
     }
@@ -84,7 +86,7 @@ public class MessageInfoExtractorTest {
         MimeBodyPart htmlPart = new MimeBodyPart(htmlBody, "text/html");
         multipart.addBodyPart(htmlPart);
 
-        String preview = new MessageInfoExtractor(getContext(), message).getMessageTextPreview();
+        PreviewResult preview = MessagePreviewCreator.newInstance().createPreview(message);
 
         assertEquals("text", preview);
     }
@@ -105,9 +107,9 @@ public class MessageInfoExtractorTest {
         MimeBodyPart htmlPart = new MimeBodyPart(htmlBody, "text/html");
         multipart.addBodyPart(htmlPart);
 
-        String preview = new MessageInfoExtractor(getContext(), message).getMessageTextPreview();
+        PreviewResult preview = MessagePreviewCreator.newInstance().createPreview(message);
 
-        assertEquals("text / html", preview);
+        assertEquals(PreviewResult.PreviewType.TEXT, preview.getPreviewType());
     }
 
     @Test
@@ -131,7 +133,7 @@ public class MessageInfoExtractorTest {
         MimeBodyPart messagePart = new MimeBodyPart(innerMessage, "message/rfc822");
         multipart.addBodyPart(messagePart);
 
-        String preview = new MessageInfoExtractor(getContext(), message).getMessageTextPreview();
+        PreviewResult preview = MessagePreviewCreator.newInstance().createPreview(message);
 
         assertEquals("text / Includes message titled \"inner message\" containing: html", preview);
     }

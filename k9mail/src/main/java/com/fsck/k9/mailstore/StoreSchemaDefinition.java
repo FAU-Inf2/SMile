@@ -21,14 +21,8 @@ import java.util.Locale;
 import de.fau.cs.mad.smile.android.R;
 
 class StoreSchemaDefinition implements LockableDatabase.SchemaDefinition {
-    /**
-     * 
-     */
     private final LocalStore localStore;
 
-    /**
-     * @param localStore
-     */
     StoreSchemaDefinition(LocalStore localStore) {
         this.localStore = localStore;
     }
@@ -60,11 +54,24 @@ class StoreSchemaDefinition implements LockableDatabase.SchemaDefinition {
             if (db.getVersion() < 29) {
 
                 db.execSQL("DROP TABLE IF EXISTS folders");
-                db.execSQL("CREATE TABLE folders (id INTEGER PRIMARY KEY, name TEXT, "
-                           + "last_updated INTEGER, unread_count INTEGER, visible_limit INTEGER, status TEXT, "
-                           + "push_state TEXT, last_pushed INTEGER, flagged_count INTEGER default 0, "
-                           + "integrate INTEGER, top_group INTEGER, poll_class TEXT, push_class TEXT, display_class TEXT, notify_class TEXT"
-                           + ")");
+                db.execSQL("CREATE TABLE folders (" +
+                        "id INTEGER PRIMARY KEY," +
+                        "name TEXT, " +
+                        "last_updated INTEGER, " +
+                        "unread_count INTEGER, " +
+                        "visible_limit INTEGER, " +
+                        "status TEXT, " +
+                        "push_state TEXT, " +
+                        "last_pushed INTEGER, " +
+                        "flagged_count INTEGER default 0, " +
+                        "integrate INTEGER, " +
+                        "top_group INTEGER, " +
+                        "poll_class TEXT, " +
+                        "push_class TEXT, " +
+                        "display_class TEXT, " +
+                        "notify_class TEXT, " +
+                        "more_messages TEXT default \"unknown\"" +
+                        ")");
 
                 db.execSQL("CREATE INDEX IF NOT EXISTS folder_name ON folders (name)");
                 db.execSQL("DROP TABLE IF EXISTS messages");
@@ -87,7 +94,7 @@ class StoreSchemaDefinition implements LockableDatabase.SchemaDefinition {
                         "preview TEXT, " +
                         "mime_type TEXT, "+
                         "normalized_subject_hash INTEGER, " +
-                        "empty INTEGER, " +
+                        "empty INTEGER default 0, " +
                         "read INTEGER default 0, " +
                         "flagged INTEGER default 0, " +
                         "answered INTEGER default 0, " +
@@ -305,7 +312,8 @@ class StoreSchemaDefinition implements LockableDatabase.SchemaDefinition {
 
                         editor.commit();
                         long endTime = System.currentTimeMillis();
-                        Log.i(K9.LOG_TAG, "Putting folder preferences for " + folders.size() + " folders back into Preferences took " + (endTime - startTime) + " ms");
+                        Log.i(K9.LOG_TAG, "Putting folder preferences for " + folders.size() +
+                                " folders back into Preferences took " + (endTime - startTime) + " ms");
                     } catch (Exception e) {
                         Log.e(K9.LOG_TAG, "Could not replace Preferences in upgrade from DB_VERSION 41", e);
                     }
@@ -427,7 +435,6 @@ class StoreSchemaDefinition implements LockableDatabase.SchemaDefinition {
                                             case X_DESTROYED:
                                             case X_DOWNLOADED_FULL:
                                             case X_DOWNLOADED_PARTIAL:
-                                            case X_GOT_ALL_HEADERS:
                                             case X_REMOTE_COPY_STARTED:
                                             case X_SEND_FAILED:
                                             case X_SEND_IN_PROGRESS: {
@@ -570,6 +577,12 @@ class StoreSchemaDefinition implements LockableDatabase.SchemaDefinition {
                 if (db.getVersion() < 52) {
                     throw new IllegalStateException("Database upgrade not supported yet!");
                 }
+                if (db.getVersion() < 52) {
+                    addMoreMessagesColumnToFoldersTable(db);
+                }
+                if (db.getVersion() < 53) {
+                    removeNullValuesFromEmptyColumnInMessagesTable(db);
+                }
             }
 
             db.setVersion(LocalStore.DB_VERSION);
@@ -623,5 +636,13 @@ class StoreSchemaDefinition implements LockableDatabase.SchemaDefinition {
         db.execSQL("UPDATE folders SET integrate = ?, top_group = ?, poll_class=?, push_class =?, display_class = ? WHERE id = ?",
                    new Object[] { integrate, inTopGroup, syncClass, pushClass, displayClass, id });
 
+    }
+
+    private void addMoreMessagesColumnToFoldersTable(SQLiteDatabase db) {
+        db.execSQL("ALTER TABLE folders ADD more_messages TEXT default \"unknown\"");
+    }
+
+    private void removeNullValuesFromEmptyColumnInMessagesTable(SQLiteDatabase db) {
+        db.execSQL("UPDATE messages SET empty = 0 WHERE empty IS NULL");
     }
 }

@@ -1,8 +1,12 @@
 package com.fsck.k9.crypto;
 
 
+import java.util.List;
+
+import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mail.Part;
 import com.fsck.k9.mail.internet.MimeBodyPart;
+import com.fsck.k9.mail.internet.MimeHeader;
 import com.fsck.k9.mail.internet.MimeMessage;
 import com.fsck.k9.mail.internet.MimeMessageHelper;
 import com.fsck.k9.mail.internet.MimeMultipart;
@@ -43,9 +47,10 @@ public class MessageDecryptVerifierTest {
     @Test
     public void findEncryptedPartsShouldReturnEmptyEncryptedPart() throws Exception {
         MimeMessage message = new MimeMessage();
-        MimeMultipart mulitpartEncrypted = new MimeMultipart();
-        mulitpartEncrypted.setSubType("encrypted");
-        MimeMessageHelper.setBody(message, mulitpartEncrypted);
+        MimeMultipart multipartEncrypted = new MimeMultipart();
+        multipartEncrypted.setSubType("encrypted");
+        MimeMessageHelper.setBody(message, multipartEncrypted);
+        addProtocolParameter(message);
 
         List<Part> encryptedParts = MessageDecryptVerifier.findPgpEncryptedParts(message);
         assertEquals(1, encryptedParts.size());
@@ -59,22 +64,30 @@ public class MessageDecryptVerifierTest {
         multipartMixed.setSubType("mixed");
         MimeMessageHelper.setBody(message, multipartMixed);
 
-        MimeMultipart mulitpartEncryptedOne = new MimeMultipart();
-        mulitpartEncryptedOne.setSubType("encrypted");
-        MimeBodyPart bodyPartOne = new MimeBodyPart(mulitpartEncryptedOne);
+        MimeMultipart multipartEncryptedOne = new MimeMultipart();
+        multipartEncryptedOne.setSubType("encrypted");
+        MimeBodyPart bodyPartOne = new MimeBodyPart(multipartEncryptedOne);
+        addProtocolParameter(bodyPartOne);
         multipartMixed.addBodyPart(bodyPartOne);
 
         MimeBodyPart bodyPartTwo = new MimeBodyPart(null, "text/plain");
         multipartMixed.addBodyPart(bodyPartTwo);
 
-        MimeMultipart mulitpartEncryptedThree = new MimeMultipart();
-        mulitpartEncryptedThree.setSubType("encrypted");
-        MimeBodyPart bodyPartThree = new MimeBodyPart(mulitpartEncryptedThree);
+        MimeMultipart multipartEncryptedThree = new MimeMultipart();
+        multipartEncryptedThree.setSubType("encrypted");
+        MimeBodyPart bodyPartThree = new MimeBodyPart(multipartEncryptedThree);
+        addProtocolParameter(bodyPartThree);
         multipartMixed.addBodyPart(bodyPartThree);
 
         List<Part> encryptedParts = MessageDecryptVerifier.findPgpEncryptedParts(message);
         assertEquals(2, encryptedParts.size());
         assertSame(bodyPartOne, encryptedParts.get(0));
         assertSame(bodyPartThree, encryptedParts.get(1));
+    }
+
+    //TODO: Find a cleaner way to do this
+    private void addProtocolParameter(Part part) throws MessagingException {
+        String contentType = part.getContentType();
+        part.setHeader(MimeHeader.HEADER_CONTENT_TYPE, contentType + "; protocol=\"application/pgp-encrypted\"");
     }
 }

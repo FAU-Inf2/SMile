@@ -451,6 +451,12 @@ public class LocalMessage extends MimeMessage implements Serializable {
         getFolder().populateHeaders(this);
     }
 
+    void loadHeadersIfNecessary() throws MessagingException {
+        if (!mHeadersLoaded) {
+            loadHeaders();
+        }
+    }
+
     @Override
     public void setHeader(String name, String value) throws MessagingException {
         if (!mHeadersLoaded)

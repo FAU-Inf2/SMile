@@ -23,6 +23,8 @@ import com.fsck.k9.mail.MessageRetrievalListener;
 import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mail.Store;
 import com.fsck.k9.mailstore.LocalFolder.DataLocation;
+import com.fsck.k9.mailstore.LocalFolder.MoreMessages;
+import com.fsck.k9.mailstore.StorageManager.StorageProvider;
 import com.fsck.k9.mailstore.LockableDatabase.DbCallback;
 import com.fsck.k9.mailstore.LockableDatabase.WrappedException;
 import com.fsck.k9.mailstore.StorageManager.StorageProvider;
@@ -90,7 +92,7 @@ public class LocalStore extends Store implements Serializable {
 
     static final String GET_FOLDER_COLS =
         "folders.id, name, visible_limit, last_updated, status, push_state, last_pushed, " +
-        "integrate, top_group, poll_class, push_class, display_class, notify_class";
+        "integrate, top_group, poll_class, push_class, display_class, notify_class, more_messages";
 
     static final int FOLDER_ID_INDEX = 0;
     static final int FOLDER_NAME_INDEX = 1;
@@ -105,6 +107,7 @@ public class LocalStore extends Store implements Serializable {
     static final int FOLDER_PUSH_CLASS_INDEX = 10;
     static final int FOLDER_DISPLAY_CLASS_INDEX = 11;
     static final int FOLDER_NOTIFY_CLASS_INDEX = 12;
+    static final int MORE_MESSAGES_INDEX = 13;
 
     static final String[] UID_CHECK_PROJECTION = { "uid" };
 
@@ -129,7 +132,7 @@ public class LocalStore extends Store implements Serializable {
      */
     private static final int THREAD_FLAG_UPDATE_BATCH_SIZE = 500;
 
-    public static final int DB_VERSION = 52;
+    public static final int DB_VERSION = 53;
 
     public static String getColumnNameForFlag(Flag flag) {
         switch (flag) {
@@ -360,7 +363,7 @@ public class LocalStore extends Store implements Serializable {
 
     // TODO this takes about 260-300ms, seems slow.
     @Override
-    public List <? extends Folder > getPersonalNamespaces(boolean forceListAll) throws MessagingException {
+    public List<LocalFolder> getPersonalNamespaces(boolean forceListAll) throws MessagingException {
         final List<LocalFolder> folders = new LinkedList<LocalFolder>();
         try {
             database.execute(false, new DbCallback < List <? extends Folder >> () {
@@ -443,6 +446,7 @@ public class LocalStore extends Store implements Serializable {
     public void resetVisibleLimits(int visibleLimit) throws MessagingException {
         final ContentValues cv = new ContentValues();
         cv.put("visible_limit", Integer.toString(visibleLimit));
+        cv.put("more_messages", MoreMessages.UNKNOWN.getDatabaseName());
         database.execute(false, new DbCallback<Void>() {
             @Override
             public Void doDbWork(final SQLiteDatabase db) throws WrappedException {
@@ -566,7 +570,7 @@ public class LocalStore extends Store implements Serializable {
         String sqlQuery = "SELECT " + GET_MESSAGES_COLS + "FROM messages " +
                 "LEFT JOIN threads ON (threads.message_id = messages.id) " +
                 "LEFT JOIN folders ON (folders.id = messages.folder_id) WHERE " +
-                "((empty IS NULL OR empty != 1) AND deleted = 0)" +
+                "(empty = 0 AND deleted = 0)" +
                 ((!TextUtils.isEmpty(where)) ? " AND (" + where + ")" : "") +
                 " ORDER BY date DESC";
 
@@ -980,7 +984,7 @@ public class LocalStore extends Store implements Serializable {
             public void doDbWork(SQLiteDatabase db, String selectionSet, String[] selectionArgs)
                     throws UnavailableStorageException {
 
-                db.update("messages", cv, "(empty IS NULL OR empty != 1) AND id" + selectionSet,
+                db.update("messages", cv, "empty = 0 AND id" + selectionSet,
                         selectionArgs);
             }
 
@@ -1032,7 +1036,7 @@ public class LocalStore extends Store implements Serializable {
                         " WHERE id IN (" +
                         "SELECT m.id FROM threads t " +
                         "LEFT JOIN messages m ON (t.message_id = m.id) " +
-                        "WHERE (m.empty IS NULL OR m.empty != 1) AND m.deleted = 0 " +
+                        "WHERE m.empty = 0 AND m.deleted = 0 " +
                         "AND t.root" + selectionSet + ")",
                         selectionArgs);
             }
@@ -1085,7 +1089,7 @@ public class LocalStore extends Store implements Serializable {
                             "FROM threads t " +
                             "LEFT JOIN messages m ON (t.message_id = m.id) " +
                             "LEFT JOIN folders f ON (m.folder_id = f.id) " +
-                            "WHERE (m.empty IS NULL OR m.empty != 1) AND m.deleted = 0 " +
+                            "WHERE m.empty = 0 AND m.deleted = 0 " +
                             "AND t.root" + selectionSet;
 
                     getDataFromCursor(db.rawQuery(sql, selectionArgs));
@@ -1095,7 +1099,7 @@ public class LocalStore extends Store implements Serializable {
                             "SELECT m.uid, f.name " +
                             "FROM messages m " +
                             "LEFT JOIN folders f ON (m.folder_id = f.id) " +
-                            "WHERE (m.empty IS NULL OR m.empty != 1) AND m.id" + selectionSet;
+                            "WHERE m.empty = 0 AND m.id" + selectionSet;
 
                     getDataFromCursor(db.rawQuery(sql, selectionArgs));
                 }

@@ -550,19 +550,32 @@ public class ImapStore extends RemoteStore {
                 ImapList attributes = response.getList(1);
                 for (int i = 0, count = attributes.size(); i < count; i++) {
                     String attribute = attributes.getString(i);
-                    if (attribute.equals("\\Drafts")) {
+                    if (attribute.equals("\\Archive") || attribute.equals("\\AllMail")) {
+                        mStoreConfig.setArchiveFolderName(decodedFolderName);
+                        if (K9MailLib.isDebug()) {
+                            Log.d(LOG_TAG, "Folder auto-configuration detected Archive folder: " + decodedFolderName);
+                        }
+                    } else if (attribute.equals("\\Drafts")) {
                         mStoreConfig.setDraftsFolderName(decodedFolderName);
-                        if (K9MailLib.isDebug()) Log.d(LOG_TAG, "Folder auto-configuration detected draft folder: " + decodedFolderName);
+                        if (K9MailLib.isDebug()) {
+                            Log.d(LOG_TAG, "Folder auto-configuration detected Drafts folder: " + decodedFolderName);
+                        }
                     } else if (attribute.equals("\\Sent")) {
                         mStoreConfig.setSentFolderName(decodedFolderName);
-                        if (K9MailLib.isDebug()) Log.d(LOG_TAG, "Folder auto-configuration detected sent folder: " + decodedFolderName);
+                        if (K9MailLib.isDebug()) {
+                            Log.d(LOG_TAG, "Folder auto-configuration detected Sent folder: " + decodedFolderName);
+                        }
                     } else if (attribute.equals("\\Spam") || attribute.equals("\\Junk")) {
                         //rfc6154 just mentions \Junk
                         mStoreConfig.setSpamFolderName(decodedFolderName);
-                        if (K9MailLib.isDebug()) Log.d(LOG_TAG, "Folder auto-configuration detected spam folder: " + decodedFolderName);
+                        if (K9MailLib.isDebug()) {
+                            Log.d(LOG_TAG, "Folder auto-configuration detected Spam folder: " + decodedFolderName);
+                        }
                     } else if (attribute.equals("\\Trash")) {
                         mStoreConfig.setTrashFolderName(decodedFolderName);
-                        if (K9MailLib.isDebug()) Log.d(LOG_TAG, "Folder auto-configuration detected trash folder: " + decodedFolderName);
+                        if (K9MailLib.isDebug()) {
+                            Log.d(LOG_TAG, "Folder auto-configuration detected Trash folder: " + decodedFolderName);
+                        }
                     }
                 }
             }
@@ -670,6 +683,8 @@ public class ImapStore extends RemoteStore {
 
 
     protected class ImapFolder extends Folder<ImapMessage> {
+        private static final int MORE_MESSAGES_WINDOW_SIZE = 500;
+
         private String mName;
         protected volatile int mMessageCount = -1;
         protected volatile long uidNext = -1L;
@@ -1203,14 +1218,8 @@ public class ImapStore extends RemoteStore {
                     String.format(Locale.US, "Invalid message set %d %d",
                                   start, end));
             }
-            final StringBuilder dateSearchString = new StringBuilder();
-            if (earliestDate != null) {
-                dateSearchString.append(" SINCE ");
-                synchronized (RFC3501_DATE) {
-                    dateSearchString.append(RFC3501_DATE.format(earliestDate));
-                }
-            }
 
+            final String dateSearchString = getDateSearchString(earliestDate);
 
             ImapSearcher searcher = new ImapSearcher() {
                 @Override
@@ -1221,6 +1230,62 @@ public class ImapStore extends RemoteStore {
             return search(searcher, listener);
 
         }
+
+        private String getDateSearchString(Date earliestDate) {
+            if (earliestDate == null) {
+                return "";
+            }
+
+            synchronized (RFC3501_DATE) {
+                return " SINCE " + RFC3501_DATE.format(earliestDate);
+            }
+        }
+
+        @Override
+        public boolean areMoreMessagesAvailable(int indexOfOldestMessage, Date earliestDate)
+                throws IOException, MessagingException {
+
+            checkOpen();
+
+            if (indexOfOldestMessage == 1) {
+                return false;
+            }
+
+            String dateSearchString = getDateSearchString(earliestDate);
+
+            int endIndex = indexOfOldestMessage - 1;
+
+            while (endIndex > 0) {
+                int startIndex = Math.max(0, endIndex - MORE_MESSAGES_WINDOW_SIZE) + 1;
+
+                if (existsNonDeletedMessageInRange(startIndex, endIndex, dateSearchString)) {
+                    return true;
+                }
+
+                endIndex = endIndex - MORE_MESSAGES_WINDOW_SIZE;
+            }
+
+            return false;
+        }
+
+        private boolean existsNonDeletedMessageInRange(int startIndex, int endIndex, String dateSearchString)
+                throws MessagingException, IOException {
+
+            String command = String.format(Locale.US, "SEARCH %d:%d%s NOT DELETED",
+                    startIndex, endIndex, dateSearchString);
+
+            List<ImapResponse> responses = executeSimpleCommand(command);
+            for (ImapResponse response : responses) {
+                if (response.getTag() == null && ImapResponseParser.equalsIgnoreCase(response.get(0), "SEARCH")) {
+                    if (response.size() > 1) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
         protected List<ImapMessage> getMessages(final List<Long> mesgSeqs,
                                                       final boolean includeDeleted,
                                                       final MessageRetrievalListener<ImapMessage> listener)

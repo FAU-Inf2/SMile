@@ -497,7 +497,7 @@ public class MessageListFragment extends Fragment
         if (mCurrentFolder != null && mCurrentFolder.name.equals(folder)) {
             mCurrentFolder.loading = loading;
         }
-
+        updateMoreMessagesOfCurrentFolder();
         updateFooterView();
     }
 
@@ -1353,6 +1353,8 @@ public class MessageListFragment extends Fragment
         if (!mSearch.isManualSearch() && mCurrentFolder != null && mAccount != null) {
             if (mCurrentFolder.loading) {
                 updateFooter(mContext.getString(R.string.status_loading_more));
+            } else if (!mCurrentFolder.moreMessages) {
+                updateFooter(null);
             } else {
                 String message;
                 if (!mCurrentFolder.lastCheckFailed) {
@@ -1380,8 +1382,6 @@ public class MessageListFragment extends Fragment
 
         if (text != null) {
             holder.main.setText(text);
-        }
-        if (holder.main.getText().length() > 0) {
             holder.main.setVisibility(View.VISIBLE);
         } else {
             holder.main.setVisibility(View.GONE);

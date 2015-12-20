@@ -61,7 +61,7 @@ public final class MessageViewFragment extends Fragment
     public static final String ARG_REFERENCE = "reference";
     public static final String ARG_MESSAGE = "message";
     public static final String ARG_ANNOTATIONS = "annotations";
-    static final int ACTIVITY_CHOOSE_DIRECTORY = 3;
+    private static final int ACTIVITY_CHOOSE_DIRECTORY = 3;
     private static final String STATE_MESSAGE_REFERENCE = "reference";
     private static final String STATE_PGP_DATA = "pgpData";
     private static final int ACTIVITY_CHOOSE_FOLDER_MOVE = 1;
@@ -188,43 +188,40 @@ public final class MessageViewFragment extends Fragment
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        MessageReference messageReference;
+        initializePgpData(savedInstanceState);
+
+        Bundle arguments = getArguments();
+        MessageReference messageReference = arguments.getParcelable(ARG_REFERENCE);
+
+        displayMessage(messageReference);
+    }
+
+    private void initializePgpData(Bundle savedInstanceState) {
         if (savedInstanceState != null) {
             mPgpData = (PgpData) savedInstanceState.get(STATE_PGP_DATA);
-            messageReference = (MessageReference) savedInstanceState.get(STATE_MESSAGE_REFERENCE);
         } else {
-            Bundle args = getArguments();
-            messageReference = args.getParcelable(ARG_REFERENCE);
+            mPgpData = new PgpData();
         }
-
-        displayMessage(messageReference, (mPgpData == null));
     }
 
     // save state
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putParcelable(STATE_MESSAGE_REFERENCE, mMessageReference);
         outState.putSerializable(STATE_PGP_DATA, mPgpData);
     }
 
-    private void displayMessage(final MessageReference ref, final boolean resetPgpData) {
-        mMessageReference = ref;
+    private void displayMessage(final MessageReference messageReference) {
+        mMessageReference = messageReference;
         if (K9.DEBUG) {
             Log.d(K9.LOG_TAG, "MessageView displaying message " + mMessageReference);
         }
 
-        mAccount = Preferences.getPreferences(mContext).getAccount(mMessageReference.getAccountUuid());
+        Activity activity = getActivity();
+        Context appContext = activity.getApplicationContext();
+        mAccount = Preferences.getPreferences(appContext).getAccount(mMessageReference.getAccountUuid());
+        messageCryptoHelper = new MessageCryptoHelper(activity, mAccount, this);
         localMessageLoaderCallback = new LocalMessageLoaderCallback(handler, mContext, mAccount, mMessageReference);
-        if (resetPgpData) {
-            // start with fresh, empty PGP data
-            mPgpData = new PgpData();
-        }
-
-        // Clear previous message
-        mMessageView.resetView();
-        mMessageView.resetHeaderView();
-
         startLoadingMessageFromDatabase();
 
         mFragmentListener.updateMenu();

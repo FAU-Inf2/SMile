@@ -57,6 +57,8 @@ public class MessageTopView extends LinearLayout implements ShowPicturesControll
 
         containerViews = (LinearLayout) findViewById(R.id.message_containers);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        hideHeaderView();
+        
         super.onFinishInflate();
     }
 
@@ -134,7 +136,7 @@ public class MessageTopView extends LinearLayout implements ShowPicturesControll
         return mHeaderContainer.additionalHeadersVisible();
     }
 
-    public void resetHeaderView() {
+    private void hideHeaderView() {
         mHeaderContainer.setVisibility(View.GONE);
     }
 

@@ -13,8 +13,8 @@ import android.text.TextUtils;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.K9;
-import com.fsck.k9.R;
 
+import de.fau.cs.mad.smile.android.R;
 
 class LockScreenNotification {
     static final int MAX_NUMBER_OF_SENDERS_IN_LOCK_SCREEN_NOTIFICATION = 5;

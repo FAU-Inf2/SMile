@@ -1,8 +1,6 @@
 package com.fsck.k9.fragment;
 
 import android.app.Activity;
-import android.app.DatePickerDialog;
-import android.app.TimePickerDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -15,8 +13,6 @@ import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -33,10 +29,8 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.DatePicker;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.fsck.k9.Account;
@@ -46,7 +40,6 @@ import com.fsck.k9.Preferences;
 import com.fsck.k9.activity.ChooseFolder;
 import com.fsck.k9.activity.MessageCompose;
 import com.fsck.k9.activity.MessageReference;
-import com.fsck.k9.activity.RemindMeList;
 import com.fsck.k9.fragment.comparator.ArrivalComparator;
 import com.fsck.k9.fragment.comparator.AttachmentComparator;
 import com.fsck.k9.fragment.comparator.ComparatorChain;
@@ -66,7 +59,6 @@ import com.fsck.k9.cache.EmailProviderCache;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.fragment.ConfirmationDialogFragment.ConfirmationDialogFragmentListener;
 import com.fsck.k9.helper.MessageHelper;
-import com.fsck.k9.helper.NotificationHelper;
 import com.fsck.k9.helper.Utility;
 import com.fsck.k9.mail.Address;
 import com.fsck.k9.mail.Flag;
@@ -76,6 +68,7 @@ import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mail.RemindMe;
 import com.fsck.k9.mailstore.LocalFolder;
 import com.fsck.k9.mailstore.LocalMessage;
+import com.fsck.k9.notification.NotificationController;
 import com.fsck.k9.provider.EmailProvider;
 import com.fsck.k9.provider.EmailProvider.MessageColumns;
 import com.fsck.k9.provider.EmailProvider.SpecialColumns;
@@ -90,15 +83,10 @@ import com.handmark.pulltorefresh.library.ILoadingLayout;
 import com.handmark.pulltorefresh.library.PullToRefreshBase;
 import com.handmark.pulltorefresh.library.PullToRefreshListView;
 
-import org.joda.time.DateTime;
-
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -228,7 +216,7 @@ public class MessageListFragment extends Fragment
     protected boolean mThreadedList;
     // package visible so handler can access it
     Parcelable mSavedListState;
-    private NotificationHelper notificationHelper;
+    private NotificationController notificationController;
     private String[] mAccountUuids;
     private int mUnreadMessageCount = 0;
     private Cursor[] mCursors;
@@ -292,7 +280,7 @@ public class MessageListFragment extends Fragment
 
         mPreferences = Preferences.getPreferences(mContext);
         mController = MessagingController.getInstance(mContext);
-        notificationHelper = NotificationHelper.getInstance(mContext);
+        notificationController = NotificationController.newInstance(mContext);
         mListener = new MessageListActivityListener(activity, mHandler);
         remindMeListener = new RemindMeListener(this);
         remindMeList = new ArrayList<>();
@@ -497,6 +485,7 @@ public class MessageListFragment extends Fragment
         if (mCurrentFolder != null && mCurrentFolder.name.equals(folder)) {
             mCurrentFolder.loading = loading;
         }
+
         updateMoreMessagesOfCurrentFolder();
         updateFooterView();
     }
@@ -739,7 +728,7 @@ public class MessageListFragment extends Fragment
         }
 
         for (Account accountWithNotification : accountsWithNotification) {
-            notificationHelper.notifyAccountCancel(appContext, accountWithNotification);
+            notificationController.clearNewMailNotifications(accountWithNotification);
         }
 
         if (mAccount != null && mFolderName != null && !mSearch.isManualSearch()) {
@@ -2468,6 +2457,15 @@ public class MessageListFragment extends Fragment
         new DeleteFollowUp(mContext, mAccount).execute(remindMe);
     }
 
+    private void updateMoreMessagesOfCurrentFolder() {
+        if (mFolderName == null) {
+            return;
+        }
+
+        FolderInfoHolder folderInfoHolder = FolderHelper.getFolder(getContext(), mFolderName, mAccount);
+        mCurrentFolder.setMoreMessagesFromFolder(folderInfoHolder.folder);
+    }
+
     private static enum FolderOperation {
         COPY, MOVE
     }
@@ -2800,5 +2798,4 @@ public class MessageListFragment extends Fragment
             return sortOrder;
         }
     }
-
 }

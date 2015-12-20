@@ -126,9 +126,9 @@ public final class CryptoHeaderView extends LinearLayout {
         CryptoError error = cryptoAnnotation.getError();
         String text;
         if (error == null) {
-            text = context.getString(R.string.openpgp_unknown_error);
+            text = getContext().getString(R.string.openpgp_unknown_error);
         } else {
-            text = context.getString(R.string.openpgp_decryption_failed, error.getMessage());
+            text = getContext().getString(R.string.openpgp_decryption_failed, error.getMessage());
         }
 
         resultEncryptionText.setText(text);

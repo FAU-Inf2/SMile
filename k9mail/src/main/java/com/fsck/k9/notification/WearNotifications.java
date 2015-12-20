@@ -11,9 +11,10 @@ import android.support.v4.app.NotificationCompat.WearableExtender;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.K9;
-import com.fsck.k9.R;
 import com.fsck.k9.activity.MessageReference;
 import com.fsck.k9.controller.MessagingController;
+
+import de.fau.cs.mad.smile.android.R;
 
 
 class WearNotifications extends BaseNotifications {

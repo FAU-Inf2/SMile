@@ -6,10 +6,9 @@ import android.util.Log;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.K9;
-import com.fsck.k9.activity.setup.AccountSetupCheckSettings;
+import com.fsck.k9.activity.setup.AccountSetupCheckSettings.CheckDirection;
 import com.fsck.k9.activity.setup.AccountSetupCheckSettingsHandler;
 import com.fsck.k9.controller.MessagingController;
-import com.fsck.k9.helper.NotificationHelper;
 import com.fsck.k9.mail.AuthenticationFailedException;
 import com.fsck.k9.mail.CertificateValidationException;
 import com.fsck.k9.mail.MessagingException;
@@ -26,16 +25,14 @@ import de.fau.cs.mad.smile.android.R;
 public class CheckAccountTask extends AsyncTask<Void, Integer, Void> {
     private final Context context;
     private final MessagingController controller;
-    private final NotificationHelper helper;
     private final Account account;
-    private final AccountSetupCheckSettings.CheckDirection checkDirection;
+    private final CheckDirection checkDirection;
     private final AccountSetupCheckSettingsHandler handler;
 
-    public CheckAccountTask(Context context, AccountSetupCheckSettingsHandler handler, Account account, AccountSetupCheckSettings.CheckDirection checkDirection) {
+    public CheckAccountTask(Context context, AccountSetupCheckSettingsHandler handler, Account account, CheckDirection checkDirection) {
         this.context = context;
         this.account = account;
         this.controller = MessagingController.getInstance(context);
-        this.helper = NotificationHelper.getInstance(context);
         this.checkDirection = checkDirection;
         this.handler = handler;
     }
@@ -77,11 +74,11 @@ public class CheckAccountTask extends AsyncTask<Void, Integer, Void> {
         return null;
     }
 
-    private void clearCertificateErrorNotifications(AccountSetupCheckSettings.CheckDirection direction) {
-        helper.clearCertificateErrorNotifications(context, account, direction);
+    private void clearCertificateErrorNotifications(CheckDirection direction) {
+        controller.clearCertificateErrorNotifications(account, direction);
     }
 
-    private void checkServerSettings(AccountSetupCheckSettings.CheckDirection direction) throws MessagingException {
+    private void checkServerSettings(CheckDirection direction) throws MessagingException {
         switch (direction) {
             case INCOMING: {
                 checkIncoming();

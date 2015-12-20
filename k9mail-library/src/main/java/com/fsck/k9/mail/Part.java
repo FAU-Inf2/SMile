@@ -16,7 +16,7 @@ public interface Part {
 
     Body getBody();
 
-    String getContentType() throws MessagingException;
+    String getContentType();
 
     String getDisposition() throws MessagingException;
 

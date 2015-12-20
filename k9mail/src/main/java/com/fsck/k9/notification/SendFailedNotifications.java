@@ -7,8 +7,9 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 
 import com.fsck.k9.Account;
-import com.fsck.k9.R;
 import com.fsck.k9.helper.ExceptionHelper;
+
+import de.fau.cs.mad.smile.android.R;
 
 import static com.fsck.k9.notification.NotificationController.NOTIFICATION_LED_BLINK_FAST;
 import static com.fsck.k9.notification.NotificationController.NOTIFICATION_LED_FAILURE_COLOR;

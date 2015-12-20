@@ -5,7 +5,6 @@ import android.util.Log;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.K9;
-import com.fsck.k9.helper.NotificationHelper;
 import com.fsck.k9.mail.Folder;
 import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.PushReceiver;
@@ -21,13 +20,11 @@ public class MessagingControllerPushReceiver implements PushReceiver {
     private final Account account;
     private final MessagingController controller;
     private final Context context;
-    private final NotificationHelper notificationHelper;
 
     public MessagingControllerPushReceiver(Context context, Account nAccount, MessagingController nController) {
         account = nAccount;
         controller = nController;
         this.context = context;
-        notificationHelper = NotificationHelper.getInstance(context);
     }
 
     public void messagesFlagsChanged(Folder folder,
@@ -66,7 +63,7 @@ public class MessagingControllerPushReceiver implements PushReceiver {
     public void pushError(String errorMessage, Exception e) {
         String errMess = errorMessage;
 
-        notificationHelper.notifyUserIfCertificateProblem(context, e, account, true);
+        controller.notifyUserIfCertificateProblem(account, e, true);
         if (errMess == null && e != null) {
             errMess = e.getMessage();
         }

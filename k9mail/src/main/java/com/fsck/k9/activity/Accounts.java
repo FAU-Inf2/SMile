@@ -69,6 +69,7 @@ import com.fsck.k9.preferences.SettingsImporter.ImportContents;
 import com.fsck.k9.preferences.SettingsImporter.ImportResults;
 import com.fsck.k9.search.LocalSearch;
 import com.fsck.k9.search.SearchAccount;
+import com.fsck.k9.search.SearchSpecification;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -154,6 +155,28 @@ public class Accounts extends K9Activity implements OnItemClickListener {
         Intent intent = new Intent(context, Accounts.class);
         intent.setAction(ACTION_IMPORT_SETTINGS);
         context.startActivity(intent);
+    }
+
+    public static LocalSearch createUnreadSearch(Context context, BaseAccount account) {
+        String searchTitle = context.getString(R.string.search_title, account.getDescription(),
+                context.getString(R.string.unread_modifier));
+
+        LocalSearch search;
+        if (account instanceof SearchAccount) {
+            search = ((SearchAccount) account).getRelatedSearch().clone();
+            search.setName(searchTitle);
+        } else {
+            search = new LocalSearch(searchTitle);
+            search.addAccountUuid(account.getUuid());
+
+            Account realAccount = (Account) account;
+            realAccount.excludeSpecialFolders(search);
+            realAccount.limitToDisplayableFolders(search);
+        }
+
+        search.and(SearchSpecification.SearchField.READ, "1", SearchSpecification.Attribute.NOT_EQUALS);
+
+        return search;
     }
 
     public Accounts() {
@@ -896,7 +919,7 @@ public class Accounts extends K9Activity implements OnItemClickListener {
                             // are currently not inserted to be left
                         }
                         MessagingController.getInstance(getApplication())
-                                .deleteAccount(Accounts.this, account);
+                                .deleteAccount(account);
                         Preferences.getPreferences(Accounts.this)
                                 .deleteAccount(account);
                         K9.setServicesEnabled(Accounts.this);

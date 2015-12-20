@@ -486,14 +486,6 @@ public class LocalMessage extends MimeMessage implements Serializable {
     }
 
     @Override
-    public String getContentType() throws MessagingException {
-        if(!mHeadersLoaded) {
-            loadHeaders();
-        }
-        return super.getContentType();
-    }
-
-    @Override
     public LocalMessage clone() {
         LocalMessage message = new LocalMessage(this.localStore);
         super.copy(message);

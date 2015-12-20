@@ -61,7 +61,7 @@ public final class MessageViewFragment extends Fragment
     public static final String ARG_REFERENCE = "reference";
     public static final String ARG_MESSAGE = "message";
     public static final String ARG_ANNOTATIONS = "annotations";
-    private static final int ACTIVITY_CHOOSE_DIRECTORY = 3;
+    public static final int ACTIVITY_CHOOSE_DIRECTORY = 3;
     private static final String STATE_MESSAGE_REFERENCE = "reference";
     private static final String STATE_PGP_DATA = "pgpData";
     private static final int ACTIVITY_CHOOSE_FOLDER_MOVE = 1;
@@ -220,7 +220,6 @@ public final class MessageViewFragment extends Fragment
         Activity activity = getActivity();
         Context appContext = activity.getApplicationContext();
         mAccount = Preferences.getPreferences(appContext).getAccount(mMessageReference.getAccountUuid());
-        messageCryptoHelper = new MessageCryptoHelper(activity, mAccount, this);
         localMessageLoaderCallback = new LocalMessageLoaderCallback(handler, mContext, mAccount, mMessageReference);
         startLoadingMessageFromDatabase();
 

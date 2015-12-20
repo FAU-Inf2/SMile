@@ -9,9 +9,9 @@ import android.support.v4.app.NotificationCompat.Builder;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.K9;
-import com.fsck.k9.K9.NotificationQuickDelete;
-import com.fsck.k9.R;
+import com.fsck.k9.preferences.NotificationQuickDelete;
 
+import de.fau.cs.mad.smile.android.R;
 
 abstract class BaseNotifications {
     protected static final String NOTIFICATION_GROUP_KEY = "newMailNotifications";

@@ -5,20 +5,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
-import android.content.res.TypedArray;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v7.preference.EditTextPreference;
 import android.support.v7.preference.ListPreference;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceCategory;
-import android.support.v7.preference.PreferenceScreen;
 import android.support.v7.preference.SwitchPreferenceCompat;
 import android.text.TextUtils;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.fsck.k9.Account;
@@ -28,9 +22,8 @@ import com.fsck.k9.activity.ColorPickerDialog;
 import com.fsck.k9.fragment.SmilePreferenceFragment;
 import com.fsck.k9.helper.FileBrowserHelper;
 import com.fsck.k9.helper.FileBrowserHelper.FileBrowserFailOverCallback;
-import com.fsck.k9.helper.NotificationHelper;
-import com.fsck.k9.mail.RemindMe;
 import com.fsck.k9.mail.RemindMe.RemindMeInterval;
+import com.fsck.k9.notification.NotificationController;
 import com.fsck.k9.preferences.AccountPreference;
 import com.fsck.k9.preferences.AccountPreferenceCategory;
 import com.fsck.k9.preferences.BACKGROUND_OPS;
@@ -216,7 +209,7 @@ public class GlobalPreferences extends SmilePreferenceFragment {
 
         mNotificationQuickDelete = setupListPreference(PREFERENCE_NOTIF_QUICK_DELETE,
                 K9.getNotificationQuickDeleteBehaviour().toString());
-        if (!NotificationHelper.platformSupportsExtendedNotifications()) {
+        if (!NotificationController.platformSupportsExtendedNotifications()) {
             PreferenceCategory prefs = (PreferenceCategory) findPreference("notification_preferences");
             if (prefs != null) {
                 prefs.removePreference(mNotificationQuickDelete);
@@ -227,7 +220,7 @@ public class GlobalPreferences extends SmilePreferenceFragment {
 
         mLockScreenNotificationVisibility = setupListPreference(PREFERENCE_LOCK_SCREEN_NOTIFICATION_VISIBILITY,
                 K9.getLockScreenNotificationVisibility().toString());
-        if (!NotificationHelper.platformSupportsLockScreenNotifications()) {
+        if (!NotificationController.platformSupportsLockScreenNotifications()) {
             PreferenceCategory prefs = (PreferenceCategory) findPreference("notification_preferences");
             if (prefs != null) {
                 prefs.removePreference(mLockScreenNotificationVisibility);
@@ -425,7 +418,7 @@ public class GlobalPreferences extends SmilePreferenceFragment {
         K9.setStartIntegratedInbox(mStartIntegratedInbox.isChecked());
         K9.setNotificationHideSubject(NotificationHideSubject.valueOf(mNotificationHideSubject.getValue()));
 
-        if (NotificationHelper.platformSupportsExtendedNotifications()) {
+        if (NotificationController.platformSupportsExtendedNotifications()) {
             K9.setConfirmDeleteFromNotification(true);
         }
 

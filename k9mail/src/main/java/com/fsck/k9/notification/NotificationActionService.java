@@ -2,8 +2,10 @@ package com.fsck.k9.notification;
 
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
@@ -14,7 +16,11 @@ import com.fsck.k9.Preferences;
 import com.fsck.k9.activity.MessageReference;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.mail.Flag;
+import com.fsck.k9.mail.MessagingException;
+import com.fsck.k9.mail.RemindMe;
 import com.fsck.k9.mailstore.LocalMessage;
+import com.fsck.k9.mailstore.LocalRemindMe;
+import com.fsck.k9.mailstore.LocalStore;
 import com.fsck.k9.service.CoreService;
 
 
@@ -24,11 +30,21 @@ public class NotificationActionService extends CoreService {
     private final static String ACTION_ARCHIVE = "ACTION_ARCHIVE";
     private final static String ACTION_SPAM = "ACTION_SPAM";
     private final static String ACTION_DISMISS = "ACTION_DISMISS";
+    private final static String REMIND_ME_ACTION = "com.fsck.k9.service.NotificationActionService.REMIND_ME_ACTION";
 
     private final static String EXTRA_ACCOUNT_UUID = "accountUuid";
     private final static String EXTRA_MESSAGE_REFERENCE = "messageReference";
     private final static String EXTRA_MESSAGE_REFERENCES = "messageReferences";
+    private final static String EXTRA_REMINDME = "remindMe";
 
+    public static PendingIntent getRemindMeIntent(Context context, final Account account, final int remindMeId) {
+        Intent i = new Intent(context, NotificationActionService.class);
+        i.putExtra(EXTRA_ACCOUNT_UUID, account.getUuid());
+        i.putExtra(EXTRA_REMINDME, remindMeId);
+        i.setAction(REMIND_ME_ACTION);
+
+        return PendingIntent.getService(context, account.getAccountNumber(), i, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
 
     static Intent createMarkMessageAsReadIntent(Context context, MessageReference messageReference) {
         String accountUuid = messageReference.getAccountUuid();
@@ -135,10 +151,19 @@ public class NotificationActionService extends CoreService {
         }
 
         MessagingController controller = MessagingController.getInstance(getApplication());
+        LocalRemindMe localRemindMe = null;
+
+        try {
+            localRemindMe = new LocalRemindMe(LocalStore.getInstance(account, getApplication()));
+        } catch (MessagingException e) {
+            Log.e(K9.LOG_TAG, "exception while getting LocalStore");
+        }
 
         String action = intent.getAction();
         if (ACTION_MARK_AS_READ.equals(action)) {
             markMessagesAsRead(intent, account, controller);
+        } else if (REMIND_ME_ACTION.equals(action)) {
+            markRemindMeAsRead(intent, localRemindMe);
         } else if (ACTION_DELETE.equals(action)) {
             deleteMessages(intent, controller);
         } else if (ACTION_ARCHIVE.equals(action)) {
@@ -154,6 +179,22 @@ public class NotificationActionService extends CoreService {
         cancelNotifications(intent, account, controller);
 
         return START_NOT_STICKY;
+    }
+
+    private void markRemindMeAsRead(Intent intent, LocalRemindMe localRemindMe) {
+        if(localRemindMe == null) {
+            return;
+        }
+        int remindMeId = intent.getIntExtra(EXTRA_REMINDME, -1);
+        if(remindMeId > 0) {
+            try {
+                RemindMe remindMe = localRemindMe.getById(remindMeId);
+                remindMe.setSeen(new Date(System.currentTimeMillis()));
+                localRemindMe.update(remindMe);
+            } catch (MessagingException e) {
+                Log.e(K9.LOG_TAG, "exception while getting RemindMe");
+            }
+        }
     }
 
     private void markMessagesAsRead(Intent intent, Account account, MessagingController controller) {

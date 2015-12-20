@@ -10,9 +10,9 @@ import android.support.v7.app.AppCompatActivity;
 import com.fsck.k9.Account;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
-import com.fsck.k9.service.NotificationActionService;
+import com.fsck.k9.controller.MessagingController;
+import com.fsck.k9.notification.NotificationActionService;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 
 import de.fau.cs.mad.smile.android.R;

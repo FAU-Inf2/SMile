@@ -18,8 +18,9 @@ import com.fsck.k9.AccountStats;
 import com.fsck.k9.K9;
 import com.fsck.k9.K9.Intents;
 import com.fsck.k9.Preferences;
+import com.fsck.k9.activity.MessageReference;
+import com.fsck.k9.activity.setup.AccountSetupCheckSettings.CheckDirection;
 import com.fsck.k9.cache.EmailProviderCache;
-import com.fsck.k9.helper.NotificationHelper;
 import com.fsck.k9.mail.Address;
 import com.fsck.k9.mail.CertificateValidationException;
 import com.fsck.k9.mail.FetchProfile;
@@ -44,6 +45,7 @@ import com.fsck.k9.mail.power.TracingPowerManager;
 import com.fsck.k9.mail.power.TracingPowerManager.TracingWakeLock;
 import com.fsck.k9.mail.store.pop3.Pop3Store;
 import com.fsck.k9.mailstore.LocalFolder;
+import com.fsck.k9.mailstore.LocalFolder.MoreMessages;
 import com.fsck.k9.mailstore.LocalMessage;
 import com.fsck.k9.mailstore.LocalStore;
 import com.fsck.k9.mailstore.LocalStore.PendingCommand;
@@ -59,6 +61,7 @@ import com.fsck.k9.search.SearchSpecification;
 import com.fsck.k9.search.SqlQueryBuilder;
 
 import java.io.CharArrayWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -142,10 +145,9 @@ public class MessagingController implements Runnable {
      */
     private static final int UNSYNC_CHUNK_SIZE = 5;
     private static final Set<Flag> SYNC_FLAGS = EnumSet.of(Flag.SEEN, Flag.FLAGGED, Flag.ANSWERED, Flag.FORWARDED);
-    static long uidfill = 0;
-    static AtomicBoolean loopCatch = new AtomicBoolean();
     static AtomicInteger sequencing = new AtomicInteger(0);
     private static MessagingController inst = null;
+
     private final BlockingQueue<Command> mCommands; //Worklist
     private final Thread mThread;
     private final Set<MessagingListener> mListeners;
@@ -156,10 +158,9 @@ public class MessagingController implements Runnable {
     // Key is accountNumber
     private final Context context;
     private MessagingListener checkMailListener = null;
-    private final NotificationHelper notificationHelper;
+    private final NotificationController notificationController;
     private boolean mBusy;
 
-    private final NotificationController notificationController;
     private MessagingController(Context context) {
         this.context = context;
         mCommands = new PriorityBlockingQueue<>();
@@ -168,7 +169,7 @@ public class MessagingController implements Runnable {
         memorizingListener = new MemorizingListener();
         threadPool = Executors.newCachedThreadPool();
         pushers = new ConcurrentHashMap<>();
-        notificationHelper = NotificationHelper.getInstance(context);
+        notificationController = NotificationController.newInstance(context);
 
         mThread = new Thread(this);
         mThread.setName("MessagingController");
@@ -433,7 +434,6 @@ public class MessagingController implements Runnable {
      * @param listener The listener to notify.
      */
     private void doRefreshRemote(final Account account, final MessagingListener listener) {
-        // TODO: check changes in upstream
         put("doRefreshRemote", listener, new RefreshRemoteRunnable(account, listener));
     }
 
@@ -659,9 +659,12 @@ public class MessagingController implements Runnable {
             }
 
             final Date earliestDate = account.getEarliestPollDate();
-            // TODO: check changes in upstream
-            syncGetNewMessages(account, folder, listener, remoteFolder, localUidMap, remoteMessageCount, visibleLimit, remoteMessages, remoteUidMap, earliestDate);
-            syncRemoveRemoteDeletedMessages(account, folder, listener, localFolder, localMessages, remoteUidMap);
+            int remoteStart = syncGetNewMessages(account, folder, listener, remoteFolder, localUidMap, remoteMessageCount, visibleLimit, remoteMessages, remoteUidMap, earliestDate);
+            MoreMessages moreMessages = syncRemoveRemoteDeletedMessages(account, listener, localFolder, localMessages, remoteUidMap);
+
+            if (moreMessages == MoreMessages.UNKNOWN) {
+                updateMoreMessages(remoteFolder, localFolder, earliestDate, remoteStart);
+            }
 
             /*
              * Now we download the actual content of messages.
@@ -693,7 +696,7 @@ public class MessagingController implements Runnable {
                 l.synchronizeMailboxFailed(account, folder, rootMessage);
             }
 
-            notificationHelper.notifyUserIfCertificateProblem(context, e, account, true);
+            notifyUserIfCertificateProblem(account, e, true);
             addErrorMessage(account, null, e);
             Log.e(K9.LOG_TAG, "Failed synchronizing folder " + account.getDescription() + ":" + folder + " @ " + new Date());
 
@@ -715,7 +718,7 @@ public class MessagingController implements Runnable {
         } else {
             boolean moreMessagesAvailable = remoteFolder.areMoreMessagesAvailable(remoteStart, earliestDate);
 
-            MoreMessages newMoreMessages = (moreMessagesAvailable) ? MoreMessages.TRUE : MoreMessages.FALSE;
+            LocalFolder.MoreMessages newMoreMessages = (moreMessagesAvailable) ? MoreMessages.TRUE : MoreMessages.FALSE;
             localFolder.setMoreMessages(newMoreMessages);
         }
     }
@@ -761,7 +764,7 @@ public class MessagingController implements Runnable {
     }
 
     private void syncNotifyListeners(Account account, String folder, MessagingListener listener, LocalFolder tLocalFolder, Exception commandException, LocalFolder localFolder, int remoteMessageCount, int newMessages) throws MessagingException {
-    /* Notify listeners that we're finally done. */
+        /* Notify listeners that we're finally done. */
 
         localFolder.setLastChecked(System.currentTimeMillis());
         localFolder.setStatus(null);
@@ -790,42 +793,47 @@ public class MessagingController implements Runnable {
         }
     }
 
-    private void syncRemoveRemoteDeletedMessages(Account account, String folder,
-                                                 MessagingListener listener, LocalFolder localFolder,
+    private MoreMessages syncRemoveRemoteDeletedMessages(Account account, MessagingListener listener,
+                                                 LocalFolder localFolder,
                                                  List<? extends Message> localMessages,
                                                  Map<String, Message> remoteUidMap) {
         /*
          * Remove any messages that are in the local store but no longer on the remote store or are too old
          */
-        if (account.syncRemoteDeletions()) {
-            List<Message> destroyMessages = new ArrayList<>();
-            for (Message localMessage : localMessages) {
-                if (remoteUidMap.get(localMessage.getUid()) == null) {
-                    destroyMessages.add(localMessage);
-                }
-            }
 
+        MoreMessages moreMessages = localFolder.getMoreMessages();
+        if (!account.syncRemoteDeletions()) {
+            return moreMessages;
+        }
+
+        List<Message> destroyMessages = new ArrayList<>();
+        for (Message localMessage : localMessages) {
+            if (remoteUidMap.get(localMessage.getUid()) == null) {
+                destroyMessages.add(localMessage);
+            }
+        }
+
+        if(!destroyMessages.isEmpty()) {
+            moreMessages = MoreMessages.UNKNOWN;
             localFolder.destroyMessages(destroyMessages);
 
             for (Message destroyMessage : destroyMessages) {
                 for (MessagingListener l : getListeners(listener)) {
-                    l.synchronizeMailboxRemovedMessage(account, folder, destroyMessage);
+                    l.synchronizeMailboxRemovedMessage(account, localFolder.getName(), destroyMessage);
                 }
             }
         }
+
+        return moreMessages;
     }
 
-    private void syncGetNewMessages(Account account, String folder, MessagingListener listener,
+    private int syncGetNewMessages(Account account, String folder, MessagingListener listener,
                                     Folder remoteFolder, Map<String, Message> localUidMap,
                                     int remoteMessageCount, int visibleLimit,
                                     List<Message> remoteMessages, Map<String, Message> remoteUidMap,
                                     Date earliestDate) throws MessagingException {
-        if (remoteMessageCount < 0) {
+        if (remoteMessageCount <= 0) {
             throw new MessagingException("Message count " + remoteMessageCount + " for folder " + folder);
-        }
-
-        if(remoteMessageCount == 0) {
-            return;
         }
 
         /* Message numbers start at 1.  */
@@ -868,6 +876,8 @@ public class MessagingController implements Runnable {
         for (MessagingListener l : getListeners(listener)) {
             l.synchronizeMailboxHeadersFinished(account, folder, headerProgress.get(), remoteUidMap.size());
         }
+
+        return remoteStart;
     }
 
     private void closeFolder(Folder f) {
@@ -1217,7 +1227,6 @@ public class MessagingController implements Runnable {
         }
 
         remoteFolder.fetch(smallMessages,
-                // TODO: check upstream changes
                 fp, new SmallMessageRetrievalListener<T>(account, folder, progress, earliestDate, localFolder, newMessages, todo, unreadBeforeStart));
 
         if (K9.DEBUG) {
@@ -1340,8 +1349,7 @@ public class MessagingController implements Runnable {
             // Send a notification of this message
             if (shouldNotifyForMessage(account, localFolder, message)) {
                 // Notify with the localMessage so that we don't have to recalculate the content preview.
-                notificationHelper.notifyAccount(context, account, localMessage, unreadBeforeStart, false);
-                // TODO: check notificationController.addNewMailNotification(account, localMessage, unreadBeforeStart);
+                notificationController.addNewMailNotification(account, localMessage, unreadBeforeStart);
             }
 
         }//for large messages
@@ -1403,11 +1411,8 @@ public class MessagingController implements Runnable {
 
                     // we're only interested in messages that need removing
                     if (!shouldBeNotifiedOf) {
-                        notificationHelper.notifyAccount(context, account, localMessage, unreadBeforeStart, true);
-                        /* TODO: check upstream changes
                         MessageReference messageReference = localMessage.makeMessageReference();
                         notificationController.removeNewMailNotification(account, messageReference);
-                        */
                     }
                 }
                 progress.incrementAndGet();
@@ -1567,7 +1572,7 @@ public class MessagingController implements Runnable {
                 }
             }
         } catch (MessagingException me) {
-            notificationHelper.notifyUserIfCertificateProblem(context, me, account, true);
+            notifyUserIfCertificateProblem(account, me, true);
             addErrorMessage(account, null, me);
             Log.e(K9.LOG_TAG, "Could not process command '" + processingCommand + "'", me);
             throw me;
@@ -2465,7 +2470,7 @@ public class MessagingController implements Runnable {
             for (MessagingListener l : getListeners(listener)) {
                 l.loadMessageForViewFailed(account, folder, uid, e);
             }
-            notificationHelper.notifyUserIfCertificateProblem(context, e, account, true);
+            notifyUserIfCertificateProblem(account, e, true);
             addErrorMessage(account, null, e);
             return false;
         } finally {
@@ -2625,7 +2630,7 @@ public class MessagingController implements Runnable {
                         l.loadAttachmentFailed(account, message, part, me.getMessage());
                     }
 
-                    notificationHelper.notifyUserIfCertificateProblem(context, me, account, true);
+                    notifyUserIfCertificateProblem(account, me, true);
                     addErrorMessage(account, null, me);
 
                 } finally {
@@ -2691,20 +2696,28 @@ public class MessagingController implements Runnable {
                 }
 
                 if (messagesPendingSend(account)) {
-                    if (account.isShowOngoing()) {
-                        notificationHelper.notifyWhileSending(account);
-                    }
+                    showSendingNotificationIfNecessary(account);
 
                     try {
                         sendPendingMessagesSynchronous(account);
                     } finally {
-                        if (account.isShowOngoing()) {
-                            notificationHelper.notifyWhileSendingDone(account);
-                        }
+                        clearSendingNotificationIfNecessary(account);
                     }
                 }
             }
         });
+    }
+
+    private void showSendingNotificationIfNecessary(Account account) {
+        if (account.isShowOngoing()) {
+            notificationController.showSendingNotification(account);
+        }
+    }
+
+    private void clearSendingNotificationIfNecessary(Account account) {
+        if (account.isShowOngoing()) {
+            notificationController.clearSendingNotification(account);
+        }
     }
 
     /**
@@ -2796,11 +2809,9 @@ public class MessagingController implements Runnable {
 
                     if (count.incrementAndGet() > K9.MAX_SEND_ATTEMPTS) {
                         Log.e(K9.LOG_TAG, "Send count for message " + message.getUid() + " can't be delivered after " + K9.MAX_SEND_ATTEMPTS + " attempts.  Giving up until the user restarts the device");
-                        /* TODO: check upstream changes
+
                         notificationController.showSendFailedNotification(account,
                                 new MessagingException(message.getSubject()));
-                        */
-                        notificationHelper.notifySendTempFailed(account, new MessagingException(message.getSubject()));
                         continue;
                     }
 
@@ -2852,7 +2863,7 @@ public class MessagingController implements Runnable {
                         lastFailure = e;
                         wasPermanentFailure = false;
 
-                        notificationHelper.notifyUserIfCertificateProblem(context, e, account, false);
+                        notifyUserIfCertificateProblem(account, e, false);
                         handleSendFailure(account, localStore, localFolder, message, e, wasPermanentFailure);
                     } catch (MessagingException e) {
                         lastFailure = e;
@@ -2882,10 +2893,9 @@ public class MessagingController implements Runnable {
 
             if (lastFailure != null) {
                 if (wasPermanentFailure) {
-                    notificationHelper.notifySendPermFailed(account, lastFailure);
-                    // TODO: check upstream notificationController.showSendFailedNotification(account, lastFailure);
+                    notificationController.showSendFailedNotification(account, lastFailure);
                 } else {
-                    // TODO: check upstream notificationHelper.notifySendTempFailed(account, lastFailure);
+                    notificationController.showSendFailedNotification(account, lastFailure);
                 }
             }
         } catch (UnavailableStorageException e) {
@@ -2899,8 +2909,7 @@ public class MessagingController implements Runnable {
 
         } finally {
             if (lastFailure == null) {
-                notificationHelper.cancelNotification(K9.SEND_FAILED_NOTIFICATION - account.getAccountNumber());
-                // TODO: check upstream notificationController.clearSendFailedNotification(account);
+                notificationController.clearSendFailedNotification(account);
             }
             closeFolder(localFolder);
         }
@@ -3832,8 +3841,7 @@ public class MessagingController implements Runnable {
                             try {
                                 AccountStats stats = account.getStats(context);
                                 if (stats == null || stats.unreadMessageCount == 0) {
-                                    notificationHelper.notifyAccountCancel(context, account);
-                                    // TODO: check upstream notificationController.clearNewMailNotifications(account);
+                                    notificationController.clearNewMailNotifications(account);
                                 }
                             } catch (MessagingException e) {
                                 Log.e(K9.LOG_TAG, "Unable to getUnreadMessageCount for account: " + account, e);
@@ -3865,7 +3873,6 @@ public class MessagingController implements Runnable {
             return;
         }
 
-        // TODO: check upstream
         Runnable syncFolderRunnable = new SynchronizeFolderRunnable(account, folder, ignoreLastCheckedTime, accountInterval, listener);
         putBackground("sync" + folder.getName(), null, syncFolderRunnable);
     }
@@ -4039,9 +4046,8 @@ public class MessagingController implements Runnable {
         return true;
     }
 
-    public void deleteAccount(Context context, Account account) {
-        notificationHelper.notifyAccountCancel(context, account);
-        //TODO: check upstream changes notificationController.clearNewMailNotifications(account);
+    public void deleteAccount(Account account) {
+        notificationController.clearNewMailNotifications(account);
         memorizingListener.removeAccount(account);
     }
 
@@ -4421,18 +4427,18 @@ public class MessagingController implements Runnable {
 
         @Override
         public void run() {
-            List<? extends Folder> localFolders = null;
+            List<LocalFolder> localFolders = null;
             try {
                 Store store = account.getRemoteStore();
 
                 List<? extends Folder> remoteFolders = store.getPersonalNamespaces(false);
 
                 LocalStore localStore = account.getLocalStore();
-                Set<String> remoteFolderNames = new HashSet<String>();
-                List<LocalFolder> foldersToCreate = new LinkedList<LocalFolder>();
+                Set<String> remoteFolderNames = new HashSet<>();
+                List<LocalFolder> foldersToCreate = new LinkedList<>();
 
                 localFolders = localStore.getPersonalNamespaces(false);
-                Set<String> localFolderNames = new HashSet<String>();
+                Set<String> localFolderNames = new HashSet<>();
                 for (Folder localFolder : localFolders) {
                     localFolderNames.add(localFolder.getName());
                 }
@@ -4653,7 +4659,7 @@ public class MessagingController implements Runnable {
                     Log.i(K9.LOG_TAG, "messagesArrived newCount = " + newCount + ", unread count = " + unreadMessageCount);
 
                 if (unreadMessageCount == 0) {
-                    notificationHelper.notifyAccountCancel(context, account);
+                    notificationController.clearNewMailNotifications(account);
                 }
 
                 for (MessagingListener l : getListeners()) {
@@ -4849,12 +4855,12 @@ public class MessagingController implements Runnable {
                     return;
                 }
 
-                notificationHelper.notifyFetchingMail(account, folder);
+                showFetchingMailNotificationIfNecessary(account, folder);
 
                 try {
                     synchronizeMailboxSynchronous(account, folder.getName(), listener, null);
                 } finally {
-                    notificationHelper.notifyFetchingMailCancel(account);
+                    clearFetchingMailNotificationIfNecessary(account);
                 }
             } catch (Exception e) {
 
@@ -4863,6 +4869,18 @@ public class MessagingController implements Runnable {
                 addErrorMessage(account, null, e);
             } finally {
                 closeFolder(tLocalFolder);
+            }
+        }
+
+        private void showFetchingMailNotificationIfNecessary(Account account, Folder folder) {
+            if (account.isShowOngoing()) {
+                notificationController.showFetchingMailNotification(account, folder);
+            }
+        }
+
+        private void clearFetchingMailNotificationIfNecessary(Account account) {
+            if (account.isShowOngoing()) {
+                notificationController.clearFetchingMailNotification(account);
             }
         }
     }
@@ -4946,7 +4964,7 @@ public class MessagingController implements Runnable {
 
                 if (shouldNotifyForMessage(account, localFolder, message)) {
                     // Notify with the localMessage so that we don't have to recalculate the content preview.
-                    notificationHelper.notifyAccount(context, account, localMessage, unreadBeforeStart, false);
+                    notificationController.addNewMailNotification(account, localMessage, unreadBeforeStart);
                 }
             } catch (MessagingException me) {
                 addErrorMessage(account, null, me);

@@ -163,7 +163,7 @@ public class MimeMessage extends Message {
     }
 
     @Override
-    public String getContentType() throws MessagingException {
+    public String getContentType() {
         String contentType = getFirstHeader(MimeHeader.HEADER_CONTENT_TYPE);
         return (contentType == null) ? "text/plain" : contentType;
     }

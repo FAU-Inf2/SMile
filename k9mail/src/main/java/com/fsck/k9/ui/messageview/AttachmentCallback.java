@@ -46,22 +46,25 @@ class AttachmentCallback implements AttachmentViewCallback {
     public void onSaveAttachmentToUserProvidedDirectory(final AttachmentViewInfo attachment) {
         //TODO: check if we have to download the attachment first
         MessageViewFragment fragment = messageViewFragmentWeakReference.get();
-        if (fragment != null) {
-            Intent intent = new Intent();
-            intent.putExtra("attachmentInfo", attachment);
-            FileBrowserHelper.getInstance().showFileBrowserActivity(fragment, null,
-                    MessageViewFragment.ACTIVITY_CHOOSE_DIRECTORY, new FileBrowserHelper.FileBrowserFailOverCallback() {
-                        @Override
-                        public void onPathEntered(String path) {
-                            getAttachmentController(attachment).saveAttachmentTo(path);
-                        }
-
-                        @Override
-                        public void onCancel() {
-                            // Do nothing
-                        }
-                    }, intent);
+        if (fragment == null) {
+            return;
         }
+
+        Intent intent = new Intent();
+        intent.putExtra("attachmentInfo", attachment);
+        FileBrowserHelper.getInstance().showFileBrowserActivity(fragment, null,
+                MessageViewFragment.ACTIVITY_CHOOSE_DIRECTORY, new FileBrowserHelper.FileBrowserFailOverCallback() {
+                    @Override
+                    public void onPathEntered(String path) {
+                        getAttachmentController(attachment).saveAttachmentTo(path);
+                    }
+
+                    @Override
+                    public void onCancel() {
+                        // Do nothing
+                    }
+                }, intent);
+
     }
 
 }

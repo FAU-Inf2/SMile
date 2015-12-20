@@ -31,13 +31,13 @@ import com.fsck.k9.listener.ActivityListener;
 import com.fsck.k9.adapter.FolderAdapter;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.controller.MessagingListener;
-import com.fsck.k9.helper.NotificationHelper;
 import com.fsck.k9.helper.SizeFormatter;
 import com.fsck.k9.mail.Folder;
 import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.power.TracingPowerManager;
 import com.fsck.k9.mail.power.TracingPowerManager.TracingWakeLock;
 import com.fsck.k9.mailstore.LocalFolder;
+import com.fsck.k9.notification.NotificationController;
 import com.fsck.k9.search.LocalSearch;
 import com.fsck.k9.service.MailService;
 
@@ -231,8 +231,8 @@ public final class FolderList extends K9Activity {
         controller.getAccountStats(this, mAccount, mListener);
 
         onRefresh(!REFRESH_REMOTE);
-        NotificationHelper notificationHelper = NotificationHelper.getInstance(getApplicationContext());
-        notificationHelper.notifyAccountCancel(this, mAccount);
+        NotificationController notificationController = NotificationController.newInstance(getApplicationContext());
+        notificationController.clearNewMailNotifications(mAccount);
         mListener.onResume(this);
     }
 
@@ -674,16 +674,16 @@ public final class FolderList extends K9Activity {
         }
 
         @Override
-        public final void listFolders(final Account account, final List<? extends Folder> folders) {
+        public final void listFolders(final Account account, final List<LocalFolder> folders) {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
                     if (account.equals(mAccount)) {
-                        List<FolderInfoHolder> newFolders = new LinkedList<FolderInfoHolder>();
-                        List<FolderInfoHolder> topFolders = new LinkedList<FolderInfoHolder>();
+                        List<FolderInfoHolder> newFolders = new LinkedList<>();
+                        List<FolderInfoHolder> topFolders = new LinkedList<>();
                         FolderMode aMode = account.getFolderDisplayMode();
 
-                        for (Folder folder : folders) {
+                        for (LocalFolder folder : folders) {
                             Folder.FolderClass fMode = folder.getDisplayClass();
 
                             if ((aMode == FolderMode.FIRST_CLASS && fMode != Folder.FolderClass.FIRST_CLASS)
@@ -787,7 +787,7 @@ public final class FolderList extends K9Activity {
 
         private final void refreshFolder(final Account account, final String folderName) {
             // There has to be a cheaper way to get at the localFolder object than this
-            Folder localFolder = null;
+            LocalFolder localFolder = null;
             try {
                 if (account != null && folderName != null) {
                     if (!account.isAvailable(mContext)) {

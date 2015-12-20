@@ -60,26 +60,13 @@ public class MessageDecryptVerifier {
     }
 
     private static boolean checkProtocolParameter(final Part part, final String protocol) {
-        if(protocol != null) {
-            String partProtocol = null;
-            String[] contentTypes = new String[0];
-            try {
-                contentTypes = part.getHeader("Content-Type");
-            } catch (MessagingException e) {
-                e.printStackTrace();
-            }
-
-            for (String contentType : contentTypes) {
-                partProtocol = MimeUtility.getHeaderParameter(contentType, PROTOCOL_PARAMETER);
-                if(partProtocol != null && partProtocol.equalsIgnoreCase(protocol)) {
-                    return true;
-                }
-            }
-
-            return false;
+        if(protocol == null) {
+            return true;
         }
 
-        return true;
+        String contentType = part.getContentType();
+        String partProtocol = MimeUtility.getHeaderParameter(contentType, PROTOCOL_PARAMETER);
+        return partProtocol != null && protocol.equalsIgnoreCase(partProtocol);
     }
 
     public static List<Part> findPgpEncryptedParts(final Part startPart) throws MessagingException {

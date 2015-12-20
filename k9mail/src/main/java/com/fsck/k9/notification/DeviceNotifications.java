@@ -14,11 +14,12 @@ import android.support.v4.app.NotificationCompat.InboxStyle;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.K9;
-import com.fsck.k9.K9.NotificationHideSubject;
-import com.fsck.k9.K9.NotificationQuickDelete;
 import com.fsck.k9.NotificationSetting;
-import com.fsck.k9.R;
 import com.fsck.k9.activity.MessageReference;
+import com.fsck.k9.preferences.NotificationHideSubject;
+import com.fsck.k9.preferences.NotificationQuickDelete;
+
+import de.fau.cs.mad.smile.android.R;
 
 import static com.fsck.k9.notification.NotificationController.NOTIFICATION_LED_BLINK_SLOW;
 import static com.fsck.k9.notification.NotificationController.platformSupportsExtendedNotifications;
